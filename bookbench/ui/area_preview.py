@@ -16,7 +16,7 @@ import sys
 import tkinter as tk
 from datetime import datetime
 from pathlib import Path
-from tkinter import filedialog, ttk
+from tkinter import filedialog, messagebox, ttk
 
 import keller_theme as kth
 from bookbench.ui import settings as kei
@@ -393,3 +393,6 @@ class VorschauBereich:
         if n:
             text += ", " + _("{n} warnings/errors in the output (at the bottom of the Preview area)").format(n=n)
         self.app.status.set(text + ".")
+        grund = kv.absturz_grund(self.profil, self.befund) if code else None
+        if grund:                                       # Desktop-KOReader hält den Rechner für einen E-Reader
+            messagebox.showwarning(_("Preview"), grund, parent=self.app)

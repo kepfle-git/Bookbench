@@ -551,7 +551,8 @@ class EinstellungsDialog(tk.Toplevel):
         self._ueberschrift(s, _("Preview"))
         self._feld(s, "koreader_pfad", _("Desktop KOReader (optional)"),
                    _("Empty: searched for (koreader in PATH, AppImage in ~/Applications or ~/Downloads, "
-                     "Flatpak). Only fill in if it is somewhere else."),
+                     "Flatpak). Only fill in if it is somewhere else. flatpak: always the Flatpak "
+                     "rocks.koreader.KOReader, even if KOReader is also installed normally."),
                    46, knopf=(_("Choose …"), self._koreader_waehlen))
         ttk.Label(s, text=_("Device shown")).pack(anchor="w")
         self._geraete = [("auto", _("Automatic (device of the profile, otherwise the connected e-reader)"))] \

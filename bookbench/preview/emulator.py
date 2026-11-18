@@ -97,7 +97,11 @@ def _flatpak_da():
 
 def koreader_finden(eigener=""):
     """{"art": "programm"|"appimage"|"flatpak", "pfad": ...} oder None.
-    eigener: in den Einstellungen gewählte Datei (z. B. ein AppImage), hat Vorrang."""
+    eigener: in den Einstellungen gewählte Datei (z. B. ein AppImage) oder "flatpak" (bzw. die
+    Flatpak-Kennung), hat Vorrang - so lässt sich das Flatpak auch nehmen, wenn KOReader
+    zusätzlich normal installiert ist."""
+    if eigener and eigener.strip().lower() in ("flatpak", FLATPAK_ID.lower()):
+        return {"art": "flatpak", "pfad": FLATPAK_ID} if _flatpak_da() else None
     if eigener and Path(eigener).is_file():
         return {"art": "appimage" if eigener.lower().endswith(".appimage") else "programm", "pfad": str(eigener)}
     for name in ("koreader", "KOReader"):
@@ -119,6 +123,44 @@ def koreader_finden(eigener=""):
     if _flatpak_da():
         return {"art": "flatpak", "pfad": FLATPAK_ID}
     return None
+
+
+# KOReader bis mindestens v2026.07.1 erkennt das Gerät an Dateien (frontend/device.lua, probeDevice,
+# nachgesehen 18.11.2026): gibt es eine davon, nimmt auch der Desktop-KOReader den Teil für dieses
+# Gerät und stürzt ab (Kobo: getCodeName findet kein Modell). Unter Arch/EndeavourOS legt das Paket
+# hwdetect /usr/bin/hwdetect an (beim Nutzer so passiert). Die Flatpak-Fassung sieht die Dateien des
+# Systems nicht. Neuere KOReader-Fassungen (master) erkennen das Gerät am Bau, nicht an Dateien.
+GERAETE_DATEIEN = (("/proc/usid", "Kindle"), ("/bin/kobo_config.sh", "Kobo"), ("/usr/bin/hwdetect.sh", "Kobo"),
+                   ("/usr/bin/hwdetect", "Kobo"), ("/ebrmain", "PocketBook"))
+
+
+def geraete_datei(wurzel="/"):
+    """(Pfad, Gerät) der ersten Datei, an der KOReader ein E-Reader-Gerät erkennt, oder None."""
+    for pfad, geraet in GERAETE_DATEIEN:
+        if (Path(wurzel) / pfad.lstrip("/")).exists():
+            return pfad, geraet
+    return None
+
+
+def absturz_grund(profil, befund, wurzel="/"):
+    """Hielt sich der Desktop-KOReader für einen E-Reader? Erklärung oder None. Erkannt an der
+    Ausgabe (frontend/device/<gerät>/device.lua) und einer der Dateien oben."""
+    if not befund or befund.get("art") == "flatpak":
+        return None
+    text, __, __ = protokoll(profil, zeilen=200)
+    if not re.search(r"frontend/device/(kobo|kindle|pocketbook)/device\.lua", text):
+        return None
+    gefunden = geraete_datei(wurzel)
+    if not gefunden:
+        return None
+    pfad, geraet = gefunden
+    zusatz = _(" (on Arch/EndeavourOS it comes from the package hwdetect)") if pfad == "/usr/bin/hwdetect" else ""
+    return _("The desktop KOReader takes this computer for a {geraet} because the file {pfad} exists{zusatz}. "
+             "Up to at least version 2026.07 KOReader recognizes the device by such files and then crashes "
+             "on the computer; KOReader alone (without Bookbench) does the same.\n\n"
+             "Way out: KOReader as Flatpak (rocks.koreader.KOReader) does not see the files of the system. "
+             "Install it (flatpak install flathub rocks.koreader.KOReader) and enter flatpak under Settings > "
+             "Device > Preview > Desktop KOReader, or remove the file if nothing else needs it.").format(geraet=geraet, pfad=pfad, zusatz=zusatz)
 
 
 def beschreibung(befund):

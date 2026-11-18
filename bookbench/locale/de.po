@@ -303,7 +303,7 @@ msgstr "KOReader wählen …"
 msgid "Open profile folder"
 msgstr "Profilordner öffnen"
 
-#: app.py:269 area_preview.py:52 help.py:390 help.py:558 settings.py:107 settings.py:551
+#: app.py:269 area_preview.py:52 area_preview.py:398 help.py:390 help.py:558 settings.py:107
 msgid "Preview"
 msgstr "Vorschau"
 
@@ -335,7 +335,7 @@ msgstr "Status in den Listen"
 msgid "View"
 msgstr "Ansicht"
 
-#: app.py:281 app.py:287 app.py:323 help.py:649 settings.py:139
+#: app.py:281 app.py:287 app.py:323 help.py:653 settings.py:139
 msgid "Help"
 msgstr "Hilfe"
 
@@ -478,7 +478,7 @@ msgstr "kein Klappentext"
 msgid "Library"
 msgstr "Bibliothek"
 
-#: app.py:480 area_dictionary.py:123 help.py:658
+#: app.py:480 area_dictionary.py:123 help.py:662
 msgid "Search:"
 msgstr "Suchen:"
 
@@ -559,7 +559,7 @@ msgstr "nur Nummer, kein Name gefunden"
 msgid "Level {alt} → {neu}"
 msgstr "Ebene {alt} → {neu}"
 
-#: app.py:795 settings.py:639
+#: app.py:795 settings.py:640
 msgid "{n} entry"
 msgid_plural "{n} entries"
 msgstr[0] "{n} Eintrag"
@@ -1143,7 +1143,7 @@ msgstr "Klick oder Esc schließt."
 msgid "Choose a cover: {name}"
 msgstr "Cover wählen: {name}"
 
-#: area_covers.py:452 area_dictionary.py:318 area_dictionary.py:1019 area_dictionary.py:1107 settings.py:140 settings.py:762
+#: area_covers.py:452 area_dictionary.py:318 area_dictionary.py:1019 area_dictionary.py:1107 settings.py:140 settings.py:763
 msgid "Cancel"
 msgstr "Abbrechen"
 
@@ -1151,7 +1151,7 @@ msgstr "Abbrechen"
 msgid "Click a cover to choose it, double-click takes it at once."
 msgstr "Klick wählt ein Cover, Doppelklick übernimmt es sofort."
 
-#: area_device.py:28 device.py:85 help.py:446 settings.py:124 settings.py:605
+#: area_device.py:28 device.py:85 help.py:446 settings.py:124 settings.py:606
 msgid "Settings"
 msgstr "Einstellungen"
 
@@ -1612,7 +1612,7 @@ msgstr ""
 "Eintrag aus einem eingelesenen Wörterbuch: Inhalt wie gespeichert (HTML "
 "bzw. Text)."
 
-#: area_dictionary.py:286 area_dictionary.py:1121 settings.py:389 settings.py:545 settings.py:555
+#: area_dictionary.py:286 area_dictionary.py:1121 settings.py:389 settings.py:545 settings.py:556
 msgid "Choose …"
 msgstr "Wählen …"
 
@@ -2084,7 +2084,7 @@ msgstr "Dateiname:"
 msgid "Name of the dictionary files (without extension), e.g. sw-legends."
 msgstr "Name der Wörterbuchdateien (ohne Endung), z. B. sw-legends."
 
-#: area_dictionary.py:1078 settings.py:798
+#: area_dictionary.py:1078 settings.py:799
 msgid "Topic:"
 msgstr "Thema:"
 
@@ -2243,7 +2243,7 @@ msgstr "Andere Datei"
 msgid "Show a book that is not in the opened library"
 msgstr "Ein Buch zeigen, das nicht in der geöffneten Bibliothek steht"
 
-#: area_preview.py:172 emulator.py:444
+#: area_preview.py:172 emulator.py:486
 msgid "Desktop KOReader not found."
 msgstr "Desktop-KOReader nicht gefunden."
 
@@ -2389,7 +2389,7 @@ msgstr "Plugins und Schriften fehlen noch (einmal vom E-Reader übernehmen)."
 msgid "Book for the preview"
 msgstr "Buch für die Vorschau"
 
-#: area_preview.py:313 settings.py:708
+#: area_preview.py:313 settings.py:709
 msgid "Choose the KOReader program or AppImage"
 msgstr "KOReader-Programm oder AppImage wählen"
 
@@ -2517,29 +2517,56 @@ msgstr "halbe Größe"
 msgid "full size"
 msgstr "volle Größe"
 
-#: emulator.py:126
+#: emulator.py:157
+msgid " (on Arch/EndeavourOS it comes from the package hwdetect)"
+msgstr " (unter Arch/EndeavourOS kommt sie aus dem Paket hwdetect)"
+
+#: emulator.py:158
+msgid ""
+"The desktop KOReader takes this computer for a {geraet} because the file "
+"{pfad} exists{zusatz}. Up to at least version 2026.07 KOReader recognizes "
+"the device by such files and then crashes on the computer; KOReader alone "
+"(without Bookbench) does the same.\n"
+"\n"
+"Way out: KOReader as Flatpak (rocks.koreader.KOReader) does not see the "
+"files of the system. Install it (flatpak install flathub "
+"rocks.koreader.KOReader) and enter flatpak under Settings > Device > "
+"Preview > Desktop KOReader, or remove the file if nothing else needs it."
+msgstr ""
+"Der Desktop-KOReader hält diesen Rechner für einen {geraet}, weil es die "
+"Datei {pfad} gibt{zusatz}. Bis mindestens Version 2026.07 erkennt KOReader "
+"das Gerät an solchen Dateien und stürzt dann auf dem Rechner ab; KOReader "
+"allein (ohne Bookbench) macht das genauso.\n"
+"\n"
+"Ausweg: KOReader als Flatpak (rocks.koreader.KOReader) sieht die Dateien "
+"des Systems nicht. Installieren (flatpak install flathub "
+"rocks.koreader.KOReader) und unter Einstellungen > Gerät > Vorschau > "
+"Desktop-KOReader flatpak eintragen, oder die Datei entfernen, wenn sonst "
+"nichts sie braucht."
+
+#: emulator.py:168
 msgid "not found"
 msgstr "nicht gefunden"
 
-#: emulator.py:236
+#: emulator.py:278
 msgid "KOReader is not installed on the {geraet} ({ordner} is missing)."
 msgstr "KOReader ist auf dem {geraet} nicht installiert ({ordner} fehlt)."
 
-#: emulator.py:286
+#: emulator.py:328
 msgid "The backup contains no KOReader settings."
 msgstr "Die Sicherung enthält keine KOReader-Einstellungen."
 
-#: emulator.py:388 settings.py:558
+#: emulator.py:430 settings.py:559
 msgid "Own size"
 msgstr "Eigene Größe"
 
-#: emulator.py:447
+#: emulator.py:489
 msgid ""
 "The profile is empty: take it from the e-reader or from a backup first."
 msgstr ""
 "Profil ist leer: erst vom E-Reader oder aus einer Sicherung übernehmen."
 
-#: emulator.py:461
+#: emulator.py:503
 msgid "KOReader could not be started: {fehler}"
 msgstr "KOReader ließ sich nicht starten: {fehler}"
 
@@ -3969,7 +3996,7 @@ msgstr ""
 "- [[vorschau_starten]]\n"
 "- [[vorschau_bildschirm]]\n"
 
-#: help.py:404 settings.py:427 settings.py:821
+#: help.py:404 settings.py:427 settings.py:822
 msgid "Profile"
 msgstr "Profil"
 
@@ -4598,7 +4625,9 @@ msgid ""
 "Only on Linux and macOS.\n"
 "\n"
 "- **Desktop KOReader** (default: empty = search): only fill in if it is not "
-"found by itself ([[vorschau]]).\n"
+"found by itself ([[vorschau]]). **flatpak** always takes the Flatpak "
+"rocks.koreader.KOReader, also when KOReader is installed normally too "
+"([[fehler]]).\n"
 "- **Device shown** (default: automatic): automatic, any Kobo or tolino "
 "model from the list (with size and ppi), or **Own size** with width, height "
 "(pixels in portrait format), ppi and colour screen for other e-readers with "
@@ -4608,13 +4637,15 @@ msgstr ""
 "Nur unter Linux und macOS.\n"
 "\n"
 "- **Desktop-KOReader** (Standard: leer = suchen): nur eintragen, wenn er "
-"nicht von selbst gefunden wird ([[vorschau]]).\n"
+"nicht von selbst gefunden wird ([[vorschau]]). **flatpak** nimmt immer das "
+"Flatpak rocks.koreader.KOReader, auch wenn KOReader zusätzlich normal "
+"installiert ist ([[fehler]]).\n"
 "- **Nachgebildetes Gerät** (Standard: automatisch): automatisch, ein Kobo- "
 "oder tolino-Modell aus der Liste (mit Größe und ppi), oder **Eigene Größe** "
 "mit Breite, Höhe (Pixel im Hochformat), ppi und Farbbildschirm für andere "
 "E-Reader mit KOReader. Siehe [[vorschau_bildschirm]].\n"
 
-#: help.py:564 settings.py:108 settings.py:600
+#: help.py:564 settings.py:108 settings.py:601
 msgid "Advanced"
 msgstr "Erweitert"
 
@@ -4804,6 +4835,18 @@ msgid ""
 "need Kobo hardware fail on the computer; the output at the bottom of the "
 "area says which.\n"
 "\n"
+"**Preview: KOReader closes at once (\"device/kobo/device.lua\" in the "
+"output)**\n"
+"- The desktop KOReader takes the computer for an e-reader: up to at least "
+"version 2026.07 it recognizes the device by files such as /usr/bin/hwdetect "
+"(Arch/EndeavourOS: package hwdetect), /bin/kobo_config.sh or /proc/usid. "
+"KOReader alone does the same; Bookbench then says which file it is.\n"
+"- Way out: KOReader as Flatpak (flatpak install flathub "
+"rocks.koreader.KOReader), it does not see these files. Enter **flatpak** "
+"under Settings > Device > Preview > Desktop KOReader ([[einst_vorschau]]), "
+"so that it is taken even if KOReader is also installed normally. Or remove "
+"the file if nothing else needs it.\n"
+"\n"
 "**Something else**\n"
 "- The status bar always has the last message. Backups of all saved books "
 "are in the backup folder ([[speichern]]).\n"
@@ -4857,19 +4900,33 @@ msgstr ""
 "Patches, die Kobo-Hardware brauchen, schlagen auf dem Rechner fehl; die "
 "Ausgabe unten im Bereich sagt, welche.\n"
 "\n"
+"**Vorschau: KOReader geht sofort wieder zu (\"device/kobo/device.lua\" in "
+"der Ausgabe)**\n"
+"- Der Desktop-KOReader hält den Rechner für einen E-Reader: bis mindestens "
+"Version 2026.07 erkennt er das Gerät an Dateien wie /usr/bin/hwdetect "
+"(Arch/EndeavourOS: Paket hwdetect), /bin/kobo_config.sh oder /proc/usid. "
+"KOReader allein macht das genauso; Bookbench sagt dann, welche Datei es "
+"ist.\n"
+"- Ausweg: KOReader als Flatpak (flatpak install flathub "
+"rocks.koreader.KOReader), das sieht diese Dateien nicht. Unter "
+"Einstellungen > Gerät > Vorschau > Desktop-KOReader **flatpak** eintragen "
+"([[einst_vorschau]]), damit es auch dann genommen wird, wenn KOReader "
+"zusätzlich normal installiert ist. Oder die Datei entfernen, wenn sonst "
+"nichts sie braucht.\n"
+"\n"
 "**Etwas anderes**\n"
 "- Die Statuszeile hat immer die letzte Meldung. Sicherungen aller "
 "gespeicherten Bücher liegen im Sicherungsordner ([[speichern]]).\n"
 
-#: help.py:678
+#: help.py:682
 msgid "Back"
 msgstr "Zurück"
 
-#: help.py:737
+#: help.py:741
 msgid "{n} topics found"
 msgstr "{n} Themen gefunden"
 
-#: help.py:738
+#: help.py:742
 msgid "Nothing found."
 msgstr "Nichts gefunden."
 
@@ -5362,7 +5419,7 @@ msgstr ""
 "aktive Profil, das zum Buch passt; Reihenfolge mit Höher/Tiefer. "
 "Doppelklick bearbeitet."
 
-#: settings.py:428 settings.py:774
+#: settings.py:428 settings.py:775
 msgid "Applies to"
 msgstr "Gilt für"
 
@@ -5580,20 +5637,24 @@ msgstr "Desktop-KOReader (optional)"
 #: settings.py:553
 msgid ""
 "Empty: searched for (koreader in PATH, AppImage in ~/Applications or "
-"~/Downloads, Flatpak). Only fill in if it is somewhere else."
+"~/Downloads, Flatpak). Only fill in if it is somewhere else. flatpak: "
+"always the Flatpak rocks.koreader.KOReader, even if KOReader is also "
+"installed normally."
 msgstr ""
 "Leer: wird gesucht (koreader im PATH, AppImage in ~/Applications oder "
-"~/Downloads, Flatpak). Hier nur eintragen, wenn er woanders liegt."
+"~/Downloads, Flatpak). Hier nur eintragen, wenn er woanders liegt. flatpak: "
+"immer das Flatpak rocks.koreader.KOReader, auch wenn KOReader zusätzlich "
+"normal installiert ist."
 
-#: settings.py:556
+#: settings.py:557
 msgid "Device shown"
 msgstr "Nachgebildetes Gerät"
 
-#: settings.py:557
+#: settings.py:558
 msgid "Automatic (device of the profile, otherwise the connected e-reader)"
 msgstr "Automatisch (Gerät des Profils, sonst der angeschlossene E-Reader)"
 
-#: settings.py:571
+#: settings.py:572
 msgid ""
 "Size and pixel density of the window, and colour or black and white. Tolino "
 "devices from 2024 on are Kobo hardware and are listed too."
@@ -5601,23 +5662,23 @@ msgstr ""
 "Größe und Pixeldichte des Fensters, dazu Farbe oder Schwarzweiß. "
 "Tolino-Geräte ab 2024 sind Kobo-Hardware und stehen mit in der Liste."
 
-#: settings.py:579
+#: settings.py:580
 msgid "Width:"
 msgstr "Breite:"
 
-#: settings.py:579
+#: settings.py:580
 msgid "Height:"
 msgstr "Höhe:"
 
-#: settings.py:580
+#: settings.py:581
 msgid "ppi:"
 msgstr "ppi:"
 
-#: settings.py:583
+#: settings.py:584
 msgid "Colour screen"
 msgstr "Farbbildschirm"
 
-#: settings.py:585
+#: settings.py:586
 msgid ""
 "Pixels in portrait format. For other e-readers with KOReader: see the "
 "maker's data sheet."
@@ -5625,23 +5686,23 @@ msgstr ""
 "Pixel im Hochformat. Für andere E-Reader mit KOReader: siehe Datenblatt des "
 "Herstellers."
 
-#: settings.py:601
+#: settings.py:602
 msgid "Files of the program"
 msgstr "Dateien des Programms"
 
-#: settings.py:606
+#: settings.py:607
 msgid "Chapter decisions"
 msgstr "Kapitel-Entscheidungen"
 
-#: settings.py:607 settings.py:617 settings.py:643
+#: settings.py:608 settings.py:618 settings.py:644
 msgid "Blurb cache"
 msgstr "Klappentext-Zwischenspeicher"
 
-#: settings.py:613
+#: settings.py:614
 msgid "Open settings folder"
 msgstr "Einstellungsordner öffnen"
 
-#: settings.py:614
+#: settings.py:615
 msgid ""
 "The chapter decisions remember which names were applied, so they are "
 "suggested again for other copies of the same book. The cache holds "
@@ -5653,27 +5714,27 @@ msgstr ""
 "Zwischenspeicher hält nachgeschlagene Klappentexte und was schon versucht "
 "wurde, damit erneutes Nachschlagen nichts kostet."
 
-#: settings.py:622
+#: settings.py:623
 msgid "Empty …"
 msgstr "Leeren …"
 
-#: settings.py:624
+#: settings.py:625
 msgid "Afterwards everything is looked up again (and Claude costs again)."
 msgstr "Danach wird alles neu nachgeschlagen (und Claude kostet wieder)."
 
-#: settings.py:625
+#: settings.py:626
 msgid "Export and import"
 msgstr "Exportieren und Importieren"
 
-#: settings.py:628
+#: settings.py:629
 msgid "Export settings …"
 msgstr "Einstellungen exportieren …"
 
-#: settings.py:629
+#: settings.py:630
 msgid "Import settings …"
 msgstr "Einstellungen importieren …"
 
-#: settings.py:630
+#: settings.py:631
 msgid ""
 "A JSON file, e.g. to take the settings to another computer. It contains the "
 "API key. Importing replaces the current settings; the language applies at "
@@ -5683,15 +5744,15 @@ msgstr ""
 "mitzunehmen. Der API-Schlüssel steht mit drin. Importieren ersetzt die "
 "jetzigen Einstellungen; die Sprache gilt ab dem nächsten Start."
 
-#: settings.py:632 settings.py:684
+#: settings.py:633 settings.py:685
 msgid "Reset"
 msgstr "Zurücksetzen"
 
-#: settings.py:633
+#: settings.py:634
 msgid "Reset all settings …"
 msgstr "Alle Einstellungen zurücksetzen …"
 
-#: settings.py:634
+#: settings.py:635
 msgid ""
 "Everything back to the defaults. Kept: opened folders, the list of "
 "dictionaries, window size, language and the API key."
@@ -5699,63 +5760,63 @@ msgstr ""
 "Alles zurück auf den Standard. Bleiben: geöffnete Ordner, die Liste der "
 "Wörterbücher, Fenstergröße, Sprache und der API-Schlüssel."
 
-#: settings.py:643
+#: settings.py:644
 msgid "Empty the blurb cache?"
 msgstr "Klappentext-Zwischenspeicher leeren?"
 
-#: settings.py:650 settings.py:659
+#: settings.py:651 settings.py:660
 msgid "Export settings"
 msgstr "Einstellungen exportieren"
 
-#: settings.py:661
+#: settings.py:662
 msgid "Settings exported: {datei}"
 msgstr "Einstellungen exportiert: {datei}"
 
-#: settings.py:664 settings.py:673
+#: settings.py:665 settings.py:674
 msgid "Import settings"
 msgstr "Einstellungen importieren"
 
-#: settings.py:671
+#: settings.py:672
 msgid "not a settings file"
 msgstr "keine Einstellungsdatei"
 
-#: settings.py:678
+#: settings.py:679
 msgid "Settings imported from {datei}."
 msgstr "Einstellungen importiert aus {datei}."
 
-#: settings.py:684
+#: settings.py:685
 msgid "Reset all settings to the defaults?"
 msgstr "Alle Einstellungen auf den Standard zurücksetzen?"
 
-#: settings.py:691
+#: settings.py:692
 msgid "All settings reset to the defaults."
 msgstr "Alle Einstellungen auf den Standard zurückgesetzt."
 
-#: settings.py:756
+#: settings.py:757
 msgid "Source profile"
 msgstr "Quellprofil"
 
-#: settings.py:770
+#: settings.py:771
 msgid "Name:"
 msgstr "Name:"
 
-#: settings.py:773
+#: settings.py:774
 msgid "Active"
 msgstr "Aktiv"
 
-#: settings.py:777
+#: settings.py:778
 msgid "Publisher:"
 msgstr "Verlag:"
 
-#: settings.py:777
+#: settings.py:778
 msgid "Series:"
 msgstr "Reihe:"
 
-#: settings.py:778
+#: settings.py:779
 msgid "Author:"
 msgstr "Autor:"
 
-#: settings.py:781
+#: settings.py:782
 msgid ""
 "Parts of names, separated by commas. One match is enough. All empty: every "
 "book."
@@ -5763,15 +5824,15 @@ msgstr ""
 "Namensteile, durch Komma getrennt. Ein Treffer reicht. Alles leer: jedes "
 "Buch."
 
-#: settings.py:782
+#: settings.py:783
 msgid "Where Claude looks"
 msgstr "Wo Claude sucht"
 
-#: settings.py:783
+#: settings.py:784
 msgid "Pages to fetch (one address per line, in this order):"
 msgstr "Abzurufende Seiten (eine Adresse je Zeile, in dieser Reihenfolge):"
 
-#: settings.py:793
+#: settings.py:794
 msgid ""
 "Placeholders: {title}, {author}, {series} as a wiki page name, {title_q} "
 "and {author_q} for search addresses, {base} = title without \"Omnibus\". "
@@ -5781,15 +5842,15 @@ msgstr ""
 "{author_q} für Suchadressen, {base} = Titel ohne \"Omnibus\". Leer: nur "
 "suchen."
 
-#: settings.py:797
+#: settings.py:798
 msgid "Further allowed sites:"
 msgstr "Weitere erlaubte Seiten:"
 
-#: settings.py:798
+#: settings.py:799
 msgid "Section with the blurb:"
 msgstr "Abschnitt mit dem Klappentext:"
 
-#: settings.py:801
+#: settings.py:802
 msgid ""
 "Further sites separated by commas, e.g. tor.com; the sites of the addresses "
 "above are always allowed. Section and topic are optional hints for Claude, "
@@ -5799,11 +5860,11 @@ msgstr ""
 "oben sind immer erlaubt. Abschnitt und Thema sind freiwillige Hinweise für "
 "Claude, z. B. \"Official Description\" oder \"Star Wars\"."
 
-#: settings.py:804
+#: settings.py:805
 msgid "Web search if no page fits"
 msgstr "Websuche, wenn keine Seite passt"
 
-#: settings.py:805
+#: settings.py:806
 msgid "Only in the allowed sites; without any, on the whole web."
 msgstr "Nur in den erlaubten Seiten; ohne welche im ganzen Netz."
 

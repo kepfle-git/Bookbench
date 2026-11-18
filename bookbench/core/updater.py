@@ -312,10 +312,26 @@ def _marke_nachtragen(programm, version):
         pass
 
 
-def windows_befehl(setup):
+def windows_modus(exe=None, lokal=None):
+    """"/CURRENTUSER" oder "/ALLUSERS": wie die laufende Installation eingerichtet ist. Ohne
+    diese Angabe zeigt das Setup trotz /SILENT die Frage "nur für mich / für alle"
+    (PrivilegesRequiredOverridesAllowed=dialog), unter Wine nachgestellt. Pro Benutzer liegt
+    Bookbench unter %LOCALAPPDATA%, für alle unter Program Files."""
+    exe = Path(exe or sys.executable).resolve()
+    lokal = lokal if lokal is not None else os.environ.get("LOCALAPPDATA", "")
+    if not lokal:                                       # unbekannt (kein Windows): Standard des Setups
+        return "/CURRENTUSER"
+    try:
+        return "/CURRENTUSER" if exe.is_relative_to(Path(lokal).resolve()) else "/ALLUSERS"
+    except (OSError, ValueError):
+        return "/CURRENTUSER"
+
+
+def windows_befehl(setup, modus=None):
     """Installer still, ohne Rückfrage; er übernimmt Ordner und Aufgaben der vorhandenen
     Installation und startet Bookbench danach selbst (bookbench.iss, [Run] mit WizardSilent)."""
-    return [str(setup), "/SILENT", "/SP-", "/NOCANCEL", "/NORESTART", "/CLOSEAPPLICATIONS"]
+    return [str(setup), "/SILENT", "/SP-", "/NOCANCEL", "/NORESTART", "/CLOSEAPPLICATIONS",
+            modus or windows_modus()]
 
 
 def windows_starten(setup, popen=subprocess.Popen):

@@ -335,7 +335,7 @@ msgstr ""
 msgid "View"
 msgstr ""
 
-#: app.py:281 app.py:287 app.py:323 help.py:653 settings.py:139
+#: app.py:281 app.py:287 app.py:323 help.py:654 settings.py:139
 msgid "Help"
 msgstr ""
 
@@ -472,7 +472,7 @@ msgstr ""
 msgid "Library"
 msgstr ""
 
-#: app.py:480 area_dictionary.py:123 help.py:662
+#: app.py:480 area_dictionary.py:123 help.py:663
 msgid "Search:"
 msgstr ""
 
@@ -2108,7 +2108,7 @@ msgstr ""
 msgid "Show a book that is not in the opened library"
 msgstr ""
 
-#: area_preview.py:172 emulator.py:486
+#: area_preview.py:172 emulator.py:522
 msgid "Desktop KOReader not found."
 msgstr ""
 
@@ -2367,45 +2367,61 @@ msgstr ""
 msgid "full size"
 msgstr ""
 
-#: emulator.py:157
+#: emulator.py:188
 msgid " (on Arch/EndeavourOS it comes from the package hwdetect)"
 msgstr ""
 
-#: emulator.py:158
+#: emulator.py:190
 msgid ""
 "The desktop KOReader takes this computer for a {geraet} because the file "
 "{pfad} exists{zusatz}. Up to at least version 2026.07 KOReader recognizes "
 "the device by such files and then crashes on the computer; KOReader alone "
-"(without Bookbench) does the same.\n"
+"(without Bookbench) does the same. Bookbench normally hides these files "
+"from KOReader with a start patch ({patch}); {grund}\n"
 "\n"
+msgstr ""
+
+#: emulator.py:195
+msgid ""
+"here patches are switched off in KOReader (file .patches_disabled in the "
+"profile)."
+msgstr ""
+
+#: emulator.py:196
+msgid ""
 "Way out: KOReader as Flatpak (rocks.koreader.KOReader) does not see the "
 "files of the system. Install it (flatpak install flathub "
 "rocks.koreader.KOReader) and enter flatpak under Settings > Device > "
 "Preview > Desktop KOReader, or remove the file if nothing else needs it."
 msgstr ""
 
-#: emulator.py:168
+#: emulator.py:196
+msgid ""
+"that did not help here, perhaps a KOReader version that checks differently."
+msgstr ""
+
+#: emulator.py:204
 msgid "not found"
 msgstr ""
 
-#: emulator.py:278
+#: emulator.py:314
 msgid "KOReader is not installed on the {geraet} ({ordner} is missing)."
 msgstr ""
 
-#: emulator.py:328
+#: emulator.py:364
 msgid "The backup contains no KOReader settings."
 msgstr ""
 
-#: emulator.py:430 settings.py:559
+#: emulator.py:466 settings.py:559
 msgid "Own size"
 msgstr ""
 
-#: emulator.py:489
+#: emulator.py:525
 msgid ""
 "The profile is empty: take it from the e-reader or from a backup first."
 msgstr ""
 
-#: emulator.py:503
+#: emulator.py:540
 msgid "KOReader could not be started: {fehler}"
 msgstr ""
 
@@ -3705,7 +3721,12 @@ msgid ""
 "- The desktop KOReader takes the computer for an e-reader: up to at least "
 "version 2026.07 it recognizes the device by files such as /usr/bin/hwdetect "
 "(Arch/EndeavourOS: package hwdetect), /bin/kobo_config.sh or /proc/usid. "
-"KOReader alone does the same; Bookbench then says which file it is.\n"
+"KOReader alone does the same.\n"
+"- Normally this does not happen in the preview: Bookbench puts a start "
+"patch (1-bookbench-desktop.lua) into the profile that hides these files "
+"from KOReader. It does not count as one of your patches and never goes to "
+"the e-reader. It does not work if patches are switched off in KOReader; "
+"then Bookbench says so and which file it is.\n"
 "- Way out: KOReader as Flatpak (flatpak install flathub "
 "rocks.koreader.KOReader), it does not see these files. Enter **flatpak** "
 "under Settings > Device > Preview > Desktop KOReader ([[einst_vorschau]]), "
@@ -3717,15 +3738,15 @@ msgid ""
 "are in the backup folder ([[speichern]]).\n"
 msgstr ""
 
-#: help.py:682
+#: help.py:683
 msgid "Back"
 msgstr ""
 
-#: help.py:741
+#: help.py:742
 msgid "{n} topics found"
 msgstr ""
 
-#: help.py:742
+#: help.py:743
 msgid "Nothing found."
 msgstr ""
 

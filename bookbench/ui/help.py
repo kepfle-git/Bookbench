@@ -19,7 +19,7 @@ import keller_theme as kth
 from bookbench.i18n import _
 
 PROGRAMM = "Bookbench"
-VERSION = "1.0.2"
+VERSION = "1.0.3"
 
 # (Elternthema, Kennung, Titel, Text). Übersetzt beim Import. Text: **fett**, Aufzählungen mit "-",
 # [[kennung]] = Verweis.
@@ -624,7 +624,8 @@ The **desktop KOReader** for the preview (Linux only) is not part of the install
 - Choose "Fitted to the screen" ([[vorschau_bildschirm]]). Patches that need Kobo hardware fail on the computer; the output at the bottom of the area says which.
 
 **Preview: KOReader closes at once ("device/kobo/device.lua" in the output)**
-- The desktop KOReader takes the computer for an e-reader: up to at least version 2026.07 it recognizes the device by files such as /usr/bin/hwdetect (Arch/EndeavourOS: package hwdetect), /bin/kobo_config.sh or /proc/usid. KOReader alone does the same; Bookbench then says which file it is.
+- The desktop KOReader takes the computer for an e-reader: up to at least version 2026.07 it recognizes the device by files such as /usr/bin/hwdetect (Arch/EndeavourOS: package hwdetect), /bin/kobo_config.sh or /proc/usid. KOReader alone does the same.
+- Normally this does not happen in the preview: Bookbench puts a start patch (1-bookbench-desktop.lua) into the profile that hides these files from KOReader. It does not count as one of your patches and never goes to the e-reader. It does not work if patches are switched off in KOReader; then Bookbench says so and which file it is.
 - Way out: KOReader as Flatpak (flatpak install flathub rocks.koreader.KOReader), it does not see these files. Enter **flatpak** under Settings > Device > Preview > Desktop KOReader ([[einst_vorschau]]), so that it is taken even if KOReader is also installed normally. Or remove the file if nothing else needs it.
 
 **Something else**

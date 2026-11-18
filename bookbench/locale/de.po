@@ -335,7 +335,7 @@ msgstr "Status in den Listen"
 msgid "View"
 msgstr "Ansicht"
 
-#: app.py:281 app.py:287 app.py:323 help.py:653 settings.py:139
+#: app.py:281 app.py:287 app.py:323 help.py:654 settings.py:139
 msgid "Help"
 msgstr "Hilfe"
 
@@ -478,7 +478,7 @@ msgstr "kein Klappentext"
 msgid "Library"
 msgstr "Bibliothek"
 
-#: app.py:480 area_dictionary.py:123 help.py:662
+#: app.py:480 area_dictionary.py:123 help.py:663
 msgid "Search:"
 msgstr "Suchen:"
 
@@ -2243,7 +2243,7 @@ msgstr "Andere Datei"
 msgid "Show a book that is not in the opened library"
 msgstr "Ein Buch zeigen, das nicht in der geöffneten Bibliothek steht"
 
-#: area_preview.py:172 emulator.py:486
+#: area_preview.py:172 emulator.py:522
 msgid "Desktop KOReader not found."
 msgstr "Desktop-KOReader nicht gefunden."
 
@@ -2517,56 +2517,78 @@ msgstr "halbe Größe"
 msgid "full size"
 msgstr "volle Größe"
 
-#: emulator.py:157
+#: emulator.py:188
 msgid " (on Arch/EndeavourOS it comes from the package hwdetect)"
 msgstr " (unter Arch/EndeavourOS kommt sie aus dem Paket hwdetect)"
 
-#: emulator.py:158
+#: emulator.py:190
 msgid ""
 "The desktop KOReader takes this computer for a {geraet} because the file "
 "{pfad} exists{zusatz}. Up to at least version 2026.07 KOReader recognizes "
 "the device by such files and then crashes on the computer; KOReader alone "
-"(without Bookbench) does the same.\n"
+"(without Bookbench) does the same. Bookbench normally hides these files "
+"from KOReader with a start patch ({patch}); {grund}\n"
 "\n"
+msgstr ""
+"Der Desktop-KOReader hält diesen Rechner für einen {geraet}, weil es die "
+"Datei {pfad} gibt{zusatz}. Bis mindestens Version 2026.07 erkennt KOReader "
+"das Gerät an solchen Dateien und stürzt dann auf dem Rechner ab; KOReader "
+"allein (ohne Bookbench) macht das genauso. Normalerweise versteckt "
+"Bookbench diese Dateien mit einem Start-Patch ({patch}) vor KOReader; "
+"{grund}\n"
+"\n"
+
+#: emulator.py:195
+msgid ""
+"here patches are switched off in KOReader (file .patches_disabled in the "
+"profile)."
+msgstr ""
+"hier sind Patches in KOReader abgeschaltet (Datei .patches_disabled im "
+"Profil)."
+
+#: emulator.py:196
+msgid ""
 "Way out: KOReader as Flatpak (rocks.koreader.KOReader) does not see the "
 "files of the system. Install it (flatpak install flathub "
 "rocks.koreader.KOReader) and enter flatpak under Settings > Device > "
 "Preview > Desktop KOReader, or remove the file if nothing else needs it."
 msgstr ""
-"Der Desktop-KOReader hält diesen Rechner für einen {geraet}, weil es die "
-"Datei {pfad} gibt{zusatz}. Bis mindestens Version 2026.07 erkennt KOReader "
-"das Gerät an solchen Dateien und stürzt dann auf dem Rechner ab; KOReader "
-"allein (ohne Bookbench) macht das genauso.\n"
-"\n"
 "Ausweg: KOReader als Flatpak (rocks.koreader.KOReader) sieht die Dateien "
 "des Systems nicht. Installieren (flatpak install flathub "
 "rocks.koreader.KOReader) und unter Einstellungen > Gerät > Vorschau > "
 "Desktop-KOReader flatpak eintragen, oder die Datei entfernen, wenn sonst "
 "nichts sie braucht."
 
-#: emulator.py:168
+#: emulator.py:196
+msgid ""
+"that did not help here, perhaps a KOReader version that checks differently."
+msgstr ""
+"das hat hier nicht geholfen, vielleicht eine KOReader-Version, die anders "
+"prüft."
+
+#: emulator.py:204
 msgid "not found"
 msgstr "nicht gefunden"
 
-#: emulator.py:278
+#: emulator.py:314
 msgid "KOReader is not installed on the {geraet} ({ordner} is missing)."
 msgstr "KOReader ist auf dem {geraet} nicht installiert ({ordner} fehlt)."
 
-#: emulator.py:328
+#: emulator.py:364
 msgid "The backup contains no KOReader settings."
 msgstr "Die Sicherung enthält keine KOReader-Einstellungen."
 
-#: emulator.py:430 settings.py:559
+#: emulator.py:466 settings.py:559
 msgid "Own size"
 msgstr "Eigene Größe"
 
-#: emulator.py:489
+#: emulator.py:525
 msgid ""
 "The profile is empty: take it from the e-reader or from a backup first."
 msgstr ""
 "Profil ist leer: erst vom E-Reader oder aus einer Sicherung übernehmen."
 
-#: emulator.py:503
+#: emulator.py:540
 msgid "KOReader could not be started: {fehler}"
 msgstr "KOReader ließ sich nicht starten: {fehler}"
 
@@ -4840,7 +4862,12 @@ msgid ""
 "- The desktop KOReader takes the computer for an e-reader: up to at least "
 "version 2026.07 it recognizes the device by files such as /usr/bin/hwdetect "
 "(Arch/EndeavourOS: package hwdetect), /bin/kobo_config.sh or /proc/usid. "
-"KOReader alone does the same; Bookbench then says which file it is.\n"
+"KOReader alone does the same.\n"
+"- Normally this does not happen in the preview: Bookbench puts a start "
+"patch (1-bookbench-desktop.lua) into the profile that hides these files "
+"from KOReader. It does not count as one of your patches and never goes to "
+"the e-reader. It does not work if patches are switched off in KOReader; "
+"then Bookbench says so and which file it is.\n"
 "- Way out: KOReader as Flatpak (flatpak install flathub "
 "rocks.koreader.KOReader), it does not see these files. Enter **flatpak** "
 "under Settings > Device > Preview > Desktop KOReader ([[einst_vorschau]]), "
@@ -4905,8 +4932,12 @@ msgstr ""
 "- Der Desktop-KOReader hält den Rechner für einen E-Reader: bis mindestens "
 "Version 2026.07 erkennt er das Gerät an Dateien wie /usr/bin/hwdetect "
 "(Arch/EndeavourOS: Paket hwdetect), /bin/kobo_config.sh oder /proc/usid. "
-"KOReader allein macht das genauso; Bookbench sagt dann, welche Datei es "
-"ist.\n"
+"KOReader allein macht das genauso.\n"
+"- In der Vorschau passiert das normalerweise nicht: Bookbench legt einen "
+"Start-Patch (1-bookbench-desktop.lua) ins Profil, der diese Dateien vor "
+"KOReader versteckt. Er zählt nicht zu deinen Patches und kommt nie auf den "
+"E-Reader. Er wirkt nicht, wenn Patches in KOReader abgeschaltet sind; dann "
+"sagt Bookbench das und welche Datei es ist.\n"
 "- Ausweg: KOReader als Flatpak (flatpak install flathub "
 "rocks.koreader.KOReader), das sieht diese Dateien nicht. Unter "
 "Einstellungen > Gerät > Vorschau > Desktop-KOReader **flatpak** eintragen "
@@ -4918,15 +4949,15 @@ msgstr ""
 "- Die Statuszeile hat immer die letzte Meldung. Sicherungen aller "
 "gespeicherten Bücher liegen im Sicherungsordner ([[speichern]]).\n"
 
-#: help.py:682
+#: help.py:683
 msgid "Back"
 msgstr "Zurück"
 
-#: help.py:741
+#: help.py:742
 msgid "{n} topics found"
 msgstr "{n} Themen gefunden"
 
-#: help.py:742
+#: help.py:743
 msgid "Nothing found."
 msgstr "Nichts gefunden."
 

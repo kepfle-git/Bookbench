@@ -131,7 +131,39 @@ def koreader_finden(eigener=""):
 # hwdetect /usr/bin/hwdetect an (beim Nutzer so passiert). Die Flatpak-Fassung sieht die Dateien des
 # Systems nicht. Neuere KOReader-Fassungen (master) erkennen das Gerät am Bau, nicht an Dateien.
 GERAETE_DATEIEN = (("/proc/usid", "Kindle"), ("/bin/kobo_config.sh", "Kobo"), ("/usr/bin/hwdetect.sh", "Kobo"),
-                   ("/usr/bin/hwdetect", "Kobo"), ("/ebrmain", "PocketBook"))
+                   ("/usr/bin/hwdetect", "Kobo"), ("/ebrmain", "PocketBook"), ("/usr/bin/xochitl", "reMarkable"),
+                   ("/etc/PRSTUX", "Sony PRSTUX"), ("/usr/bin/ntxinfo", "Cervantes"))
+
+# Abhilfe ohne Zutun des Nutzers: ein früher Benutzer-Patch im Profil. reader.lua führt die Patches
+# mit "1-" vorn (userpatch.early) bei jedem Start aus, vor require("device"); device.lua prüft die
+# Dateien erst dann mit lfs.attributes aus dem gemeinsamen Modul libs/libkoreader-lfs (nachgesehen im
+# Quelltext von v2026.07.1). Der Patch lässt lfs.attributes für genau diese Pfade nil liefern, dann
+# landet KOReader bei SDL (Desktop). Wird bei jedem Start neu geschrieben, zählt nicht als Patch des
+# Nutzers und kommt nie aufs Gerät. Wirkt nicht, wenn Patches abgeschaltet sind (.patches_disabled).
+DESKTOP_PATCH = "1-bookbench-desktop.lua"
+# Englisch, weil er im Profil auch für englischsprachige Nutzer sichtbar ist
+DESKTOP_PATCH_TEXT = """-- Written by Bookbench for its preview and rewritten at every start (do not edit).
+-- KOReader recognizes the device by files (frontend/device.lua). If one of them exists on the
+-- computer, e.g. /usr/bin/hwdetect on Arch, the desktop KOReader takes itself for an e-reader and
+-- crashes. This patch runs before the detection and hides exactly these paths.
+local ok, lfs = pcall(require, "libs/libkoreader-lfs")
+if not ok or type(lfs) ~= "table" or type(lfs.attributes) ~= "function" then return end
+local hidden = {
+%s
+}
+local orig_attributes = lfs.attributes
+lfs.attributes = function(path, ...)
+    if hidden[path] then return nil end
+    return orig_attributes(path, ...)
+end
+""" % "\n".join(f'    ["{pfad}"] = true,' for pfad, __ in GERAETE_DATEIEN)
+
+
+def desktop_patch_schreiben(profil):
+    """Legt den Patch gegen die Geräteerkennung ins Profil (vor jedem Start)."""
+    ordner = _ko(profil) / "patches"
+    ordner.mkdir(parents=True, exist_ok=True)
+    (ordner / DESKTOP_PATCH).write_text(DESKTOP_PATCH_TEXT, encoding="utf-8")
 
 
 def geraete_datei(wurzel="/"):
@@ -148,19 +180,24 @@ def absturz_grund(profil, befund, wurzel="/"):
     if not befund or befund.get("art") == "flatpak":
         return None
     text, __, __ = protokoll(profil, zeilen=200)
-    if not re.search(r"frontend/device/(kobo|kindle|pocketbook)/device\.lua", text):
+    if not re.search(r"frontend/device/(kobo|kindle|pocketbook|remarkable|sony-prstux|cervantes)/device\.lua", text):
         return None
     gefunden = geraete_datei(wurzel)
     if not gefunden:
         return None
     pfad, geraet = gefunden
     zusatz = _(" (on Arch/EndeavourOS it comes from the package hwdetect)") if pfad == "/usr/bin/hwdetect" else ""
+    gesperrt = (_ko(profil) / "patches" / ".patches_disabled").is_file()
     return _("The desktop KOReader takes this computer for a {geraet} because the file {pfad} exists{zusatz}. "
              "Up to at least version 2026.07 KOReader recognizes the device by such files and then crashes "
-             "on the computer; KOReader alone (without Bookbench) does the same.\n\n"
-             "Way out: KOReader as Flatpak (rocks.koreader.KOReader) does not see the files of the system. "
-             "Install it (flatpak install flathub rocks.koreader.KOReader) and enter flatpak under Settings > "
-             "Device > Preview > Desktop KOReader, or remove the file if nothing else needs it.").format(geraet=geraet, pfad=pfad, zusatz=zusatz)
+             "on the computer; KOReader alone (without Bookbench) does the same. Bookbench normally hides "
+             "these files from KOReader with a start patch ({patch}); {grund}\n\n").format(
+        geraet=geraet, pfad=pfad, zusatz=zusatz, patch=DESKTOP_PATCH,
+        grund=_("here patches are switched off in KOReader (file .patches_disabled in the profile).") if gesperrt
+        else _("that did not help here, perhaps a KOReader version that checks differently.")) + _(
+        "Way out: KOReader as Flatpak (rocks.koreader.KOReader) does not see the files of the system. "
+        "Install it (flatpak install flathub rocks.koreader.KOReader) and enter flatpak under Settings > "
+        "Device > Preview > Desktop KOReader, or remove the file if nothing else needs it.")
 
 
 def beschreibung(befund):
@@ -362,7 +399,7 @@ def profil_stand(profil):
         "sicherung": m.get("sicherung", ""), "plugins_von": m.get("plugins_von", ""),
         "plugins": [p.name[:-9] for p in eigene_plugins(ko / "plugins")],
         "schriften": _zaehlen(_schriften(profil), SCHRIFT_ENDUNGEN),
-        "patches": _zaehlen(ko / "patches", {".lua"}),
+        "patches": _zaehlen(ko / "patches", {".lua"}) - (ko / "patches" / DESKTOP_PATCH).is_file(),
         "styletweaks": _zaehlen(ko / "styletweaks", {".css"}),
         "bookends_vorlagen": _zaehlen(ko / "settings" / "bookends_presets", {".lua"}),
         "bookends_aktiv": (ko / "settings" / "bookends.lua").is_file(),
@@ -488,6 +525,7 @@ def starten(befund, profil, buch, w, h, dpi, sdr=None, sw=False):
     if not (_ko(profil) / "settings.reader.lua").is_file():
         raise RuntimeError(_("The profile is empty: take it from the e-reader or from a backup first."))
     _bereinigen(profil)                      # KOReader könnte beim letzten Lauf etwas zurückgeschrieben haben
+    desktop_patch_schreiben(profil)          # Geräteerkennung: Rechner nicht für einen E-Reader halten
     kopie = buch_bereitstellen(profil, buch, sdr)
     variablen = umgebung(profil, w, h, dpi, sw)
     env = dict(os.environ, **variablen)

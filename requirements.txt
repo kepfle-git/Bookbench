@@ -1,0 +1,10 @@
+# Optional packages for Bookbench (the program runs without them):
+#   pillow            JPEG covers, editing covers
+#   wordfreq          better synonyms, everyday words in the lookup history
+#   requests, mwparserfromhell   building a dictionary from a wiki
+#   anthropic         looking up blurbs and dictionary entries with Claude (needs an API key)
+pillow
+wordfreq
+requests
+mwparserfromhell
+anthropic

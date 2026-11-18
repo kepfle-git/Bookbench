@@ -68,7 +68,8 @@ class KoboBereich:
         # -- Wörterbücher (unten; zuerst eingepackt, damit sie nicht verdrängt werden)
         unten = ttk.Frame(s)
         unten.pack(side="bottom", fill="x")
-        ttk.Label(unten, text=_("Dictionaries"), style="Ueberschrift.TLabel").pack(anchor="w", pady=(12, 0))
+        ttk.Label(unten, text=_("Dictionaries: computer → e-reader"), style="Ueberschrift.TLabel").pack(
+            anchor="w", pady=(12, 0))
         q = ttk.Frame(unten)
         q.pack(fill="x", pady=(0, 4))
         self.quelle_label = ttk.Label(q, text="", style="Hinweis.TLabel")
@@ -79,7 +80,7 @@ class KoboBereich:
         d = self.dict_baum = ttk.Treeview(r2, columns=("name", "stand", "ordner"), show="headings",
                                           selectmode="extended", height=4)
         d.heading("name", text=_("Dictionary"), anchor="w")
-        d.heading("stand", text=_("Status"), anchor="w")
+        d.heading("stand", text=_("On the e-reader"), anchor="w")
         d.heading("ordner", text=_("Folder in the source"), anchor="w")
         d.column("name", width=200, stretch=True)
         d.column("stand", width=170, stretch=False)
@@ -290,8 +291,9 @@ class KoboBereich:
         alt = set(d.selection())
         d.delete(*d.get_children())
         quelle = self._woerterbuch_quelle()
-        self.quelle_label.configure(text=_("Source: {quelle}").format(quelle=quelle) if quelle else
-                                    _("Source: not chosen yet (folder with the dictionary, e.g. My-Dictionary)"))
+        self.quelle_label.configure(text=_("Source on this computer: {quelle}").format(quelle=quelle) if quelle else
+                                    _("Source on this computer: not chosen yet (folder with the dictionary, e.g. "
+                                      "My-Dictionary, or a folder with several)"))
         self._dicts = kg.woerterbuecher(quelle, self.wurzel, self._woerterbuch_ordner(quelle))
         for name, stand, ordner in self._dicts:
             tags = ("warn",) if stand in ("veraltet", "fehlt") else ()
@@ -315,7 +317,8 @@ class KoboBereich:
 
     def zaehler(self):
         offen = sum(1 for __, st, __ in self._dicts if st in ("veraltet", "fehlt")) if self.wurzel else 0
-        text = f"{_(BEREICH)} ({offen} ⚠)" if offen else (_("E-reader (connected)") if self.wurzel else _(BEREICH))
+        # Seitenleiste: Zähler rechtsbündig in schmaler Spalte - "(angeschlossen)" lief in den Namen
+        text = f"{_(BEREICH)} ({offen} ⚠)" if offen else (f"{_(BEREICH)} (✓)" if self.wurzel else _(BEREICH))
         self.app.nb.tab(self.seite, text=text)
 
     def farben(self, modus, warnfarbe):

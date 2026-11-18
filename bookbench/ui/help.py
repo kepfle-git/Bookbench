@@ -19,7 +19,7 @@ import keller_theme as kth
 from bookbench.i18n import _
 
 PROGRAMM = "Bookbench"
-VERSION = "1.0.3"
+VERSION = "1.1-beta1"
 
 # (Elternthema, Kennung, Titel, Text). Übersetzt beim Import. Text: **fett**, Aufzählungen mit "-",
 # [[kennung]] = Verweis.
@@ -55,7 +55,7 @@ Hovering over the strip explains the status in the status bar. The title bar sho
 
 **Backgrounds**
 - In the chapter table questionable rows are **red**; a click shows the reason in the status bar. **Yellowish**: only a number, no name found.
-- In the lists of Blurbs and Covers, books without a blurb or cover are **yellowish**.
+- In the lists of Blurbs and Covers, books without a blurb or cover have a **⚠** in the strip; the sidebar shows how many, like for Chapters.
 
 The strip can be switched off: Settings > General > Interface ([[einst_oberflaeche]]).
 """)),
@@ -64,7 +64,7 @@ The strip can be switched off: Settings > General > Interface ([[einst_oberflaec
 - **Ctrl+O** open a folder, **F5** reload it
 - **Ctrl+S** save
 - **Ctrl+Enter** apply (current book, or the dictionary form)
-- **Ctrl+F** search field of the library
+- **Ctrl+F** search field of the current area (Chapters, Blurbs, Covers, Preview, Dictionary), otherwise of the library; **Esc** in a search field empties it
 - **Ctrl+B** collapse and expand the sidebar
 - **Ctrl+1 … 7** choose an area in the order of the sidebar (7: Preview, Linux/macOS only)
 - **F1** help for the current area; in the settings: help for the page shown
@@ -121,13 +121,31 @@ The sidebar on the left switches between the areas (Ctrl+1 … 7):
 - [[kobo]] - the connected e-reader: backups, dictionaries, ejecting
 - [[vorschau]] - a book in the desktop KOReader (Linux/macOS)
 
-The toolbar changes with the area; Open, Reload and Save are always there. [[speichern]] applies to all book areas together.
+The toolbar has the buttons of the current area on the left; on the right, separated, are the ones that always apply: Open, Reload, Save and Help. [[speichern]] applies to all book areas together.
+""")),
+    ("bereiche", "suche_filter", _("Search and filters in the lists"), _("""
+Above the book lists of **Chapters**, **Blurbs**, **Covers** and **Preview** there is a search field and (except in Preview) a filter. Each list has its own; they do not affect each other or the library.
+
+- **Search** finds parts of the title, series or author, case does not matter. **✕** or **Esc** in the field empties search and filter.
+- When a filter is active, the line above says how many books are shown: "Books: 3 of 12".
+- The book you are working on stays selected as long as it fits. If it no longer fits, the next fitting book below is selected (otherwise the one above).
+- **Apply** alone does not refill the list, so the book does not vanish while you work on it. Only changing search or filter, **Reload** or **Apply all** takes it out.
+- If a hidden book is opened from elsewhere (double-click in the library), search and filter of that list are reset.
+- Ctrl+F jumps to the search field of the current area.
+
+**Filters**
+- **Chapters**: With suggestions, Questionable names (⚠, not yet decided), Some without names (single entries only with a number), Changed chapters (applied or edited, not yet saved).
+- **Blurbs**: No blurb, Only in Calibre (no blurb in the file, but Calibre has a description: **From Calibre**), Changed blurb.
+- **Covers**: No cover, Small cover (below the limit in [[einst_cover]]), Changed cover.
+- **Preview**: search only.
+
+Search and filters are not remembered; after a restart all books are shown again.
 """)),
     ("bereiche", "bibliothek", _("Library"), _("""
 All books of the opened folder (with all subfolders) with series, number, author, state of the chapters, blurb and cover.
 
-- A click on a column header sorts, a second click reverses; column widths are remembered.
-- **Search** filters by title, series and author; the **filter** shows e.g. only books with open chapter names, without a blurb or without a cover.
+- A click on a column header sorts (▲ ascending, ▼ descending), a second click reverses. Moving, hiding and widths of the columns: [[bibliothek_spalten]].
+- **Search** filters by title, series and author; the **filter** shows only changed books, unreadable files or books whose series is not in the EPUB. Filters by chapters, blurbs and covers are above the lists of those areas ([[suche_filter]]).
 - **Double-click** opens the book in the Chapters area.
 
 **Columns**
@@ -136,7 +154,27 @@ All books of the opened folder (with all subfolders) with series, number, author
 - **Cover**: size of the title image in pixels, "changed" for a new one not yet saved.
 - **Series**: from the EPUB; if it is only in Calibre or KOReader's data, the status bar says where from ([[bibliothek_calibre]]).
 
-**Filters** Chapters: suggestions / questionable / some without names, No blurb, Changed, No series in the EPUB, No cover, Small cover.
+**Filters** All books, Changed (anything not yet saved, or saved since opening), Unreadable files, No series in the EPUB.
+""")),
+    ("bibliothek", "bibliothek_spalten", _("Columns: sorting, moving, widths"), _("""
+**Sorting**
+- A click on a column header sorts by it, a second click reverses. The arrow ▲ (ascending) or ▼ (descending) shows the column.
+- Series sorts by series, then number, then title; No. by number; Cover by the height in pixels (no cover first).
+- Right-click on a header: **Sort ascending** / **Sort descending** for this column.
+
+**Moving columns**
+- Drag a header sideways (hold the mouse button or touchpad, move at least a few pixels): a blue line shows where it goes. Releasing there does not sort.
+- Without dragging: right-click on the header > **Move "…" left** / **right**.
+
+**Showing and hiding**
+- Right-click on a header, or View > **Library columns**: one tick per column. A shown column comes back at its usual place. The last column cannot be hidden.
+
+**Widths**
+- Drag the line between two headers. The widths stay exactly as drawn, also after resizing the window or a restart; no column stretches by itself. If the columns are wider than the window, a scroll bar appears below.
+- **Fit columns to the window** spreads the visible columns over the width, keeping their proportions.
+- **Reset columns**: usual order, all columns, default widths fitted to the window.
+
+Order, shown columns, widths and sorting are remembered in the settings.
 """)),
     ("bibliothek", "bibliothek_calibre", _("Calibre and series"), _("""
 **From Calibre** (toolbar of the library) takes series, number and blurb from Calibre's **metadata.calibre**, but only where the EPUB has nothing - existing data is never overwritten. Then save as usual (Ctrl+S); after that the data is in the book itself, and KOReader, Bookshelf and the reading software of the e-reader see it without Calibre too.
@@ -165,6 +203,7 @@ The lines in front of the entries show the levels: **├** an entry followed by 
 Where suggestions come from: the lines below a chapter number in the book text (how many: [[einst_kapitel]]).
 
 **More**
+- [[suche_filter]]
 - [[kapitel_ebenen]]
 - [[kapitel_fragwuerdig]]
 """)),
@@ -192,7 +231,7 @@ Applied names are remembered in **tocfix_entscheidungen.json** in the settings f
     ("bereiche", "klappentexte", _("Blurbs"), _("""
 The books on the left, the blurb on the right. The text can be edited directly.
 
-- Books without a blurb are **yellowish** in the list and have a **⚠**. If Calibre has a description for the book, the status bar says so when the mouse is over the ⚠.
+- Books without a blurb have a **⚠** in the list. If Calibre has a description for the book, the status bar says so when the mouse is over the ⚠.
 - **Apply** (Ctrl+Enter) applies the text, **Discard** restores the text from the file. An empty field applied = remove the blurb.
 - Below the text: where it comes from. This is also saved in the EPUB (meta bookbench:blurb-source) and shown in the Blurb column of the library.
 - **From Calibre** puts Calibre's description into the text field ([[bibliothek_calibre]]).
@@ -200,6 +239,7 @@ The books on the left, the blurb on the right. The text can be edited directly.
 After saving, re-read the book information in KOReader (Cover browser > Extract and cache book information), otherwise Bookshelf still shows the old state.
 
 **More**
+- [[suche_filter]]
 - [[klappentexte_nachschlagen]]
 - [[klappentexte_profile]]
 """)),
@@ -244,7 +284,7 @@ Both can be changed, switched off or deleted; **Defaults** brings them back.
     ("bereiche", "cover", _("Covers"), _("""
 The books on the left, the cover on the right, as large as there is room. **Click on the cover** (also the small one in Chapters and Blurbs) shows it as large as the screen allows; click or Esc closes it.
 
-- Books without a cover are **yellowish** in the list, covers lower than the limit have a **⚠** ([[einst_cover]]).
+- Books without a cover and covers lower than the limit have a **⚠** in the list ([[einst_cover]]).
 - Below the cover: size in pixels, format, file size and where it is in the EPUB.
 - As long as a new cover is not saved, the old one and the new one are shown side by side.
 - **Export** saves the cover shown (the new one, if there is one) as an image file.
@@ -252,6 +292,7 @@ The books on the left, the cover on the right, as large as there is room. **Clic
 After saving, re-read the book information in KOReader (Cover browser > Extract and cache book information), otherwise the cover browser still shows the old cover.
 
 **More**
+- [[suche_filter]]
 - [[cover_aendern]]
 - [[cover_bild]]
 """)),
@@ -397,6 +438,7 @@ Shows a book in the **desktop KOReader** as it looks on the device: font, margin
 It is searched in this order: own path ([[einst_vorschau]]), koreader in PATH, macOS applications folder, AppImage, Flatpak. Preview menu > **Find KOReader** after installing.
 
 **More**
+- [[suche_filter]]
 - [[vorschau_profil]]
 - [[vorschau_starten]]
 - [[vorschau_bildschirm]]
@@ -486,9 +528,7 @@ A folder given on the command line (start.py <folder>) is always opened.
 
 **Include pre-releases** (default: off): also releases marked as pre-release on GitHub.
 
-**GitHub repository** (default: kepfle-git/Bookbench): owner/name of the repository with the releases.
-
-**GitHub token**: only while the repository is private. Create a fine-grained token on GitHub (Settings > Developer settings > Personal access tokens) with read access to "Contents" of just this repository. It is sent only to api.github.com and stored in plain text in the settings file; resetting the settings keeps it.
+The releases come from github.com/kepfle-git/Bookbench; that is fixed in the program. Without signing in GitHub allows 60 requests per hour, far more than the check needs.
 """)),
     ("einstellungen", "einst_speichern", _("Saving and backups"), _("""
 - **Backup folder** (default: Bookbench Backups in the user folder): books are copied here before each save ([[speichern]]). The E-reader area uses its subfolder KOReader, the dictionary its subfolder Wörterbücher. Not on the e-reader.
@@ -520,7 +560,7 @@ Changes count after OK. If a profile changes, Claude looks up again for its book
 """)),
     ("einst_klappentexte", "einst_klappentexte_claude", _("Claude API"), _("""
 - **API key**: from console.anthropic.com (account with credit). Empty: the environment variable ANTHROPIC_API_KEY is used. Stored in plain text in einstellungen.json ([[dateien]]) - keep that in mind when exporting the settings.
-- **Model** (default: claude-haiku-5-5): Haiku is enough for looking things up and is the cheapest. Other model names from the Anthropic documentation work too.
+- **Model** (default: claude-haiku-5-5): choose from the list; Haiku is enough for looking things up and is the cheapest. **Load list** asks Anthropic with the API key for the models available right now (newest first). A name can also be typed in.
 - **Estimated cost per book** (default: 0.015 $): only for the question before Look up all; the real cost depends on page length and searches.
 
 Also needed: the package **anthropic** (pip install anthropic). What is sent: [[kosten]].
@@ -531,7 +571,7 @@ Also needed: the package **anthropic** (pip install anthropic). What is sent: [[
 - **JPEG quality** (default: 90): only when an image is converted or shrunk; otherwise it is taken unchanged. 90 is barely distinguishable from the original; below 75 artefacts become visible.
 
 **Marking**
-- **Mark covers below this height** (default: 800 px, 0 = never): ⚠ in the Covers area and the filter "Small cover" in the library.
+- **Mark covers below this height** (default: 800 px, 0 = never): ⚠ in the Covers area and its filter "Small cover".
 """)),
     ("einst_cover", "einst_cover_nachschlagen", _("Looking up covers"), _("""
 **Sources** (both free, no key; [[kosten]])

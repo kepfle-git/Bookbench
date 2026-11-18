@@ -65,7 +65,8 @@ class VorschauBereich:
         links = ttk.Frame(self.mitte)
         links.pack(side="left", fill="both")
         ttk.Label(links, text=_("Book"), style="Ueberschrift.TLabel").pack(anchor="w")
-        self.liste = app._buchliste(links, self._buch_gewaehlt, self._status)
+        # ohne Statusstreifen (der Stand gehört zu Kapitel), Suche ohne Filterauswahl
+        self.liste = app._buchliste(links, self._buch_gewaehlt, streifen=False, geaendert=lambda: self.liste_fuellen())
         self.liste.bind("<Double-1>", lambda e: self.starten())
 
         rechts = ttk.Frame(self.mitte, padding=(16, 0, 0, 0))
@@ -140,8 +141,9 @@ class VorschauBereich:
         if alt is None:                                     # sonst das Buch, das in Kapitel gerade offen ist
             b = a._aktuelles_buch(a.kap_liste)
             alt = a._anzeigename(b) if b else None
-        # gleiche Reihenfolge wie in Kapitel und Klappentexte (nach Reihe, Nummer, Titel)
-        self._namen = {n: a._listen_buch[n].pfad for n in a.kap_liste.get(0, "end") if n in a._listen_buch}
+        # gleiche Reihenfolge wie in Kapitel und Klappentexte (nach Reihe, Nummer, Titel), eigene Suche
+        lf = self.liste.filter
+        self._namen = {a._anzeigename(b): b.pfad for b in a._links_sortiert() if lf.passt(b)}
         if self.andere_datei:
             self._namen[f"[Datei] {self.andere_datei.name}"] = self.andere_datei
         self.liste.delete(0, "end")
@@ -153,10 +155,6 @@ class VorschauBereich:
             self.liste.selection_set(i)
             self.liste.see(i)
         self._buch_gewaehlt()
-
-    def _status(self, name):
-        b = self.app._listen_buch.get(name)
-        return (b.stand(), b.warnung()) if b else (None, None)
 
     def _gewaehlter_name(self):
         sel = self.liste.curselection()

@@ -3,7 +3,7 @@
 area_covers.py - Bereich "Cover" von Bookbench: Titelbilder ansehen, ersetzen,
 nachschlagen, exportieren. Die Logik steckt in kobo_cover (Bilder) und kobo_daten (EPUB).
 
-  Bücherliste links (Bücher ohne Cover gelblich, kleine Cover mit ⚠)
+  Bücherliste links mit Suche und Filter (ohne Cover, klein, geändert), ⚠ im Streifen
   rechts das Cover so groß, wie Platz ist; liegt ein neues bereit, Datei und Neu nebeneinander
   Werkzeugleiste: Aus Datei, Nachschlagen, Alle ohne Cover, Groß, Verwerfen, Exportieren
 
@@ -18,7 +18,8 @@ from tkinter import filedialog, messagebox, ttk
 
 import keller_theme as kth
 from bookbench.core import covers as kc
-from bookbench.i18n import _, ngettext
+from bookbench.i18n import N_, _, ngettext
+from bookbench.ui import list_filter as klf
 
 FORMATNAME = {"jpeg": "JPEG", "png": "PNG", "gif": "GIF", "webp": "WebP", "?": "?"}
 
@@ -68,8 +69,10 @@ class CoverBereich:
         s = self.seite = app._seite(_("Covers"), "cover")
         links = ttk.Frame(s)
         links.pack(side="left", fill="y")
-        ttk.Label(links, text=_("Books:")).pack(anchor="w")
-        self.liste = app._buchliste(links, self.anzeigen, self._status)
+        kopf = ttk.Label(links, text=_("Books:"))
+        kopf.pack(anchor="w")
+        self.liste = app._buchliste(links, self.anzeigen, self._status, filter=self.filter(),
+                                    geaendert=lambda: self.liste_fuellen(), kopf=kopf)
         rechts = ttk.Frame(s)
         rechts.pack(side="left", fill="both", expand=True, padx=(10, 0))
         self.kopf = ttk.Label(rechts, text=_("Choose a book on the left."), style="Ueberschrift.TLabel")
@@ -106,21 +109,37 @@ class CoverBereich:
                     _("Save the cover shown as an image file"))
 
     # ================================================================ Liste
-    def liste_fuellen(self, sortiert):
-        vorher = self.buch
+    def filter(self):
+        """Filter über der Liste (list_filter): Kennung, Text, Prüfung."""
+        return [("alle", N_("All books"), None),
+                ("fehlt", N_("No cover"), self.fehlt),
+                ("klein", N_("Small cover"), self.klein),
+                ("geaendert", N_("Changed cover"), lambda b: b.cover_neu is not None)]
+
+    def liste_fuellen(self, sortiert=None):
+        """Liste nach Suche/Filter füllen (sortiert: wie in app._links_sortiert)."""
+        a = self.app
+        if sortiert is None:
+            sortiert = a._links_sortiert()
+        vorher = a.nach_schluessel.get(self.buch.schluessel) if self.buch else None
+        lf = self.liste.filter
+        sichtbar = [b for b in sortiert if lf.passt(b)]
         self.liste.delete(0, "end")
-        for b in sortiert:
-            self.liste.insert("end", self.app._anzeigename(b))
-        neu = self.app.nach_schluessel.get(vorher.schluessel) if vorher else None
+        for b in sichtbar:
+            self.liste.insert("end", a._anzeigename(b))
+        lf.anzahl(len(sichtbar), len(sortiert))
+        neu = klf.nachfolger(sortiert, vorher, lf.passt) or (sichtbar[0] if vorher and sichtbar else None)
         if neu:
             self.auswaehlen(neu)
         else:
             self.anzeigen()
-        self.listenfarben()
 
     def auswaehlen(self, b):
         namen = list(self.liste.get(0, "end"))
         name = self.app._anzeigename(b)
+        if name not in namen and self.liste.filter.aktiv() and b in self.app.buecher:
+            self.liste.filter.zuruecksetzen()          # weggefiltert: Suche und Filter zurück
+            namen = list(self.liste.get(0, "end"))
         if name in namen:
             i = namen.index(name)
             self.liste.selection_clear(0, "end")
@@ -132,6 +151,11 @@ class CoverBereich:
         grenze = int(self.app.e.get("cover_klein") or 0)
         info = kc.bild_info(b.cover_neu) if b.cover_neu is not None else b.cover_info
         return bool(grenze and info and info[1] and info[1] < grenze)
+
+    def hoehe(self, b):
+        """Höhe des Covers in px (das neue, falls es eins gibt), 0 ohne Cover - zum Sortieren."""
+        info = kc.bild_info(b.cover_neu) if b.cover_neu is not None else b.cover_info
+        return (info[1] or 0) if info else 0
 
     def fehlt(self, b):
         return not b.fehler and b.cover_neu is None and not b.cover_info
@@ -149,12 +173,6 @@ class CoverBereich:
     def _status(self, name):
         b = self.app._listen_buch.get(name)
         return (b.stand(), self._warnung(b)) if b else (None, None)
-
-    def listenfarben(self):
-        farbe = self.app.OHNEZEILE["dunkel" if self.app.dark_mode.get() else "hell"]
-        for i, name in enumerate(self.liste.get(0, "end")):
-            b = self.app._listen_buch.get(name)
-            self.liste.itemconfigure(i, background=farbe if b is not None and self.fehlt(b) else "")
 
     def beim_zeigen(self):
         if not self.liste.curselection() and self.liste.size():
@@ -272,7 +290,6 @@ class CoverBereich:
         self.app._geaendert(b)
         if b is self.buch:
             self.anzeigen()
-        self.listenfarben()
         return True
 
     def aus_datei(self):
@@ -371,7 +388,6 @@ class CoverBereich:
         b.cover_neu, b.cover_neu_quelle = None, ""
         self.app._geaendert(b)
         self.anzeigen()
-        self.listenfarben()
         self.app.status.set(f"{b.name}: " + _("new cover discarded."))
 
     def exportieren(self):
@@ -407,7 +423,6 @@ class CoverBereich:
         GrossFenster(self.app, b, daten)
 
     def farben(self):
-        self.listenfarben()
         self.zeichnen()
 
 

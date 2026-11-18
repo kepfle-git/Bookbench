@@ -44,7 +44,7 @@ class Updates:
 
     def _einstellungen(self, e=None):
         e = e or self.app.e
-        return (e.get("update_repo") or ku.REPO, e.get("update_token") or "", bool(e.get("update_vorab")))
+        return ku.REPO, bool(e.get("update_vorab"))
 
     def automatisch(self):
         """Beim Start: suchen, wenn die Einstellung es will; nur bei einer neuen, nicht
@@ -59,14 +59,13 @@ class Updates:
         if self.laeuft:
             return
         self.laeuft = True
-        self._token = (einstellungen or self.app.e).get("update_token") or ""
         if von_hand:
             self.app.status.set(_("Checking for updates …"))
-        repo, token, vorab = self._einstellungen(einstellungen)
+        repo, vorab = self._einstellungen(einstellungen)
 
         def lauf():
             try:
-                ergebnis, fehler = ku.release_holen(repo, token, vorab), None
+                ergebnis, fehler = ku.release_holen(repo, vorab), None
             except ku.UpdateFehler as e:
                 ergebnis, fehler = None, str(e)
             except Exception as e:                       # Meldung statt stillem Abbruch
@@ -102,14 +101,13 @@ class Updates:
             self.dialog.lift()
             return
         if self.release:
-            self.dialog = UpdateDialog(self.app, self.release, getattr(self, "_token", None))
+            self.dialog = UpdateDialog(self.app, self.release)
 
 
 class UpdateDialog(tk.Toplevel):
-    def __init__(self, app, release, token=None):
+    def __init__(self, app, release):
         super().__init__(app)
         self.app, self.r = app, release
-        self.token = (app.e.get("update_token") or "") if token is None else token
         self.art, self.angaben = ku.installation()
         self.download = ku.datei_fuer(release, self.art)
         self._abbrechen = False
@@ -187,7 +185,6 @@ class UpdateDialog(tk.Toplevel):
     # -- Installieren -------------------------------------------------------------------------
     def installieren(self):
         name, url, accept = self.download
-        token = self.token
         ziel = ku.download_ordner() / name
         for k in (self.k_installieren, self.k_auslassen, self.k_seite):
             k.state(["disabled"])
@@ -201,7 +198,7 @@ class UpdateDialog(tk.Toplevel):
 
         def lauf():
             try:
-                summen = ku.summen_holen(self.r, token)
+                summen = ku.summen_holen(self.r)
                 vorhanden = False                 # schon geladen (früher abgebrochen)? Fertige Dateien sind
                 if ziel.is_file():                # immer vollständig: geladen wird erst in eine .teil-Datei
                     try:
@@ -210,7 +207,7 @@ class UpdateDialog(tk.Toplevel):
                     except ku.UpdateFehler:
                         ziel.unlink()
                 if not vorhanden:
-                    ku.herunterladen(url, ziel, token, accept, fortschritt, lambda: self._abbrechen)
+                    ku.herunterladen(url, ziel, accept, fortschritt, lambda: self._abbrechen)
                     ku.pruefen(ziel, name, summen)
                 fehler = None
             except ku.UpdateFehler as e:

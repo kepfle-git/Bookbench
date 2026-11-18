@@ -12,6 +12,7 @@ import copy
 import json
 import os
 import sys
+import threading
 import tkinter as tk
 from pathlib import Path
 from tkinter import filedialog, messagebox, ttk
@@ -31,7 +32,7 @@ STANDARD = {
     "api_key": "", "modell": "claude-haiku-5-5", "websuche": True,   # websuche: alt, steckt jetzt im Profil
     "kostenlos": True, "klappentext_profile": None,                  # None: mitgelieferte Profile
     "cover_max_hoehe": 0, "cover_qualitaet": 90, "cover_klein": 800, "cover_openlibrary": True, "cover_google": True,
-    "spalten": {}, "sortierung": ["reihe", False],
+    "spalten": {}, "spalten_reihe": None, "sortierung": ["reihe", False],   # Bibliothek (ui/table_columns.py)
     "kobo_sicherungen_anzahl": 10, "kobo_teile": ["einstellungen", "settings", "buchdaten", "anpassungen"],
     "woerterbuch_quelle": "", "auswerfen_erinnern": True,
     "woerterbuecher": [], "woerterbuch_aktiv": "",
@@ -41,7 +42,7 @@ STANDARD = {
     "tooltip_verzoegerung": 600, "cover_kopf_hoehe": 96, "kt_min": 80, "kt_max": 4000, "kt_kosten": 0.015,
     "cover_min_hoehe": 300, "cover_anzahl": 8, "kobo_suche_sekunden": 3,
     # Updates (ui/updates.py): pruefen aus/start/taeglich/woechentlich, zuletzt/ausgelassen ohne Seite
-    "update_pruefen": "taeglich", "update_repo": "kepfle-git/Bookbench", "update_token": "", "update_vorab": False,
+    "update_pruefen": "taeglich", "update_vorab": False,     # Repo fest in core/updater.py (REPO)
     "update_zuletzt": "", "update_ausgelassen": "",
 }
 
@@ -64,6 +65,11 @@ def pfad():
     return str(ks.einstellungsordner() / "einstellungen.json")
 
 
+# Auswahl für das Modell (Klappentexte und Wörterbuch über Claude); "Liste laden" holt die aktuelle
+# Liste von der API. Stand 18.11.2026, laut Anthropic die neuesten Modelle.
+MODELLE = ("claude-haiku-5-5", "claude-sonnet-5-5", "claude-opus-5-5", "claude-fable-5-2")
+
+
 def laden():
     e = json.loads(json.dumps(STANDARD))                # tiefe Kopie
     try:
@@ -71,6 +77,8 @@ def laden():
             e.update(json.load(f))
     except (OSError, ValueError):
         pass
+    for alt in ("update_repo", "update_token"):          # bis 1.0.3 (Repo war privat); Token nicht liegen lassen
+        e.pop(alt, None)
     return e
 
 
@@ -92,7 +100,7 @@ class EinstellungsDialog(tk.Toplevel):
         ("darstellung", "allgemein", N_("Language and theme"), N_("Language of the interface, light or dark")),
         ("oberflaeche", "allgemein", N_("Interface"), N_("Status strip, tooltips, covers in the headers, sidebar")),
         ("start", "allgemein", N_("Startup"), N_("What opens when the program starts")),
-        ("updates", "allgemein", N_("Updates"), N_("Checking for new versions, repository, token")),
+        ("updates", "allgemein", N_("Updates"), N_("Checking for new versions")),
         ("speichern", "", N_("Saving and backups"), N_("Backup folder and how many backups are kept")),
         ("buecher", "", N_("Books"), N_("Chapters, blurbs and covers")),
         ("kapitel", "buecher", N_("Chapters"), N_("How chapter names are taken from the book text")),
@@ -114,8 +122,7 @@ class EinstellungsDialog(tk.Toplevel):
                "max_sub", "caps", "api_key", "modell", "kt_kosten", "kostenlos", "kt_min", "kt_max",
                "cover_max_hoehe", "cover_qualitaet", "cover_klein", "cover_openlibrary", "cover_google",
                "cover_min_hoehe", "cover_anzahl", "kobo_sicherungen_anzahl", "woerterbuch_quelle",
-               "auswerfen_erinnern", "kobo_suche_sekunden", "koreader_pfad", "update_pruefen", "update_repo",
-               "update_token", "update_vorab")
+               "auswerfen_erinnern", "kobo_suche_sekunden", "koreader_pfad", "update_pruefen", "update_vorab")
 
     def __init__(self, app, seite=None):
         super().__init__(app)
@@ -362,17 +369,11 @@ class EinstellungsDialog(tk.Toplevel):
             ttk.Button(z, text=_("Show again"), command=wieder).pack(side="left", padx=8)
         self._schalter(s, "update_vorab", _("Include pre-releases"),
                        _("Also offers releases marked as pre-release on GitHub (test versions)."))
-        self._abschnitt(s, _("Source"))
-        self._feld(s, "update_repo", _("GitHub repository (owner/name)"),
-                   _("Where the releases come from. Standard: kepfle-git/Bookbench."), 36)
-        self._feld(s, "update_token", _("GitHub token"),
-                   _("Only needed while the repository is private: a fine-grained token with read access to "
-                     "Contents of this repository. Empty for a public repository. Sent only to api.github.com, "
-                     "stored in plain text in the settings file."), 46, zeigen="•")
+        self._hinweis(s, _("The releases come from github.com/{repo}.").format(repo=ku.REPO))
 
     def _update_jetzt(self):
         e = dict(self.app.e)
-        for k in ("update_repo", "update_token", "update_vorab"):
+        for k in ("update_vorab",):
             try:
                 e[k] = self.v[k].get()
             except tk.TclError:
@@ -445,11 +446,55 @@ class EinstellungsDialog(tk.Toplevel):
         self._feld(s, "api_key", _("API key"), _("From console.anthropic.com. Empty: environment variable "
                                                     "ANTHROPIC_API_KEY. Stored in plain text in the settings file."),
                    46, zeigen="•")
-        self._feld(s, "modell", _("Model"), _("Haiku is enough for looking things up and is the cheapest. Other "
-                                               "model names from the Anthropic documentation work too."), 30)
+        ttk.Label(s, text=_("Model")).pack(anchor="w")
+        z = ttk.Frame(s)
+        z.pack(anchor="w", fill="x", padx=(22, 0))
+        werte = list(MODELLE)
+        if self.v["modell"].get() and self.v["modell"].get() not in werte:
+            werte.insert(0, self.v["modell"].get())
+        self.modell_wahl = ttk.Combobox(z, textvariable=self.v["modell"], values=werte, width=30)
+        self.modell_wahl.pack(side="left")
+        ttk.Button(z, text=_("Load list"), command=self._modelle_laden).pack(side="left", padx=6)
+        self.modell_hinweis = ttk.Label(s, text=_("Haiku is enough for looking things up and is the cheapest. "
+                                                  "Load list asks Anthropic with the API key which models there "
+                                                  "are; typing a name also works."),
+                                        style="Hinweis.TLabel", wraplength=520, justify="left")
+        self.modell_hinweis.pack(anchor="w", padx=(22, 0), pady=(2, 10))
         self._zahl(s, "kt_kosten", _("Estimated cost per book ($):"),
                    _("Only for the question before \"Look up all\"; the real cost depends on page length and "
                      "searches."), 0, 1, 0.005, "%.3f")
+
+    def _modelle_laden(self):
+        """Modelle über die API abfragen (models.list), im Hilfsthread."""
+        schluessel = self.v["api_key"].get().strip() or os.environ.get("ANTHROPIC_API_KEY", "")
+        if not schluessel:
+            self.modell_hinweis.configure(text=_("Enter the API key first."))
+            return
+        self.modell_hinweis.configure(text=_("Asking Anthropic …"))
+
+        def lauf():
+            try:
+                import anthropic
+                namen = [m.id for m in anthropic.Anthropic(api_key=schluessel).models.list(limit=100)]
+                fehler = None if namen else _("Anthropic returned no models.")
+            except ImportError:
+                namen, fehler = [], _("The package anthropic is missing (pip install anthropic).")
+            except Exception as e:                     # Netz, falscher Schlüssel
+                namen, fehler = [], _("Could not load the models ({fehler}).").format(fehler=e)
+            self.app._q.put(("rueckruf", lambda: self._modelle_geladen(namen, fehler)))
+        threading.Thread(target=lauf, daemon=True).start()
+
+    def _modelle_geladen(self, namen, fehler):
+        try:
+            if fehler:
+                self.modell_hinweis.configure(text=fehler)
+                return
+            self.modell_wahl.configure(values=namen)
+            self.modell_hinweis.configure(text=ngettext("{n} model loaded; the list is newest first.",
+                                                        "{n} models loaded; the list is newest first.",
+                                                        len(namen)).format(n=len(namen)))
+        except tk.TclError:                            # Dialog schon zu
+            pass
 
     def _profile_standard(self):
         self.profile = klappentext_profile({"websuche": True})
@@ -678,8 +723,7 @@ class EinstellungsDialog(tk.Toplevel):
         self.destroy()
         self.app.status.set(_("Settings imported from {datei}.").format(datei=p))
 
-    BEHALTEN = ("ordner", "letzte_ordner", "woerterbuecher", "woerterbuch_aktiv", "fenster", "api_key", "sprache",
-                "update_token")
+    BEHALTEN = ("ordner", "letzte_ordner", "woerterbuecher", "woerterbuch_aktiv", "fenster", "api_key", "sprache")
 
     def _zuruecksetzen(self):
         if not messagebox.askyesno(_("Reset"), _("Reset all settings to the defaults?"), parent=self):

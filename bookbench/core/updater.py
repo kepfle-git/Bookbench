@@ -4,7 +4,7 @@ updater.py - neue Versionen von Bookbench über die GitHub-Releases finden, heru
 einspielen. Keine Oberfläche (die steckt in ui/updates.py).
 
   installationsart()          "windows" (Installer), "linux" (install.sh) oder "quelltext"
-  version_tupel(text)         "v0.27" -> (0, 27); neuer(a, b)
+  version_tupel(text)         "v0.27" -> (0, 27); neuer(a, b); version_text("v1.1-beta1") -> "1.1-beta1"
   release_holen(repo, ...)    neueste Veröffentlichung als dict (Version, Text, Dateien, Seite)
   datei_fuer(release, art)    was für diese Installationsart heruntergeladen wird
   herunterladen(...)          Datei holen, mit Fortschritt; prüfen() gegen SHA256SUMS
@@ -19,10 +19,9 @@ Installation unter Linux (install.sh): ~/.local/share/bookbench/ mit programm/ (
 bookbench/ …), venv/ (Python mit den Zusatzpaketen) und installation.json. Getauscht wird nur
 programm/; venv/ und die Einstellungen (~/.config/bookbench) bleiben.
 
-Solange das Release-Repo privat ist, braucht die Abfrage einen GitHub-Token (Leserecht auf
-Contents). Der geht nur an api.github.com: bei einer Weiterleitung auf einen anderen Rechner
-(Dateien liegen auf objects.githubusercontent.com bzw. codeload.github.com, die Adressen tragen
-ihre eigene Berechtigung) fällt er weg.
+Das Release-Repo ist öffentlich und fest eingetragen (REPO); wer aus einem Fork aktualisieren
+will, ändert REPO. Ohne Anmeldung erlaubt GitHub 60 API-Abfragen pro Stunde und Adresse - für eine
+Suche pro Start reicht das. (Bis 1.0.3 gab es einen Token für das damals private Repo.)
 """
 import hashlib
 import json
@@ -78,17 +77,44 @@ def installationsart(programm=None):
 
 
 # -- Versionen --------------------------------------------------------------------------------
+# Vorabversionen: 1.1-alpha1 < 1.1-beta1 < 1.1-rc1 < 1.1 (seit 1.1-beta1; ältere Updater lesen
+# "1.1-beta1" als 1.1 - sie bieten die Vorabversion an, danach vergleicht schon der neue Code)
+VORAB = {"alpha": 0, "a": 0, "beta": 1, "b": 1, "rc": 2}
+_VERSION = re.compile(r"(\d+(?:\.\d+)*)(?:[-. ]?(alpha|beta|rc|a|b)(?![a-z])\.?(\d*))?", re.I)
+
+
 def version_tupel(text):
-    """'v0.27' / 'Bookbench 0.27.1' -> (0, 27, 1); ohne Zahlen ()."""
-    m = re.search(r"\d+(?:\.\d+)*", text or "")
-    return tuple(int(x) for x in m.group(0).split(".")) if m else ()
+    """'v0.27' / 'Bookbench 0.27.1' -> (0, 27, 1); ohne Zahlen (). Nur die Zahlen (ohne -beta1)."""
+    m = _VERSION.search(text or "")
+    return tuple(int(x) for x in m.group(1).split(".")) if m else ()
+
+
+def version_text(text):
+    """'v1.1-beta1' -> '1.1-beta1', 'v0.27' -> '0.27' (Anzeige, Vergleich mit VERSION)."""
+    m = _VERSION.search(text or "")
+    if not m:
+        return text or ""
+    return m.group(1) + (f"-{m.group(2).lower()}{m.group(3)}" if m.group(2) else "")
+
+
+def _schluessel(text, n):
+    """Vergleichsschlüssel: Zahlen auf n Stellen aufgefüllt, dann Stufe (Vorabversion vor fertig)."""
+    m = _VERSION.search(text or "")
+    zahlen = list(version_tupel(text))
+    zahlen += [0] * (n - len(zahlen))
+    if m and m.group(2):
+        return zahlen, (0, VORAB[m.group(2).lower()], int(m.group(3) or 0))
+    return zahlen, (1, 0, 0)
 
 
 def neuer(a, b):
-    """Ist Version a neuer als b? 0.27 > 0.26.3, 0.27 == 0.27.0."""
-    ta, tb = list(version_tupel(a)), list(version_tupel(b))
-    n = max(len(ta), len(tb))
-    return (ta + [0] * (n - len(ta))) > (tb + [0] * (n - len(tb)))
+    """Ist Version a neuer als b? 0.27 > 0.26.3, 0.27 == 0.27.0, 1.1 > 1.1-rc1 > 1.1-beta2 > 1.0.6."""
+    n = max(len(version_tupel(a)), len(version_tupel(b)))
+    return _schluessel(a, n) > _schluessel(b, n)
+
+
+def gleich(a, b):
+    return not neuer(a, b) and not neuer(b, a)
 
 
 # -- Netz -------------------------------------------------------------------------------------
@@ -97,14 +123,11 @@ class _OhneWeiterleitung(urllib.request.HTTPRedirectHandler):
         return None
 
 
-def _oeffnen(url, token="", accept="application/vnd.github+json", zeitlimit=ZEITLIMIT):
-    """GET mit Weiterleitungen von Hand: der Token geht nur an den Rechner der ersten Adresse."""
-    rechner = urllib.parse.urlparse(url).netloc
+def _oeffnen(url, accept="application/vnd.github+json", zeitlimit=ZEITLIMIT):
+    """GET mit Weiterleitungen von Hand (der Accept-Kopf soll mitgehen, die Anzahl ist begrenzt)."""
     oeffner = urllib.request.build_opener(_OhneWeiterleitung)
     for __ in range(6):
         kopf = {"User-Agent": AGENT, "Accept": accept}
-        if token and urllib.parse.urlparse(url).netloc == rechner:
-            kopf["Authorization"] = f"Bearer {token}"
         try:
             return oeffner.open(urllib.request.Request(url, headers=kopf), timeout=zeitlimit)
         except urllib.error.HTTPError as e:
@@ -118,18 +141,19 @@ def _oeffnen(url, token="", accept="application/vnd.github+json", zeitlimit=ZEIT
 def _fehlertext(e, repo):
     if isinstance(e, urllib.error.HTTPError):
         if e.code == 404:
-            return _("No release found for {repo} (the repository does not exist, has no release yet or is "
-                     "private: then a token is needed).").format(repo=repo)
-        if e.code in (401, 403):
-            return _("GitHub refused the request ({code}); check the token or try again later.").format(code=e.code)
+            return _("No release found for {repo} (the repository does not exist or has no release yet)."
+                     ).format(repo=repo)
+        if e.code in (401, 403, 429):
+            return _("GitHub refused the request ({code}), probably too many requests in the last hour; try "
+                     "again later.").format(code=e.code)
         return _("GitHub answered with error {code}.").format(code=e.code)
     grund = getattr(e, "reason", e)
     return _("No connection to GitHub ({fehler}).").format(fehler=grund)
 
 
-def _json(url, token, repo):
+def _json(url, repo):
     try:
-        with _oeffnen(url, token) as r:
+        with _oeffnen(url) as r:
             return json.loads(r.read().decode("utf-8"))
     except (urllib.error.URLError, OSError, ValueError) as e:
         raise UpdateFehler(_fehlertext(e, repo)) from e
@@ -137,7 +161,7 @@ def _json(url, token, repo):
 
 def _release(daten):
     tag = daten.get("tag_name") or ""
-    return {"version": ".".join(map(str, version_tupel(tag))) or tag, "tag": tag,
+    return {"version": version_text(tag), "tag": tag,
             "name": daten.get("name") or tag, "text": daten.get("body") or "",
             "datum": (daten.get("published_at") or "")[:10], "seite": daten.get("html_url") or "",
             "vorab": bool(daten.get("prerelease")), "zipball": daten.get("zipball_url") or "",
@@ -145,17 +169,21 @@ def _release(daten):
                          "browser": a.get("browser_download_url", "")} for a in daten.get("assets") or []]}
 
 
-def release_holen(repo=REPO, token="", vorab=False):
+def release_holen(repo=REPO, vorab=False):
     """Neueste Veröffentlichung (ohne Entwürfe; Vorabversionen nur mit vorab=True)."""
     repo = (repo or REPO).strip().strip("/")
     if not re.fullmatch(r"[\w.-]+/[\w.-]+", repo):
         raise UpdateFehler(_("Repository must look like owner/name, not \"{repo}\".").format(repo=repo))
     if not vorab:
-        return _release(_json(f"{API}/repos/{repo}/releases/latest", token, repo))
-    liste = [d for d in _json(f"{API}/repos/{repo}/releases?per_page=20", token, repo) if not d.get("draft")]
+        return _release(_json(f"{API}/repos/{repo}/releases/latest", repo))
+    liste = [d for d in _json(f"{API}/repos/{repo}/releases?per_page=20", repo) if not d.get("draft")]
     if not liste:
         raise UpdateFehler(_fehlertext(urllib.error.HTTPError("", 404, "", {}, None), repo))
-    return max((_release(d) for d in liste), key=lambda r: version_tupel(r["tag"]))
+    erg = None
+    for rel in (_release(d) for d in liste):
+        if erg is None or neuer(rel["version"], erg["version"]):
+            erg = rel
+    return erg
 
 
 def datei_fuer(release, art):
@@ -170,14 +198,14 @@ def datei_fuer(release, art):
     return None
 
 
-def herunterladen(url, ziel, token="", accept="application/octet-stream", fortschritt=None, abbruch=None):
+def herunterladen(url, ziel, accept="application/octet-stream", fortschritt=None, abbruch=None):
     """Lädt nach ziel (erst als .teil, dann umbenannt). fortschritt(geladen, gesamt) wird
     zwischendurch aufgerufen, abbruch() -> True bricht ab."""
     ziel = Path(ziel)
     ziel.parent.mkdir(parents=True, exist_ok=True)
     teil = ziel.with_name(ziel.name + ".teil")
     try:
-        with _oeffnen(url, token, accept, zeitlimit=60) as r, open(teil, "wb") as f:
+        with _oeffnen(url, accept, zeitlimit=60) as r, open(teil, "wb") as f:
             gesamt = int(r.headers.get("Content-Length") or 0)
             geladen = 0
             while True:
@@ -208,13 +236,13 @@ def sha256(pfad):
     return h.hexdigest()
 
 
-def summen_holen(release, token=""):
+def summen_holen(release):
     """{dateiname: sha256} aus der Datei SHA256SUMS der Veröffentlichung, {} ohne."""
     d = next((d for d in release["dateien"] if d["name"] == SUMMEN), None)
     if not d:
         return {}
     try:
-        with _oeffnen(d["url"], token, "application/octet-stream") as r:
+        with _oeffnen(d["url"], "application/octet-stream") as r:
             text = r.read().decode("utf-8", "replace")
     except (urllib.error.URLError, OSError) as e:
         raise UpdateFehler(_("Could not load the checksums ({fehler}).").format(fehler=getattr(e, "reason", e))) from e
@@ -278,7 +306,7 @@ def linux_einspielen(zip_pfad, programm=None, erwartet=""):
         if not (wurzel / "start.py").is_file() or not (wurzel / "bookbench" / "app.py").is_file():
             raise UpdateFehler(_("The archive does not contain Bookbench (start.py and bookbench/ are missing)."))
         version = _version_im_ordner(wurzel)
-        if erwartet and version and version_tupel(version) != version_tupel(erwartet):
+        if erwartet and version and not gleich(version, erwartet):
             raise UpdateFehler(_("The archive contains version {ist} instead of {soll}.").format(
                 ist=version, soll=erwartet))
         if wurzel != neu:                                # Inhalt eine Ebene hoch

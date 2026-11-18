@@ -52,6 +52,8 @@ from bookbench.core import blurbs                       # noqa: E402
 from bookbench.core import library as kd             # noqa: E402
 from bookbench.ui import settings as kei    # noqa: E402
 from bookbench.ui import help as khi            # noqa: E402
+from bookbench.ui import list_filter as klf    # noqa: E402
+from bookbench.ui import table_columns as ktc  # noqa: E402
 from bookbench.ui import icons as ksy          # noqa: E402
 from bookbench.ui import updates as kup        # noqa: E402
 from bookbench.preview import emulator as kv          # noqa: E402
@@ -67,8 +69,9 @@ OHNEZEILE = {"hell": "#fbeec9", "dunkel": "#4f4220"}      # nur Nummer, kein Nam
 kst.TEXTE.update(rot=_("changed, not yet applied"), gelb=_("applied, not yet saved"),
                  gruen=_("saved (since opening)"))
 
-FILTER = (_("All books"), _("Chapters: suggestions"), _("Chapters: questionable"), _("No blurb"), _("Changed"),
-          _("Chapters: some without names"), _("No series in the EPUB"), _("No cover"), _("Small cover"))
+# Filter der Bibliothek: nur noch allgemeine; die Filter nach Kapiteln, Klappentexten und Covern
+# stehen seit 1.0.5 über den Listen der Bereiche (_kap_filter, _kt_filter, CoverBereich.FILTER)
+FILTER = (_("All books"), _("Changed"), _("Unreadable files"), _("No series in the EPUB"))
 SPALTEN = (("titel", _("Title"), 300), ("reihe", _("Series"), 200), ("nummer", _("No."), 46), ("autor", _("Author"), 150),
            ("kapitel", _("Chapters"), 150), ("klappentext", _("Blurb"), 100), ("cover", _("Cover"), 90))
 
@@ -273,6 +276,9 @@ class App(tk.Tk):
         a.add_separator()
         a.add_command(label=_("Sidebar on/off"), accelerator=_("Ctrl+B"), command=lambda: self.navi.umschalten())
         a.add_checkbutton(label=_("Status in the lists"), variable=self.status_liste, command=self._streifen_umschalten)
+        sp = tk.Menu(a, tearoff=False)
+        sp.configure(postcommand=lambda: self.tabellen_spalten.menue_fuellen(sp))
+        a.add_cascade(label=_("Library columns"), menu=sp)
         a.add_checkbutton(label="Cover", variable=self.cover_an, command=self._cover_umschalten)
         a.add_checkbutton(label="Tooltips", variable=self.tooltips_an,
                           command=lambda: self.e.__setitem__("tooltips", self.tooltips_an.get()))
@@ -311,15 +317,18 @@ class App(tk.Tk):
     def _werkzeugleiste(self):
         wz = self._wz_rahmen = ttk.Frame(self, padding=(4, 3))
         wz.pack(side="top", fill="x")
-        self._wz_links, self._wz_bereich, self._wz_rechts = ttk.Frame(wz), ttk.Frame(wz), ttk.Frame(wz)
-        self._wz_links.pack(side="left")
+        # Designleitfaden 2.: links die Aktionen des Bereichs, rechts die globalen Knöpfe - Öffnen, Neu
+        # einlesen und Speichern gelten für alle Bereiche und stehen deshalb rechts, vor Hilfe (seit 1.0.4)
+        self._wz_bereich, self._wz_rechts = ttk.Frame(wz), ttk.Frame(wz)
         self._wz_bereich.pack(side="left")
         self._wz_rechts.pack(side="right")
         self._wz = []
-        self._wz_knopf(self._wz_links, "oeffnen", _("Open"), self.ordner_oeffnen, _("Open books folder (Ctrl+O)"))
-        self._wz_knopf(self._wz_links, "neu_laden", _("Reload"), self.neu_einlesen, _("Reload folder (F5)"))
-        self._wz_knopf(self._wz_links, "speichern", _("Save"), self.speichern,
+        ttk.Separator(self._wz_rechts, orient="vertical").pack(side="left", fill="y", padx=6, pady=2)
+        self._wz_knopf(self._wz_rechts, "oeffnen", _("Open"), self.ordner_oeffnen, _("Open books folder (Ctrl+O)"))
+        self._wz_knopf(self._wz_rechts, "neu_laden", _("Reload"), self.neu_einlesen, _("Reload folder (F5)"))
+        self._wz_knopf(self._wz_rechts, "speichern", _("Save"), self.speichern,
                        _("Write applied changes to the files, with backup (Ctrl+S)"))
+        ttk.Separator(self._wz_rechts, orient="vertical").pack(side="left", fill="y", padx=6, pady=2)
         self._wz_knopf(self._wz_rechts, "hilfe", _("Help"), self.hilfe, _("Help for the current area (F1)"))
 
     def _wz_knopf(self, eltern, symbol, text, befehl, tipp):
@@ -347,7 +356,6 @@ class App(tk.Tk):
         for w in self._wz_bereich.winfo_children():
             self._wz = [(k, s) for k, s in self._wz if k is not w]
             w.destroy()
-        ttk.Separator(self._wz_bereich, orient="vertical").pack(side="left", fill="y", padx=6, pady=2)
         if name == "bibliothek":
             self._wz_knopf(self._wz_bereich, "uebernehmen", _("From Calibre"), self.calibre_uebernehmen,
                            _("Take series, number and blurb from metadata.calibre where the EPUB lacks them"))
@@ -424,8 +432,12 @@ class App(tk.Tk):
         self._rahmen_liste.append(r)
         return r
 
-    def _buchliste(self, eltern, auswahl, status_fn=None):
-        """Schmale Bücherliste mit Statusstreifen und Scrollbalken in einem Rahmen."""
+    def _buchliste(self, eltern, auswahl, status_fn=None, streifen=True, filter=None, geaendert=None, kopf=None):
+        """Schmale Bücherliste mit Scrollbalken in einem Rahmen, mit Statusstreifen
+        (streifen=False: ohne, z. B. in der Vorschau). Darüber die Such-/Filterzeile
+        (list_filter.ListenFilter, als lb.filter): filter = [(kennung, Text, Prüfung)],
+        geaendert() füllt die Liste neu, kopf = Label "Bücher:" darüber."""
+        lf = klf.ListenFilter(eltern, filter or [("alle", "All books", None)], geaendert or (lambda: None), kopf)
         r = self._listenrahmen(eltern)
         r.pack(fill="both", expand=True)
         lb = tk.Listbox(r, width=32, borderwidth=0, highlightthickness=0, exportselection=False,
@@ -433,13 +445,40 @@ class App(tk.Tk):
         sb = ttk.Scrollbar(r, orient="vertical", command=lb.yview)
         sb.pack(side="right", fill="y")
         lb.pack(side="left", fill="both", expand=True)
-        streifen = kst.StatusStreifen(self, lb, r, status_fn or self._status_von_name)
-        lb.configure(yscrollcommand=lambda *a: (sb.set(*a), streifen.zeichnen()))
-        if self.status_liste.get():
-            streifen.einpacken()
         lb.bind("<<ListboxSelect>>", lambda e: auswahl())
-        self._streifen.append(streifen)
+        lb.filter = lf
+        if not streifen:
+            lb.configure(yscrollcommand=sb.set)
+            return lb
+        st = kst.StatusStreifen(self, lb, r, status_fn or self._status_von_name)
+        lb.configure(yscrollcommand=lambda *a: (sb.set(*a), st.zeichnen()))
+        if self.status_liste.get():
+            st.einpacken()
+        self._auswahl_mitzeichnen(lb, st)
+        self._streifen.append(st)
         return lb
+
+    @staticmethod
+    def _auswahl_mitzeichnen(lb, st):
+        """Der Streifen zeichnet die Auswahlmarkierung selbst und erfährt nur über
+        <<ListboxSelect>> davon - das kommt bei einer Auswahl aus dem Programm heraus
+        (selection_set beim Bereichswechsel usw.) nicht, dann blieb die alte Markierung
+        im Streifen stehen. Hier für genau diese Liste umgeleitet (keller_streifen bleibt)."""
+        def nachher(echt):
+            def neu(*a):
+                erg = echt(*a)
+                try:
+                    st.canvas.after_idle(st.zeichnen)
+                except tk.TclError:
+                    pass
+                return erg
+            return neu
+        for name in ("selection_set", "selection_clear", "select_set", "select_clear", "delete", "insert"):
+            setattr(lb, name, nachher(getattr(lb, name)))
+        # Auf einer verdeckten Seite hat die Liste noch keine Zeilenmaße (bbox None): beim Sichtbarwerden
+        # neu zeichnen, sonst fehlt die Markierung im Streifen bis zum nächsten Klick
+        for w in (lb, st.canvas):
+            w.bind("<Map>", lambda e: st.canvas.after_idle(st.zeichnen), add="+")
 
     def _status_von_name(self, name):
         b = self._listen_buch.get(name)
@@ -458,14 +497,6 @@ class App(tk.Tk):
         if b.calibre and (b.calibre.get("comments") or "").strip():
             return _("no blurb (Calibre has one: From Calibre)")
         return _("no blurb")
-
-    def _kt_listenfarben(self):
-        """Bücher ohne Klappentext in der Klappentext-Liste gelblich hinterlegen."""
-        farbe = OHNEZEILE["dunkel" if self.dark_mode.get() else "hell"]
-        for i, name in enumerate(self.kt_liste.get(0, "end")):
-            b = self._listen_buch.get(name)
-            fehlt = b is not None and not b.fehler and self._kt_fehlt(b)
-            self.kt_liste.itemconfigure(i, background=farbe if fehlt else "")
 
     def _status_von_iid(self, iid):
         b = self.nach_schluessel.get(iid)
@@ -492,13 +523,21 @@ class App(tk.Tk):
         r = self._listenrahmen(s)
         r.pack(fill="both", expand=True)
         t = self.tabelle = ttk.Treeview(r, columns=[c for c, __, __ in SPALTEN], show="headings", selectmode="browse")
-        breiten = self.e.get("spalten", {})
         for c, text, w in SPALTEN:
             t.heading(c, text=text, command=lambda c=c: self._sortieren(c))
-            t.column(c, width=breiten.get(c, w), minwidth=40, stretch=c == "titel",
-                     anchor="e" if c == "nummer" else "w")
+            t.column(c, anchor="e" if c == "nummer" else "w")
         sb = ttk.Scrollbar(r, orient="vertical", command=t.yview)
         sb.pack(side="right", fill="y")
+        # waagrecht nur, wenn die Spalten breiter sind als das Fenster (keine Spalte dehnt sich)
+        xsb = self.tabelle_xsb = ttk.Scrollbar(r, orient="horizontal", command=t.xview)
+
+        def waagrecht(lo, hi):
+            xsb.set(lo, hi)
+            if float(lo) <= 0 and float(hi) >= 1:
+                xsb.pack_forget()
+            elif not xsb.winfo_ismapped():
+                xsb.pack(side="bottom", fill="x", before=t)
+        t.configure(xscrollcommand=waagrecht)
         t.pack(side="left", fill="both", expand=True)
         self.tabellen_streifen = kst.StatusStreifen(self, t, r, self._status_von_iid,
                                                     lambda iid: self.nach_schluessel[iid].name)
@@ -506,7 +545,9 @@ class App(tk.Tk):
         if self.status_liste.get():
             self.tabellen_streifen.einpacken()
         self._streifen.append(self.tabellen_streifen)
-        t.bind("<Double-1>", lambda e: self._buch_oeffnen())
+        self.tabellen_spalten = ktc.Spalten(self, t, SPALTEN)
+        self.tabellen_spalten.anwenden()
+        t.bind("<Double-1>", lambda e: self._buch_oeffnen() if t.identify_region(e.x, e.y) == "cell" else None)
         t.bind("<Return>", lambda e: self._buch_oeffnen())
         t.bind("<<TreeviewSelect>>", lambda e: self._tabelle_auswahl(), add="+")
 
@@ -515,26 +556,23 @@ class App(tk.Tk):
         if such and such not in " ".join((b.titel, b.reihe, b.autor)).casefold():
             return False
         if f == FILTER[1]:
-            return bool(b.vorschlag)
-        if f == FILTER[2]:
-            return bool(b.warnung())
-        if f == FILTER[3]:
-            return not (b.klappentext_neu if b.klappentext_neu is not None else b.klappentext)
-        if f == FILTER[4]:
             return b.stand() is not None
-        if f == FILTER[5]:
-            return b.einzelne_ohne_namen()
-        if f == FILTER[6]:
+        if f == FILTER[2]:
+            return bool(b.fehler)
+        if f == FILTER[3]:
             return not b.reihe_datei[0] and b.reihe_neu is None
-        if f == FILTER[7]:
-            return self.cover.fehlt(b)
-        if f == FILTER[8]:
-            return self.cover.klein(b)
         return True
 
-    def _sortieren(self, spalte):
+    def _sortieren(self, spalte, umgekehrt=None):
+        """Klick auf den Kopf: nach der Spalte sortieren, nochmal = umgekehrt (umgekehrt=True/False:
+        fest, aus dem Kontextmenü). Kein Sortieren direkt nach dem Verschieben einer Spalte."""
+        if umgekehrt is None and not self.tabellen_spalten.sortieren_erlaubt():
+            return
         alt, rueck = self.e.get("sortierung", ["reihe", False])
-        self.e["sortierung"] = [spalte, not rueck if alt == spalte else False]
+        if umgekehrt is None:
+            umgekehrt = not rueck if alt == spalte else False
+        self.e["sortierung"] = [spalte, umgekehrt]
+        self.tabellen_spalten.kopf_beschriften()
         self._tabelle_fuellen()
 
     def _sortiert(self, buecher):
@@ -543,6 +581,8 @@ class App(tk.Tk):
             schl = lambda b: (b.reihe.casefold() or "￿", _nr(b.nummer), b.titel.casefold())
         elif spalte == "nummer":
             schl = lambda b: (_nr(b.nummer), b.titel.casefold())
+        elif spalte == "cover":
+            schl = lambda b: (self.cover.hoehe(b), b.titel.casefold())       # nach Pixelhöhe, nicht als Text
         else:
             schl = lambda b: (str(self._zelle(b, spalte)).casefold(), b.titel.casefold())
         return sorted(buecher, key=schl, reverse=rueck)
@@ -602,6 +642,13 @@ class App(tk.Tk):
             self.woerterbuch.suchfeld.focus_set()
             self.woerterbuch.suchfeld.select_range(0, "end")
             return
+        bereich = self._bereich()
+        liste = {"kapitel": self.kap_liste, "klappentexte": self.kt_liste,
+                 "cover": getattr(getattr(self, "cover", None), "liste", None),
+                 "vorschau": getattr(getattr(self, "vorschau", None), "liste", None)}.get(bereich)
+        if liste is not None and getattr(liste, "filter", None):
+            liste.filter.fokus()
+            return
         self.nb.select(self.seite_bibliothek)
         self.suchfeld.focus_set()
         self.suchfeld.select_range(0, "end")
@@ -611,8 +658,10 @@ class App(tk.Tk):
         s = self.seite_kapitel = self._seite(_("Chapters"), "kapitel")
         links = ttk.Frame(s)
         links.pack(side="left", fill="y")
-        ttk.Label(links, text=_("Books:")).pack(anchor="w")
-        self.kap_liste = self._buchliste(links, self._kapitel_anzeigen)
+        kopf = ttk.Label(links, text=_("Books:"))
+        kopf.pack(anchor="w")
+        self.kap_liste = self._buchliste(links, self._kapitel_anzeigen, filter=self._kap_filter(),
+                                         geaendert=lambda: self._liste_neu(self.kap_liste), kopf=kopf)
         rechts = ttk.Frame(s)
         rechts.pack(side="left", fill="both", expand=True, padx=(10, 0))
         self.kap_cover, self.kap_kopf, self.kap_info = self._kopfzeile(rechts)
@@ -737,6 +786,55 @@ class App(tk.Tk):
                 self._linien_teil[zeichen] = text
         return "".join(self._linien_teil[z] for z in teile)
 
+    # ================================================================ Listen und Filter
+    def _kap_filter(self):
+        return [("alle", N_("All books"), None),
+                ("vorschlaege", N_("With suggestions"), lambda b: bool(b.vorschlag)),
+                ("fragwuerdig", N_("Questionable names"), lambda b: bool(b.warnung())),
+                ("ohne_namen", N_("Some without names"), lambda b: b.einzelne_ohne_namen()),
+                ("geaendert", N_("Changed chapters"), lambda b: bool(
+                    b.neu or b.entwurf is not None or b.tiefen_neu is not None or b.tiefen_entwurf is not None))]
+
+    def _kt_filter(self):
+        return [("alle", N_("All books"), None),
+                ("ohne", N_("No blurb"), lambda b: bool(self._kt_fehlt(b))),
+                ("calibre", N_("Only in Calibre"), lambda b: not self._kt_aktueller_text(b).strip()
+                 and bool(b.calibre and (b.calibre.get("comments") or "").strip())),
+                ("geaendert", N_("Changed blurb"), lambda b: b.klappentext_neu is not None
+                 or b.klappentext_entwurf is not None)]
+
+    def _links_sortiert(self):
+        """Bücher wie in den Listen links: nach Reihe, Nummer, Titel - wie im Bookshelf."""
+        return sorted(self.buecher, key=lambda b: (b.reihe.casefold() or "\uffff", _nr(b.nummer),
+                                                   b.titel.casefold()))
+
+    def _liste_fuellen(self, liste, sortiert, vorher, anzeige):
+        """Füllt eine schmale Bücherliste nach ihrem Filter und wählt wieder das bisherige
+        Buch (oder das nächste passende, list_filter.nachfolger); anzeige() zeigt es rechts."""
+        lf = liste.filter
+        sichtbar = [b for b in sortiert if lf.passt(b)]
+        liste.delete(0, "end")
+        for b in sichtbar:
+            liste.insert("end", self._anzeigename(b))
+        lf.anzahl(len(sichtbar), len(sortiert))
+        ziel = klf.nachfolger(sortiert, vorher, lf.passt) if vorher else None
+        if ziel:
+            self._auswaehlen(liste, ziel)
+        elif vorher and sichtbar:
+            # das bisherige ist weggefiltert und es gibt nichts darunter/darüber - erstes nehmen
+            self._auswaehlen(liste, sichtbar[0])
+        else:
+            anzeige()
+
+    def _liste_neu(self, liste):
+        """Suche oder Filter einer Liste geändert."""
+        anzeige = self._kapitel_anzeigen if liste is self.kap_liste else self._klappentext_anzeigen
+        if liste is self.kap_liste:
+            self._bearbeiter_weg(speichern=True)
+        self._liste_fuellen(liste, self._links_sortiert(), self._aktuelles_buch(liste), anzeige)
+        for s in self._streifen:
+            s.zeichnen()
+
     def _aktuelles_buch(self, liste):
         sel = liste.curselection()
         return self._listen_buch.get(liste.get(sel[0])) if sel else None
@@ -746,7 +844,13 @@ class App(tk.Tk):
         return getattr(b, "titel_anzeige", None) or b.name
 
     def _auswaehlen(self, liste, buch):
+        """Buch in der Liste wählen und rechts zeigen. Ist es weggefiltert (z. B. Doppelklick in
+        der Bibliothek), werden Suche und Filter dieser Liste zurückgesetzt."""
         namen = list(liste.get(0, "end"))
+        lf = getattr(liste, "filter", None)
+        if self._anzeigename(buch) not in namen and lf and lf.aktiv() and buch in self.buecher:
+            lf.zuruecksetzen()
+            namen = list(liste.get(0, "end"))
         if self._anzeigename(buch) in namen:
             i = namen.index(self._anzeigename(buch))
             liste.selection_clear(0, "end")
@@ -972,8 +1076,11 @@ class App(tk.Tk):
         s = self.seite_klappentext = self._seite(_("Blurbs"), "klappentext")
         links = ttk.Frame(s)
         links.pack(side="left", fill="y")
-        ttk.Label(links, text=_("Books:")).pack(anchor="w")
-        self.kt_liste = self._buchliste(links, self._klappentext_anzeigen, self._status_klappentext)
+        kopf = ttk.Label(links, text=_("Books:"))
+        kopf.pack(anchor="w")
+        self.kt_liste = self._buchliste(links, self._klappentext_anzeigen, self._status_klappentext,
+                                        filter=self._kt_filter(), geaendert=lambda: self._liste_neu(self.kt_liste),
+                                        kopf=kopf)
         rechts = ttk.Frame(s)
         rechts.pack(side="left", fill="both", expand=True, padx=(10, 0))
         self.kt_cover, self.kt_kopf, self.kt_info = self._kopfzeile(rechts)
@@ -1413,33 +1520,22 @@ class App(tk.Tk):
                 self.kap_tabelle.see(sel[0])
         for s in self._streifen:
             s.zeichnen()
-        self._kt_listenfarben()
-        self.cover.listenfarben()
         self._zaehler()
 
     def _alles_neu_zeichnen(self):
         alt = {liste: self._aktuelles_buch(liste) for liste in (self.kap_liste, self.kt_liste)}
         self._listen_buch = {self._anzeigename(b): b for b in self.buecher}
-        # Listen links immer nach Reihe, Nummer, Titel - wie im Bookshelf
-        sortiert = sorted(self.buecher, key=lambda b: (b.reihe.casefold() or "￿", _nr(b.nummer),
-                                                       b.titel.casefold()))
+        sortiert = self._links_sortiert()
         for liste, anzeige in ((self.kap_liste, self._kapitel_anzeigen), (self.kt_liste, self._klappentext_anzeigen)):
             vorher = alt[liste]
-            liste.delete(0, "end")
-            for b in sortiert:
-                liste.insert("end", self._anzeigename(b))
             alt_b = self.nach_schluessel.get(vorher.schluessel) if vorher else None
-            if alt_b:
-                self._auswaehlen(liste, alt_b)
-            else:
-                anzeige()
+            self._liste_fuellen(liste, sortiert, alt_b, anzeige)
         self.cover.liste_fuellen(sortiert)
         self._tabelle_fuellen()
         if getattr(self, "vorschau", None) and self._bereich() == "vorschau":
             self.vorschau.liste_fuellen()
         for s in self._streifen:
             s.zeichnen()
-        self._kt_listenfarben()
         self._zaehler()
 
     def _zaehler(self):
@@ -1448,9 +1544,10 @@ class App(tk.Tk):
         ohne = sum(1 for b in self.buecher if not self._kt_aktueller_text(b).strip())
         self.nb.tab(self.seite_bibliothek, text=_("Library ({n})").format(n=n) if n else _("Library"))
         self.nb.tab(self.seite_kapitel, text=_("Chapters ({n} ⚠)").format(n=warn) if warn else _("Chapters"))
-        self.nb.tab(self.seite_klappentext, text=_("Blurbs ({n} missing)").format(n=ohne) if ohne and n else _("Blurbs"))
+        # wie Kapitel: Zahl mit ⚠ (die Listen zeigen das ⚠ im Streifen, ohne farbige Zeilen)
+        self.nb.tab(self.seite_klappentext, text=_("Blurbs ({n} ⚠)").format(n=ohne) if ohne and n else _("Blurbs"))
         ohne_cover = sum(1 for b in self.buecher if self.cover.fehlt(b))
-        self.nb.tab(self.cover.seite, text=_("Covers ({n} missing)").format(n=ohne_cover) if ohne_cover else _("Covers"))
+        self.nb.tab(self.cover.seite, text=_("Covers ({n} ⚠)").format(n=ohne_cover) if ohne_cover else _("Covers"))
         offen = any(b.stand() in ("rot", "gelb") for b in self.buecher)
         self.title(f"{PROGRAMM} {VERSION}" + (" *" if offen else ""))
 
@@ -1515,8 +1612,6 @@ class App(tk.Tk):
             t.tag_configure("warn", background=WARNZEILE[modus])
             t.tag_configure("ohne", background=OHNEZEILE[modus])
         self.navi.farben(dunkel)
-        if hasattr(self, "kt_liste"):
-            self._kt_listenfarben()
         if hasattr(self, "kobo"):
             self.kobo.farben(modus, WARNZEILE)
         if hasattr(self, "woerterbuch"):
@@ -1643,7 +1738,7 @@ class App(tk.Tk):
 
     def _einstellungen_sichern(self):
         self.e["fenster"] = self.geometry().split("+")[0]
-        self.e["spalten"] = {c: self.tabelle.column(c, "width") for c, __, __ in SPALTEN}
+        self.e["spalten"] = self.tabellen_spalten.breiten()
         try:
             kei.speichern(self._e_zum_speichern())
         except OSError:

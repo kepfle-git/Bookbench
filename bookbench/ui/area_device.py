@@ -483,7 +483,11 @@ class KoboBereich:
             if not ok:
                 raise RuntimeError(_("Ejecting failed: {meldung}. Eject in the file manager.").format(meldung=meldung))
             self.geschrieben = False
-            return _("E-reader ejected, the cable can come off.")
+            text = _("E-reader ejected, the cable can come off.")
+            if auf_geraet:
+                text += " " + _("The library is on the e-reader: it stays visible, but saving only works again "
+                                "after connecting it again.")
+            return text
         a.hintergrund(_("Eject"), arbeit, nachher=lambda: self.suchen(still=True))
 
     def vermerken(self, pfad):

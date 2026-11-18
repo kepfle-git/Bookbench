@@ -1416,6 +1416,21 @@ class App(tk.Tk):
                         + (" " + _("{n} not readable.").format(n=fehler) if fehler else "")
                         + cal_text + hinweis)
 
+    def _nicht_erreichbar(self, buecher):
+        """Text, wenn der Ordner bzw. Bücher daraus nicht mehr da sind (E-Reader ausgeworfen oder
+        Kabel gezogen), sonst None. Die Änderungen bleiben im Speicher; nach dem erneuten Anstecken
+        (gleicher Pfad) geht Speichern wieder."""
+        fehlen = [b for b in buecher if not b.pfad.is_file()]
+        if not fehlen and (not self.ordner or Path(self.ordner).is_dir()):
+            return None
+        text = _("The folder {ordner} is no longer reachable (e-reader ejected or unplugged?). Nothing was saved.") \
+            .format(ordner=self.ordner) if self.ordner and not Path(self.ordner).is_dir() else \
+            ngettext("{n} book file is missing, e.g. {datei}. Nothing was saved.",
+                     "{n} book files are missing, e.g. {datei}. Nothing was saved.", len(fehlen)) \
+            .format(n=len(fehlen), datei=fehlen[0].pfad)
+        return text + "\n\n" + _("The changes are kept as long as Bookbench is open. Connect the e-reader "
+                                  "again and save, or discard them with Reload.")
+
     def speichern(self):
         self._bearbeiter_weg(speichern=True)
         faellig = [b for b in self.buecher if b.neu or b.klappentext_neu is not None or b.reihe_neu is not None
@@ -1425,6 +1440,11 @@ class App(tk.Tk):
             self.status.set(_("Nothing to save.") + (" " + ngettext("{n} book with changes not yet applied.",
                                                                    "{n} books with changes not yet applied.", rot)
                                                      .format(n=rot) if rot else ""))
+            return
+        grund = self._nicht_erreichbar(faellig)
+        if grund:
+            messagebox.showwarning(_("Save"), grund, parent=self)
+            self.status.set(_("Not saved: the books are not reachable."))
             return
         ok, fehler = 0, []
         for b in faellig:

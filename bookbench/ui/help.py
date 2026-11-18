@@ -19,7 +19,7 @@ import keller_theme as kth
 from bookbench.i18n import _
 
 PROGRAMM = "Bookbench"
-VERSION = "1.1-beta1"
+VERSION = "1.1"
 
 # (Elternthema, Kennung, Titel, Text). Übersetzt beim Import. Text: **fett**, Aufzählungen mit "-",
 # [[kennung]] = Verweis.
@@ -427,6 +427,9 @@ The preview can take its profile from a backup too ([[vorschau_profil]]).
 **Eject** unmounts the e-reader (Linux: udisksctl, Windows: like "Eject" in Explorer). Then the cable can come off.
 
 If something was written to the e-reader in this session (backup restored, dictionary copied, books saved), the program reminds you when quitting. The reminder can be switched off: [[einst_kobo]].
+
+**Library on the e-reader**
+If the opened library is on the e-reader, Bookbench asks before ejecting when there are unsaved changes. After ejecting (or pulling the cable) the library stays visible, but saving is refused until the e-reader is connected again; the changes stay in memory as long as Bookbench is open. **Reload** discards them.
 """)),
     ("bereiche", "vorschau", _("Preview"), _("""
 Shows a book in the **desktop KOReader** as it looks on the device: font, margins, headers and footers from Bookends, style tweaks and patches. Only on Linux and macOS; there is no official KOReader for Windows, so the area is missing there.

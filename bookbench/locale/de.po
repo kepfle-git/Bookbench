@@ -51,7 +51,7 @@ msgstr "Nr."
 msgid "Author"
 msgstr "Autor"
 
-#: app.py:76 app.py:658 app.py:1546 help.py:192 help.py:537 settings.py:106
+#: app.py:76 app.py:658 app.py:1566 help.py:192 help.py:540 settings.py:106
 msgid "Chapters"
 msgstr "Kapitel"
 
@@ -83,7 +83,7 @@ msgstr "Zuletzt geöffnet"
 msgid "Reload"
 msgstr "Neu einlesen"
 
-#: app.py:198 app.py:329 app.py:1452
+#: app.py:198 app.py:329 app.py:1446 app.py:1472
 msgid "Save"
 msgstr "Speichern"
 
@@ -95,7 +95,7 @@ msgstr "Strg+S"
 msgid "Settings …"
 msgstr "Einstellungen …"
 
-#: app.py:202 app.py:1753 app.py:1758
+#: app.py:202 app.py:1773 app.py:1778
 msgid "Quit"
 msgstr "Beenden"
 
@@ -187,7 +187,7 @@ msgstr "Sicherung zurückspielen …"
 msgid "Copy dictionary"
 msgstr "Wörterbuch kopieren"
 
-#: app.py:231 area_device.py:152 area_device.py:474 area_device.py:487
+#: app.py:231 area_device.py:152 area_device.py:474 area_device.py:491
 msgid "Eject"
 msgstr "Auswerfen"
 
@@ -251,7 +251,7 @@ msgstr "Aufbau (Schritte aus dem Wiki)"
 msgid "Dictionary"
 msgstr "Wörterbuch"
 
-#: app.py:259 area_device.py:33 help.py:374 help.py:585 settings.py:114 settings.py:578
+#: app.py:259 area_device.py:33 help.py:374 help.py:588 settings.py:114 settings.py:578
 msgid "E-reader"
 msgstr "E-Reader"
 
@@ -283,7 +283,7 @@ msgstr "KOReader wählen …"
 msgid "Open profile folder"
 msgstr "Profilordner öffnen"
 
-#: app.py:272 area_preview.py:52 area_preview.py:396 help.py:431 help.py:598 settings.py:115
+#: app.py:272 area_preview.py:52 area_preview.py:396 help.py:434 help.py:601 settings.py:115
 msgid "Preview"
 msgstr "Vorschau"
 
@@ -319,7 +319,7 @@ msgstr "Spalten der Bibliothek"
 msgid "View"
 msgstr "Ansicht"
 
-#: app.py:287 app.py:293 app.py:332 help.py:694 settings.py:146
+#: app.py:287 app.py:293 app.py:332 help.py:697 settings.py:146
 msgid "Help"
 msgstr "Hilfe"
 
@@ -458,11 +458,11 @@ msgstr "kein Klappentext (in Calibre vorhanden: Aus Calibre)"
 msgid "no blurb"
 msgstr "kein Klappentext"
 
-#: app.py:508 app.py:1545 help.py:144 settings.py:334
+#: app.py:508 app.py:1565 help.py:144 settings.py:334
 msgid "Library"
 msgstr "Bibliothek"
 
-#: app.py:511 area_dictionary.py:123 help.py:703 list_filter.py:65
+#: app.py:511 area_dictionary.py:123 help.py:706 list_filter.py:65
 msgid "Search:"
 msgstr "Suchen:"
 
@@ -656,7 +656,7 @@ msgstr "auf die Vorschläge zurückgesetzt."
 msgid "original restored, not yet applied."
 msgstr "Original hergestellt, noch nicht übernommen."
 
-#: app.py:1076 app.py:1548 help.py:231 help.py:543 settings.py:107 settings.py:405
+#: app.py:1076 app.py:1568 help.py:231 help.py:546 settings.py:107 settings.py:405
 msgid "Blurbs"
 msgstr "Klappentexte"
 
@@ -702,7 +702,7 @@ msgstr "Nachschlagen: im Bereich Klappentexte ein Buch auswählen."
 msgid "All books have a blurb."
 msgstr "Alle Bücher haben einen Klappentext."
 
-#: app.py:1232 app.py:1368 app.py:1468 area_covers.py:323 area_covers.py:353 area_device.py:354
+#: app.py:1232 app.py:1368 app.py:1488 area_covers.py:323 area_covers.py:353 area_device.py:354
 msgid "Still running: {arbeit}."
 msgstr "Läuft noch: {arbeit}."
 
@@ -835,77 +835,103 @@ msgstr[1] "{n} Bücher eingelesen."
 msgid "{n} not readable."
 msgstr "{n} nicht lesbar."
 
-#: app.py:1425
+#: app.py:1426
+msgid ""
+"The folder {ordner} is no longer reachable (e-reader ejected or "
+"unplugged?). Nothing was saved."
+msgstr ""
+"Der Ordner {ordner} ist nicht mehr erreichbar (E-Reader ausgeworfen oder "
+"abgezogen?). Es wurde nichts gespeichert."
+
+#: app.py:1428
+msgid "{n} book file is missing, e.g. {datei}. Nothing was saved."
+msgid_plural "{n} book files are missing, e.g. {datei}. Nothing was saved."
+msgstr[0] "{n} Buchdatei fehlt, z. B. {datei}. Es wurde nichts gespeichert."
+msgstr[1] "{n} Buchdateien fehlen, z. B. {datei}. Es wurde nichts gespeichert."
+
+#: app.py:1431
+msgid ""
+"The changes are kept as long as Bookbench is open. Connect the e-reader "
+"again and save, or discard them with Reload."
+msgstr ""
+"Die Änderungen bleiben erhalten, solange Bookbench offen ist. E-Reader "
+"wieder anschließen und speichern, oder mit Neu einlesen verwerfen."
+
+#: app.py:1440
 msgid "Nothing to save."
 msgstr "Nichts zu speichern."
 
-#: app.py:1425
+#: app.py:1440
 msgid "{n} book with changes not yet applied."
 msgid_plural "{n} books with changes not yet applied."
 msgstr[0] "{n} Buch mit nicht übernommenen Änderungen."
 msgstr[1] "{n} Bücher mit nicht übernommenen Änderungen."
 
-#: app.py:1452
+#: app.py:1447
+msgid "Not saved: the books are not reachable."
+msgstr "Nicht gespeichert: die Bücher sind nicht erreichbar."
+
+#: app.py:1472
 msgid "Not saved:"
 msgstr "Nicht gespeichert:"
 
-#: app.py:1453
+#: app.py:1473
 msgid "{n} book saved, backups in {ordner}."
 msgid_plural "{n} books saved, backups in {ordner}."
 msgstr[0] "{n} Buch gespeichert, Sicherungen in {ordner}."
 msgstr[1] "{n} Bücher gespeichert, Sicherungen in {ordner}."
 
-#: app.py:1455
+#: app.py:1475
 msgid "{n} with changes not yet applied."
 msgstr "{n} mit nicht übernommenen Änderungen."
 
-#: app.py:1460 updates.py:136
+#: app.py:1480 updates.py:136
 msgid "Changes"
 msgstr "Änderungen"
 
-#: app.py:1460
+#: app.py:1480
 msgid "{n} book has unsaved changes. Discard them?"
 msgid_plural "{n} books have unsaved changes. Discard them?"
 msgstr[0] "{n} Buch hat nicht gespeicherte Änderungen. Verwerfen?"
 msgstr[1] "{n} Bücher haben nicht gespeicherte Änderungen. Verwerfen?"
 
-#: app.py:1477
+#: app.py:1497
 msgid "error ({fehler})"
 msgstr "Fehler ({fehler})"
 
-#: app.py:1545
+#: app.py:1565
 msgid "Library ({n})"
 msgstr "Bibliothek ({n})"
 
-#: app.py:1546
+#: app.py:1566
 msgid "Chapters ({n} ⚠)"
 msgstr "Kapitel ({n} ⚠)"
 
-#: app.py:1548
+#: app.py:1568
 msgid "Blurbs ({n} ⚠)"
 msgstr "Klappentexte ({n} ⚠)"
 
-#: app.py:1550 area_covers.py:69 help.py:284 help.py:568 settings.py:111 settings.py:552
+#: app.py:1570 area_covers.py:69 help.py:284 help.py:571 settings.py:111 settings.py:552
 msgid "Covers"
 msgstr "Cover"
 
-#: app.py:1550
+#: app.py:1570
 msgid "Covers ({n} ⚠)"
 msgstr "Cover ({n} ⚠)"
 
-#: app.py:1644
+#: app.py:1664
 msgid "Settings saved. Chapter settings apply after reloading (F5)."
 msgstr ""
 "Einstellungen gespeichert. Kapitel-Einstellungen gelten nach dem "
 "Neu-Einlesen (F5)."
 
-#: app.py:1713
+#: app.py:1733
 msgid "{n} book has unsaved changes."
 msgid_plural "{n} books have unsaved changes."
 msgstr[0] "{n} Buch hat nicht gespeicherte Änderungen."
 msgstr[1] "{n} Bücher haben nicht gespeicherte Änderungen."
 
-#: app.py:1715
+#: app.py:1735
 msgid "{n} dictionary entry is changed in the form but not applied."
 msgid_plural "{n} dictionary entries are changed in the form but not applied."
 msgstr[0] ""
@@ -913,28 +939,28 @@ msgstr[0] ""
 msgstr[1] ""
 "{n} Wörterbuch-Einträge sind im Formular geändert, aber nicht übernommen."
 
-#: app.py:1718 settings.py:298
+#: app.py:1738 settings.py:298
 msgid "Language"
 msgstr "Sprache"
 
-#: app.py:1718
+#: app.py:1738
 msgid ""
 "Restart now and lose them? (No: the language changes at the next start.)"
 msgstr ""
 "Jetzt neu starten und sie verwerfen? (Nein: die Sprache wechselt beim "
 "nächsten Start.)"
 
-#: app.py:1720
+#: app.py:1740
 msgid "The new language applies at the next start."
 msgstr "Die neue Sprache gilt ab dem nächsten Start."
 
-#: app.py:1753
+#: app.py:1773
 msgid "{n} book has unsaved changes. Quit anyway?"
 msgid_plural "{n} books have unsaved changes. Quit anyway?"
 msgstr[0] "{n} Buch hat nicht gespeicherte Änderungen. Trotzdem beenden?"
 msgstr[1] "{n} Bücher haben nicht gespeicherte Änderungen. Trotzdem beenden?"
 
-#: app.py:1758
+#: app.py:1778
 msgid ""
 "{n} dictionary entry is changed in the form but not applied. Quit anyway?"
 msgid_plural ""
@@ -946,7 +972,7 @@ msgstr[1] ""
 "{n} Wörterbuch-Einträge sind im Formular geändert, aber nicht übernommen. "
 "Trotzdem beenden?"
 
-#: app.py:1774
+#: app.py:1794
 msgid "books folder to open"
 msgstr "Bücherordner, der geöffnet wird"
 
@@ -1099,7 +1125,7 @@ msgstr "Cover von {quelle} übernommen, noch nicht gespeichert (Strg+S)."
 msgid "looking for covers …"
 msgstr "suche Cover …"
 
-#: area_covers.py:342 area_covers.py:382 help.py:576 settings.py:112 settings.py:565
+#: area_covers.py:342 area_covers.py:382 help.py:579 settings.py:112 settings.py:565
 msgid "Looking up covers"
 msgstr "Cover nachschlagen"
 
@@ -1175,7 +1201,7 @@ msgstr "Abbrechen"
 msgid "Click a cover to choose it, double-click takes it at once."
 msgstr "Klick wählt ein Cover, Doppelklick übernimmt es sofort."
 
-#: area_device.py:28 device.py:85 help.py:488 settings.py:131 settings.py:651
+#: area_device.py:28 device.py:85 help.py:491 settings.py:131 settings.py:651
 msgid "Settings"
 msgstr "Einstellungen"
 
@@ -1498,7 +1524,15 @@ msgstr "Auswerfen fehlgeschlagen: {meldung}. Im Dateimanager auswerfen."
 msgid "E-reader ejected, the cable can come off."
 msgstr "E-Reader ausgeworfen, das Kabel kann ab."
 
-#: area_device.py:503
+#: area_device.py:488
+msgid ""
+"The library is on the e-reader: it stays visible, but saving only works "
+"again after connecting it again."
+msgstr ""
+"Die Bibliothek liegt auf dem E-Reader: sie bleibt sichtbar, Speichern geht "
+"aber erst wieder nach dem erneuten Anschließen."
+
+#: area_device.py:507
 msgid ""
 "Data was written to the e-reader. Eject before unplugging, otherwise data "
 "may be missing.\n"
@@ -1510,11 +1544,11 @@ msgstr ""
 "\n"
 "Jetzt auswerfen?"
 
-#: area_device.py:510
+#: area_device.py:514
 msgid "Ejecting failed: {meldung}"
 msgstr "Auswerfen fehlgeschlagen: {meldung}"
 
-#: area_device.py:511
+#: area_device.py:515
 msgid "Eject in the file manager."
 msgstr "Im Dateimanager auswerfen."
 
@@ -3461,7 +3495,7 @@ msgstr ""
 "Claude braucht einen API-Schlüssel und das Paket **anthropic** (pip install "
 "anthropic): [[einst_klappentexte_claude]].\n"
 
-#: help.py:263 help.py:551 settings.py:108 settings.py:419
+#: help.py:263 help.py:554 settings.py:108 settings.py:419
 msgid "Source profiles"
 msgstr "Quellprofile"
 
@@ -4153,6 +4187,13 @@ msgid ""
 "If something was written to the e-reader in this session (backup restored, "
 "dictionary copied, books saved), the program reminds you when quitting. The "
 "reminder can be switched off: [[einst_kobo]].\n"
+"\n"
+"**Library on the e-reader**\n"
+"If the opened library is on the e-reader, Bookbench asks before ejecting "
+"when there are unsaved changes. After ejecting (or pulling the cable) the "
+"library stays visible, but saving is refused until the e-reader is "
+"connected again; the changes stay in memory as long as Bookbench is open. "
+"**Reload** discards them.\n"
 msgstr ""
 "\n"
 "**Auswerfen** meldet den E-Reader ab (Linux: udisksctl, Windows: wie "
@@ -4162,8 +4203,16 @@ msgstr ""
 "zurückgespielt, Wörterbuch kopiert, Bücher gespeichert), erinnert das "
 "Programm beim Beenden daran. Die Erinnerung lässt sich abschalten: "
 "[[einst_kobo]].\n"
+"\n"
+"**Bibliothek auf dem E-Reader**\n"
+"Liegt die geöffnete Bibliothek auf dem E-Reader, fragt Bookbench vor dem "
+"Auswerfen nach, wenn es ungespeicherte Änderungen gibt. Nach dem Auswerfen "
+"(oder Abziehen des Kabels) bleibt die Bibliothek sichtbar, Speichern wird "
+"aber verweigert, bis der E-Reader wieder angeschlossen ist; die Änderungen "
+"bleiben im Speicher, solange Bookbench offen ist. **Neu einlesen** verwirft "
+"sie.\n"
 
-#: help.py:431
+#: help.py:434
 msgid ""
 "\n"
 "Shows a book in the **desktop KOReader** as it looks on the device: font, "
@@ -4207,11 +4256,11 @@ msgstr ""
 "- [[vorschau_starten]]\n"
 "- [[vorschau_bildschirm]]\n"
 
-#: help.py:446 settings.py:428 settings.py:866
+#: help.py:449 settings.py:428 settings.py:866
 msgid "Profile"
 msgstr "Profil"
 
-#: help.py:446
+#: help.py:449
 msgid ""
 "\n"
 "The preview runs in its own profile in the settings folder (subfolder "
@@ -4252,11 +4301,11 @@ msgstr ""
 "Plugin-Pfade und die letzten Dateien/Ordner auf dem E-Reader. Buchdaten "
 "liegen im Profil immer neben dem Buch.\n"
 
-#: help.py:453
+#: help.py:456
 msgid "Starting and output"
 msgstr "Starten und Ausgabe"
 
-#: help.py:453
+#: help.py:456
 msgid ""
 "\n"
 "**Start** (or double-click)\n"
@@ -4291,11 +4340,11 @@ msgstr ""
 "Fehler, etwa ein Patch, der auf dem Rechner nicht läuft, weil er etwas "
 "E-Reader-Eigenes braucht.\n"
 
-#: help.py:462
+#: help.py:465
 msgid "Screen and device"
 msgstr "Bildschirm und Gerät"
 
-#: help.py:462
+#: help.py:465
 msgid ""
 "\n"
 "The window copies the screen of a device: size in pixels, pixel density, "
@@ -4345,11 +4394,11 @@ msgstr ""
 "Ein Bildschirmfoto aus KOReader (Menü oder Geste) hat immer die volle "
 "Auflösung des Fensters.\n"
 
-#: help.py:474 help.py:533 settings.py:104 settings.py:385
+#: help.py:477 help.py:536 settings.py:104 settings.py:385
 msgid "Saving and backups"
 msgstr "Speichern und Sicherungen"
 
-#: help.py:474
+#: help.py:477
 msgid ""
 "\n"
 "**Save** (Ctrl+S) writes all applied changes (yellow) of all books: chapter "
@@ -4401,7 +4450,7 @@ msgstr ""
 "Nach dem Speichern zeigt KOReader neue Metadaten erst nach dem Neueinlesen "
 "der Buchinfos (Cover-Browser > Extract and cache book information).\n"
 
-#: help.py:488
+#: help.py:491
 msgid ""
 "\n"
 "File > **Settings …** opens the settings. The tree on the left has groups "
@@ -4447,11 +4496,11 @@ msgstr ""
 "- Gerät: [[einst_kobo]], [[einst_vorschau]]\n"
 "- [[einst_erweitert]]\n"
 
-#: help.py:502 settings.py:100 settings.py:297
+#: help.py:505 settings.py:100 settings.py:297
 msgid "Language and theme"
 msgstr "Sprache und Farben"
 
-#: help.py:502
+#: help.py:505
 msgid ""
 "\n"
 "**Language** (default: automatic)\n"
@@ -4479,11 +4528,11 @@ msgstr ""
 "- Hell, Dunkel, oder wie das System: richtet sich nach der "
 "Hell/Dunkel-Einstellung von Windows bzw. KDE/GNOME, geprüft beim Start.\n"
 
-#: help.py:510 settings.py:101 settings.py:311
+#: help.py:513 settings.py:101 settings.py:311
 msgid "Interface"
 msgstr "Oberfläche"
 
-#: help.py:510
+#: help.py:513
 msgid ""
 "\n"
 "- **Status strip next to the lists** (default: on): coloured dots and ⚠ "
@@ -4507,11 +4556,11 @@ msgstr ""
 "- **Seitenleiste ausgeklappt** (Standard: an): mit Namen und Zählern, oder "
 "nur Symbole. Strg+B schaltet jederzeit um; der letzte Stand wird gemerkt.\n"
 
-#: help.py:516 settings.py:102 settings.py:329
+#: help.py:519 settings.py:102 settings.py:329
 msgid "Startup"
 msgstr "Start"
 
-#: help.py:516
+#: help.py:519
 msgid ""
 "\n"
 "- **Open the last folder** (default: on): the books folder that was open "
@@ -4533,11 +4582,11 @@ msgstr ""
 "\n"
 "Ein Ordner auf der Kommandozeile (start.py <Ordner>) wird immer geöffnet.\n"
 
-#: help.py:522 settings.py:103 settings.py:338 updates.py:82 updates.py:90 updates.py:257
+#: help.py:525 settings.py:103 settings.py:338 updates.py:82 updates.py:90 updates.py:257
 msgid "Updates"
 msgstr "Updates"
 
-#: help.py:522
+#: help.py:525
 msgid ""
 "\n"
 "**This copy** says how Bookbench was installed: with the Windows setup, "
@@ -4585,7 +4634,7 @@ msgstr ""
 "steht fest im Programm. Ohne Anmeldung erlaubt GitHub 60 Anfragen pro "
 "Stunde, weit mehr, als die Suche braucht.\n"
 
-#: help.py:533
+#: help.py:536
 msgid ""
 "\n"
 "- **Backup folder** (default: Bookbench Backups in the user folder): books "
@@ -4603,7 +4652,7 @@ msgstr ""
 "- **Sicherungen je Buch** (Standard: 5): die neuesten bleiben, ältere "
 "werden beim Speichern gelöscht.\n"
 
-#: help.py:537
+#: help.py:540
 msgid ""
 "\n"
 "- **Subtitle lines per chapter** (default: 1): how many lines below a "
@@ -4627,7 +4676,7 @@ msgstr ""
 "Beides gilt nach dem Neu-Einlesen (F5), weil die Vorschläge beim Einlesen "
 "entstehen. Siehe auch [[kapitel]].\n"
 
-#: help.py:543
+#: help.py:546
 msgid ""
 "\n"
 "The page shows the order of the sources ([[klappentexte_nachschlagen]]).\n"
@@ -4654,7 +4703,7 @@ msgstr ""
 "Die Grenzen gelten für alle Quellen (kostenlose und Claude), nicht für "
 "selbst eingetragenen Text.\n"
 
-#: help.py:551
+#: help.py:554
 msgid ""
 "\n"
 "The list of profiles in the order in which they are checked. The first "
@@ -4688,11 +4737,11 @@ msgstr ""
 "Änderungen gelten nach OK. Ändert sich ein Profil, schlägt Claude für "
 "dessen Bücher neu nach; schon gefundene bleiben, wie sie sind.\n"
 
-#: help.py:561 settings.py:110 settings.py:445
+#: help.py:564 settings.py:110 settings.py:445
 msgid "Claude API"
 msgstr "Claude-API"
 
-#: help.py:561
+#: help.py:564
 msgid ""
 "\n"
 "- **API key**: from console.anthropic.com (account with credit). Empty: the "
@@ -4725,7 +4774,7 @@ msgstr ""
 "Außerdem nötig: das Paket **anthropic** (pip install anthropic). Was "
 "gesendet wird: [[kosten]].\n"
 
-#: help.py:568
+#: help.py:571
 msgid ""
 "\n"
 "**Inserting a new cover** ([[cover_bild]])\n"
@@ -4754,7 +4803,7 @@ msgstr ""
 "- **Cover unter dieser Höhe markieren** (Standard: 800 px, 0 = nie): ⚠ im "
 "Bereich Cover und dessen Filter \"Kleines Cover\".\n"
 
-#: help.py:576
+#: help.py:579
 msgid ""
 "\n"
 "**Sources** (both free, no key; [[kosten]])\n"
@@ -4782,7 +4831,7 @@ msgstr ""
 "heruntergeladen, mehr dauert also länger. Alle ohne Cover nimmt höchstens 3 "
 "je Buch und davon das größte.\n"
 
-#: help.py:585
+#: help.py:588
 msgid ""
 "\n"
 "**Detection**\n"
@@ -4822,7 +4871,7 @@ msgstr ""
 "- **Beim Beenden ans Auswerfen erinnern** (Standard: an): nur, wenn in der "
 "Sitzung etwas auf den E-Reader geschrieben wurde ([[kobo_auswerfen]]).\n"
 
-#: help.py:598
+#: help.py:601
 msgid ""
 "\n"
 "Only on Linux and macOS.\n"
@@ -4848,11 +4897,11 @@ msgstr ""
 "mit Breite, Höhe (Pixel im Hochformat), ppi und Farbbildschirm für andere "
 "E-Reader mit KOReader. Siehe [[vorschau_bildschirm]].\n"
 
-#: help.py:604 settings.py:116 settings.py:646
+#: help.py:607 settings.py:116 settings.py:646
 msgid "Advanced"
 msgstr "Erweitert"
 
-#: help.py:604
+#: help.py:607
 msgid ""
 "\n"
 "**Files of the program**\n"
@@ -4898,11 +4947,11 @@ msgstr ""
 "Bleiben: geöffnete Ordner, die Liste der Wörterbücher, Fenstergröße, "
 "Sprache und der API-Schlüssel.\n"
 
-#: help.py:618
+#: help.py:621
 msgid "Installing and updating"
 msgstr "Installieren und aktualisieren"
 
-#: help.py:618
+#: help.py:621
 msgid ""
 "\n"
 "**Installing**\n"
@@ -4985,11 +5034,11 @@ msgstr ""
 "Der **Desktop-KOReader** für die Vorschau (nur Linux) gehört nicht zur "
 "Installation ([[vorschau]]).\n"
 
-#: help.py:636
+#: help.py:639
 msgid "Troubleshooting"
 msgstr "Fehlerbehebung"
 
-#: help.py:636
+#: help.py:639
 msgid ""
 "\n"
 "**KOReader still shows the old chapter names, blurb or cover**\n"
@@ -5130,15 +5179,15 @@ msgstr ""
 "- Die Statuszeile hat immer die letzte Meldung. Sicherungen aller "
 "gespeicherten Bücher liegen im Sicherungsordner ([[speichern]]).\n"
 
-#: help.py:723
+#: help.py:726
 msgid "Back"
 msgstr "Zurück"
 
-#: help.py:782
+#: help.py:785
 msgid "{n} topics found"
 msgstr "{n} Themen gefunden"
 
-#: help.py:783
+#: help.py:786
 msgid "Nothing found."
 msgstr "Nichts gefunden."
 
@@ -6234,11 +6283,11 @@ msgstr "Buch wird sonst übersprungen ({grund})"
 msgid "no name found, other chapters in the book have one"
 msgstr "kein Name gefunden, andere Kapitel im Buch haben einen"
 
-#: updater.py:111
+#: updater.py:138
 msgid "Too many redirects."
 msgstr "Zu viele Weiterleitungen."
 
-#: updater.py:117
+#: updater.py:144
 msgid ""
 "No release found for {repo} (the repository does not exist or has no "
 "release yet)."
@@ -6246,7 +6295,7 @@ msgstr ""
 "Keine Veröffentlichung für {repo} gefunden (das Repository gibt es nicht "
 "oder es hat noch keine Veröffentlichung)."
 
-#: updater.py:120
+#: updater.py:147
 msgid ""
 "GitHub refused the request ({code}), probably too many requests in the last "
 "hour; try again later."
@@ -6254,31 +6303,31 @@ msgstr ""
 "GitHub hat die Anfrage abgelehnt ({code}), wahrscheinlich zu viele Anfragen "
 "in der letzten Stunde; später nochmal versuchen."
 
-#: updater.py:122
+#: updater.py:149
 msgid "GitHub answered with error {code}."
 msgstr "GitHub antwortet mit Fehler {code}."
 
-#: updater.py:124
+#: updater.py:151
 msgid "No connection to GitHub ({fehler})."
 msgstr "Keine Verbindung zu GitHub ({fehler})."
 
-#: updater.py:149
+#: updater.py:176
 msgid "Repository must look like owner/name, not \"{repo}\"."
 msgstr "Das Repository muss wie Besitzer/Name aussehen, nicht „{repo}“."
 
-#: updater.py:182
+#: updater.py:213
 msgid "Download cancelled."
 msgstr "Herunterladen abgebrochen."
 
-#: updater.py:193 updates.py:216
+#: updater.py:224 updates.py:216
 msgid "Download failed ({fehler})."
 msgstr "Herunterladen fehlgeschlagen ({fehler})."
 
-#: updater.py:217
+#: updater.py:248
 msgid "Could not load the checksums ({fehler})."
 msgstr "Die Prüfsummen ließen sich nicht laden ({fehler})."
 
-#: updater.py:232
+#: updater.py:263
 msgid ""
 "Checksum of {name} does not match - the download is damaged or not the "
 "published file."
@@ -6286,30 +6335,30 @@ msgstr ""
 "Die Prüfsumme von {name} stimmt nicht - der Download ist beschädigt oder "
 "nicht die veröffentlichte Datei."
 
-#: updater.py:259
+#: updater.py:290
 msgid "This copy was not installed with install.sh; it is not replaced."
 msgstr ""
 "Diese Kopie wurde nicht mit install.sh installiert; sie wird nicht ersetzt."
 
-#: updater.py:271
+#: updater.py:302
 msgid "The archive contains unsafe paths."
 msgstr "Das Archiv enthält unsichere Pfade."
 
-#: updater.py:276
+#: updater.py:307
 msgid ""
 "The archive does not contain Bookbench (start.py and bookbench/ are "
 "missing)."
 msgstr "Das Archiv enthält kein Bookbench (start.py und bookbench/ fehlen)."
 
-#: updater.py:279
+#: updater.py:310
 msgid "The archive contains version {ist} instead of {soll}."
 msgstr "Das Archiv enthält Version {ist} statt {soll}."
 
-#: updater.py:287
+#: updater.py:318
 msgid "Unpacking failed ({fehler})."
 msgstr "Auspacken fehlgeschlagen ({fehler})."
 
-#: updater.py:296
+#: updater.py:327
 msgid "Replacing the program failed ({fehler})."
 msgstr "Ersetzen des Programms fehlgeschlagen ({fehler})."
 

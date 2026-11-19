@@ -12,7 +12,15 @@ hier nur die Oberfläche.
 Das Gerät wird alle drei Sekunden gesucht (Hilfsthread), damit Anstecken und
 Abziehen ohne Knopfdruck erkannt werden. Langsames (Sichern, Zurückspielen,
 Kopieren, Auswerfen) läuft über app.hintergrund().
+
+Seit 1.2: beim Anstecken die Bücher vom Gerät öffnen (Einstellung kobo_oeffnen: auto =
+öffnen, nachfragen, wenn ein anderer Ordner offen ist / fragen / nie); bei jeder Suche prüft
+app.ordner_pruefen(), ob der geöffnete Ordner noch da ist (Hinweisleiste). Auswerfen mit der
+Bibliothek auf dem Gerät: vorher speichern/verwerfen, danach Bibliothek schließen; scheitert es,
+nennt ein Fenster die Programme, die etwas auf dem Gerät offen haben (device.blockierer).
+Doppelklick auf ein Wörterbuch öffnet es im Bereich Wörterbuch.
 """
+import sys
 import threading
 import time
 import tkinter as tk
@@ -52,6 +60,7 @@ class KoboBereich:
         self._sicherungen = {}                   # iid -> Inhaltsverzeichnis
         self._dicts = []
         self._quellen = (None, 0.0, [])          # (Quelle, Zeitpunkt, Wörterbuch-Ordner) - Suche kann dauern
+        self._neu_angesteckt = None              # Wurzel, für die noch über das Öffnen entschieden wird
         s = self.seite = app._seite(_(BEREICH), "kobo")
 
         # -- Kopf -------------------------------------------------------------
@@ -89,7 +98,7 @@ class KoboBereich:
         d.configure(yscrollcommand=sb2.set)
         sb2.pack(side="right", fill="y")
         d.pack(side="left", fill="both", expand=True)
-        d.bind("<Double-1>", lambda e: self.woerterbuch_kopieren())
+        d.bind("<Double-1>", lambda e: self.woerterbuch_oeffnen() if d.identify_region(e.x, e.y) == "cell" else None)
 
         # -- Sicherungen --------------------------------------------------------
         ttk.Label(s, text=_("Backups of the KOReader settings"), style="Ueberschrift.TLabel").pack(anchor="w")
@@ -155,6 +164,9 @@ class KoboBereich:
     # ================================================================ Suchen
     def _regelmaessig(self):
         self.suchen(still=True)
+        self.app.ordner_pruefen()
+        if self._neu_angesteckt and not self.app._arbeit:
+            self._angesteckt(self._neu_angesteckt)
         self.app.after(max(1, int(self.app.e.get("kobo_suche_sekunden") or 3)) * 1000, self._regelmaessig)
 
     def suchen(self, still=True):
@@ -185,14 +197,47 @@ class KoboBereich:
         self.wurzel = vorher if vorher in gefunden else (gefunden[0] if gefunden else None)
         if self.wurzel is None:
             self.info, self.vorhanden = {}, {}
+            self._neu_angesteckt = None
             self.anzeigen()
             if vorher:
                 self.app.status.set(_("E-reader no longer connected."))
+            self.app.ordner_pruefen()
             return
         self._gewaehlt(self.wurzel)
         if self.wurzel != vorher:
             self.app.status.set(_("{modell} connected: {ordner}").format(modell=self.info.get("modell", "?"),
                                                                          ordner=self.wurzel))
+            self.app.ordner_pruefen()
+            self._neu_angesteckt = self.wurzel        # beim Start oder während Arbeit: nächste Suche
+            if not self.app._arbeit:
+                self._angesteckt(self.wurzel)
+
+    def _auf_geraet(self, wurzel=None):
+        """Liegt der geöffnete Bücherordner auf dem Gerät?"""
+        a, w = self.app, wurzel or self.wurzel
+        try:
+            return bool(a.ordner and w and Path(a.ordner).resolve().is_relative_to(Path(w).resolve()))
+        except (OSError, ValueError):
+            return False
+
+    def _angesteckt(self, wurzel):
+        """Neu angesteckt: Bücher vom Gerät öffnen, je nach Einstellung kobo_oeffnen."""
+        self._neu_angesteckt = None
+        a = self.app
+        if wurzel != self.wurzel or not wurzel.exists() or self._auf_geraet(wurzel):
+            return                                     # weg, oder seine Bücher sind schon offen
+        art = a.e.get("kobo_oeffnen", "auto")
+        if art == "nie":
+            return
+        if a.ordner or art == "fragen":
+            name = self.info.get("modell") or self.info.get("artname") or str(wurzel)
+            text = _("{modell} connected. Open the books on the e-reader?").format(modell=name)
+            if a.ordner:
+                text += "\n\n" + _("Currently open: {ordner}").format(ordner=a.ordner)
+            if not messagebox.askyesno(_(BEREICH), text, parent=a):
+                return
+        if a._aenderungen_verwerfen_ok():
+            a.laden(wurzel)
 
     def _gewaehlt(self, wurzel):
         self.wurzel = wurzel
@@ -440,6 +485,36 @@ class KoboBereich:
             self.app.status.set(ngettext("{n} dictionary found.", "{n} dictionaries found.", len(self._dicts))
                                 .format(n=len(self._dicts)))
 
+    def woerterbuch_oeffnen(self, name=None):
+        """Wörterbuch (Doppelklick) im Bereich Wörterbuch öffnen: das eingetragene, das in diesen
+        Ordner erzeugt (built_out), sonst den Ordner aus der Quelle selbst; gibt es das
+        Wörterbuch nur auf dem Gerät, nach Rückfrage die Kopie dort."""
+        if name is None:
+            sel = self.dict_baum.selection()
+            name = sel[0] if sel else None
+        eintrag = next(((n, st, q) for n, st, q in self._dicts if n == name), None)
+        if not eintrag:
+            return
+        n, stand, quelle = eintrag
+        wb = self.app.woerterbuch
+        if quelle is None:
+            if not (self.wurzel and self.wurzel.exists()):
+                return
+            pfad = kg.dict_ordner(self.wurzel) / n
+            if not messagebox.askyesno(_(BEREICH), _("The dictionary {name} is only on the e-reader. Open the copy "
+                                                     "there? Changes are then saved on the e-reader.").format(name=n),
+                                       parent=self.app):
+                return
+        else:
+            pfad = wb.eingetragen_fuer(quelle) or quelle
+        if wb.wb and Path(wb.wb.pfad) == Path(pfad):
+            self.app.bereich_zeigen("woerterbuch")
+            return
+        if not wb._offen_ok():
+            return
+        wb.oeffnen(str(pfad))
+        self.app.bereich_zeigen("woerterbuch")
+
     def woerterbuch_kopieren(self):
         if not self._bereit():
             return
@@ -464,31 +539,74 @@ class KoboBereich:
         self.geschrieben = True
         self.app.hintergrund(_("Copying dictionary"), arbeit, nachher=self._woerterbuecher_fuellen)
 
-    def auswerfen(self):
+    def auswerfen(self, nochmal=False):
+        """Gerät abmelden. Liegt die Bibliothek darauf: vorher speichern oder verwerfen (Abbrechen
+        bricht ab), nach dem Auswerfen wird sie geschlossen. Scheitert es, nennt ein Fenster die
+        Programme, die etwas auf dem Gerät offen haben, mit "Nochmal versuchen"."""
         if not self._bereit():
             return
         a = self.app
-        offen = sum(1 for b in a.buecher if b.stand() in ("rot", "gelb"))
-        auf_geraet = a.ordner and Path(a.ordner).resolve().is_relative_to(Path(self.wurzel).resolve())
-        if offen and auf_geraet and not messagebox.askyesno(
-                _("Eject"), ngettext("{n} book on the e-reader has unsaved changes. After ejecting it can no longer "
-                                     "be saved. Eject anyway?",
-                                     "{n} books on the e-reader have unsaved changes. After ejecting they can no "
-                                     "longer be saved. Eject anyway?", offen).format(n=offen), parent=a):
-            return
+        auf_geraet = self._auf_geraet()
+        if auf_geraet and not nochmal:
+            a._bearbeiter_weg(speichern=True)
+            gelb = sum(1 for b in a.buecher if b.stand() == "gelb")
+            rot = sum(1 for b in a.buecher if b.stand() == "rot")
+            if gelb or rot:
+                text = ngettext("{n} book on the e-reader has unsaved changes.",
+                                "{n} books on the e-reader have unsaved changes.", gelb + rot).format(n=gelb + rot)
+                text += "\n\n" + _("Yes: save applied changes, then eject.\nNo: discard the changes and eject.\n"
+                                    "Cancel: do not eject.")
+                if rot:
+                    text += "\n\n" + ngettext("{n} book has changes that are not applied yet; they are lost either way.",
+                                               "{n} books have changes that are not applied yet; they are lost either "
+                                               "way.", rot).format(n=rot)
+                antwort = messagebox.askyesnocancel(_("Eject"), text, parent=a)
+                if antwort is None:
+                    return
+                if antwort and gelb:
+                    a.speichern()
+                    if any(b.stand() == "gelb" for b in a.buecher):
+                        a.status.set(_("Not ejected: saving failed for some books."))
+                        return
         wurzel = self.wurzel
+        self._auswurf = {"ok": False, "meldung": "", "blockierer": []}
 
         def arbeit():
             ok, meldung = kg.auswerfen(wurzel)
+            self._auswurf.update(ok=ok, meldung=meldung)
             if not ok:
-                raise RuntimeError(_("Ejecting failed: {meldung}. Eject in the file manager.").format(meldung=meldung))
+                if sys.platform != "win32":
+                    self._auswurf["blockierer"] = kg.blockierer(wurzel)
+                return _("Ejecting failed: {meldung}").format(meldung=meldung)
             self.geschrieben = False
-            text = _("E-reader ejected, the cable can come off.")
-            if auf_geraet:
-                text += " " + _("The library is on the e-reader: it stays visible, but saving only works again "
-                                "after connecting it again.")
-            return text
-        a.hintergrund(_("Eject"), arbeit, nachher=lambda: self.suchen(still=True))
+            return _("E-reader ejected, the cable can come off.")
+
+        def nachher():
+            if self._auswurf["ok"]:
+                if auf_geraet:
+                    a.bibliothek_schliessen(still=True)
+                    a.status.set(_("E-reader ejected, the cable can come off.") + " " +
+                                 _("The library from the e-reader was closed."))
+                self.suchen(still=True)
+            else:
+                self._auswurf_fehlgeschlagen(wurzel)
+        a.hintergrund(_("Eject"), arbeit, nachher=nachher)
+
+    def _auswurf_fehlgeschlagen(self, wurzel):
+        f = self._auswurf
+        text = _("Ejecting failed: {meldung}").format(meldung=f["meldung"])
+        if f["blockierer"]:
+            zeilen = "\n".join(f"- {name} (PID {pid})" for pid, name, __ in f["blockierer"])
+            text += "\n\n" + _("These programs have files or folders on the e-reader open:") + "\n" + zeilen
+            text += "\n\n" + _("Close them, or in a file manager change to another folder (also close its tabs "
+                                "and terminal panel), then try again.")
+        elif sys.platform != "win32":
+            text += "\n\n" + _("No program with open files on the e-reader was found (programs of other users "
+                                "cannot be seen). Close file managers showing the e-reader and try again.")
+        else:
+            text += "\n\n" + _("Close Explorer windows and programs using the drive, then try again.")
+        if messagebox.askretrycancel(_("Eject"), text, parent=self.app):
+            self.auswerfen(nochmal=True)
 
     def vermerken(self, pfad):
         """Die Oberfläche hat etwas unter pfad gespeichert - liegt das auf dem Gerät?"""
@@ -511,7 +629,10 @@ class KoboBereich:
         if antwort:
             ok, meldung = kg.auswerfen(self.wurzel)
             if not ok:
-                messagebox.showwarning(_(BEREICH), _("Ejecting failed: {meldung}").format(meldung=meldung) + "\n\n" +
-                                       _("Eject in the file manager."),
+                blockierer = kg.blockierer(self.wurzel) if sys.platform != "win32" else []
+                zeilen = "".join(f"\n- {name} (PID {pid})" for pid, name, __ in blockierer)
+                messagebox.showwarning(_(BEREICH), _("Ejecting failed: {meldung}").format(meldung=meldung) +
+                                       ("\n\n" + _("These programs have files or folders on the e-reader open:") +
+                                        zeilen if zeilen else "") + "\n\n" + _("Eject in the file manager."),
                                        parent=self.app)
         return True

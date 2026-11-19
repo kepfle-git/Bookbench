@@ -34,7 +34,7 @@ STANDARD = {
     "cover_max_hoehe": 0, "cover_qualitaet": 90, "cover_klein": 800, "cover_openlibrary": True, "cover_google": True,
     "spalten": {}, "spalten_reihe": None, "sortierung": ["reihe", False],   # Bibliothek (ui/table_columns.py)
     "kobo_sicherungen_anzahl": 10, "kobo_teile": ["einstellungen", "settings", "buchdaten", "anpassungen"],
-    "woerterbuch_quelle": "", "auswerfen_erinnern": True,
+    "woerterbuch_quelle": "", "auswerfen_erinnern": True, "kobo_oeffnen": "auto",
     "woerterbuecher": [], "woerterbuch_aktiv": "",
     "koreader_pfad": "", "vorschau_groesse": "passend", "sprache": "auto",
     "vorschau_geraet": "auto", "vorschau_eigen": [1264, 1680, 300, False],   # eigen: Breite, Höhe, ppi, Farbe
@@ -122,7 +122,7 @@ class EinstellungsDialog(tk.Toplevel):
                "max_sub", "caps", "api_key", "modell", "kt_kosten", "kostenlos", "kt_min", "kt_max",
                "cover_max_hoehe", "cover_qualitaet", "cover_klein", "cover_openlibrary", "cover_google",
                "cover_min_hoehe", "cover_anzahl", "kobo_sicherungen_anzahl", "woerterbuch_quelle",
-               "auswerfen_erinnern", "kobo_suche_sekunden", "koreader_pfad", "update_pruefen", "update_vorab")
+               "auswerfen_erinnern", "kobo_suche_sekunden", "kobo_oeffnen", "koreader_pfad", "update_pruefen", "update_vorab")
 
     def __init__(self, app, seite=None):
         super().__init__(app)
@@ -580,6 +580,11 @@ class EinstellungsDialog(tk.Toplevel):
         self._zahl(s, "kobo_suche_sekunden", _("Look for the e-reader every (seconds):"),
                    _("While Bookbench is open it checks this often whether an e-reader is connected or "
                      "unplugged."), 1, 60)
+        ttk.Label(s, text=_("When an e-reader is connected:")).pack(anchor="w", pady=(6, 0))
+        self._auswahl(s, "kobo_oeffnen", (
+            ("auto", _("Open its books (ask if another folder is open)")),
+            ("fragen", _("Always ask whether to open its books")),
+            ("nie", _("Do nothing (open with Books in the E-reader area)"))))
         self._abschnitt(s, _("Backups"))
         self._zahl(s, "kobo_sicherungen_anzahl", _("Backups of the KOReader settings:"),
                    _("This many stay in the KOReader subfolder of the backup folder; older ones are deleted. This "

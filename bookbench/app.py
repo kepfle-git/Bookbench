@@ -150,6 +150,7 @@ class App(tk.Tk):
         self._werkzeugleiste()
         self.statuszeile = ttk.Label(self, textvariable=self.status, anchor="w", padding=(6, 2))
         self.statuszeile.pack(side="bottom", fill="x")
+        self._hinweisleiste_bauen()
         self.nb = knv.NaviNotebook(self)
         self.nb.pack(fill="both", expand=True, padx=8, pady=(4, 0))
         self.navi = knv.Navigation(self, self.nb, {"hell": ksy.HELL, "dunkel": ksy.DUNKEL},
@@ -194,6 +195,7 @@ class App(tk.Tk):
         self._zuletzt = tk.Menu(m, tearoff=False, postcommand=self._zuletzt_fuellen)
         m.add_cascade(label=_("Recently opened"), menu=self._zuletzt)
         m.add_command(label=_("Reload"), accelerator="F5", command=self.neu_einlesen)
+        m.add_command(label=_("Close library"), command=self.bibliothek_schliessen)
         m.add_separator()
         m.add_command(label=_("Save"), accelerator=_("Ctrl+S"), command=self.speichern)
         m.add_separator()
@@ -330,6 +332,52 @@ class App(tk.Tk):
                        _("Write applied changes to the files, with backup (Ctrl+S)"))
         ttk.Separator(self._wz_rechts, orient="vertical").pack(side="left", fill="y", padx=6, pady=2)
         self._wz_knopf(self._wz_rechts, "hilfe", _("Help"), self.hilfe, _("Help for the current area (F1)"))
+
+    def _hinweisleiste_bauen(self):
+        """Leiste unter der Werkzeugleiste, nur sichtbar, wenn der geöffnete Ordner nicht mehr da ist
+        (ordner_pruefen); Farbe wie Warnzeilen, gesetzt in _theme_anwenden."""
+        h = self.hinweisleiste = tk.Frame(self, padx=8, pady=4)
+        h._feste_farben = True
+        self.hinweis_text = tk.Label(h, text="", anchor="w", justify="left")
+        self.hinweis_text._feste_farben = True
+        ttk.Button(h, text=_("Close library"), command=self.bibliothek_schliessen).pack(side="right")
+        self.hinweis_text.pack(side="left", fill="x", expand=True)
+        # Umbruch an der wirklichen Breite (neben dem Knopf), auch beim Ändern der Fenstergröße
+        self.hinweis_text.bind("<Configure>", lambda e: self.hinweis_text.configure(wraplength=max(200, e.width - 8)))
+        self._ordner_weg = False
+
+    def ordner_pruefen(self):
+        """Ist der geöffnete Ordner noch da? Sonst Hinweisleiste (Bibliothek bleibt sichtbar, Speichern
+        verweigert _nicht_erreichbar). Aufgerufen bei jeder Gerätesuche (area_device)."""
+        weg = bool(self.ordner) and not self._arbeit and not Path(self.ordner).is_dir()
+        if weg == self._ordner_weg:
+            return
+        self._ordner_weg = weg
+        if weg:
+            self.hinweis_text.configure(text="⚠ " + _(
+                "The folder {ordner} is no longer reachable (e-reader unplugged?). The library stays visible, "
+                "but saving only works again once the folder is back.").format(ordner=self.ordner))
+            self.hinweisleiste.pack(side="top", fill="x", after=self._wz_rahmen, padx=8, pady=(4, 0))
+        else:
+            self.hinweisleiste.pack_forget()
+            if self.ordner:
+                self.status.set(_("The folder {ordner} is reachable again.").format(ordner=self.ordner))
+
+    def bibliothek_schliessen(self, still=False):
+        """Geöffneten Ordner schließen (ungespeicherte Änderungen nach Rückfrage verwerfen)."""
+        if self._arbeit or not self.ordner:
+            return
+        if not still and not self._aenderungen_verwerfen_ok():
+            return
+        self._bearbeiter_weg(speichern=False)
+        self.ordner = None
+        self.buecher, self.nach_schluessel = [], {}
+        self.calibre_wurzel, self.calibre_eintraege = None, []
+        self._ordner_weg = True                      # damit ordner_pruefen die Leiste wegnimmt
+        self.ordner_pruefen()
+        self._alles_neu_zeichnen()
+        if not still:
+            self.status.set(_("Library closed."))
 
     def _wz_knopf(self, eltern, symbol, text, befehl, tipp):
         k = tk.Label(eltern, text=text, compound="left", padx=4, pady=3, borderwidth=0, cursor="hand2")
@@ -1401,6 +1449,7 @@ class App(tk.Tk):
                 b.titel_anzeige = f"{b.titel} ({b.pfad.name})"
         self._arbeit = None
         self._alles_neu_zeichnen()
+        self.ordner_pruefen()
         if self._start_buch:
             self._buch_wieder_waehlen(self._start_buch)
             self._start_buch = None
@@ -1634,6 +1683,8 @@ class App(tk.Tk):
         self.navi.farben(dunkel)
         if hasattr(self, "kobo"):
             self.kobo.farben(modus, WARNZEILE)
+        self.hinweisleiste.configure(bg=WARNZEILE[modus])
+        self.hinweis_text.configure(bg=WARNZEILE[modus], fg=p["fg"])
         if hasattr(self, "woerterbuch"):
             self.woerterbuch.farben()
         if hasattr(self, "cover"):

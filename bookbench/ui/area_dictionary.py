@@ -372,6 +372,31 @@ class WoerterbuchBereich:
         else:
             self.wahl_var.set("")
 
+    def eingetragen_fuer(self, ordner):
+        """Eingetragenes Wörterbuch (Arbeitsordner mit Datenbank), das zuletzt in ordner erzeugt
+        wurde (meta built_out), sonst None - für den Doppelklick im Bereich E-Reader."""
+        import sqlite3
+        try:
+            ziel = Path(ordner).resolve()
+        except OSError:
+            return None
+        for p in self._liste_der_woerterbuecher():
+            q = Path(p).expanduser()
+            db_datei = q if q.suffix == ".sqlite" else W.db_datei(q)
+            if not db_datei.is_file():
+                continue
+            try:
+                db = sqlite3.connect(f"file:{db_datei}?mode=ro", uri=True)
+                try:
+                    aus = W.meta_get(db, "built_out", "")
+                finally:
+                    db.close()
+                if aus and Path(aus).resolve() == ziel:
+                    return p
+            except (sqlite3.Error, OSError):
+                continue
+        return None
+
     def _gewaehlt(self):
         p = self._wahl_pfade.get(self.wahl_var.get())
         if p and (not self.wb or str(self.wb.pfad) != p):

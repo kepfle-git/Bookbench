@@ -15,7 +15,9 @@ Keine Oberfläche.
   zurueckspielen(...)          gewählte Teile aus einer Sicherung aufs Gerät (auch auf eine andere Art)
   woerterbuecher(quelle, wurzel)  Stand je Wörterbuch (Quelle gegen Gerät)
   woerterbuch_kopieren(...)    ein Wörterbuch in <KOReader-Ordner>/data/dict/<Name>/
-  auswerfen(wurzel)            Laufwerk abmelden (udisksctl bzw. Explorer)
+  auswerfen(wurzel)            Laufwerk abmelden (udisksctl bzw. Explorer); unter Linux bei
+                               "busy" zweimal nach kurzer Pause noch einmal
+  blockierer(wurzel)           Linux: Programme mit Dateien/Ordnern auf dem Gerät (aus /proc)
   verlauf_lesen(...)           KOReaders Nachschlageverlauf (Gerät oder neueste Sicherung)
 
 Pfade in den Sicherungen sind relativ zur Wurzel des Geräts und mit "/" getrennt,
@@ -43,7 +45,7 @@ from datetime import datetime
 from pathlib import Path
 
 from bookbench.device import models as km
-from bookbench.i18n import _
+from bookbench.i18n import N_, _
 
 # Art: Name, KOReader-Ordner und Schriftordner relativ zur Wurzel (Quellen oben)
 ARTEN = {
@@ -596,6 +598,84 @@ def _ausfuehren(befehl):
     return subprocess.run(befehl, **kw)
 
 
+# Bekannte Programme, die den Einhängepunkt halten (Name aus /proc/<pid>/comm, ohne Groß/klein)
+BLOCKIERER_NAMEN = {
+    "dolphin": N_("Dolphin (file manager)"), "nautilus": N_("Files/Nautilus (file manager)"),
+    "nemo": N_("Nemo (file manager)"), "thunar": N_("Thunar (file manager)"),
+    "pcmanfm": N_("PCManFM (file manager)"), "pcmanfm-qt": N_("PCManFM (file manager)"),
+    "caja": N_("Caja (file manager)"), "konsole": N_("Konsole (terminal)"),
+    "baloo_file": N_("Baloo (KDE file search)"), "baloo_file_extractor": N_("Baloo (KDE file search)"),
+    "calibre": N_("Calibre"), "calibre-parallel": N_("Calibre"), "koreader": N_("Desktop KOReader"),
+    "luajit": N_("Desktop KOReader"), "reader.lua": N_("Desktop KOReader"),
+}
+SHELLS = {"bash", "zsh", "fish", "sh", "dash", "ksh", "tcsh", "nu"}
+
+
+def _blockierer_name(comm):
+    c = comm.lower()
+    if c in BLOCKIERER_NAMEN:
+        return _(BLOCKIERER_NAMEN[c])
+    if c.startswith("kioworker") or c.startswith("kio_") or c in ("file.so", "kiod6", "kiod5"):
+        return _("KDE file access ({name}, usually belongs to Dolphin)").format(name=comm)
+    if c in SHELLS:
+        return _("Terminal ({name} with a folder on the e-reader)").format(name=comm)
+    return comm
+
+
+def blockierer(wurzel, proc="/proc"):
+    """Linux: [(pid, Name zum Anzeigen, Programmname)] der Prozesse, die etwas unter wurzel offen
+    haben (Arbeitsordner, offene Dateien, eingeblendete Dateien). Nur eigene Prozesse lassen sich
+    lesen; fremde fehlen dann. Leer unter Windows oder ohne /proc."""
+    wurzel = os.path.realpath(str(wurzel))
+    praefix = wurzel.rstrip("/") + "/"
+    eigen = os.getpid()
+
+    def drunter(ziel):
+        return ziel == wurzel or ziel.startswith(praefix)
+
+    erg = []
+    try:
+        pids = [int(e) for e in os.listdir(proc) if e.isdigit()]
+    except OSError:
+        return erg
+    for pid in pids:
+        basis = os.path.join(proc, str(pid))
+        treffer = False
+        for link in ("cwd", "root"):
+            try:
+                if drunter(os.readlink(os.path.join(basis, link))):
+                    treffer = True
+            except OSError:
+                pass
+        if not treffer:
+            try:
+                for fd in os.listdir(os.path.join(basis, "fd")):
+                    try:
+                        if drunter(os.readlink(os.path.join(basis, "fd", fd))):
+                            treffer = True
+                            break
+                    except OSError:
+                        pass
+            except OSError:
+                pass
+        if not treffer:
+            try:
+                with open(os.path.join(basis, "maps"), encoding="utf-8", errors="replace") as f:
+                    treffer = any(drunter(z.split(None, 5)[5].strip()) for z in f if len(z.split(None, 5)) == 6)
+            except OSError:
+                pass
+        if not treffer:
+            continue
+        try:
+            with open(os.path.join(basis, "comm"), encoding="utf-8", errors="replace") as f:
+                comm = f.read().strip()
+        except OSError:
+            comm = "?"
+        name = _("Bookbench itself") if pid == eigen else _blockierer_name(comm)
+        erg.append((pid, name, comm))
+    return sorted(erg)
+
+
 def auswerfen(wurzel):
     """Meldet das Gerät ab. Gibt (ok, meldung) zurück."""
     wurzel = Path(wurzel)
@@ -616,9 +696,15 @@ def auswerfen(wurzel):
         geraet = r.stdout.strip()
         if r.returncode or not geraet.startswith("/dev/"):
             return False, _("device for the mount point not found")
-        r = _ausfuehren(["udisksctl", "unmount", "-b", geraet])
+        for versuch in range(3):
+            r = _ausfuehren(["udisksctl", "unmount", "-b", geraet])
+            meldung = (r.stderr or r.stdout).strip()
+            # "target is busy" verschwindet oft von selbst (Vorschaubilder, Dateisuche noch dran)
+            if not r.returncode or "busy" not in meldung.lower() or versuch == 2:
+                break
+            time.sleep(1.5)
         if r.returncode:
-            return False, (r.stderr or r.stdout).strip() or _("unmounting failed")
+            return False, meldung or _("unmounting failed")
         _ausfuehren(["udisksctl", "power-off", "-b", geraet])  # nicht überall erlaubt - dann reicht das Aushängen
         return True, _("ejected")
     except (OSError, subprocess.SubprocessError) as e:

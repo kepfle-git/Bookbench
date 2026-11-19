@@ -19,7 +19,7 @@ import keller_theme as kth
 from bookbench.i18n import _
 
 PROGRAMM = "Bookbench"
-VERSION = "1.1"
+VERSION = "1.2-beta1"
 
 # (Elternthema, Kennung, Titel, Text). Übersetzt beim Import. Text: **fett**, Aufzählungen mit "-",
 # [[kennung]] = Verweis.
@@ -381,6 +381,8 @@ Shows the connected e-reader with KOReader - Kobo, Kindle or PocketBook: model, 
 
 **Books** opens the whole e-reader in Library, Chapters, Blurbs and Covers. Then metadata.calibre is found automatically too.
 
+**When connecting** Bookbench opens the books on the e-reader by itself if no other folder is open; otherwise it asks. Can be changed: [[einst_kobo]].
+
 **More**
 - [[kobo_geraete]]
 - [[kobo_sicherungen]]
@@ -421,7 +423,8 @@ The preview can take its profile from a backup too ([[vorschau_profil]]).
     ("kobo", "kobo_woerterbuecher", _("Copying dictionaries"), _("""
 - **Choose source**: a folder on the computer somewhere inside which the dictionaries are ([[einst_kobo]]). It is searched up to 8 levels deep (at most 5000 folders; hidden folders like .adds are searched too, so a copy of the e-reader works as well; only large folders without dictionaries like .git, .cache, AppData, Windows and KOReader's plugins, fonts, cache are skipped). A dictionary is a folder with an .ifo file, e.g. My-Dictionary. If there are several folders with the same name, the one with the newest .ifo wins; the column **Folder in the source** shows which one was found.
 - Status of each dictionary: **up to date**, **outdated on the e-reader** or **missing on the e-reader** (both red), **only on the e-reader**.
-- **Dictionary** (toolbar, or double-click) copies the selected ones, without a selection all that are not up to date, to data/dict/<name>/ in the KOReader folder (Kobo: .adds/koreader/data/dict). Files in the target that no longer exist in the source are deleted there.
+- **Dictionary** (toolbar) copies the selected ones, without a selection all that are not up to date, to data/dict/<name>/ in the KOReader folder (Kobo: .adds/koreader/data/dict). Files in the target that no longer exist in the source are deleted there.
+- **Double-click** opens the dictionary in the Dictionary area: the registered one that was built into this folder, otherwise the folder from the source itself. A dictionary that is only on the e-reader is opened there after asking; changes are then saved on the e-reader.
 """)),
     ("kobo", "kobo_auswerfen", _("Ejecting"), _("""
 **Eject** unmounts the e-reader (Linux: udisksctl, Windows: like "Eject" in Explorer). Then the cable can come off.
@@ -429,7 +432,14 @@ The preview can take its profile from a backup too ([[vorschau_profil]]).
 If something was written to the e-reader in this session (backup restored, dictionary copied, books saved), the program reminds you when quitting. The reminder can be switched off: [[einst_kobo]].
 
 **Library on the e-reader**
-If the opened library is on the e-reader, Bookbench asks before ejecting when there are unsaved changes. After ejecting (or pulling the cable) the library stays visible, but saving is refused until the e-reader is connected again; the changes stay in memory as long as Bookbench is open. **Reload** discards them.
+If the opened library is on the e-reader and has unsaved changes, Bookbench asks before ejecting: save, discard or cancel. After ejecting, the library is closed.
+
+If the e-reader disappears without ejecting (cable pulled), a bar above the areas says so. The library stays visible, but saving is refused until the e-reader is back; the changes stay in memory as long as Bookbench is open. **Close library** in the bar (or in the File menu) or **Reload** discards them.
+
+**If ejecting fails**
+On Linux ejecting fails while a program still has a file or folder on the e-reader open, often the file manager that opened when the e-reader was connected. Bookbench first tries three times (thumbnails or the file search often let go by themselves), then lists these programs and offers **Retry**. Only your own programs can be seen.
+- Dolphin: change to another folder, also in other tabs and in the terminal panel, or close the window.
+- That KDE opens the file manager when the e-reader is connected can be switched off in the KDE system settings (removable storage / device actions).
 """)),
     ("bereiche", "vorschau", _("Preview"), _("""
 Shows a book in the **desktop KOReader** as it looks on the device: font, margins, headers and footers from Bookends, style tweaks and patches. Only on Linux and macOS; there is no official KOReader for Windows, so the area is missing there.
@@ -588,6 +598,7 @@ Also needed: the package **anthropic** (pip install anthropic). What is sent: [[
     ("einstellungen", "einst_kobo", _("E-reader"), _("""
 **Detection**
 - **Look for the e-reader every** (default: 3 seconds): how often the program checks whether an e-reader is connected or unplugged ([[kobo]]).
+- **When an e-reader is connected** (default: open its books, ask if another folder is open): or always ask, or do nothing ([[kobo]]).
 
 **Backups**
 - **Backups of the KOReader settings** (default: 10): this many stay in the subfolder KOReader of the backup folder, including the backup before each restore ([[kobo_sicherungen]]).

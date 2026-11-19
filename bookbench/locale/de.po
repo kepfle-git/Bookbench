@@ -19,7 +19,7 @@ msgstr "übernommen, noch nicht gespeichert"
 msgid "saved (since opening)"
 msgstr "gespeichert (seit dem Öffnen)"
 
-#: app.py:74 app.py:838 app.py:846 area_covers.py:114
+#: app.py:74 app.py:839 app.py:847 area_covers.py:114
 msgid "All books"
 msgstr "Alle Bücher"
 
@@ -51,7 +51,7 @@ msgstr "Nr."
 msgid "Author"
 msgstr "Autor"
 
-#: app.py:76 app.py:705 app.py:1614 help.py:192 help.py:550 settings.py:106
+#: app.py:76 app.py:706 app.py:1615 help.py:192 help.py:550 settings.py:106
 msgid "Chapters"
 msgstr "Kapitel"
 
@@ -87,7 +87,7 @@ msgstr "Neu einlesen"
 msgid "Close library"
 msgstr "Bibliothek schließen"
 
-#: app.py:200 app.py:331 app.py:1494 app.py:1520
+#: app.py:200 app.py:331 app.py:1495 app.py:1521
 msgid "Save"
 msgstr "Speichern"
 
@@ -99,7 +99,7 @@ msgstr "Strg+S"
 msgid "Settings …"
 msgstr "Einstellungen …"
 
-#: app.py:204 app.py:1823 app.py:1828
+#: app.py:204 app.py:1824 app.py:1829
 msgid "Quit"
 msgstr "Beenden"
 
@@ -107,7 +107,7 @@ msgstr "Beenden"
 msgid "File"
 msgstr "Datei"
 
-#: app.py:207 app.py:242 app.py:410 app.py:438 area_dictionary.py:332 area_dictionary.py:705
+#: app.py:207 app.py:242 app.py:411 app.py:439 area_dictionary.py:332 area_dictionary.py:705
 msgid "Apply"
 msgstr "Übernehmen"
 
@@ -215,7 +215,7 @@ msgstr "Änderungen aus einem StarDict-Ordner übernehmen …"
 msgid "New entry"
 msgstr "Neuer Eintrag"
 
-#: app.py:244 app.py:440 area_covers.py:107 area_dictionary.py:334
+#: app.py:244 app.py:441 area_covers.py:107 area_dictionary.py:334
 msgid "Discard"
 msgstr "Verwerfen"
 
@@ -365,7 +365,7 @@ msgstr ""
 msgid "Help for the current area (F1)"
 msgstr "Hilfe zum aktuellen Bereich (F1)"
 
-#: app.py:355
+#: app.py:357
 msgid ""
 "The folder {ordner} is no longer reachable (e-reader unplugged?). The "
 "library stays visible, but saving only works again once the folder is back."
@@ -374,19 +374,19 @@ msgstr ""
 "Bibliothek bleibt sichtbar, Speichern geht aber erst wieder, wenn der "
 "Ordner wieder da ist."
 
-#: app.py:363
+#: app.py:364
 msgid "The folder {ordner} is reachable again."
 msgstr "Der Ordner {ordner} ist wieder erreichbar."
 
-#: app.py:379
+#: app.py:380
 msgid "Library closed."
 msgstr "Bibliothek geschlossen."
 
-#: app.py:407 app.py:443
+#: app.py:408 app.py:444
 msgid "From Calibre"
 msgstr "Aus Calibre"
 
-#: app.py:408
+#: app.py:409
 msgid ""
 "Take series, number and blurb from metadata.calibre where the EPUB lacks "
 "them"
@@ -394,56 +394,56 @@ msgstr ""
 "Reihe, Nummer und Klappentext aus metadata.calibre übernehmen, wo sie im "
 "EPUB fehlen"
 
-#: app.py:411
+#: app.py:412
 msgid "Apply the New column for this book (Ctrl+Enter)"
 msgstr "Spalte Neu für dieses Buch übernehmen (Strg+Enter)"
 
-#: app.py:412
+#: app.py:413
 msgid "Apply all"
 msgstr "Alle übernehmen"
 
-#: app.py:413
+#: app.py:414
 msgid "Apply the suggestions of all books without questionable entries"
 msgstr "Vorschläge aller Bücher ohne fragwürdige Einträge übernehmen"
 
-#: app.py:415 settings.py:437
+#: app.py:416 settings.py:437
 msgid "Up"
 msgstr "Höher"
 
-#: app.py:416
+#: app.py:417
 msgid ""
 "Move the selected entries with their sub-entries one level up (Shift+Tab)"
 msgstr "Markierte Einträge samt Untereinträgen eine Ebene höher (Umschalt+Tab)"
 
-#: app.py:417 settings.py:438
+#: app.py:418 settings.py:438
 msgid "Down"
 msgstr "Tiefer"
 
-#: app.py:418
+#: app.py:419
 msgid "Move the selected entries with their sub-entries one level down (Tab)"
 msgstr "Markierte Einträge samt Untereinträgen eine Ebene tiefer (Tab)"
 
-#: app.py:420
+#: app.py:421
 msgid "Suggestions"
 msgstr "Vorschläge"
 
-#: app.py:421
+#: app.py:422
 msgid "Reset the book to the suggestions"
 msgstr "Buch auf die Vorschläge zurücksetzen"
 
-#: app.py:422
+#: app.py:423
 msgid "Original"
 msgstr "Original"
 
-#: app.py:423
+#: app.py:424
 msgid "Reset the book to the unchanged table of contents"
 msgstr "Buch auf das unveränderte Inhaltsverzeichnis zurücksetzen"
 
-#: app.py:433 app.py:1209 app.py:1215 area_covers.py:102
+#: app.py:434 app.py:1210 app.py:1216 area_covers.py:102
 msgid "Look up"
 msgstr "Nachschlagen"
 
-#: app.py:434
+#: app.py:435
 msgid ""
 "Look up the blurb of this book: free sources first, then Claude (about 1-2 "
 "cents)"
@@ -451,182 +451,182 @@ msgstr ""
 "Klappentext dieses Buchs nachschlagen: erst kostenlose Quellen, dann Claude "
 "(etwa 1-2 Cent)"
 
-#: app.py:435 app.py:1294
+#: app.py:436 app.py:1295
 msgid "Look up all"
 msgstr "Alle nachschlagen"
 
-#: app.py:436
+#: app.py:437
 msgid "Look up all books without a blurb, in the background"
 msgstr "Für alle Bücher ohne Klappentext nachschlagen, im Hintergrund"
 
-#: app.py:439
+#: app.py:440
 msgid "Apply the text (Ctrl+Enter)"
 msgstr "Text übernehmen (Strg+Enter)"
 
-#: app.py:441
+#: app.py:442
 msgid "Restore the text from the file"
 msgstr "Text aus der Datei wiederherstellen"
 
-#: app.py:444
+#: app.py:445
 msgid "Put the description from metadata.calibre into the text field"
 msgstr "Beschreibung aus metadata.calibre ins Textfeld holen"
 
-#: app.py:545
+#: app.py:546
 msgid "no blurb (Calibre has one: From Calibre)"
 msgstr "kein Klappentext (in Calibre vorhanden: Aus Calibre)"
 
-#: app.py:546
+#: app.py:547
 msgid "no blurb"
 msgstr "kein Klappentext"
 
-#: app.py:555 app.py:1613 help.py:144 settings.py:334
+#: app.py:556 app.py:1614 help.py:144 settings.py:334
 msgid "Library"
 msgstr "Bibliothek"
 
-#: app.py:558 area_dictionary.py:123 help.py:717 list_filter.py:65
+#: app.py:559 area_dictionary.py:123 help.py:717 list_filter.py:65
 msgid "Search:"
 msgstr "Suchen:"
 
-#: app.py:563
+#: app.py:564
 msgid "Filter:"
 msgstr "Filter:"
 
-#: app.py:642 app.py:648
+#: app.py:643 app.py:649
 msgid "changed"
 msgstr "geändert"
 
-#: app.py:644
+#: app.py:645
 msgid "yes"
 msgstr "ja"
 
-#: app.py:645
+#: app.py:646
 msgid "in Calibre"
 msgstr "in Calibre"
 
-#: app.py:665
+#: app.py:666
 msgid "{n} of {gesamt} book"
 msgid_plural "{n} of {gesamt} books"
 msgstr[0] "{n} von {gesamt} Büchern"
 msgstr[1] "{n} von {gesamt} Büchern"
 
-#: app.py:674
+#: app.py:675
 msgid "series applied, not yet saved"
 msgstr "Reihe übernommen, noch nicht gespeichert"
 
-#: app.py:676
+#: app.py:677
 msgid ""
 "Series from metadata.calibre, not in the EPUB - \"From Calibre\" applies it"
 msgstr ""
 "Reihe aus metadata.calibre, steht nicht im EPUB - \"Aus Calibre\" übernimmt "
 "sie"
 
-#: app.py:678
+#: app.py:679
 msgid "Series from the {quelle} data, not in the EPUB"
 msgstr "Reihe aus den {quelle}-Daten, steht nicht im EPUB"
 
-#: app.py:708 app.py:1126 area_covers.py:72 area_dictionary.py:1115 wikidict.py:1242
+#: app.py:709 app.py:1127 area_covers.py:72 area_dictionary.py:1115 wikidict.py:1242
 msgid "Books:"
 msgstr "Bücher:"
 
-#: app.py:720
+#: app.py:721
 msgid "Entry"
 msgstr "Eintrag"
 
-#: app.py:720 area_covers.py:229 area_dictionary.py:336
+#: app.py:721 area_covers.py:229 area_dictionary.py:336
 msgid "New"
 msgstr "Neu"
 
-#: app.py:720
+#: app.py:721
 msgid "Note"
 msgstr "Hinweis"
 
-#: app.py:729
+#: app.py:730
 msgid "In the book at this point:"
 msgstr "Im Buch an dieser Stelle:"
 
-#: app.py:759 area_covers.py:78 area_covers.py:186
+#: app.py:760 area_covers.py:78 area_covers.py:186
 msgid "Choose a book on the left."
 msgstr "Buch links auswählen."
 
-#: app.py:804
+#: app.py:805
 msgid "JPEG covers need Pillow (pip install pillow)."
 msgstr "Cover im JPEG-Format brauchen Pillow (pip install pillow)."
 
-#: app.py:839
+#: app.py:840
 msgid "With suggestions"
 msgstr "Mit Vorschlägen"
 
-#: app.py:840
+#: app.py:841
 msgid "Questionable names"
 msgstr "Fragwürdige Namen"
 
-#: app.py:841
+#: app.py:842
 msgid "Some without names"
 msgstr "Einzelne ohne Namen"
 
-#: app.py:842
+#: app.py:843
 msgid "Changed chapters"
 msgstr "Kapitel geändert"
 
-#: app.py:847
+#: app.py:848
 msgid "No blurb"
 msgstr "Ohne Klappentext"
 
-#: app.py:848
+#: app.py:849
 msgid "Only in Calibre"
 msgstr "Nur in Calibre"
 
-#: app.py:850
+#: app.py:851
 msgid "Changed blurb"
 msgstr "Klappentext geändert"
 
-#: app.py:924
+#: app.py:925
 msgid "No suggestions: {grund}"
 msgstr "Keine Vorschläge: {grund}"
 
-#: app.py:939
+#: app.py:940
 msgid "number only, no name found"
 msgstr "nur Nummer, kein Name gefunden"
 
-#: app.py:942
+#: app.py:943
 msgid "Level {alt} → {neu}"
 msgstr "Ebene {alt} → {neu}"
 
-#: app.py:946 settings.py:690
+#: app.py:947 settings.py:690
 msgid "{n} entry"
 msgid_plural "{n} entries"
 msgstr[0] "{n} Eintrag"
 msgstr[1] "{n} Einträge"
 
-#: app.py:947
+#: app.py:948
 msgid "{n} suggestion."
 msgid_plural "{n} suggestions."
 msgstr[0] "{n} Vorschlag."
 msgstr[1] "{n} Vorschläge."
 
-#: app.py:1021
+#: app.py:1022
 msgid "changed, not yet applied (Ctrl+Enter)."
 msgstr "geändert, noch nicht übernommen (Strg+Enter)."
 
-#: app.py:1035
+#: app.py:1036
 msgid "Select entries in the table, then Tab (down) or Shift+Tab (up)."
 msgstr ""
 "Einträge in der Tabelle markieren, dann Tab (tiefer) oder Umschalt+Tab "
 "(höher)."
 
-#: app.py:1038
+#: app.py:1039
 msgid "levels cannot be changed - {grund}."
 msgstr "Ebenen lassen sich nicht ändern - {grund}."
 
-#: app.py:1043
+#: app.py:1044
 msgid "Cannot move down: {grund}."
 msgstr "Tiefer geht nicht: {grund}."
 
-#: app.py:1043
+#: app.py:1044
 msgid "Cannot move up: {grund}."
 msgstr "Höher geht nicht: {grund}."
 
-#: app.py:1054
+#: app.py:1055
 msgid "{n} entry moved down (with sub-entries), not yet applied (Ctrl+Enter)."
 msgid_plural ""
 "{n} entries moved down (with sub-entries), not yet applied (Ctrl+Enter)."
@@ -637,7 +637,7 @@ msgstr[1] ""
 "{n} Einträge tiefer gestellt (mit Untereinträgen), noch nicht übernommen "
 "(Strg+Enter)."
 
-#: app.py:1057
+#: app.py:1058
 msgid "{n} entry moved up (with sub-entries), not yet applied (Ctrl+Enter)."
 msgid_plural "{n} entries moved up (with sub-entries), not yet applied (Ctrl+Enter)."
 msgstr[0] ""
@@ -647,61 +647,61 @@ msgstr[1] ""
 "{n} Einträge höher gestellt (mit Untereinträgen), noch nicht übernommen "
 "(Strg+Enter)."
 
-#: app.py:1080
+#: app.py:1081
 msgid "Apply: choose a book in the Chapters or Blurbs area."
 msgstr "Übernehmen: im Bereich Kapitel oder Klappentexte ein Buch auswählen."
 
-#: app.py:1087
+#: app.py:1088
 msgid "{n} chapter name applied, not yet saved."
 msgid_plural "{n} chapter names applied, not yet saved."
 msgstr[0] "{n} Kapitelname übernommen, noch nicht gespeichert."
 msgstr[1] "{n} Kapitelnamen übernommen, noch nicht gespeichert."
 
-#: app.py:1100
+#: app.py:1101
 msgid "Suggestions of {n} book applied."
 msgid_plural "Suggestions of {n} books applied."
 msgstr[0] "Vorschläge von {n} Buch übernommen."
 msgstr[1] "Vorschläge von {n} Büchern übernommen."
 
-#: app.py:1101
+#: app.py:1102
 msgid "Please check {n} book with questionable entries one by one."
 msgid_plural "Please check {n} books with questionable entries one by one."
 msgstr[0] "{n} Buch mit fragwürdigen Einträgen bitte einzeln prüfen."
 msgstr[1] "{n} Bücher mit fragwürdigen Einträgen bitte einzeln prüfen."
 
-#: app.py:1111
+#: app.py:1112
 msgid "reset to the suggestions."
 msgstr "auf die Vorschläge zurückgesetzt."
 
-#: app.py:1119
+#: app.py:1120
 msgid "original restored, not yet applied."
 msgstr "Original hergestellt, noch nicht übernommen."
 
-#: app.py:1123 app.py:1616 help.py:231 help.py:556 settings.py:107 settings.py:405
+#: app.py:1124 app.py:1617 help.py:231 help.py:556 settings.py:107 settings.py:405
 msgid "Blurbs"
 msgstr "Klappentexte"
 
-#: app.py:1163 area_dictionary.py:613
+#: app.py:1164 area_dictionary.py:613
 msgid "Source: {quelle}"
 msgstr "Quelle: {quelle}"
 
-#: app.py:1164
+#: app.py:1165
 msgid "No blurb in the file."
 msgstr "Kein Klappentext in der Datei."
 
-#: app.py:1191
+#: app.py:1192
 msgid "blurb applied, not yet saved."
 msgstr "Klappentext übernommen, noch nicht gespeichert."
 
-#: app.py:1192
+#: app.py:1193
 msgid "unchanged."
 msgstr "unverändert."
 
-#: app.py:1201
+#: app.py:1202
 msgid "blurb restored from the file."
 msgstr "Klappentext aus der Datei wiederhergestellt."
 
-#: app.py:1209
+#: app.py:1210
 msgid ""
 "The anthropic package is missing.\n"
 "\n"
@@ -711,82 +711,82 @@ msgstr ""
 "\n"
 "pip install anthropic"
 
-#: app.py:1215
+#: app.py:1216
 msgid "No API key. Settings > Blurbs."
 msgstr "Kein API-Schlüssel. Einstellungen > Klappentexte."
 
-#: app.py:1227
+#: app.py:1228
 msgid "Look up: choose a book in the Blurbs area."
 msgstr "Nachschlagen: im Bereich Klappentexte ein Buch auswählen."
 
-#: app.py:1236
+#: app.py:1237
 msgid "All books have a blurb."
 msgstr "Alle Bücher haben einen Klappentext."
 
-#: app.py:1279 app.py:1415 app.py:1536 area_covers.py:323 area_covers.py:353 area_device.py:399
+#: app.py:1280 app.py:1416 app.py:1537 area_covers.py:323 area_covers.py:353 area_device.py:399
 msgid "Still running: {arbeit}."
 msgstr "Läuft noch: {arbeit}."
 
-#: app.py:1295
+#: app.py:1296
 msgid "{n} book without a blurb."
 msgid_plural "{n} books without a blurb."
 msgstr[0] "{n} Buch ohne Klappentext."
 msgstr[1] "{n} Bücher ohne Klappentext."
 
-#: app.py:1296
+#: app.py:1297
 msgid ""
 "The free sources are asked first; Claude only for what they do not have."
 msgstr ""
 "Zuerst werden die kostenlosen Quellen gefragt, Claude nur für das, was dort "
 "fehlt."
 
-#: app.py:1298
+#: app.py:1299
 msgid "At most {n} book goes to Claude: up to about {kosten} $."
 msgid_plural "At most {n} books go to Claude: up to about {kosten} $."
 msgstr[0] "Höchstens {n} Buch geht an Claude: bis zu etwa {kosten} $."
 msgstr[1] "Höchstens {n} Bücher gehen an Claude: bis zu etwa {kosten} $."
 
-#: app.py:1301
+#: app.py:1302
 msgid "Start?"
 msgstr "Starten?"
 
-#: app.py:1307 help.py:246
+#: app.py:1308 help.py:246
 msgid "Looking up blurbs"
 msgstr "Klappentexte nachschlagen"
 
-#: app.py:1315
+#: app.py:1316
 msgid "Looking up ({i}/{n}): {name} …"
 msgstr "Schlage nach ({i}/{n}): {name} …"
 
-#: app.py:1326
+#: app.py:1327
 msgid "API error ({fehler})"
 msgstr "API-Fehler ({fehler})"
 
-#: app.py:1338
+#: app.py:1339
 msgid "Look-up finished ({n} book)."
 msgid_plural "Look-up finished ({n} books)."
 msgstr[0] "Nachschlagen beendet ({n} Buch)."
 msgstr[1] "Nachschlagen beendet ({n} Bücher)."
 
-#: app.py:1341
+#: app.py:1342
 msgid "{n} blurb found."
 msgid_plural "{n} blurbs found."
 msgstr[0] "{n} Klappentext gefunden."
 msgstr[1] "{n} Klappentexte gefunden."
 
-#: app.py:1343
+#: app.py:1344
 msgid "Claude was not asked (no API key)."
 msgstr "Claude wurde nicht gefragt (kein API-Schlüssel)."
 
-#: app.py:1355
+#: app.py:1356
 msgid "blurb found ({quelle}), not yet applied."
 msgstr "Klappentext gefunden ({quelle}), noch nicht übernommen."
 
-#: app.py:1358
+#: app.py:1359
 msgid "no blurb found."
 msgstr "kein Klappentext gefunden."
 
-#: app.py:1367
+#: app.py:1368
 msgid ""
 "No metadata.calibre found (it is in the root folder of the e-reader when "
 "Calibre transfers the books). Open the folder on the e-reader or copy the "
@@ -796,7 +796,7 @@ msgstr ""
 "wenn Calibre die Bücher überträgt). Ordner auf dem E-Reader öffnen oder die "
 "Datei in den Bücherordner kopieren."
 
-#: app.py:1382
+#: app.py:1383
 msgid ""
 "Taken from Calibre: {reihen} series, {texte} blurbs - not yet saved "
 "(Ctrl+S)."
@@ -804,31 +804,31 @@ msgstr ""
 "Aus Calibre übernommen: {reihen} Reihen, {texte} Klappentexte - noch nicht "
 "gespeichert (Strg+S)."
 
-#: app.py:1384
+#: app.py:1385
 msgid "Nothing to take from Calibre; the EPUBs already have everything."
 msgstr "Aus Calibre gibt es nichts zu übernehmen; die EPUBs haben schon alles."
 
-#: app.py:1392
+#: app.py:1393
 msgid "Calibre has no description."
 msgstr "Calibre hat keine Beschreibung."
 
-#: app.py:1398
+#: app.py:1399
 msgid "description from Calibre, not yet applied."
 msgstr "Beschreibung aus Calibre, noch nicht übernommen."
 
-#: app.py:1404
+#: app.py:1405
 msgid "Open books folder"
 msgstr "Bücherordner öffnen"
 
-#: app.py:1422
+#: app.py:1423
 msgid "Reading"
 msgstr "Einlesen"
 
-#: app.py:1432
+#: app.py:1433
 msgid "Reading books … {i}/{n}"
 msgstr "Lese Bücher … {i}/{n}"
 
-#: app.py:1457
+#: app.py:1458
 msgid ""
 "The backup folder is inside the books folder - better put it elsewhere "
 "(Settings)."
@@ -836,27 +836,27 @@ msgstr ""
 "Sicherungsordner liegt im Bücherordner - besser woanders hin "
 "(Einstellungen)."
 
-#: app.py:1460
+#: app.py:1461
 msgid "Calibre data for {n} book ({ordner})."
 msgid_plural "Calibre data for {n} books ({ordner})."
 msgstr[0] "Calibre-Daten für {n} Buch ({ordner})."
 msgstr[1] "Calibre-Daten für {n} Bücher ({ordner})."
 
-#: app.py:1462
+#: app.py:1463
 msgid "metadata.calibre found, but it matches no book."
 msgstr "metadata.calibre gefunden, aber keinem Buch zuzuordnen."
 
-#: app.py:1463
+#: app.py:1464
 msgid "{n} book read."
 msgid_plural "{n} books read."
 msgstr[0] "{n} Buch eingelesen."
 msgstr[1] "{n} Bücher eingelesen."
 
-#: app.py:1464
+#: app.py:1465
 msgid "{n} not readable."
 msgstr "{n} nicht lesbar."
 
-#: app.py:1474
+#: app.py:1475
 msgid ""
 "The folder {ordner} is no longer reachable (e-reader ejected or "
 "unplugged?). Nothing was saved."
@@ -864,13 +864,13 @@ msgstr ""
 "Der Ordner {ordner} ist nicht mehr erreichbar (E-Reader ausgeworfen oder "
 "abgezogen?). Es wurde nichts gespeichert."
 
-#: app.py:1476
+#: app.py:1477
 msgid "{n} book file is missing, e.g. {datei}. Nothing was saved."
 msgid_plural "{n} book files are missing, e.g. {datei}. Nothing was saved."
 msgstr[0] "{n} Buchdatei fehlt, z. B. {datei}. Es wurde nichts gespeichert."
 msgstr[1] "{n} Buchdateien fehlen, z. B. {datei}. Es wurde nichts gespeichert."
 
-#: app.py:1479
+#: app.py:1480
 msgid ""
 "The changes are kept as long as Bookbench is open. Connect the e-reader "
 "again and save, or discard them with Reload."
@@ -878,81 +878,81 @@ msgstr ""
 "Die Änderungen bleiben erhalten, solange Bookbench offen ist. E-Reader "
 "wieder anschließen und speichern, oder mit Neu einlesen verwerfen."
 
-#: app.py:1488
+#: app.py:1489
 msgid "Nothing to save."
 msgstr "Nichts zu speichern."
 
-#: app.py:1488
+#: app.py:1489
 msgid "{n} book with changes not yet applied."
 msgid_plural "{n} books with changes not yet applied."
 msgstr[0] "{n} Buch mit nicht übernommenen Änderungen."
 msgstr[1] "{n} Bücher mit nicht übernommenen Änderungen."
 
-#: app.py:1495
+#: app.py:1496
 msgid "Not saved: the books are not reachable."
 msgstr "Nicht gespeichert: die Bücher sind nicht erreichbar."
 
-#: app.py:1520
+#: app.py:1521
 msgid "Not saved:"
 msgstr "Nicht gespeichert:"
 
-#: app.py:1521
+#: app.py:1522
 msgid "{n} book saved, backups in {ordner}."
 msgid_plural "{n} books saved, backups in {ordner}."
 msgstr[0] "{n} Buch gespeichert, Sicherungen in {ordner}."
 msgstr[1] "{n} Bücher gespeichert, Sicherungen in {ordner}."
 
-#: app.py:1523
+#: app.py:1524
 msgid "{n} with changes not yet applied."
 msgstr "{n} mit nicht übernommenen Änderungen."
 
-#: app.py:1528 updates.py:136
+#: app.py:1529 updates.py:138
 msgid "Changes"
 msgstr "Änderungen"
 
-#: app.py:1528
+#: app.py:1529
 msgid "{n} book has unsaved changes. Discard them?"
 msgid_plural "{n} books have unsaved changes. Discard them?"
 msgstr[0] "{n} Buch hat nicht gespeicherte Änderungen. Verwerfen?"
 msgstr[1] "{n} Bücher haben nicht gespeicherte Änderungen. Verwerfen?"
 
-#: app.py:1545
+#: app.py:1546
 msgid "error ({fehler})"
 msgstr "Fehler ({fehler})"
 
-#: app.py:1613
+#: app.py:1614
 msgid "Library ({n})"
 msgstr "Bibliothek ({n})"
 
-#: app.py:1614
+#: app.py:1615
 msgid "Chapters ({n} ⚠)"
 msgstr "Kapitel ({n} ⚠)"
 
-#: app.py:1616
+#: app.py:1617
 msgid "Blurbs ({n} ⚠)"
 msgstr "Klappentexte ({n} ⚠)"
 
-#: app.py:1618 area_covers.py:69 help.py:284 help.py:581 settings.py:111 settings.py:552
+#: app.py:1619 area_covers.py:69 help.py:284 help.py:581 settings.py:111 settings.py:552
 msgid "Covers"
 msgstr "Cover"
 
-#: app.py:1618
+#: app.py:1619
 msgid "Covers ({n} ⚠)"
 msgstr "Cover ({n} ⚠)"
 
-#: app.py:1714
+#: app.py:1715
 msgid "Settings saved. Chapter settings apply after reloading (F5)."
 msgstr ""
 "Einstellungen gespeichert. Kapitel-Einstellungen gelten nach dem "
 "Neu-Einlesen (F5)."
 
-#: app.py:1783
+#: app.py:1784
 msgid "{n} book has unsaved changes."
 msgid_plural "{n} books have unsaved changes."
 msgstr[0] "{n} Buch hat nicht gespeicherte Änderungen."
 msgstr[1] "{n} Bücher haben nicht gespeicherte Änderungen."
 
-#: app.py:1785
+#: app.py:1786
 msgid "{n} dictionary entry is changed in the form but not applied."
 msgid_plural "{n} dictionary entries are changed in the form but not applied."
 msgstr[0] ""
@@ -960,28 +960,28 @@ msgstr[0] ""
 msgstr[1] ""
 "{n} Wörterbuch-Einträge sind im Formular geändert, aber nicht übernommen."
 
-#: app.py:1788 settings.py:298
+#: app.py:1789 settings.py:298
 msgid "Language"
 msgstr "Sprache"
 
-#: app.py:1788
+#: app.py:1789
 msgid ""
 "Restart now and lose them? (No: the language changes at the next start.)"
 msgstr ""
 "Jetzt neu starten und sie verwerfen? (Nein: die Sprache wechselt beim "
 "nächsten Start.)"
 
-#: app.py:1790
+#: app.py:1791
 msgid "The new language applies at the next start."
 msgstr "Die neue Sprache gilt ab dem nächsten Start."
 
-#: app.py:1823
+#: app.py:1824
 msgid "{n} book has unsaved changes. Quit anyway?"
 msgid_plural "{n} books have unsaved changes. Quit anyway?"
 msgstr[0] "{n} Buch hat nicht gespeicherte Änderungen. Trotzdem beenden?"
 msgstr[1] "{n} Bücher haben nicht gespeicherte Änderungen. Trotzdem beenden?"
 
-#: app.py:1828
+#: app.py:1829
 msgid ""
 "{n} dictionary entry is changed in the form but not applied. Quit anyway?"
 msgid_plural ""
@@ -993,7 +993,7 @@ msgstr[1] ""
 "{n} Wörterbuch-Einträge sind im Formular geändert, aber nicht übernommen. "
 "Trotzdem beenden?"
 
-#: app.py:1844
+#: app.py:1845
 msgid "books folder to open"
 msgstr "Bücherordner, der geöffnet wird"
 
@@ -4757,7 +4757,7 @@ msgstr ""
 "\n"
 "Ein Ordner auf der Kommandozeile (start.py <Ordner>) wird immer geöffnet.\n"
 
-#: help.py:535 settings.py:103 settings.py:338 updates.py:82 updates.py:90 updates.py:257
+#: help.py:535 settings.py:103 settings.py:338 updates.py:84 updates.py:92 updates.py:261
 msgid "Updates"
 msgstr "Updates"
 
@@ -5154,8 +5154,8 @@ msgid ""
 "**Updating**\n"
 "- **Help > Check for updates …** looks for the newest release on GitHub "
 "([[einst_updates]]). Installed copies also look by themselves at start.\n"
-"- A newer version shows its changes, with **Install now** for installed "
-"copies.\n"
+"- A newer version shows its changes (formatted like on GitHub, links open "
+"in the browser), with **Install now** for installed copies.\n"
 "- **Install now** on Windows: downloads the setup, closes Bookbench, "
 "installs the new version over the old one and starts it again.\n"
 "- **Install now** on Linux: downloads the new version, replaces the program "
@@ -5195,8 +5195,9 @@ msgstr ""
 "- **Hilfe > Nach Updates suchen …** schaut nach der neuesten "
 "Veröffentlichung auf GitHub ([[einst_updates]]). Installierte Kopien "
 "schauen beim Start auch von selbst.\n"
-"- Eine neuere Version zeigt ihre Änderungen, bei installierten Kopien mit "
-"**Jetzt installieren**.\n"
+"- Eine neuere Version zeigt ihre Änderungen (formatiert wie auf GitHub, "
+"Links öffnen im Browser), bei installierten Kopien mit **Jetzt "
+"installieren**.\n"
 "- **Jetzt installieren** unter Windows: lädt das Setup, schließt Bookbench, "
 "installiert die neue Version über die alte und startet sie wieder.\n"
 "- **Jetzt installieren** unter Linux: lädt die neue Version, ersetzt den "
@@ -6515,7 +6516,7 @@ msgstr "Das Repository muss wie Besitzer/Name aussehen, nicht „{repo}“."
 msgid "Download cancelled."
 msgstr "Herunterladen abgebrochen."
 
-#: updater.py:224 updates.py:216
+#: updater.py:224 updates.py:220
 msgid "Download failed ({fehler})."
 msgstr "Herunterladen fehlgeschlagen ({fehler})."
 
@@ -6558,63 +6559,63 @@ msgstr "Auspacken fehlgeschlagen ({fehler})."
 msgid "Replacing the program failed ({fehler})."
 msgstr "Ersetzen des Programms fehlgeschlagen ({fehler})."
 
-#: updates.py:63
+#: updates.py:65
 msgid "Checking for updates …"
 msgstr "Suche nach Updates …"
 
-#: updates.py:72
+#: updates.py:74
 msgid "Update check failed ({fehler})."
 msgstr "Suche nach Updates fehlgeschlagen ({fehler})."
 
-#: updates.py:87
+#: updates.py:89
 msgid "{programm} {version} is up to date."
 msgstr "{programm} {version} ist aktuell."
 
-#: updates.py:93
+#: updates.py:95
 msgid "New version {version} available (installed: {alt})."
 msgstr "Neue Version {version} verfügbar (installiert: {alt})."
 
-#: updates.py:114
+#: updates.py:116
 msgid "Update available"
 msgstr "Update verfügbar"
 
-#: updates.py:120
+#: updates.py:122
 msgid "{programm} {version} is available"
 msgstr "{programm} {version} ist verfügbar"
 
-#: updates.py:122
+#: updates.py:124
 msgid "Installed: {alt}"
 msgstr "Installiert: {alt}"
 
-#: updates.py:124
+#: updates.py:126
 msgid "published {datum}"
 msgstr "veröffentlicht {datum}"
 
-#: updates.py:126
+#: updates.py:128
 msgid "pre-release"
 msgstr "Vorabversion"
 
-#: updates.py:144
+#: updates.py:148
 msgid "(no description)"
 msgstr "(keine Beschreibung)"
 
-#: updates.py:147
+#: updates.py:151
 msgid "Install now"
 msgstr "Jetzt installieren"
 
-#: updates.py:150
+#: updates.py:154
 msgid "Release page"
 msgstr "Seite der Veröffentlichung"
 
-#: updates.py:153 updates.py:238
+#: updates.py:157 updates.py:242
 msgid "Later"
 msgstr "Später"
 
-#: updates.py:155
+#: updates.py:159
 msgid "Skip this version"
 msgstr "Diese Version überspringen"
 
-#: updates.py:161
+#: updates.py:165
 msgid ""
 "Install now downloads the setup ({name}), closes Bookbench, installs the "
 "new version over the old one and starts it again. Settings stay."
@@ -6623,13 +6624,13 @@ msgstr ""
 "die neue Version über die alte und startet sie wieder. Die Einstellungen "
 "bleiben."
 
-#: updates.py:164
+#: updates.py:168
 msgid "This release has no Windows setup; download it from the release page."
 msgstr ""
 "Diese Veröffentlichung hat kein Windows-Setup; von der Seite der "
 "Veröffentlichung herunterladen."
 
-#: updates.py:166
+#: updates.py:170
 msgid ""
 "Install now downloads the new version, replaces the program folder "
 "({ordner}) and restarts Bookbench. Settings and the Python environment stay."
@@ -6638,7 +6639,7 @@ msgstr ""
 "({ordner}) und startet Bookbench neu. Einstellungen und Python-Umgebung "
 "bleiben."
 
-#: updates.py:168
+#: updates.py:172
 msgid ""
 "This copy runs from the source code ({ordner}), not from an installation, "
 "so it is not replaced. Update it yourself, e.g. with git pull, or install "
@@ -6648,25 +6649,25 @@ msgstr ""
 "Installation, und wird deshalb nicht ersetzt. Selbst aktualisieren, z. B. "
 "mit git pull, oder die Veröffentlichung installieren (install.sh / Setup)."
 
-#: updates.py:177
+#: updates.py:181
 msgid "Version {version} is skipped; Help > Check for updates still shows it."
 msgstr ""
 "Version {version} wird übersprungen; Hilfe > Nach Updates suchen zeigt sie "
 "trotzdem."
 
-#: updates.py:193
+#: updates.py:197
 msgid "Downloading {name} …"
 msgstr "Lade {name} …"
 
-#: updates.py:228
+#: updates.py:232
 msgid "Downloading … {mb:.1f} MB"
 msgstr "Lade … {mb:.1f} MB"
 
-#: updates.py:242
+#: updates.py:246
 msgid "Downloaded. Waiting for Bookbench to close …"
 msgstr "Heruntergeladen. Warte, bis Bookbench zugeht …"
 
-#: updates.py:244
+#: updates.py:248
 msgid ""
 "Update downloaded; Help > Check for updates > Install now installs it "
 "without downloading again."

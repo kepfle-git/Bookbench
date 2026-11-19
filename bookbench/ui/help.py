@@ -19,7 +19,7 @@ import keller_theme as kth
 from bookbench.i18n import _
 
 PROGRAMM = "Bookbench"
-VERSION = "1.2-beta1"
+VERSION = "1.2-beta2"
 
 # (Elternthema, Kennung, Titel, Text). Übersetzt beim Import. Text: **fett**, Aufzählungen mit "-",
 # [[kennung]] = Verweis.
@@ -637,7 +637,7 @@ Only on Linux and macOS.
 
 **Updating**
 - **Help > Check for updates …** looks for the newest release on GitHub ([[einst_updates]]). Installed copies also look by themselves at start.
-- A newer version shows its changes, with **Install now** for installed copies.
+- A newer version shows its changes (formatted like on GitHub, links open in the browser), with **Install now** for installed copies.
 - **Install now** on Windows: downloads the setup, closes Bookbench, installs the new version over the old one and starts it again.
 - **Install now** on Linux: downloads the new version, replaces the program folder and restarts Bookbench; the Python environment stays.
 - Before closing Bookbench asks about unsaved changes and ejecting, like when quitting. Saying no keeps the download; Install now later uses it.

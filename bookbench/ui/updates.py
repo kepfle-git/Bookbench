@@ -17,8 +17,10 @@ import webbrowser
 from datetime import datetime, timedelta
 from tkinter import messagebox, ttk
 
+import keller_theme as kth
 from bookbench.core import updater as ku
 from bookbench.i18n import _
+from bookbench.ui import markdown_view as kmd
 from bookbench.ui.help import PROGRAMM, VERSION
 
 ABSTAND = {"start": timedelta(0), "taeglich": timedelta(days=1), "woechentlich": timedelta(days=7)}
@@ -141,7 +143,9 @@ class UpdateDialog(tk.Toplevel):
         self.text.configure(yscrollcommand=sb.set)
         sb.pack(side="right", fill="y")
         self.text.pack(side="left", fill="both", expand=True)
-        self.text.insert("1.0", release.get("text") or _("(no description)"))
+        # GitHub-Releasetext ist Markdown: formatiert zeigen, Links öffnen im Browser
+        modus = "dunkel" if app.dark_mode.get() else "hell"
+        kmd.darstellen(self.text, release.get("text") or _("(no description)"), akzent=kth.PALETTE[modus]["akzent"])
         self.text.configure(state="disabled")
 
         self.k_installieren = ttk.Button(unten, text=_("Install now"), command=self.installieren)

@@ -28,14 +28,39 @@ jobs:
     if: github.repository == 'kepfle-git/Bookbench'
     runs-on: windows-latest
     env:
-      TAG: ${{ inputs.tag || github.ref_name }}
+      EINGABE: ${{ inputs.tag || github.ref_name }}
       GH_TOKEN: ${{ github.token }}
       PYTHONUTF8: "1"
     steps:
+      # Tags unterscheiden Groß/klein (V1.2 ist nicht v1.2); von Hand eingegeben wird oft anders
+      # geschrieben. Deshalb erst den tatsächlichen Tag suchen und klar melden, wenn es ihn nicht gibt.
+      - name: Tag suchen
+        shell: pwsh
+        run: |
+          $tags = git ls-remote --tags "https://github.com/$env:GITHUB_REPOSITORY" |
+            ForEach-Object { ($_ -split "`t")[1] -replace '^refs/tags/', '' } |
+            Where-Object { $_ -notlike '*^{}' }
+          $tag = $tags | Where-Object { $_ -ieq $env:EINGABE.Trim() } | Select-Object -First 1
+          if (-not $tag) {
+            Write-Error ("Tag '$env:EINGABE' gibt es im Repo nicht. Erst den Tag anlegen (auf den neuesten Commit von main). " +
+                         "Vorhanden: " + ($tags -join ', '))
+            exit 1
+          }
+          "TAG=$tag" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+          "Tag: $tag"
+
       - name: Quelltext zum Tag holen
         uses: actions/checkout@v4
         with:
-          ref: ${{ inputs.tag || github.ref }}
+          ref: refs/tags/${{ env.TAG }}
+
+      - name: Workflow im Tag vorhanden?
+        shell: pwsh
+        run: |
+          if (-not (Test-Path packaging/bookbench.spec)) {
+            Write-Error "Der Tag $env:TAG zeigt auf einen Stand ohne packaging/ - Tag auf den neuesten Commit von main setzen."
+            exit 1
+          }
 
       - name: Python einrichten
         uses: actions/setup-python@v5

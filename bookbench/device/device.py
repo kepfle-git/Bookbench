@@ -611,13 +611,55 @@ BLOCKIERER_NAMEN = {
 SHELLS = {"bash", "zsh", "fish", "sh", "dash", "ksh", "tcsh", "nu"}
 
 
-def _blockierer_name(comm):
+# Programme, in die ein Terminal eingebettet ist (Elternprozess einer Shell): Name, Abhilfe
+TERMINAL_WIRTE = {
+    "dolphin": N_("Terminal panel in a Dolphin window (F4) - open another folder in Dolphin or close the window"),
+    "kate": N_("Terminal panel in Kate - change its folder or close Kate"),
+    "kwrite": N_("Terminal panel in KWrite - change its folder or close KWrite"),
+    "code": N_("Terminal in VS Code - change its folder or close the terminal"),
+    "code-oss": N_("Terminal in VS Code - change its folder or close the terminal"),
+    "codium": N_("Terminal in VSCodium - change its folder or close the terminal"),
+    "yakuake": N_("Terminal in Yakuake (drop-down terminal) - change its folder or close the tab"),
+}
+TERMINAL_FENSTER = {"konsole", "kitty", "alacritty", "foot", "wezterm-gui", "gnome-terminal-", "gnome-terminal-server",
+                    "xfce4-terminal", "tilix", "terminator", "xterm", "urxvt", "st", "ghostty", "ptyxis", "kgx"}
+
+
+def _eltern(pid, proc="/proc", tiefe=5):
+    """Programmnamen (comm) der Elternprozesse von pid, nächster zuerst."""
+    erg = []
+    for __ in range(tiefe):
+        try:
+            with open(os.path.join(proc, str(pid), "status"), encoding="utf-8", errors="replace") as f:
+                ppid = next((int(z.split()[1]) for z in f if z.startswith("PPid:")), 0)
+            if ppid <= 1:
+                break
+            with open(os.path.join(proc, str(ppid), "comm"), encoding="utf-8", errors="replace") as f:
+                erg.append(f.read().strip())
+        except (OSError, ValueError, IndexError):
+            break
+        pid = ppid
+    return erg
+
+
+def _blockierer_name(comm, eltern=()):
+    """Anzeigename; bei Shells nach dem Programm, in dem das Terminal steckt (eltern = comm der
+    Elternprozesse, nächster zuerst), denn ein eingebettetes Terminal sieht man oft gar nicht."""
     c = comm.lower()
     if c in BLOCKIERER_NAMEN:
         return _(BLOCKIERER_NAMEN[c])
     if c.startswith("kioworker") or c.startswith("kio_") or c in ("file.so", "kiod6", "kiod5"):
         return _("KDE file access ({name}, usually belongs to Dolphin)").format(name=comm)
     if c in SHELLS:
+        for e in (x.lower() for x in eltern):
+            if e in SHELLS or e in ("sudo", "su", "tmux: server", "screen"):
+                continue
+            if e in TERMINAL_WIRTE:
+                return _(TERMINAL_WIRTE[e])
+            if e in TERMINAL_FENSTER:
+                return _("Terminal window ({programm}) with {name} in a folder on the e-reader - "
+                         "cd elsewhere or close it").format(programm=e, name=comm)
+            break
         return _("Terminal ({name} with a folder on the e-reader)").format(name=comm)
     return comm
 
@@ -671,7 +713,8 @@ def blockierer(wurzel, proc="/proc"):
                 comm = f.read().strip()
         except OSError:
             comm = "?"
-        name = _("Bookbench itself") if pid == eigen else _blockierer_name(comm)
+        name = _("Bookbench itself") if pid == eigen else _blockierer_name(
+            comm, _eltern(pid, proc) if comm.lower() in SHELLS else ())
         erg.append((pid, name, comm))
     return sorted(erg)
 

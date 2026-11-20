@@ -279,6 +279,33 @@ def _version_im_ordner(ordner):
     return m.group(1) if m else ""
 
 
+def version_im_zip(zip_pfad):
+    """Version aus bookbench/ui/help.py im Quelltext-ZIP (ohne Auspacken), "" wenn nicht lesbar."""
+    try:
+        with zipfile.ZipFile(zip_pfad) as z:
+            name = next((n for n in z.namelist() if n.endswith("bookbench/ui/help.py")
+                         and n.count("/") <= 3), None)
+            if not name:
+                return ""
+            text = z.read(name).decode("utf-8", "replace")
+    except (OSError, zipfile.BadZipFile, KeyError):
+        return ""
+    m = re.search(r'^VERSION = "([^"]+)"', text, re.M)
+    return m.group(1) if m else ""
+
+
+def vorhandene_datei_ok(pfad, name, summen, erwartet=""):
+    """Darf ein schon geladener Download (früher abgebrochenes Update) wiederverwendet werden?
+    Nur mit passender Prüfsumme; ohne Prüfsumme (Quelltext-ZIP unter Linux) nur, wenn die Version
+    im ZIP stimmt - sonst würde eine einmal falsche Datei bei jedem Versuch wieder genommen."""
+    if pruefen(pfad, name, summen):
+        return True
+    if summen.get(name):
+        return False
+    ist = version_im_zip(pfad)
+    return bool(erwartet and ist and gleich(ist, erwartet))
+
+
 def linux_einspielen(zip_pfad, programm=None, erwartet=""):
     """Tauscht programm/ gegen den Inhalt des Quelltext-ZIPs (GitHub legt alles in einen
     Ordner <besitzer>-<repo>-<commit>/). Erst wird daneben ausgepackt und geprüft (start.py,

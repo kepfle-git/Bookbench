@@ -206,10 +206,11 @@ class UpdateDialog(tk.Toplevel):
                 vorhanden = False                 # schon geladen (früher abgebrochen)? Fertige Dateien sind
                 if ziel.is_file():                # immer vollständig: geladen wird erst in eine .teil-Datei
                     try:
-                        ku.pruefen(ziel, name, summen)
-                        vorhanden = True
+                        vorhanden = ku.vorhandene_datei_ok(ziel, name, summen, self.r["version"])
                     except ku.UpdateFehler:
-                        ziel.unlink()
+                        vorhanden = False
+                    if not vorhanden:
+                        ziel.unlink(missing_ok=True)
                 if not vorhanden:
                     ku.herunterladen(url, ziel, accept, fortschritt, lambda: self._abbrechen)
                     ku.pruefen(ziel, name, summen)
@@ -258,6 +259,7 @@ class UpdateDialog(tk.Toplevel):
         try:
             ku.linux_einspielen(ziel, erwartet=self.r["version"])
         except ku.UpdateFehler as e:
+            ziel.unlink(missing_ok=True)                 # falsche/kaputte Datei nicht beim nächsten Versuch wieder nehmen
             messagebox.showerror(_("Updates"), str(e), parent=self.app)
             self.app.status.set(str(e))
             if self.winfo_exists():

@@ -51,7 +51,7 @@ msgstr ""
 msgid "Author"
 msgstr ""
 
-#: app.py:76 app.py:706 app.py:1615 help.py:192 help.py:550 settings.py:106
+#: app.py:76 app.py:706 app.py:1615 help.py:192 help.py:551 settings.py:106
 msgid "Chapters"
 msgstr ""
 
@@ -255,7 +255,7 @@ msgstr ""
 msgid "Dictionary"
 msgstr ""
 
-#: app.py:261 area_device.py:41 help.py:374 help.py:598 settings.py:114 settings.py:578
+#: app.py:261 area_device.py:41 help.py:374 help.py:599 settings.py:114 settings.py:578
 msgid "E-reader"
 msgstr ""
 
@@ -287,7 +287,7 @@ msgstr ""
 msgid "Open profile folder"
 msgstr ""
 
-#: app.py:274 area_preview.py:52 area_preview.py:396 help.py:444 help.py:612 settings.py:115
+#: app.py:274 area_preview.py:52 area_preview.py:396 help.py:445 help.py:613 settings.py:115
 msgid "Preview"
 msgstr ""
 
@@ -323,7 +323,7 @@ msgstr ""
 msgid "View"
 msgstr ""
 
-#: app.py:289 app.py:295 app.py:334 help.py:708 settings.py:146
+#: app.py:289 app.py:295 app.py:334 help.py:709 settings.py:146
 msgid "Help"
 msgstr ""
 
@@ -474,7 +474,7 @@ msgstr ""
 msgid "Library"
 msgstr ""
 
-#: app.py:559 area_dictionary.py:123 help.py:717 list_filter.py:65
+#: app.py:559 area_dictionary.py:123 help.py:718 list_filter.py:65
 msgid "Search:"
 msgstr ""
 
@@ -656,7 +656,7 @@ msgstr ""
 msgid "original restored, not yet applied."
 msgstr ""
 
-#: app.py:1124 app.py:1617 help.py:231 help.py:556 settings.py:107 settings.py:405
+#: app.py:1124 app.py:1617 help.py:231 help.py:557 settings.py:107 settings.py:405
 msgid "Blurbs"
 msgstr ""
 
@@ -895,7 +895,7 @@ msgstr ""
 msgid "Blurbs ({n} ⚠)"
 msgstr ""
 
-#: app.py:1619 area_covers.py:69 help.py:284 help.py:581 settings.py:111 settings.py:552
+#: app.py:1619 area_covers.py:69 help.py:284 help.py:582 settings.py:111 settings.py:552
 msgid "Covers"
 msgstr ""
 
@@ -1092,7 +1092,7 @@ msgstr ""
 msgid "looking for covers …"
 msgstr ""
 
-#: area_covers.py:342 area_covers.py:382 help.py:589 settings.py:112 settings.py:565
+#: area_covers.py:342 area_covers.py:382 help.py:590 settings.py:112 settings.py:565
 msgid "Looking up covers"
 msgstr ""
 
@@ -1160,7 +1160,7 @@ msgstr ""
 msgid "Click a cover to choose it, double-click takes it at once."
 msgstr ""
 
-#: area_device.py:36 device.py:87 help.py:501 settings.py:131 settings.py:656
+#: area_device.py:36 device.py:87 help.py:502 settings.py:131 settings.py:656
 msgid "Settings"
 msgstr ""
 
@@ -2490,35 +2490,69 @@ msgstr ""
 msgid "Desktop KOReader"
 msgstr ""
 
-#: device.py:619
-msgid "KDE file access ({name}, usually belongs to Dolphin)"
+#: device.py:616
+msgid ""
+"Terminal panel in a Dolphin window (F4) - open another folder in Dolphin or "
+"close the window"
+msgstr ""
+
+#: device.py:617
+msgid "Terminal panel in Kate - change its folder or close Kate"
+msgstr ""
+
+#: device.py:618
+msgid "Terminal panel in KWrite - change its folder or close KWrite"
+msgstr ""
+
+#: device.py:619 device.py:620
+msgid "Terminal in VS Code - change its folder or close the terminal"
 msgstr ""
 
 #: device.py:621
+msgid "Terminal in VSCodium - change its folder or close the terminal"
+msgstr ""
+
+#: device.py:622
+msgid ""
+"Terminal in Yakuake (drop-down terminal) - change its folder or close the "
+"tab"
+msgstr ""
+
+#: device.py:652
+msgid "KDE file access ({name}, usually belongs to Dolphin)"
+msgstr ""
+
+#: device.py:660
+msgid ""
+"Terminal window ({programm}) with {name} in a folder on the e-reader - cd "
+"elsewhere or close it"
+msgstr ""
+
+#: device.py:663
 msgid "Terminal ({name} with a folder on the e-reader)"
 msgstr ""
 
-#: device.py:674
+#: device.py:716
 msgid "Bookbench itself"
 msgstr ""
 
-#: device.py:690 device.py:709
+#: device.py:733 device.py:752
 msgid "ejected"
 msgstr ""
 
-#: device.py:692
+#: device.py:735
 msgid "Windows did not release the drive (files still open?)"
 msgstr ""
 
-#: device.py:694
+#: device.py:737
 msgid "udisksctl not found"
 msgstr ""
 
-#: device.py:698
+#: device.py:741
 msgid "device for the mount point not found"
 msgstr ""
 
-#: device.py:707
+#: device.py:750
 msgid "unmounting failed"
 msgstr ""
 
@@ -3057,7 +3091,7 @@ msgid ""
 "anthropic): [[einst_klappentexte_claude]].\n"
 msgstr ""
 
-#: help.py:263 help.py:564 settings.py:108 settings.py:419
+#: help.py:263 help.py:565 settings.py:108 settings.py:419
 msgid "Source profiles"
 msgstr ""
 
@@ -3473,12 +3507,15 @@ msgid ""
 "**Retry**. Only your own programs can be seen.\n"
 "- Dolphin: change to another folder, also in other tabs and in the terminal "
 "panel, or close the window.\n"
+"- Dolphin's terminal panel (F4) follows the folder shown in Dolphin and "
+"keeps running when it is hidden: Bookbench then names the terminal panel in "
+"a Dolphin window. Opening another folder in Dolphin moves it away.\n"
 "- That KDE opens the file manager when the e-reader is connected can be "
 "switched off in the KDE system settings (removable storage / device "
 "actions).\n"
 msgstr ""
 
-#: help.py:444
+#: help.py:445
 msgid ""
 "\n"
 "Shows a book in the **desktop KOReader** as it looks on the device: font, "
@@ -3502,11 +3539,11 @@ msgid ""
 "- [[vorschau_bildschirm]]\n"
 msgstr ""
 
-#: help.py:459 settings.py:428 settings.py:871
+#: help.py:460 settings.py:428 settings.py:871
 msgid "Profile"
 msgstr ""
 
-#: help.py:459
+#: help.py:460
 msgid ""
 "\n"
 "The preview runs in its own profile in the settings folder (subfolder "
@@ -3528,11 +3565,11 @@ msgid ""
 "profile, book data is always next to the book.\n"
 msgstr ""
 
-#: help.py:466
+#: help.py:467
 msgid "Starting and output"
 msgstr ""
 
-#: help.py:466
+#: help.py:467
 msgid ""
 "\n"
 "**Start** (or double-click)\n"
@@ -3551,11 +3588,11 @@ msgid ""
 "needs something specific to the e-reader.\n"
 msgstr ""
 
-#: help.py:475
+#: help.py:476
 msgid "Screen and device"
 msgstr ""
 
-#: help.py:475
+#: help.py:476
 msgid ""
 "\n"
 "The window copies the screen of a device: size in pixels, pixel density, "
@@ -3582,11 +3619,11 @@ msgid ""
 "of the window.\n"
 msgstr ""
 
-#: help.py:487 help.py:546 settings.py:104 settings.py:385
+#: help.py:488 help.py:547 settings.py:104 settings.py:385
 msgid "Saving and backups"
 msgstr ""
 
-#: help.py:487
+#: help.py:488
 msgid ""
 "\n"
 "**Save** (Ctrl+S) writes all applied changes (yellow) of all books: chapter "
@@ -3613,7 +3650,7 @@ msgid ""
 "information (Cover browser > Extract and cache book information).\n"
 msgstr ""
 
-#: help.py:501
+#: help.py:502
 msgid ""
 "\n"
 "File > **Settings …** opens the settings. The tree on the left has groups "
@@ -3637,11 +3674,11 @@ msgid ""
 "- [[einst_erweitert]]\n"
 msgstr ""
 
-#: help.py:515 settings.py:100 settings.py:297
+#: help.py:516 settings.py:100 settings.py:297
 msgid "Language and theme"
 msgstr ""
 
-#: help.py:515
+#: help.py:516
 msgid ""
 "\n"
 "**Language** (default: automatic)\n"
@@ -3657,11 +3694,11 @@ msgid ""
 "Windows or KDE/GNOME, checked at start.\n"
 msgstr ""
 
-#: help.py:523 settings.py:101 settings.py:311
+#: help.py:524 settings.py:101 settings.py:311
 msgid "Interface"
 msgstr ""
 
-#: help.py:523
+#: help.py:524
 msgid ""
 "\n"
 "- **Status strip next to the lists** (default: on): coloured dots and ⚠ "
@@ -3675,11 +3712,11 @@ msgid ""
 "symbols. Ctrl+B switches at any time; the last state is remembered.\n"
 msgstr ""
 
-#: help.py:529 settings.py:102 settings.py:329
+#: help.py:530 settings.py:102 settings.py:329
 msgid "Startup"
 msgstr ""
 
-#: help.py:529
+#: help.py:530
 msgid ""
 "\n"
 "- **Open the last folder** (default: on): the books folder that was open "
@@ -3692,11 +3729,11 @@ msgid ""
 "A folder given on the command line (start.py <folder>) is always opened.\n"
 msgstr ""
 
-#: help.py:535 settings.py:103 settings.py:338 updates.py:84 updates.py:92 updates.py:261
+#: help.py:536 settings.py:103 settings.py:338 updates.py:84 updates.py:92 updates.py:263
 msgid "Updates"
 msgstr ""
 
-#: help.py:535
+#: help.py:536
 msgid ""
 "\n"
 "**This copy** says how Bookbench was installed: with the Windows setup, "
@@ -3721,7 +3758,7 @@ msgid ""
 "more than the check needs.\n"
 msgstr ""
 
-#: help.py:546
+#: help.py:547
 msgid ""
 "\n"
 "- **Backup folder** (default: Bookbench Backups in the user folder): books "
@@ -3732,7 +3769,7 @@ msgid ""
 "are deleted when saving.\n"
 msgstr ""
 
-#: help.py:550
+#: help.py:551
 msgid ""
 "\n"
 "- **Subtitle lines per chapter** (default: 1): how many lines below a "
@@ -3746,7 +3783,7 @@ msgid ""
 "reading the books. See also [[kapitel]].\n"
 msgstr ""
 
-#: help.py:556
+#: help.py:557
 msgid ""
 "\n"
 "The page shows the order of the sources ([[klappentexte_nachschlagen]]).\n"
@@ -3761,7 +3798,7 @@ msgid ""
 "enter yourself.\n"
 msgstr ""
 
-#: help.py:564
+#: help.py:565
 msgid ""
 "\n"
 "The list of profiles in the order in which they are checked. The first "
@@ -3780,11 +3817,11 @@ msgid ""
 "books; books it already found stay as they are.\n"
 msgstr ""
 
-#: help.py:574 settings.py:110 settings.py:445
+#: help.py:575 settings.py:110 settings.py:445
 msgid "Claude API"
 msgstr ""
 
-#: help.py:574
+#: help.py:575
 msgid ""
 "\n"
 "- **API key**: from console.anthropic.com (account with credit). Empty: the "
@@ -3802,7 +3839,7 @@ msgid ""
 "sent: [[kosten]].\n"
 msgstr ""
 
-#: help.py:581
+#: help.py:582
 msgid ""
 "\n"
 "**Inserting a new cover** ([[cover_bild]])\n"
@@ -3818,7 +3855,7 @@ msgid ""
 "Covers area and its filter \"Small cover\".\n"
 msgstr ""
 
-#: help.py:589
+#: help.py:590
 msgid ""
 "\n"
 "**Sources** (both free, no key; [[kosten]])\n"
@@ -3834,7 +3871,7 @@ msgid ""
 "book and uses the largest.\n"
 msgstr ""
 
-#: help.py:598
+#: help.py:599
 msgid ""
 "\n"
 "**Detection**\n"
@@ -3858,7 +3895,7 @@ msgid ""
 "written to the e-reader in this session ([[kobo_auswerfen]]).\n"
 msgstr ""
 
-#: help.py:612
+#: help.py:613
 msgid ""
 "\n"
 "Only on Linux and macOS.\n"
@@ -3873,11 +3910,11 @@ msgid ""
 "KOReader. See [[vorschau_bildschirm]].\n"
 msgstr ""
 
-#: help.py:618 settings.py:116 settings.py:651
+#: help.py:619 settings.py:116 settings.py:651
 msgid "Advanced"
 msgstr ""
 
-#: help.py:618
+#: help.py:619
 msgid ""
 "\n"
 "**Files of the program**\n"
@@ -3901,11 +3938,11 @@ msgid ""
 "key.\n"
 msgstr ""
 
-#: help.py:632
+#: help.py:633
 msgid "Installing and updating"
 msgstr ""
 
-#: help.py:632
+#: help.py:633
 msgid ""
 "\n"
 "**Installing**\n"
@@ -3947,11 +3984,11 @@ msgid ""
 "installation ([[vorschau]]).\n"
 msgstr ""
 
-#: help.py:650
+#: help.py:651
 msgid "Troubleshooting"
 msgstr ""
 
-#: help.py:650
+#: help.py:651
 msgid ""
 "\n"
 "**KOReader still shows the old chapter names, blurb or cover**\n"
@@ -4022,15 +4059,15 @@ msgid ""
 "are in the backup folder ([[speichern]]).\n"
 msgstr ""
 
-#: help.py:737
+#: help.py:738
 msgid "Back"
 msgstr ""
 
-#: help.py:796
+#: help.py:797
 msgid "{n} topics found"
 msgstr ""
 
-#: help.py:797
+#: help.py:798
 msgid "Nothing found."
 msgstr ""
 
@@ -5085,7 +5122,7 @@ msgstr ""
 msgid "Download cancelled."
 msgstr ""
 
-#: updater.py:224 updates.py:220
+#: updater.py:224 updates.py:221
 msgid "Download failed ({fehler})."
 msgstr ""
 
@@ -5099,29 +5136,29 @@ msgid ""
 "published file."
 msgstr ""
 
-#: updater.py:290
+#: updater.py:317
 msgid "This copy was not installed with install.sh; it is not replaced."
 msgstr ""
 
-#: updater.py:302
+#: updater.py:329
 msgid "The archive contains unsafe paths."
 msgstr ""
 
-#: updater.py:307
+#: updater.py:334
 msgid ""
 "The archive does not contain Bookbench (start.py and bookbench/ are "
 "missing)."
 msgstr ""
 
-#: updater.py:310
+#: updater.py:337
 msgid "The archive contains version {ist} instead of {soll}."
 msgstr ""
 
-#: updater.py:318
+#: updater.py:345
 msgid "Unpacking failed ({fehler})."
 msgstr ""
 
-#: updater.py:327
+#: updater.py:354
 msgid "Replacing the program failed ({fehler})."
 msgstr ""
 
@@ -5173,7 +5210,7 @@ msgstr ""
 msgid "Release page"
 msgstr ""
 
-#: updates.py:157 updates.py:242
+#: updates.py:157 updates.py:243
 msgid "Later"
 msgstr ""
 
@@ -5212,15 +5249,15 @@ msgstr ""
 msgid "Downloading {name} …"
 msgstr ""
 
-#: updates.py:232
+#: updates.py:233
 msgid "Downloading … {mb:.1f} MB"
 msgstr ""
 
-#: updates.py:246
+#: updates.py:247
 msgid "Downloaded. Waiting for Bookbench to close …"
 msgstr ""
 
-#: updates.py:248
+#: updates.py:249
 msgid ""
 "Update downloaded; Help > Check for updates > Install now installs it "
 "without downloading again."

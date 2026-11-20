@@ -19,7 +19,7 @@ import keller_theme as kth
 from bookbench.i18n import _
 
 PROGRAMM = "Bookbench"
-VERSION = "1.2-beta2"
+VERSION = "1.2"
 
 # (Elternthema, Kennung, Titel, Text). Übersetzt beim Import. Text: **fett**, Aufzählungen mit "-",
 # [[kennung]] = Verweis.
@@ -439,6 +439,7 @@ If the e-reader disappears without ejecting (cable pulled), a bar above the area
 **If ejecting fails**
 On Linux ejecting fails while a program still has a file or folder on the e-reader open, often the file manager that opened when the e-reader was connected. Bookbench first tries three times (thumbnails or the file search often let go by themselves), then lists these programs and offers **Retry**. Only your own programs can be seen.
 - Dolphin: change to another folder, also in other tabs and in the terminal panel, or close the window.
+- Dolphin's terminal panel (F4) follows the folder shown in Dolphin and keeps running when it is hidden: Bookbench then names the terminal panel in a Dolphin window. Opening another folder in Dolphin moves it away.
 - That KDE opens the file manager when the e-reader is connected can be switched off in the KDE system settings (removable storage / device actions).
 """)),
     ("bereiche", "vorschau", _("Preview"), _("""

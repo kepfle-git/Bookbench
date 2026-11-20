@@ -3,9 +3,12 @@
 metadata.py - Metadaten im content.opf lesen und schreiben (Bereich Metadaten), dazu die
 Werte aus Calibre (metadata.calibre) und KOReader (custom_metadata.lua) zum Vergleichen.
 
-  FELDER            Kennungen der Felder, Werte überall als Text (Autoren mit " & ", Schlagwörter mit ", ")
-  lesen(opf)        {feld: text} aus dem OPF
-  schreiben(opf, alt, neu, definition)   OPF mit den geänderten Feldern (None bei ungewöhnlichem Aufbau)
+  FELDER            Kennungen der festen Felder, Werte überall als Text (Autoren mit " & ", Schlagwörter mit ", ");
+                    eigene Calibre-Spalten heißen wie in Calibre ("#subtitle") - welche angezeigt werden,
+                    stellt der Nutzer ein (Einstellung meta_spalten, seit 1.3-beta2)
+  lesen(opf)        {feld: text} aus dem OPF, dazu alle eigenen Spalten, die im Buch stehen
+  definitionen(opf) {"#spalte": Felddefinition} der eigenen Spalten im Buch
+  schreiben(opf, alt, neu, definitionen)   OPF mit den geänderten Feldern (None bei ungewöhnlichem Aufbau)
   calibre_werte(eintrag), koreader_werte(pfad)   {feld: text}, nur Felder, die dort vorkommen
   unterschiede(werte, andere)   Felder, in denen andere einen Wert hat, der abweicht
   pruefen(werte)    Warnungen (ISBN-Prüfziffer, fehlende Sprache)
@@ -29,13 +32,11 @@ from bookbench.core import blurbs
 from bookbench.core import toc_report as tocreport
 from bookbench.i18n import N_, _
 
-FELDER = ("titel", "untertitel", "autoren", "autor_sort", "reihe", "nummer", "verlag", "sprache", "isbn",
-          "schlagwoerter")
-NAMEN = {"titel": N_("Title"), "untertitel": N_("Subtitle"), "autoren": N_("Authors"),
+FELDER = ("titel", "autoren", "autor_sort", "reihe", "nummer", "verlag", "sprache", "isbn", "schlagwoerter")
+NAMEN = {"titel": N_("Title"), "autoren": N_("Authors"),
          "autor_sort": N_("Author sort"), "reihe": N_("Series"), "nummer": N_("Number"),
          "verlag": N_("Publisher"), "sprache": N_("Language"), "isbn": N_("ISBN"), "schlagwoerter": N_("Tags")}
 WICHTIG = ("titel", "autoren", "reihe", "nummer")       # Abweichung hier = ⚠ in der Liste
-UNTERTITEL_SPALTE = "#subtitle"      # eigene Calibre-Spalte für den Untertitel (setzt die App aus den Einstellungen)
 CALIBRE_PREFIX = "calibre: https://calibre-ebook.com"
 UNBEKANNT = {"Unknown", "Unbekannt"}     # schreibt Calibre (in seiner Oberflächensprache) bei fehlendem Titel/Autor
 
@@ -206,21 +207,55 @@ def _trenner(fm):
 
 
 def spalten_text(fm):
-    """Wert einer Calibre-Felddefinition als Text (Listen mit " & " bzw. ", ")."""
+    """Wert einer Calibre-Felddefinition als Text (Listen mit " & " bzw. ", ", Ja/Nein, Datum ohne Uhrzeit)."""
     if not isinstance(fm, dict):
         return ""
     w = fm.get("#value#")
     if isinstance(w, list):
         t = _trenner(fm) or ","
         return (" & " if t == "&" else ", ").join(str(x) for x in w if str(x).strip())
-    return "" if w is None else str(w)
+    if w is None:
+        return ""
+    if isinstance(w, bool) or fm.get("datatype") == "bool":
+        return _("yes") if w else _("no")
+    if isinstance(w, float) and w == int(w):
+        return str(int(w))
+    if fm.get("datatype") == "datetime":
+        return str(w)[:10]
+    if isinstance(w, dict) and "__value__" in w:                # Calibres JSON für Datumswerte
+        return str(w["__value__"])[:10]
+    return str(w)
 
 
 def _spalten_wert(fm, text):
+    """Text aus dem Formular in den Wert für Calibres JSON; ValueError bei Unsinn in Zahlenfeldern."""
     t = _trenner(fm)
     if t:
         return liste(text, t)
-    return text or None
+    if not text:
+        return None
+    art = fm.get("datatype")
+    if art in ("int", "rating"):
+        return int(float(text.replace(",", ".")))
+    if art == "float":
+        return float(text.replace(",", "."))
+    if art == "bool":
+        if text.casefold() in {"yes", "ja", "true", "1", "y", "j", _("yes").casefold()}:
+            return True
+        if text.casefold() in {"no", "nein", "false", "0", "n", _("no").casefold()}:
+            return False
+        raise ValueError(text)
+    return text
+
+
+def spalten_fehler(fm, text):
+    """Warnung, wenn text nicht zum Typ der Spalte passt, sonst None."""
+    try:
+        _spalten_wert(fm or {}, text)
+    except ValueError:
+        return {"int": _("a whole number"), "rating": _("a whole number"), "float": _("a number"),
+                "bool": _("yes or no")}.get((fm or {}).get("datatype"), _("a valid value"))
+    return None
 
 
 def standard_definition(spalte):
@@ -295,10 +330,18 @@ def mit_spalte(opf, spalte, text, definition=None):
 
 
 # ---------------------------------------------------------------- Lesen
-def lesen(opf, spalte=None):
-    """Alle Felder als Text."""
-    spalte = spalte if spalte is not None else UNTERTITEL_SPALTE
-    haupt, unter_epub3 = _haupttitel(opf)
+def definitionen(opf):
+    """{"#spalte": Felddefinition} aller eigenen Calibre-Spalten im Buch (EPUB3-Block vor EPUB2-Einträgen)."""
+    erg = {k: v[2] for k, v in _spalten_epub2(opf).items() if isinstance(v[2], dict)}
+    v3 = _spalten_epub3(opf) if epub_version(opf) >= 3 else None
+    if v3:
+        erg.update({k: v for k, v in v3[2].items() if isinstance(v, dict)})
+    return erg
+
+
+def lesen(opf):
+    """Alle Felder als Text, dazu alle eigenen Calibre-Spalten des Buchs ("#spalte")."""
+    haupt, __ = _haupttitel(opf)
     autoren = _autoren_el(opf)
     v3 = epub_version(opf) >= 3
     sorten = []
@@ -310,21 +353,12 @@ def lesen(opf, spalte=None):
         autor_sort = belegt[0]                     # Calibre schreibt den ganzen Sortiernamen an jeden Autor
     else:
         autor_sort = " & ".join(belegt)
-    unter = ""
-    if spalte:
-        if v3:
-            v = _spalten_epub3(opf)
-            unter = spalten_text(v[2].get(spalte)) if v else ""
-        if not unter:                              # EPUB3-Bücher von älteren Calibre-Versionen
-            v2 = _spalten_epub2(opf).get(spalte)
-            unter = spalten_text(v2[2]) if v2 else ""
     reihe, nummer = tocreport.reihe_aus_opf(opf)
     if nummer.endswith(".0"):
         nummer = nummer[:-2]
     sprache = _elemente(opf, "language")
-    return {
+    w = {
         "titel": haupt[3] if haupt else "",
-        "untertitel": unter or unter_epub3,
         "autoren": " & ".join(el[3] for el in autoren if el[3]),
         "autor_sort": autor_sort,
         "reihe": reihe, "nummer": nummer,
@@ -333,6 +367,15 @@ def lesen(opf, spalte=None):
         "isbn": blurbs.isbn_aus(opf),
         "schlagwoerter": ", ".join(el[3] for el in _elemente(opf, "subject") if el[3]),
     }
+    for k, fm in definitionen(opf).items():
+        if k.startswith("#"):
+            w[k] = spalten_text(fm)
+    return w
+
+
+def epub3_untertitel(opf):
+    """Untertitel nach EPUB 3 (zweiter dc:title mit title-type subtitle), sonst ""."""
+    return _haupttitel(opf)[1]
 
 
 # ---------------------------------------------------------------- Schreiben
@@ -447,10 +490,12 @@ def _mit_isbn(opf, isbn):
     return _einfuegen(opf, f'<dc:identifier opf:scheme="ISBN">{isbn}</dc:identifier>')
 
 
-def schreiben(opf, alt, neu, definition=None, spalte=None):
+def schreiben(opf, alt, neu, definitionen=None):
     """OPF mit den Feldern aus neu, die sich gegenüber alt geändert haben (Reihe/Nummer nicht -
-    die schreibt library.opf_mit_reihe). None, wenn das OPF einen ungewöhnlichen Aufbau hat."""
-    spalte = spalte if spalte is not None else UNTERTITEL_SPALTE
+    die schreibt library.opf_mit_reihe). Eigene Spalten ("#…") mit der Definition aus dem Buch, sonst
+    aus definitionen (metadata.calibre), sonst als Textspalte. None, wenn das OPF einen ungewöhnlichen
+    Aufbau hat; ValueError, wenn ein Wert nicht zum Typ seiner Spalte passt."""
+    definitionen = definitionen or {}
 
     def anders(f):
         return f in neu and _norm(neu[f]) != _norm(alt.get(f, ""))
@@ -465,28 +510,28 @@ def schreiben(opf, alt, neu, definition=None, spalte=None):
         opf = _mit_isbn(opf, neu["isbn"])
     if opf is not None and anders("schlagwoerter"):
         opf = _mit_schlagwoertern(opf, neu["schlagwoerter"])
-    if opf is not None and anders("untertitel") and spalte:
-        opf = mit_spalte(opf, spalte, _norm(neu["untertitel"]), definition)
+    for k in sorted(f for f in neu if f.startswith("#")):
+        if opf is not None and anders(k):
+            opf = mit_spalte(opf, k, _norm(neu[k]), definitionen.get(k))
     return opf
 
 
 # ---------------------------------------------------------------- Calibre, KOReader
-def calibre_definition(eintrag, spalte=None):
-    """Felddefinition der Spalte aus metadata.calibre (ohne Wert) oder None."""
-    spalte = spalte if spalte is not None else UNTERTITEL_SPALTE
-    fm = ((eintrag or {}).get("user_metadata") or {}).get(spalte)
-    if not isinstance(fm, dict):
-        return None
-    fm = dict(fm)
-    fm.pop("#value#", None)
-    fm.pop("#extra#", None)
-    return fm
+def calibre_definitionen(eintrag):
+    """{"#spalte": Felddefinition ohne Wert} aus einem Eintrag von metadata.calibre."""
+    erg = {}
+    for k, fm in ((eintrag or {}).get("user_metadata") or {}).items():
+        if isinstance(fm, dict):
+            fm = dict(fm)
+            fm.pop("#value#", None)
+            fm.pop("#extra#", None)
+            erg[k] = fm
+    return erg
 
 
-def calibre_werte(eintrag, spalte=None):
-    """{feld: text} aus einem Eintrag von metadata.calibre (nur, was dort steht)."""
+def calibre_werte(eintrag):
+    """{feld: text} aus einem Eintrag von metadata.calibre (nur, was dort steht), eigene Spalten als "#…"."""
     from bookbench.core.library import nummer_text
-    spalte = spalte if spalte is not None else UNTERTITEL_SPALTE
     e = eintrag or {}
     if not e:
         return {}
@@ -497,8 +542,9 @@ def calibre_werte(eintrag, spalte=None):
          "sprache": sprache_kurz((e.get("languages") or [""])[0]),
          "isbn": re.sub(r"[^\dXx]", "", ((e.get("identifiers") or {}).get("isbn") or "")).upper(),
          "schlagwoerter": ", ".join(e.get("tags") or [])}
-    if spalte:
-        w["untertitel"] = spalten_text((e.get("user_metadata") or {}).get(spalte))
+    for k, fm in (e.get("user_metadata") or {}).items():
+        if k.startswith("#") and isinstance(fm, dict):
+            w[k] = spalten_text(fm)
     for f in ("titel", "autoren"):              # Calibres Platzhalter für fehlende Angaben
         if w[f] in UNBEKANNT:
             w[f] = ""
@@ -548,12 +594,17 @@ def gleich(feld, a, b):
         return re.sub(r"[^\dXx]", "", a).upper() == re.sub(r"[^\dXx]", "", b).upper()
     if feld == "nummer":
         try:
-            return float(a or 0) == float(b or 0)
+            return float((a or "0").replace(",", ".")) == float((b or "0").replace(",", "."))
         except ValueError:
             return a == b
     if feld == "autoren":
         return liste(a) == liste(b)
     return a == b
+
+
+def nummer_norm(text):
+    """Reihennummer wie Calibre: Komma wird Punkt (1,5 → 1.5)."""
+    return _norm(text).replace(",", ".")
 
 
 def unterschiede(werte, andere, felder=FELDER):
@@ -570,8 +621,8 @@ def isbn_ok(isbn):
     return False
 
 
-def pruefen(werte):
-    """[(feld, Warnung)] für die Anzeige unter dem Formular."""
+def pruefen(werte, definitionen=None):
+    """[(feld, Warnung)] für die Anzeige unter dem Formular; definitionen: Typen der eigenen Spalten."""
     erg = []
     if _norm(werte.get("isbn")) and not isbn_ok(werte["isbn"]):
         erg.append(("isbn", _("The ISBN is not valid (check digit or length).")))
@@ -583,7 +634,11 @@ def pruefen(werte):
         erg.append(("nummer", _("Number without series.")))
     elif _norm(werte.get("nummer")):
         try:
-            float(werte["nummer"])
+            float(nummer_norm(werte["nummer"]))
         except ValueError:
-            erg.append(("nummer", _("The number must be a number (e.g. 3 or 3.5).")))
+            erg.append(("nummer", _("The number must be a number (e.g. 3, 1.5 or 0.9).")))
+    for k, fm in (definitionen or {}).items():
+        art = spalten_fehler(fm, _norm(werte.get(k, ""))) if k in werte else None
+        if art:
+            erg.append((k, _("{feld} must be {art}.").format(feld=fm.get("name") or k, art=art)))
     return erg

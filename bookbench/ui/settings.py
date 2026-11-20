@@ -41,7 +41,8 @@ STANDARD = {
     "start_ordner": True, "start_bereich": "bibliothek", "bereich_zuletzt": "bibliothek",
     "tooltip_verzoegerung": 600, "cover_kopf_hoehe": 96, "kt_min": 80, "kt_max": 4000, "kt_kosten": 0.015,
     "cover_min_hoehe": 300, "cover_anzahl": 8, "kobo_suche_sekunden": 3,
-    "meta_untertitel": False, "meta_untertitel_spalte": "#subtitle",      # Bereich Metadaten (seit 1.3)
+    # Bereich Metadaten (seit 1.3): eigene Felder [[Suchname in Calibre, Bezeichnung]], Calibre-Abgleich
+    "meta_spalten": [], "calibre_an": True,
     # Updates (ui/updates.py): pruefen aus/start/taeglich/woechentlich, zuletzt/ausgelassen ohne Seite
     "update_pruefen": "taeglich", "update_vorab": False,     # Repo fest in core/updater.py (REPO)
     "update_zuletzt": "", "update_ausgelassen": "",
@@ -80,7 +81,16 @@ def laden():
         pass
     for alt in ("update_repo", "update_token"):          # bis 1.0.3 (Repo war privat); Token nicht liegen lassen
         e.pop(alt, None)
+    alte_einstellungen(e)
     return e
+
+
+def alte_einstellungen(e):
+    """Einstellungen älterer Versionen umziehen: Untertitel aus 1.3-beta1 wird ein eigenes Feld."""
+    if "meta_untertitel" in e or "meta_untertitel_spalte" in e:
+        an, spalte = e.pop("meta_untertitel", False), e.pop("meta_untertitel_spalte", "") or "#subtitle"
+        if an and not e.get("meta_spalten"):
+            e["meta_spalten"] = [[spalte, _("Subtitle")]]
 
 
 def speichern(e):
@@ -111,7 +121,8 @@ class EinstellungsDialog(tk.Toplevel):
         ("klappentexte_claude", "klappentexte", N_("Claude API"), N_("Key, model, cost estimate")),
         ("cover", "buecher", N_("Covers"), N_("Inserting and marking covers")),
         ("cover_nachschlagen", "cover", N_("Looking up covers"), N_("Sources and which images count")),
-        ("metadaten", "buecher", N_("Metadata"), N_("Subtitle from a Calibre column")),
+        ("metadaten", "buecher", N_("Metadata"), N_("Own fields from Calibre columns, e.g. a subtitle")),
+        ("calibre", "buecher", N_("Calibre"), N_("Comparing with Calibre's metadata.calibre on or off")),
         ("geraet", "", N_("Device"), N_("E-reader and preview")),
         ("kobo", "geraet", N_("E-reader"), N_("Detection, backups, dictionaries, ejecting")),
         ("vorschau", "geraet", N_("Preview"), N_("Desktop KOReader and the device shown")),
@@ -125,7 +136,7 @@ class EinstellungsDialog(tk.Toplevel):
                "cover_max_hoehe", "cover_qualitaet", "cover_klein", "cover_openlibrary", "cover_google",
                "cover_min_hoehe", "cover_anzahl", "kobo_sicherungen_anzahl", "woerterbuch_quelle",
                "auswerfen_erinnern", "kobo_suche_sekunden", "kobo_oeffnen", "koreader_pfad", "update_pruefen", "update_vorab",
-               "meta_untertitel", "meta_untertitel_spalte")
+               "calibre_an")
 
     def __init__(self, app, seite=None):
         super().__init__(app)
@@ -143,6 +154,7 @@ class EinstellungsDialog(tk.Toplevel):
                 tk.DoubleVar if typ is float else tk.StringVar
             self.v[k] = var(value=wert)
         self.profile = klappentext_profile(e)
+        self.meta_spalten = [list(x) for x in e.get("meta_spalten") or [] if isinstance(x, (list, tuple)) and x]
         self.sprache = tk.StringVar(value=self._sprachname(e.get("sprache") or "auto"))
         unten = ttk.Frame(self, padding=8)
         unten.pack(side="bottom", fill="x")
@@ -562,7 +574,7 @@ class EinstellungsDialog(tk.Toplevel):
                      "keeps the format of the old one (JPEG stays JPEG)."), 50, 100)
         self._abschnitt(s, _("Marking"))
         self._zahl(s, "cover_klein", _("Mark covers below this height (px):"),
-                   _("Shown with ⚠ in the Covers area and in the filter \"Small cover\". 0: never."), 0, 6000, 10)
+                   _("Shown with ⚠ in the Metadata area and in the filter \"Small cover\". 0: never."), 0, 6000, 10)
 
     def _seite_cover_nachschlagen(self, s):
         self._ueberschrift(s, _("Looking up covers"))
@@ -578,14 +590,109 @@ class EinstellungsDialog(tk.Toplevel):
 
     def _seite_metadaten(self, s):
         self._ueberschrift(s, _("Metadata"))
-        self._abschnitt(s, _("Subtitle"))
-        self._schalter(s, "meta_untertitel", _("Show the Subtitle field"),
-                       _("Calibre has no subtitle field of its own; many people add a column for it. Bookbench "
-                         "reads and writes that column the way Calibre stores it in the book."))
-        self._feld(s, "meta_untertitel_spalte", _("Calibre column (lookup name):"),
-                   _("As in Calibre under Preferences > Add your own columns, with #, e.g. #subtitle. Columns with "
-                     "several values (ampersand or comma separated) are shown joined with \" & \" or \", \". "
-                     "Applies after reloading (F5)."), breite=20)
+        self._abschnitt(s, _("Own fields"))
+        self._hinweis(s, _("Extra fields in the Metadata area, one per Calibre column (Calibre: Preferences > Add your "
+                           "own columns). Bookbench reads and writes them the way Calibre stores them in the book."))
+        z = ttk.Frame(s)
+        z.pack(anchor="w", fill="x", padx=(22, 0))
+        r = tk.Frame(z, highlightthickness=1, borderwidth=0)
+        r.pack(side="left", fill="x", expand=True)
+        r.configure(highlightbackground=self.p["rahmen"], highlightcolor=self.p["rahmen"])
+        self.spalten_liste = ttk.Treeview(r, columns=("spalte", "name"), show="headings", selectmode="browse", height=6)
+        self.spalten_liste.heading("spalte", text=_("Lookup name"))
+        self.spalten_liste.heading("name", text=_("Label"))
+        self.spalten_liste.column("spalte", width=150, stretch=True)
+        self.spalten_liste.column("name", width=200, stretch=True)
+        self.spalten_liste.pack(fill="x")
+        self.spalten_liste.bind("<<TreeviewSelect>>", lambda ev: self._spalte_gewaehlt())
+        k = ttk.Frame(z)
+        k.pack(side="left", anchor="n", padx=(6, 0))
+        for text, fn in ((_("Delete"), self._spalte_loeschen), (_("Up"), lambda: self._spalte_schieben(-1)),
+                         (_("Down"), lambda: self._spalte_schieben(1)), (_("From Calibre"), self._spalten_aus_calibre)):
+            ttk.Button(k, text=text, command=fn, width=14).pack(fill="x", pady=(0, 2))
+        e = ttk.Frame(s)
+        e.pack(anchor="w", padx=(22, 0), pady=(6, 0))
+        self.spalte_var, self.spalte_name = tk.StringVar(value="#"), tk.StringVar()
+        ttk.Label(e, text=_("Lookup name:")).grid(row=0, column=0, sticky="w")
+        ttk.Entry(e, textvariable=self.spalte_var, width=12).grid(row=0, column=1, sticky="w", padx=(4, 12))
+        ttk.Label(e, text=_("Label:")).grid(row=0, column=2, sticky="w")
+        ttk.Entry(e, textvariable=self.spalte_name, width=16).grid(row=0, column=3, sticky="w", padx=4)
+        ttk.Button(e, text=_("Add / change"), command=self._spalte_setzen).grid(row=0, column=4, padx=(6, 0))
+        self._hinweis(s, _("Lookup name as in Calibre, with #, e.g. #subtitle; the label is what Bookbench shows. "
+                           "From Calibre adds all own columns found in the metadata.calibre of the open folder. "
+                           "Columns with several values (ampersand or comma separated) are shown joined with "
+                           "\" & \" or \", \"."))
+        self._spalten_zeigen()
+
+    def _spalten_zeigen(self, waehlen=None):
+        t = self.spalten_liste
+        t.delete(*t.get_children())
+        for i, (spalte, name) in enumerate(self.meta_spalten):
+            t.insert("", "end", iid=str(i), values=(spalte, name))
+        if waehlen is not None and t.exists(str(waehlen)):
+            t.selection_set(str(waehlen))
+
+    def _spalte_index(self):
+        sel = self.spalten_liste.selection()
+        return int(sel[0]) if sel else None
+
+    def _spalte_gewaehlt(self):
+        i = self._spalte_index()
+        if i is not None:
+            self.spalte_var.set(self.meta_spalten[i][0])
+            self.spalte_name.set(self.meta_spalten[i][1])
+
+    def _spalte_setzen(self):
+        spalte = self.spalte_var.get().strip()
+        if spalte and not spalte.startswith("#"):
+            spalte = "#" + spalte
+        if len(spalte) < 2:
+            return
+        name = self.spalte_name.get().strip() or spalte
+        vorhanden = [i for i, (sp, __) in enumerate(self.meta_spalten) if sp == spalte]
+        if vorhanden:
+            self.meta_spalten[vorhanden[0]] = [spalte, name]
+            i = vorhanden[0]
+        else:
+            self.meta_spalten.append([spalte, name])
+            i = len(self.meta_spalten) - 1
+        self._spalten_zeigen(i)
+
+    def _spalte_loeschen(self):
+        i = self._spalte_index()
+        if i is not None:
+            del self.meta_spalten[i]
+            self._spalten_zeigen()
+
+    def _spalte_schieben(self, richtung):
+        i = self._spalte_index()
+        if i is None or not 0 <= i + richtung < len(self.meta_spalten):
+            return
+        sp = self.meta_spalten
+        sp[i], sp[i + richtung] = sp[i + richtung], sp[i]
+        self._spalten_zeigen(i + richtung)
+
+    def _spalten_aus_calibre(self):
+        """Alle eigenen Spalten aus metadata.calibre des geöffneten Ordners dazunehmen (Bezeichnung aus Calibre)."""
+        gefunden = {}
+        for eintrag in getattr(self.app, "calibre_eintraege", None) or []:
+            for k, fm in (eintrag.get("user_metadata") or {}).items():
+                if k.startswith("#") and isinstance(fm, dict) and k not in gefunden:
+                    gefunden[k] = fm.get("name") or k
+        neu = [[k, n] for k, n in sorted(gefunden.items()) if k not in {sp for sp, __ in self.meta_spalten}]
+        self.meta_spalten += neu
+        self._spalten_zeigen()
+        self.spalten_meldung = ngettext("{n} column added.", "{n} columns added.", len(neu)).format(n=len(neu)) \
+            if gefunden else _("No own columns found (open a folder with metadata.calibre first).")
+        messagebox.showinfo(_("Settings"), self.spalten_meldung, parent=self)
+
+    def _seite_calibre(self, s):
+        self._ueberschrift(s, "Calibre")
+        self._schalter(s, "calibre_an", _("Compare with Calibre"),
+                       _("Reads Calibre's metadata.calibre (on the e-reader or in the opened folder) and shows its "
+                         "values: in the Metadata area for comparing, in Blurbs and the Library for taking over "
+                         "series and blurbs. Switch it off if you do not use Calibre (any more); the Calibre buttons "
+                         "then disappear. Switching on applies after reloading (F5)."))
 
     # -- Gerät -------------------------------------------------------------------------
     def _seite_kobo(self, s):
@@ -781,6 +888,7 @@ class EinstellungsDialog(tk.Toplevel):
             except tk.TclError:                       # z. B. Buchstaben im Zahlenfeld
                 pass
         self.app.e["klappentext_profile"] = self.profile
+        self.app.e["meta_spalten"] = [list(x) for x in self.meta_spalten]
         if hasattr(self, "geraet_var"):
             self.app.e["vorschau_geraet"] = self._geraet_code()
             try:

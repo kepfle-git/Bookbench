@@ -130,6 +130,7 @@ class Buch:
         self.meta = {}                   # Metadaten aus dem OPF (core/metadata.lesen), ohne Reihe/Nummer-Rückgriff
         self.meta_neu = None             # {feld: text} übernommen, noch nicht gespeichert (Reihe geht über reihe_neu)
         self.meta_entwurf = None         # {feld: text} im Formular geändert, noch nicht übernommen
+        self.meta_defs = {}              # Definitionen der eigenen Calibre-Spalten im Buch
         self.meta_koreader = {}          # in KOReader bearbeitete Buchinfos (custom_metadata.lua), zum Vergleich
         self.calibre = None              # passender Eintrag aus metadata.calibre
         self.uuid = ""                   # Calibre-UUID aus dem EPUB (zum Zuordnen)
@@ -584,6 +585,7 @@ def buch_laden(pfad, max_sub=1, caps=False, entscheidungen=None):
             b.reihe, b.nummer = tocreport.reihe_aus_opf(opf)
             b.reihe_datei = (b.reihe, b.nummer)
             b.meta = metadata.lesen(opf)
+            b.meta_defs = metadata.definitionen(opf)
             b.meta_koreader = metadata.koreader_werte(b.pfad)
             b.uuid = opf_uuid(opf)
             if not b.reihe:                               # nur in KOReader eingetragen?
@@ -726,7 +728,7 @@ def speichern(buch, sicherungsordner, anzahl=5):
         if neu_opf is not None and buch.reihe_neu is not None:
             neu_opf = opf_mit_reihe(neu_opf, *buch.reihe_neu)
         if neu_opf is not None and buch.meta_neu is not None:
-            neu_opf = metadata.schreiben(neu_opf, buch.meta, buch.meta_neu, metadata.calibre_definition(buch.calibre))
+            neu_opf = metadata.schreiben(neu_opf, buch.meta, buch.meta_neu, metadata.calibre_definitionen(buch.calibre))
         if neu_opf is None:
             raise ValueError(_("the metadata file has an unusual format"))
         geaendert[opf_pfad] = neu_opf

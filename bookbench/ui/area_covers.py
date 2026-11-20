@@ -1,14 +1,16 @@
 # -*- coding: utf-8 -*-
 """
-area_covers.py - Bereich "Cover" von Bookbench: Titelbilder ansehen, ersetzen,
-nachschlagen, exportieren. Die Logik steckt in kobo_cover (Bilder) und kobo_daten (EPUB).
+area_covers.py - Cover von Bookbench: Titelbild ansehen, ersetzen, nachschlagen, exportieren.
+Seit 1.3-beta2 kein eigener Bereich mehr, sondern eine Tafel rechts im Bereich Metadaten (wie in
+Calibres Metadaten-Dialog). Die Logik steckt in core/covers (Bilder) und core/library (EPUB).
 
-  Bücherliste links mit Suche und Filter (ohne Cover, klein, geändert), ⚠ im Streifen
-  rechts das Cover so groß, wie Platz ist; liegt ein neues bereit, Datei und Neu nebeneinander
-  Werkzeugleiste: Aus Datei, Nachschlagen, Alle ohne Cover, Groß, Verwerfen, Exportieren
+  CoverBereich(app, eltern, metadaten)   Tafel in eltern; Buch, Liste und Seite gehören dem Bereich Metadaten
+      Fläche mit dem Cover (Klick = groß, Rechtsklick = Menü), darunter Angaben und Knöpfe
+      Aus Datei, Nachschlagen, Exportieren, Neues verwerfen; "Alle ohne Cover" steht in der Werkzeugleiste
+  fehlt(b), klein(b), hoehe(b), warnung(b)   für Filter, Streifen und die Spalte Cover der Bibliothek
 
 Ein neues Cover ist wie ein übernommener Text: gelb, bis gespeichert wird (Strg+S, mit
-Sicherung). Es wird beim Einsetzen ins Format des vorhandenen Covers gebracht (kobo_cover).
+Sicherung). Es wird beim Einsetzen ins Format des vorhandenen Covers gebracht (core/covers).
 """
 import base64
 import io
@@ -18,8 +20,7 @@ from tkinter import filedialog, messagebox, ttk
 
 import keller_theme as kth
 from bookbench.core import covers as kc
-from bookbench.i18n import N_, _, ngettext
-from bookbench.ui import list_filter as klf
+from bookbench.i18n import _, ngettext
 
 FORMATNAME = {"jpeg": "JPEG", "png": "PNG", "gif": "GIF", "webp": "WebP", "?": "?"}
 
@@ -61,92 +62,61 @@ def info_text(info, pfad=""):
 
 
 class CoverBereich:
-    def __init__(self, app):
+    def __init__(self, app, eltern, metadaten):
         self.app = app
+        self.metadaten = metadaten
         self.buch = None
         self._fotos = []                         # Verweise halten, sonst räumt Tk die Bilder weg
         self._job = None
-        s = self.seite = app._seite(_("Covers"), "cover")
-        links = ttk.Frame(s)
-        links.pack(side="left", fill="y")
-        kopf = ttk.Label(links, text=_("Books:"))
-        kopf.pack(anchor="w")
-        self.liste = app._buchliste(links, self.anzeigen, self._status, filter=self.filter(),
-                                    geaendert=lambda: self.liste_fuellen(), kopf=kopf)
-        rechts = ttk.Frame(s)
-        rechts.pack(side="left", fill="both", expand=True, padx=(10, 0))
-        self.kopf = ttk.Label(rechts, text=_("Choose a book on the left."), style="Ueberschrift.TLabel")
-        self.kopf.pack(anchor="w")
-        self.info = ttk.Label(rechts, text="", style="Hinweis.TLabel")
-        self.info.pack(anchor="w", pady=(2, 6))
-        unten = ttk.Frame(rechts)
-        unten.pack(side="bottom", fill="x", pady=(6, 0))
-        self.zeile_datei = ttk.Label(unten, text="", wraplength=900, justify="left")
-        self.zeile_datei.pack(anchor="w")
-        self.zeile_neu = ttk.Label(unten, text="", wraplength=900, justify="left")
-        self.zeile_neu.pack(anchor="w")
-        self.hinweis = ttk.Label(unten, text="", style="Hinweis.TLabel", wraplength=900, justify="left")
-        self.hinweis.pack(anchor="w", pady=(2, 0))
-        r = app._listenrahmen(rechts)
+        r = app._listenrahmen(eltern)
         r.pack(fill="both", expand=True)
-        self.flaeche = tk.Canvas(r, highlightthickness=0, borderwidth=0, cursor="hand2")
+        self.flaeche = tk.Canvas(r, highlightthickness=0, borderwidth=0, cursor="hand2", width=200, height=280)
         self.flaeche.pack(fill="both", expand=True)
         self.flaeche.bind("<Configure>", lambda e: self._spaeter_zeichnen())
         self.flaeche.bind("<Button-1>", lambda e: self.gross())       # Klick aufs Cover: groß
+        self.flaeche.bind("<Button-3>", self._menue)
+        self.zeile_datei = ttk.Label(eltern, text="", style="Hinweis.TLabel", justify="left")
+        self.zeile_datei.pack(anchor="w", pady=(4, 0), fill="x")
+        self.zeile_neu = ttk.Label(eltern, text="", justify="left")
+        self.zeile_neu.pack(anchor="w", fill="x")
+        self.hinweis = ttk.Label(eltern, text="", style="Hinweis.TLabel", justify="left")
+        self.hinweis.pack(anchor="w", fill="x")
+        for lab in (self.zeile_datei, self.zeile_neu, self.hinweis):
+            lab.bind("<Configure>", lambda e, lab=lab: lab.configure(wraplength=max(120, e.width - 4)))
+        knoepfe = ttk.Frame(eltern)
+        knoepfe.pack(fill="x", pady=(6, 0))
+        for i, (text, befehl) in enumerate(((_("From file …"), self.aus_datei), (_("Look up"), self.nachschlagen),
+                                            (_("Export …"), self.exportieren), (_("Discard new"), self.verwerfen))):
+            ttk.Button(knoepfe, text=text, command=befehl).grid(row=i // 2, column=i % 2, sticky="we", padx=2, pady=2)
+        knoepfe.columnconfigure((0, 1), weight=1, uniform="k")
 
-    # ================================================================ Werkzeugleiste
-    def werkzeug(self, eltern):
-        a = self.app
-        a._wz_knopf(eltern, "bild", _("From file"), self.aus_datei,
-                    _("Use an image file as the new cover (JPEG, PNG, GIF, WebP)"))
-        a._wz_knopf(eltern, "suchen", _("Look up"), self.nachschlagen,
-                    _("Look for covers of this book on Open Library and Google Books (free) and choose one"))
-        a._wz_knopf(eltern, "neu_laden", _("All without cover"), self.alle_ohne,
-                    _("For all books without a cover: take the largest cover found, in the background"))
-        ttk.Separator(eltern, orient="vertical").pack(side="left", fill="y", padx=6, pady=2)
-        a._wz_knopf(eltern, "rueckgaengig", _("Discard"), self.verwerfen, _("Drop the new cover, keep the one in the file"))
-        a._wz_knopf(eltern, "exportieren", _("Export …"), self.exportieren,
-                    _("Save the cover shown as an image file"))
+    # Liste und Seite gehören dem Bereich Metadaten (Tests und Bibliothek fragen hier nach)
+    @property
+    def liste(self):
+        return self.metadaten.liste
 
-    # ================================================================ Liste
-    def filter(self):
-        """Filter über der Liste (list_filter): Kennung, Text, Prüfung."""
-        return [("alle", N_("All books"), None),
-                ("fehlt", N_("No cover"), self.fehlt),
-                ("klein", N_("Small cover"), self.klein),
-                ("geaendert", N_("Changed cover"), lambda b: b.cover_neu is not None)]
-
-    def liste_fuellen(self, sortiert=None):
-        """Liste nach Suche/Filter füllen (sortiert: wie in app._links_sortiert)."""
-        a = self.app
-        if sortiert is None:
-            sortiert = a._links_sortiert()
-        vorher = a.nach_schluessel.get(self.buch.schluessel) if self.buch else None
-        lf = self.liste.filter
-        sichtbar = [b for b in sortiert if lf.passt(b)]
-        self.liste.delete(0, "end")
-        for b in sichtbar:
-            self.liste.insert("end", a._anzeigename(b))
-        lf.anzahl(len(sichtbar), len(sortiert))
-        neu = klf.nachfolger(sortiert, vorher, lf.passt) or (sichtbar[0] if vorher and sichtbar else None)
-        if neu:
-            self.auswaehlen(neu)
-        else:
-            self.anzeigen()
+    @property
+    def seite(self):
+        return self.metadaten.seite
 
     def auswaehlen(self, b):
-        namen = list(self.liste.get(0, "end"))
-        name = self.app._anzeigename(b)
-        if name not in namen and self.liste.filter.aktiv() and b in self.app.buecher:
-            self.liste.filter.zuruecksetzen()          # weggefiltert: Suche und Filter zurück
-            namen = list(self.liste.get(0, "end"))
-        if name in namen:
-            i = namen.index(name)
-            self.liste.selection_clear(0, "end")
-            self.liste.selection_set(i)
-            self.liste.see(i)
-            self.anzeigen()
+        self.metadaten.auswaehlen(b)
 
+    def _menue(self, e):
+        m = tk.Menu(self.flaeche, tearoff=False)
+        m.add_command(label=_("Show large"), command=self.gross)
+        m.add_command(label=_("From file …"), command=self.aus_datei)
+        m.add_command(label=_("Look up"), command=self.nachschlagen)
+        m.add_command(label=_("Export …"), command=self.exportieren)
+        m.add_separator()
+        m.add_command(label=_("Discard new cover"), command=self.verwerfen,
+                      state="normal" if self.buch and self.buch.cover_neu is not None else "disabled")
+        try:
+            m.tk_popup(e.x_root, e.y_root)
+        finally:
+            m.grab_release()
+
+    # ================================================================ Prüfungen
     def klein(self, b):
         grenze = int(self.app.e.get("cover_klein") or 0)
         info = kc.bild_info(b.cover_neu) if b.cover_neu is not None else b.cover_info
@@ -160,9 +130,10 @@ class CoverBereich:
     def fehlt(self, b):
         return not b.fehler and b.cover_neu is None and not b.cover_info
 
-    def _warnung(self, b):
+    def warnung(self, b):
+        """Warnung zum Cover (ohne Lesefehler, die meldet der Bereich), sonst None."""
         if b.fehler:
-            return b.fehler
+            return None
         if self.fehlt(b):
             return _("no cover")
         if self.klein(b):
@@ -170,25 +141,13 @@ class CoverBereich:
             return _("small cover ({w} × {h} px)").format(w=info[0], h=info[1])
         return None
 
-    def _status(self, name):
-        b = self.app._listen_buch.get(name)
-        return (b.stand(), self._warnung(b)) if b else (None, None)
-
-    def beim_zeigen(self):
-        if not self.liste.curselection() and self.liste.size():
-            self.liste.selection_set(0)
-        self.anzeigen()
-
     # ================================================================ Anzeige
     def anzeigen(self):
-        self.buch = b = self.app._aktuelles_buch(self.liste)
+        self.buch = b = self.metadaten.buch
         if not b:
-            self.kopf.configure(text=_("Choose a book on the left."))
-            for lab in (self.info, self.zeile_datei, self.zeile_neu, self.hinweis):
+            for lab in (self.zeile_datei, self.zeile_neu, self.hinweis):
                 lab.configure(text="")
         else:
-            self.kopf.configure(text=b.name)
-            self.info.configure(text="  ·  ".join(x for x in (b.autor, f"{b.reihe} {b.nummer}".strip(), b.pfad.name) if x))
             self.zeile_datei.configure(text=_("In the file: {info}").format(info=info_text(b.cover_info, b.cover_datei)))
             if b.cover_neu is not None:
                 i = kc.bild_info(b.cover_neu)
@@ -229,22 +188,25 @@ class CoverBereich:
             bilder.append((_("New"), b.cover_neu))
         if not bilder:
             c.create_text(w // 2, h // 2, text=_("No cover. \"From file\" or \"Look up\" adds one."),
-                          fill=p["hinweis"], font=kth.schrift(11))
+                          fill=p["hinweis"], font=kth.schrift(11), width=max(60, w - 24), justify="center")
             return
         n = len(bilder)
         rand, unterschrift = 12, 22 if n > 1 else 0
-        breite = (w - rand * (n + 1)) // n
+        senkrecht = n > 1 and h > w * 1.6          # schmale Tafel: Datei und Neu untereinander
+        breite = w - 2 * rand if senkrecht else (w - rand * (n + 1)) // n
+        hoehe = (h - rand * (n + 1)) // n - unterschrift if senkrecht else h - 2 * rand - unterschrift
         for i, (titel, daten) in enumerate(bilder):
-            f = foto(daten, breite, h - 2 * rand - unterschrift, c)
-            x = rand + i * (breite + rand) + breite // 2
+            f = foto(daten, breite, hoehe, c)
+            x = w // 2 if senkrecht else rand + i * (breite + rand) + breite // 2
+            y = rand + i * (hoehe + unterschrift + rand) if senkrecht else rand
             if f is None:
-                c.create_text(x, h // 2, text=_("Cannot be shown (JPEG needs Pillow)."), fill=p["hinweis"],
+                c.create_text(x, y + hoehe // 2, text=_("Cannot be shown (JPEG needs Pillow)."), fill=p["hinweis"],
                               width=breite)
                 continue
             self._fotos.append(f)
-            c.create_image(x, rand + unterschrift, image=f, anchor="n")
+            c.create_image(x, y + unterschrift, image=f, anchor="n")
             if n > 1:
-                c.create_text(x, rand, text=titel, fill=p["fg"], anchor="n", font=kth.schrift(10, fett=True))
+                c.create_text(x, y, text=titel, fill=p["fg"], anchor="n", font=kth.schrift(10, fett=True))
 
     def _datei_bytes(self, b):
         """Bytes des Covers in der Datei; zwischengespeichert nach Pfad und Änderungszeit."""
@@ -262,8 +224,8 @@ class CoverBereich:
 
     # ================================================================ Aktionen
     def _buch_noetig(self):
-        if self.app._bereich() != "cover" or not self.buch:
-            self.app.status.set(_("Choose a book in the Covers area first."))
+        if self.app._bereich() != "metadaten" or not self.buch:
+            self.app.status.set(_("Choose a book in the Metadata area first."))
             return None
         return self.buch
 

@@ -5,7 +5,7 @@ Designleitfaden des Keller-Nietprogramm-Tools, Seitenleiste nach 5a).
 
   Menüleiste     Datei, Bearbeiten, Ansicht, Hilfe
   Werkzeugleiste links die Aktionen des aktuellen Bereichs, rechts Hilfe
-  Seitenleiste   Bibliothek, Kapitel, Klappentexte, Metadaten, Cover, Wörterbuch, E-Reader, Vorschau (keller_navigation)
+  Seitenleiste   Bibliothek, Kapitel, Klappentexte, Metadaten, Wörterbuch, E-Reader, Vorschau (keller_navigation)
   Statuszeile    kurze Rückmeldungen
 
 Bereiche:
@@ -13,8 +13,8 @@ Bereiche:
   Kapitel        Bücherliste links, Inhaltsverzeichnis alt/neu rechts (Namen und Ebenen
                  änderbar), Textanfang darunter
   Klappentexte   Bücherliste links, Klappentext zum Bearbeiten rechts, Nachschlagen per API
-  Metadaten      Titel, Autoren, Reihe, Verlag, Sprache, ISBN, Schlagwörter (ui/area_metadata, seit 1.3)
-  Cover          Titelbilder (ui/area_covers)
+  Metadaten      Titel, Autoren, Reihe, Verlag, Sprache, ISBN, Schlagwörter, eigene Calibre-Spalten und
+                 rechts daneben das Cover (ui/area_metadata mit ui/area_covers, seit 1.3)
   Wörterbuch     eigenes Wörterbuch (wikidict-Datenbank) lesen, bearbeiten, Lücken füllen
                  (kobo_bereich_woerterbuch)
   E-Reader       angeschlossener Kobo/Kindle/PocketBook, KOReader-Einstellungen sichern, Wörterbücher
@@ -46,14 +46,12 @@ import keller_icons as kic          # noqa: E402
 import keller_navigation as knv     # noqa: E402
 import keller_streifen as kst       # noqa: E402
 import keller_theme as kth          # noqa: E402
-from bookbench.ui import area_covers as kbc    # noqa: E402
 from bookbench.ui import area_device as kbk     # noqa: E402
 from bookbench.ui import area_metadata as kbm   # noqa: E402
 from bookbench.ui import area_preview as kbv  # noqa: E402
 from bookbench.ui import area_dictionary as kbw  # noqa: E402
 from bookbench.core import blurbs                       # noqa: E402
 from bookbench.core import library as kd             # noqa: E402
-from bookbench.core import metadata as km            # noqa: E402
 from bookbench.ui import settings as kei    # noqa: E402
 from bookbench.ui import help as khi            # noqa: E402
 from bookbench.ui import list_filter as klf    # noqa: E402
@@ -120,7 +118,6 @@ class App(tk.Tk):
         self._start_bereich, self._start_buch = bereich, buch
         self._popen = subprocess.Popen           # Tests ersetzen das, um den Neustart abzufangen
         self.e = kei.laden()
-        km.UNTERTITEL_SPALTE = self.e.get("meta_untertitel_spalte") or ""
         zuletzt = self.e.get("bereich_zuletzt")      # wird beim ersten Bereichswechsel überschrieben
         self.darstellung = tk.StringVar(value=self.e["darstellung"])
         self.dark_mode = tk.BooleanVar(value=kth.ist_dunkel(self.e["darstellung"]))
@@ -171,8 +168,7 @@ class App(tk.Tk):
         self._kapitel_bauen()
         self._klappentext_bauen()
         self.OHNEZEILE = OHNEZEILE
-        self.metadaten = kbm.MetadatenBereich(self)
-        self.cover = kbc.CoverBereich(self)
+        self.metadaten = kbm.MetadatenBereich(self)      # legt auch self.cover an (Cover-Tafel darin)
         self.woerterbuch = kbw.WoerterbuchBereich(self)
         self.kobo = kbk.KoboBereich(self)
         # Vorschau nur, wo es einen Desktop-KOReader geben kann (nicht unter Windows)
@@ -416,8 +412,9 @@ class App(tk.Tk):
             self._wz = [(k, s) for k, s in self._wz if k is not w]
             w.destroy()
         if name == "bibliothek":
-            self._wz_knopf(self._wz_bereich, "uebernehmen", _("From Calibre"), self.calibre_uebernehmen,
-                           _("Take series, number and blurb from metadata.calibre where the EPUB lacks them"))
+            if self.e.get("calibre_an", True):
+                self._wz_knopf(self._wz_bereich, "uebernehmen", _("From Calibre"), self.calibre_uebernehmen,
+                               _("Take series, number and blurb from metadata.calibre where the EPUB lacks them"))
         elif name == "kapitel":
             self._wz_knopf(self._wz_bereich, "uebernehmen", _("Apply"), self.uebernehmen,
                            _("Apply the New column for this book (Ctrl+Enter)"))
@@ -433,8 +430,6 @@ class App(tk.Tk):
                            _("Reset the book to the suggestions"))
             self._wz_knopf(self._wz_bereich, "zurueckschreiben", _("Original"), self.kapitel_original,
                            _("Reset the book to the unchanged table of contents"))
-        elif name == "cover":
-            self.cover.werkzeug(self._wz_bereich)
         elif name == "metadaten":
             self.metadaten.werkzeug(self._wz_bereich)
         elif name == "kobo":
@@ -453,9 +448,10 @@ class App(tk.Tk):
                            _("Apply the text (Ctrl+Enter)"))
             self._wz_knopf(self._wz_bereich, "rueckgaengig", _("Discard"), self.klappentext_verwerfen,
                            _("Restore the text from the file"))
-            ttk.Separator(self._wz_bereich, orient="vertical").pack(side="left", fill="y", padx=6, pady=2)
-            self._wz_knopf(self._wz_bereich, "oeffnen", _("From Calibre"), self.klappentext_aus_calibre,
-                           _("Put the description from metadata.calibre into the text field"))
+            if self.e.get("calibre_an", True):
+                ttk.Separator(self._wz_bereich, orient="vertical").pack(side="left", fill="y", padx=6, pady=2)
+                self._wz_knopf(self._wz_bereich, "oeffnen", _("From Calibre"), self.klappentext_aus_calibre,
+                               _("Put the description from metadata.calibre into the text field"))
 
     # -- Tooltips als Einblendung (kein eigenes Fenster) -------------------------
     def _tipp_planen(self, widget, text):
@@ -705,7 +701,6 @@ class App(tk.Tk):
             return
         bereich = self._bereich()
         liste = {"kapitel": self.kap_liste, "klappentexte": self.kt_liste,
-                 "cover": getattr(getattr(self, "cover", None), "liste", None),
                  "metadaten": getattr(getattr(self, "metadaten", None), "liste", None),
                  "vorschau": getattr(getattr(self, "vorschau", None), "liste", None)}.get(bereich)
         if liste is not None and getattr(liste, "filter", None):
@@ -826,8 +821,6 @@ class App(tk.Tk):
         self.e["cover"] = self.cover_an.get()
         self._cover_zeigen(self.kap_cover, self._kap_buch)
         self._cover_zeigen(self.kt_cover, self._kt_buch)
-        if getattr(self, "metadaten", None):
-            self._cover_zeigen(self.metadaten.cover, self.metadaten.buch)
 
     def _linien(self, teile):
         """Zeichen aus baumlinien() als Text; jede Ebene gleich breit (Proportionalschrift:
@@ -1380,8 +1373,17 @@ class App(tk.Tk):
             self._klappentext_anzeigen()
 
     # ================================================================ Calibre
+    def _calibre_aus(self):
+        """True (mit Hinweis), wenn der Calibre-Abgleich abgeschaltet ist (Einstellungen > Bücher > Calibre)."""
+        if self.e.get("calibre_an", True):
+            return False
+        self.status.set(_("The Calibre comparison is switched off (Settings > Books > Calibre)."))
+        return True
+
     def calibre_uebernehmen(self):
         """Reihe/Nummer und Klappentext aus metadata.calibre übernehmen - nur, wo das EPUB nichts hat."""
+        if self._calibre_aus():
+            return
         if not self.calibre_eintraege:
             self.status.set(_("No metadata.calibre found (it is in the root folder of the e-reader when Calibre "
                               "transfers the books). Open the folder on the e-reader or copy the file into the books folder."))
@@ -1403,6 +1405,8 @@ class App(tk.Tk):
                         if reihen or texte else _("Nothing to take from Calibre; the EPUBs already have everything."))
 
     def klappentext_aus_calibre(self):
+        if self._calibre_aus():
+            return
         b = self._kt_buch if self._bereich() == "klappentexte" else None
         if not b:
             return
@@ -1442,6 +1446,7 @@ class App(tk.Tk):
         self.buecher, self.nach_schluessel = [], {}
         self._alles_neu_zeichnen()
         einst = (self.e["max_sub"], self.e["caps"], dict(self.entscheidungen), self.e["sicherungsordner"])
+        calibre = bool(self.e.get("calibre_an", True))
 
         def arbeit():
             dateien = kd.buecher_finden(ordner, ausnehmen=[einst[3]])
@@ -1450,7 +1455,7 @@ class App(tk.Tk):
                 if i % 5 == 1:
                     self._q.put(("status", _("Reading books … {i}/{n}").format(i=i, n=len(dateien))))
                 ergebnis.append(kd.buch_laden(f, einst[0], einst[1], einst[2]))
-            wurzel, eintraege = kd.calibre_finden(ordner)
+            wurzel, eintraege = kd.calibre_finden(ordner) if calibre else (None, [])
             kd.calibre_zuordnen(ergebnis, wurzel, eintraege)
             self._q.put(("geladen", (ergebnis, wurzel, eintraege)))
         threading.Thread(target=arbeit, daemon=True).start()
@@ -1617,7 +1622,6 @@ class App(tk.Tk):
             vorher = alt[liste]
             alt_b = self.nach_schluessel.get(vorher.schluessel) if vorher else None
             self._liste_fuellen(liste, sortiert, alt_b, anzeige)
-        self.cover.liste_fuellen(sortiert)
         self.metadaten.liste_fuellen(sortiert)
         self._tabelle_fuellen()
         if getattr(self, "vorschau", None) and self._bereich() == "vorschau":
@@ -1634,8 +1638,6 @@ class App(tk.Tk):
         self.nb.tab(self.seite_kapitel, text=_("Chapters ({n} ⚠)").format(n=warn) if warn else _("Chapters"))
         # wie Kapitel: Zahl mit ⚠ (die Listen zeigen das ⚠ im Streifen, ohne farbige Zeilen)
         self.nb.tab(self.seite_klappentext, text=_("Blurbs ({n} ⚠)").format(n=ohne) if ohne and n else _("Blurbs"))
-        ohne_cover = sum(1 for b in self.buecher if self.cover.fehlt(b))
-        self.nb.tab(self.cover.seite, text=_("Covers ({n} ⚠)").format(n=ohne_cover) if ohne_cover else _("Covers"))
         meta = self.metadaten.warnungen() if self.buecher else 0
         self.nb.tab(self.metadaten.seite, text=_("Metadata ({n} ⚠)").format(n=meta) if meta else _("Metadata"))
         offen = any(b.stand() in ("rot", "gelb") for b in self.buecher)
@@ -1648,8 +1650,6 @@ class App(tk.Tk):
             return "bibliothek"
         seiten = {self.seite_kapitel: "kapitel", self.seite_klappentext: "klappentexte",
                   self.kobo.seite: "kobo", self.woerterbuch.seite: "woerterbuch"}
-        if getattr(self, "cover", None):
-            seiten[self.cover.seite] = "cover"
         if getattr(self, "metadaten", None):
             seiten[self.metadaten.seite] = "metadaten"
         if getattr(self, "vorschau", None):
@@ -1667,8 +1667,6 @@ class App(tk.Tk):
         if name == "klappentexte" and not self.kt_liste.curselection() and self.kt_liste.size():
             self.kt_liste.selection_set(0)
             self._klappentext_anzeigen()
-        if name == "cover":
-            self.cover.beim_zeigen()
         if name == "metadaten":
             self.metadaten.beim_zeigen()
         if name == "kobo":
@@ -1730,8 +1728,10 @@ class App(tk.Tk):
             self._streifen_umschalten()
         self.cover_an.set(self.e["cover"])
         self._cover_umschalten()                         # auch für eine neue Höhe
-        km.UNTERTITEL_SPALTE = self.e.get("meta_untertitel_spalte") or ""
+        calibre_hinweis = self._calibre_umschalten()
+        self.metadaten.felder_bauen()
         self.metadaten.anzeigen()
+        self._wz_bereich_bauen(self._bereich())
         if self.navi.ausgeklappt != bool(self.e.get("navi_ausgeklappt", True)):
             self.navi.umschalten()
         self._darstellung()
@@ -1739,7 +1739,23 @@ class App(tk.Tk):
             self.vorschau.koreader_suchen(still=True)
             self.vorschau.anzeigen()
         kei.speichern(self._e_zum_speichern())
-        self.status.set(_("Settings saved. Chapter settings apply after reloading (F5)."))
+        self.status.set(_("Settings saved. Chapter settings apply after reloading (F5).")
+                        + (" " + calibre_hinweis if calibre_hinweis else ""))
+
+    def _calibre_umschalten(self):
+        """Calibre-Abgleich aus: Calibre-Daten sofort vergessen; an: wirkt nach dem Neu-Einlesen (Rückgabe:
+        Hinweis dazu oder None)."""
+        an = bool(self.e.get("calibre_an", True))
+        if not an and self.calibre_eintraege:
+            self.calibre_wurzel, self.calibre_eintraege = None, []
+            for b in self.buecher:
+                b.calibre = None
+                if b.reihe_quelle == "Calibre":
+                    b.reihe, b.nummer, b.reihe_quelle = b.reihe_datei[0], b.reihe_datei[1], ""
+            self._alles_neu_zeichnen()
+        elif an and self.ordner and not self.calibre_eintraege and kd.calibre_finden(self.ordner)[1]:
+            return _("Calibre comparison on: reload (F5) to read metadata.calibre.")
+        return None
 
     def _e_zum_speichern(self):
         self.e.update(darstellung=self.darstellung.get(), tooltips=self.tooltips_an.get(),
@@ -1761,13 +1777,13 @@ class App(tk.Tk):
             self._hilfe = khi.HilfeFenster(self, thema)
 
     def _cover_aktion(self, name):
-        """Menü: in den Bereich Cover wechseln (mit dem Buch, das gerade gewählt ist) und ausführen."""
-        if self._bereich() != "cover":
-            b = self._gewaehltes_buch() if self._bereich() in ("klappentexte", "kapitel", "metadaten") else None
-            self.nb.select(self.cover.seite)
+        """Menü: in den Bereich Metadaten (mit dem Cover) wechseln, mit dem gewählten Buch, und ausführen."""
+        if self._bereich() != "metadaten":
+            b = self._gewaehltes_buch() if self._bereich() in ("klappentexte", "kapitel") else None
+            self.nb.select(self.metadaten.seite)
             self.update_idletasks()
             if b:
-                self.cover.auswaehlen(b)
+                self.metadaten.auswaehlen(b)
         getattr(self.cover, name)()
 
     def _metadaten_aktion(self, name):
@@ -1782,7 +1798,7 @@ class App(tk.Tk):
 
     def bereich_zeigen(self, name):
         seiten = {"bibliothek": self.seite_bibliothek, "kapitel": self.seite_kapitel,
-                  "klappentexte": self.seite_klappentext, "cover": self.cover.seite, "kobo": self.kobo.seite,
+                  "klappentexte": self.seite_klappentext, "cover": self.metadaten.seite, "kobo": self.kobo.seite,
                   "metadaten": self.metadaten.seite,
                   "woerterbuch": self.woerterbuch.seite}
         if self.vorschau:

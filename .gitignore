@@ -1,0 +1,7 @@
+__pycache__/
+*.pyc
+tocfix_entscheidungen.json
+blurbs_cache.json
+*.tmp
+packaging/build/
+packaging/dist/

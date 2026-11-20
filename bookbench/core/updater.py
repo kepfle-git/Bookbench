@@ -306,6 +306,10 @@ def vorhandene_datei_ok(pfad, name, summen, erwartet=""):
     return bool(erwartet and ist and gleich(ist, erwartet))
 
 
+# Im Quelltext-ZIP, aber nicht Teil des Programms (Windows-Bau über GitHub Actions)
+NUR_IM_REPO = (".github", "packaging", ".gitignore")
+
+
 def linux_einspielen(zip_pfad, programm=None, erwartet=""):
     """Tauscht programm/ gegen den Inhalt des Quelltext-ZIPs (GitHub legt alles in einen
     Ordner <besitzer>-<repo>-<commit>/). Erst wird daneben ausgepackt und geprüft (start.py,
@@ -336,6 +340,12 @@ def linux_einspielen(zip_pfad, programm=None, erwartet=""):
         if erwartet and version and not gleich(version, erwartet):
             raise UpdateFehler(_("The archive contains version {ist} instead of {soll}.").format(
                 ist=version, soll=erwartet))
+        for name in NUR_IM_REPO:                         # Baudateien des Release-Repos nicht mitnehmen
+            p = wurzel / name
+            if p.is_dir() and not p.is_symlink():
+                shutil.rmtree(p)
+            elif p.exists() or p.is_symlink():
+                p.unlink()
         if wurzel != neu:                                # Inhalt eine Ebene hoch
             for p in list(wurzel.iterdir()):
                 shutil.move(str(p), str(neu / p.name))

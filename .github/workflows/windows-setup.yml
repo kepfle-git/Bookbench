@@ -1,0 +1,115 @@
+# Windows-Setup bauen und als Release-Entwurf anlegen (läuft nur im Release-Repo kepfle-git/Bookbench).
+#
+# Auslöser: Push eines Tags v<Version> (z. B. v1.2, v1.3-beta1) oder von Hand unter
+# Actions > Windows-Setup > Run workflow mit dem Tag als Eingabe (auch für schon vorhandene Tags).
+#
+# Ergebnis: Release-Entwurf zum Tag mit Bookbench_Setup_<Version>.exe und SHA256SUMS.
+# Gibt es zum Tag schon eine Veröffentlichung (auch veröffentlicht), werden die Dateien dort
+# angehängt bzw. ersetzt. Text schreiben, ggf. "Vorabversion" anhaken und veröffentlichen macht
+# der Nutzer selbst; Entwürfe sieht der Updater nicht.
+#
+# Später: Signieren über SignPath als Schritt zwischen "Setup bauen" und "Prüfsummen".
+name: Windows-Setup
+
+on:
+  push:
+    tags: ["v*", "V*"]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Tag, z. B. v1.2"
+        required: true
+
+permissions:
+  contents: write
+
+jobs:
+  setup:
+    if: github.repository == 'kepfle-git/Bookbench'
+    runs-on: windows-latest
+    env:
+      TAG: ${{ inputs.tag || github.ref_name }}
+      GH_TOKEN: ${{ github.token }}
+      PYTHONUTF8: "1"
+    steps:
+      - name: Quelltext zum Tag holen
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.tag || github.ref }}
+
+      - name: Python einrichten
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: requirements.txt
+
+      - name: Version mit dem Tag vergleichen
+        shell: pwsh
+        run: |
+          $version = (python packaging/version.py).Trim()
+          $ausTag = $env:TAG -replace '^[vV]', ''
+          if ($version -ne $ausTag) {
+            Write-Error "Tag $env:TAG passt nicht zu VERSION = `"$version`" in bookbench/ui/help.py"
+            exit 1
+          }
+          "VERSION=$version" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+
+      - name: Inno Setup bereitstellen
+        shell: pwsh
+        run: |
+          $iscc = "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe"
+          if (-not (Test-Path $iscc)) { choco install innosetup -y --no-progress }
+          if (-not (Test-Path $iscc)) { Write-Error "ISCC.exe nicht gefunden"; exit 1 }
+          "ISCC=$iscc" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+
+      - name: Programm bauen (PyInstaller)
+        working-directory: packaging
+        shell: pwsh
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install --upgrade pyinstaller -r ../requirements.txt
+          python -m PyInstaller --noconfirm --clean bookbench.spec
+          if (-not (Test-Path dist/Bookbench/Bookbench.exe)) { Write-Error "Bookbench.exe fehlt"; exit 1 }
+
+      - name: Setup bauen (Inno Setup)
+        working-directory: packaging
+        shell: pwsh
+        run: |
+          & $env:ISCC "/DAppVersion=$env:VERSION" bookbench.iss
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+      - name: Prüfsummen (SHA256SUMS)
+        working-directory: packaging/dist
+        shell: python
+        run: |
+          import hashlib, os
+          name = f"Bookbench_Setup_{os.environ['VERSION']}.exe"
+          with open(name, "rb") as f:
+              summe = hashlib.sha256(f.read()).hexdigest()
+          with open("SHA256SUMS", "w", encoding="utf-8", newline="\n") as f:
+              f.write(f"{summe}  {name}\n")
+          print(summe, name)
+
+      - name: Als Artefakt ablegen (zum Nachsehen, 14 Tage)
+        uses: actions/upload-artifact@v4
+        with:
+          name: Bookbench_Setup_${{ env.VERSION }}
+          path: |
+            packaging/dist/Bookbench_Setup_*.exe
+            packaging/dist/SHA256SUMS
+          retention-days: 14
+
+      - name: Release-Entwurf anlegen bzw. Dateien anhängen
+        working-directory: packaging/dist
+        shell: pwsh
+        run: |
+          $setup = "Bookbench_Setup_$env:VERSION.exe"
+          gh release view $env:TAG --repo $env:GITHUB_REPOSITORY *> $null
+          if ($LASTEXITCODE -eq 0) {
+            gh release upload $env:TAG $setup SHA256SUMS --clobber --repo $env:GITHUB_REPOSITORY
+          } else {
+            $text = "Windows-Setup und SHA256SUMS automatisch gebaut. Text ergänzen, ggf. *Vorabversion* anhaken, dann veröffentlichen."
+            gh release create $env:TAG $setup SHA256SUMS --draft --verify-tag --title "Bookbench $env:VERSION" --notes $text --repo $env:GITHUB_REPOSITORY
+          }
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }

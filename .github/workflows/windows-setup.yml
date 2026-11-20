@@ -3,13 +3,15 @@
 # Auslöser: Push eines Tags v<Version> (z. B. v1.2, v1.3-beta1) oder von Hand unter
 # Actions > Windows-Setup > Run workflow mit dem Tag als Eingabe (auch für schon vorhandene Tags).
 #
-# Ergebnis: Release-Entwurf zum Tag mit Bookbench_Setup_<Version>.exe und SHA256SUMS.
+# Ergebnis: Release-Entwurf "Bookbench <Version>" zum Tag mit Bookbench_Setup_<Version>.exe und SHA256SUMS;
+# Text aus .github/release-notes/<Version>.md (englisch, wird mit dem Release erstellt), sonst ein Platzhalter.
 # Gibt es zum Tag schon eine Veröffentlichung (auch veröffentlicht), werden die Dateien dort
 # angehängt bzw. ersetzt. Text schreiben, ggf. "Vorabversion" anhaken und veröffentlichen macht
 # der Nutzer selbst; Entwürfe sieht der Updater nicht.
 #
 # Später: Signieren über SignPath als Schritt zwischen "Setup bauen" und "Prüfsummen".
 name: Windows-Setup
+run-name: Windows-Setup ${{ inputs.tag || github.ref_name }}
 
 on:
   push:
@@ -134,7 +136,12 @@ jobs:
           if ($LASTEXITCODE -eq 0) {
             gh release upload $env:TAG $setup SHA256SUMS --clobber --repo $env:GITHUB_REPOSITORY
           } else {
-            $text = "Windows-Setup und SHA256SUMS automatisch gebaut. Text ergänzen, ggf. *Vorabversion* anhaken, dann veröffentlichen."
-            gh release create $env:TAG $setup SHA256SUMS --draft --verify-tag --title "Bookbench $env:VERSION" --notes $text --repo $env:GITHUB_REPOSITORY
+            $notizen = "$env:GITHUB_WORKSPACE/.github/release-notes/$env:VERSION.md"
+            if (-not (Test-Path $notizen)) {
+              $notizen = "$env:RUNNER_TEMP/notes.md"
+              "Windows-Setup und SHA256SUMS automatisch gebaut. Text ergänzen, ggf. *Vorabversion* anhaken, dann veröffentlichen." |
+                Out-File -FilePath $notizen -Encoding utf8
+            }
+            gh release create $env:TAG $setup SHA256SUMS --draft --verify-tag --title "Bookbench $env:VERSION" --notes-file $notizen --repo $env:GITHUB_REPOSITORY
           }
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }

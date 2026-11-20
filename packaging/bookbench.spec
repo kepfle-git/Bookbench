@@ -8,7 +8,9 @@
 #  Wie beim Keller-Tool fliegen die Tcl/Tk-Dateien fremder Sprachen, Zeitzonen und
 #  Zeichensätze raus; behalten werden Deutsch und Englisch (Knöpfe der Tk-Dialoge).
 #  Zusatzpakete (Pillow, wordfreq, requests, mwparserfromhell, anthropic) kommen mit,
-#  wenn sie im bauenden Python installiert sind; wordfreq braucht seine Datendateien.
+#  wenn sie im bauenden Python installiert sind; wordfreq braucht seine Datendateien, davon
+#  aber nur die Wortlisten der Sprachen in WORDFREQ_SPRACHEN (alle zusammen ca. 60 MB, darunter
+#  5 MB chinesisches Wörterbuch für jieba; Bookbench fragt nur Englisch ab).
 # ======================================================================
 import os
 from PyInstaller.utils.hooks import collect_data_files, collect_submodules
@@ -18,12 +20,17 @@ BOOK = os.path.join(WURZEL, "bookbench")
 
 BEHALTEN_MSGS = {"de.msg", "en.msg", "en_gb.msg"}
 BEHALTEN_TZ = {"Europe/Berlin", "UTC", "GMT", "Etc/UTC", "Etc/GMT"}
+WORDFREQ_SPRACHEN = {"en"}                         # zipf_frequency(..., "en") in bookbench/dictionary
 BEHALTEN_ENC = {"ascii.enc", "cp1252.enc", "cp850.enc", "cp437.enc", "iso8859-1.enc", "iso8859-15.enc",
                 "utf-8.enc"}
 
 
 def _behalten(ziel):
     teile = ziel.replace("\\", "/").split("/")
+    if teile[:2] == ["wordfreq", "data"] and len(teile) == 3:
+        name = teile[2]
+        sprache = name.split(".")[0].split("_", 1)[-1] if name.startswith(("large_", "small_")) else ""
+        return sprache in WORDFREQ_SPRACHEN
     if len(teile) < 3 or teile[0] not in ("_tcl_data", "_tk_data"):
         return True
     rest = "/".join(teile[2:])
@@ -64,7 +71,7 @@ a = Analysis(
 )
 vorher = len(a.datas)
 a.datas = [e for e in a.datas if _behalten(e[0])]
-print(f"bookbench.spec: {vorher - len(a.datas)} Tcl/Tk-Sprach-/Länderdateien weggelassen")
+print(f"bookbench.spec: {vorher - len(a.datas)} Tcl/Tk-Sprach-/Länderdateien und wordfreq-Listen weggelassen")
 
 pyz = PYZ(a.pure)
 exe = EXE(

@@ -7,6 +7,7 @@ KOReader.
 - **Library**: all books of a folder (or of the connected e-reader) with series, chapters, blurb and cover state
 - **Chapters**: names for chapters that only have numbers, suggested from the book text
 - **Blurbs** and **covers**: look them up (Google Books, Open Library; optionally Claude), edit, save into the EPUB
+- **Metadata**: title, authors with sort names, series, publisher, language, ISBN, tags (and a subtitle column), compared with Calibre and KOReader
 - **Dictionary**: StarDict dictionaries for KOReader, also built from a MediaWiki
 - **E-reader**: Kobo, Kindle and PocketBook with KOReader over USB: backups of the KOReader settings, copying dictionaries
 - **Preview** (Linux): open a book in the desktop KOReader with the settings of your e-reader

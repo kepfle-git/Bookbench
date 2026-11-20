@@ -30,6 +30,7 @@ from pathlib import Path
 
 from bookbench.core import blurbs
 from bookbench.core import covers as kc
+from bookbench.core import metadata
 from bookbench.core import toc_fix as tocfix
 from bookbench.core import toc_report as tocreport
 from bookbench import i18n as ks
@@ -126,6 +127,10 @@ class Buch:
         self.reihe_quelle = ""           # "KOReader"/"Calibre", wenn die Reihe nicht im EPUB steht
         self.reihe_datei = ("", "")      # (Reihe, Nummer) so, wie sie im EPUB steht
         self.reihe_neu = None            # (Reihe, Nummer) übernommen, noch nicht gespeichert
+        self.meta = {}                   # Metadaten aus dem OPF (core/metadata.lesen), ohne Reihe/Nummer-Rückgriff
+        self.meta_neu = None             # {feld: text} übernommen, noch nicht gespeichert (Reihe geht über reihe_neu)
+        self.meta_entwurf = None         # {feld: text} im Formular geändert, noch nicht übernommen
+        self.meta_koreader = {}          # in KOReader bearbeitete Buchinfos (custom_metadata.lua), zum Vergleich
         self.calibre = None              # passender Eintrag aus metadata.calibre
         self.uuid = ""                   # Calibre-UUID aus dem EPUB (zum Zuordnen)
         self.klappentext = ""            # aus der Datei
@@ -163,10 +168,11 @@ class Buch:
     # -- Zustand ---------------------------------------------------------------
     def stand(self):
         """Statusstreifen: rot / gelb / gruen / None."""
-        if self.entwurf is not None or self.klappentext_entwurf is not None or self.tiefen_entwurf is not None:
+        if self.entwurf is not None or self.klappentext_entwurf is not None or self.tiefen_entwurf is not None \
+                or self.meta_entwurf is not None:
             return "rot"
         if self.neu or self.klappentext_neu is not None or self.reihe_neu is not None or self.tiefen_neu is not None \
-                or self.cover_neu is not None:
+                or self.cover_neu is not None or self.meta_neu is not None:
             return "gelb"
         return "gruen" if self.gespeichert else None
 
@@ -313,13 +319,25 @@ def calibre_vorschlag(b):
 
 
 def opf_mit_reihe(opf, reihe, nummer):
-    """Reihe im Calibre-Stil eintragen (so liest KOReader sie); alte Calibre-Reihenangaben ersetzen."""
+    """Reihe im Calibre-Stil eintragen (so liest KOReader sie); alte Calibre-Reihenangaben und
+    EPUB3-Reihen (belongs-to-collection) ersetzen, damit keine zweite, alte Angabe übrig bleibt.
+    Leere Reihe: nur entfernen."""
     opf = re.sub(r"""\s*<meta\b[^>]*name=["']calibre:series(_index)?["'][^>]*/?>""", "", opf)
+    weg = []
+    for m in re.finditer(r"<meta\b([^>]*)>(.*?)</meta\s*>", opf, re.S):
+        a = _attribute(m.group(1))
+        if a.get("property") == "belongs-to-collection":
+            verf = metadata._refines(opf, a.get("id"))
+            art = next((t for __, __, p, t in verf if p == "collection-type"), "series")
+            if art == "series":
+                weg += [(m.start(), m.end())] + [(s, e) for s, e, __, __ in verf]
+    opf = metadata._ausschneiden(opf, weg)[0] if weg else opf
+    if not reihe:
+        return opf
     neu = f'<meta name="calibre:series" content="{html.escape(reihe)}"/>'
     if nummer:
         neu += f'<meta name="calibre:series_index" content="{html.escape(nummer)}"/>'
-    m = re.search(r"</(\w+:)?metadata>", opf)
-    return opf[:m.start()] + neu + "\n" + opf[m.start():] if m else None
+    return metadata._einfuegen(opf, neu)
 
 
 def koreader_reihe(pfad):
@@ -565,6 +583,8 @@ def buch_laden(pfad, max_sub=1, caps=False, entscheidungen=None):
             b.titel = b.titel or b.pfad.stem
             b.reihe, b.nummer = tocreport.reihe_aus_opf(opf)
             b.reihe_datei = (b.reihe, b.nummer)
+            b.meta = metadata.lesen(opf)
+            b.meta_koreader = metadata.koreader_werte(b.pfad)
             b.uuid = opf_uuid(opf)
             if not b.reihe:                               # nur in KOReader eingetragen?
                 b.reihe, b.nummer = koreader_reihe(b.pfad)
@@ -694,7 +714,7 @@ def speichern(buch, sicherungsordner, anzahl=5):
                 raise ValueError(_("the metadata file has an unusual format"))
             geaendert[opf_pfad] = neu_opf
             neue_dateien[ziel] = buch.cover_neu
-    if buch.klappentext_neu is not None or buch.reihe_neu is not None:
+    if buch.klappentext_neu is not None or buch.reihe_neu is not None or buch.meta_neu is not None:
         with zipfile.ZipFile(buch.pfad) as z:
             opf_pfad, opf = blurbs.read_opf(z)
         neu_opf = geaendert.get(opf_pfad, opf)
@@ -705,6 +725,8 @@ def speichern(buch, sicherungsordner, anzahl=5):
                            flags=re.S), "")
         if neu_opf is not None and buch.reihe_neu is not None:
             neu_opf = opf_mit_reihe(neu_opf, *buch.reihe_neu)
+        if neu_opf is not None and buch.meta_neu is not None:
+            neu_opf = metadata.schreiben(neu_opf, buch.meta, buch.meta_neu, metadata.calibre_definition(buch.calibre))
         if neu_opf is None:
             raise ValueError(_("the metadata file has an unusual format"))
         geaendert[opf_pfad] = neu_opf

@@ -41,6 +41,7 @@ STANDARD = {
     "start_ordner": True, "start_bereich": "bibliothek", "bereich_zuletzt": "bibliothek",
     "tooltip_verzoegerung": 600, "cover_kopf_hoehe": 96, "kt_min": 80, "kt_max": 4000, "kt_kosten": 0.015,
     "cover_min_hoehe": 300, "cover_anzahl": 8, "kobo_suche_sekunden": 3,
+    "meta_untertitel": False, "meta_untertitel_spalte": "#subtitle",      # Bereich Metadaten (seit 1.3)
     # Updates (ui/updates.py): pruefen aus/start/taeglich/woechentlich, zuletzt/ausgelassen ohne Seite
     "update_pruefen": "taeglich", "update_vorab": False,     # Repo fest in core/updater.py (REPO)
     "update_zuletzt": "", "update_ausgelassen": "",
@@ -102,7 +103,7 @@ class EinstellungsDialog(tk.Toplevel):
         ("start", "allgemein", N_("Startup"), N_("What opens when the program starts")),
         ("updates", "allgemein", N_("Updates"), N_("Checking for new versions")),
         ("speichern", "", N_("Saving and backups"), N_("Backup folder and how many backups are kept")),
-        ("buecher", "", N_("Books"), N_("Chapters, blurbs and covers")),
+        ("buecher", "", N_("Books"), N_("Chapters, blurbs, covers and metadata")),
         ("kapitel", "buecher", N_("Chapters"), N_("How chapter names are taken from the book text")),
         ("klappentexte", "buecher", N_("Blurbs"), N_("Order of the sources, free sources, checks")),
         ("klappentexte_profile", "klappentexte", N_("Source profiles"),
@@ -110,6 +111,7 @@ class EinstellungsDialog(tk.Toplevel):
         ("klappentexte_claude", "klappentexte", N_("Claude API"), N_("Key, model, cost estimate")),
         ("cover", "buecher", N_("Covers"), N_("Inserting and marking covers")),
         ("cover_nachschlagen", "cover", N_("Looking up covers"), N_("Sources and which images count")),
+        ("metadaten", "buecher", N_("Metadata"), N_("Subtitle from a Calibre column")),
         ("geraet", "", N_("Device"), N_("E-reader and preview")),
         ("kobo", "geraet", N_("E-reader"), N_("Detection, backups, dictionaries, ejecting")),
         ("vorschau", "geraet", N_("Preview"), N_("Desktop KOReader and the device shown")),
@@ -122,7 +124,8 @@ class EinstellungsDialog(tk.Toplevel):
                "max_sub", "caps", "api_key", "modell", "kt_kosten", "kostenlos", "kt_min", "kt_max",
                "cover_max_hoehe", "cover_qualitaet", "cover_klein", "cover_openlibrary", "cover_google",
                "cover_min_hoehe", "cover_anzahl", "kobo_sicherungen_anzahl", "woerterbuch_quelle",
-               "auswerfen_erinnern", "kobo_suche_sekunden", "kobo_oeffnen", "koreader_pfad", "update_pruefen", "update_vorab")
+               "auswerfen_erinnern", "kobo_suche_sekunden", "kobo_oeffnen", "koreader_pfad", "update_pruefen", "update_vorab",
+               "meta_untertitel", "meta_untertitel_spalte")
 
     def __init__(self, app, seite=None):
         super().__init__(app)
@@ -572,6 +575,17 @@ class EinstellungsDialog(tk.Toplevel):
                    _("Smaller images are left out (preview thumbnails)."), 50, 2000, 10)
         self._zahl(s, "cover_anzahl", _("At most this many to choose from:"),
                    _("Each image is downloaded, so more takes longer."), 1, 30)
+
+    def _seite_metadaten(self, s):
+        self._ueberschrift(s, _("Metadata"))
+        self._abschnitt(s, _("Subtitle"))
+        self._schalter(s, "meta_untertitel", _("Show the Subtitle field"),
+                       _("Calibre has no subtitle field of its own; many people add a column for it. Bookbench "
+                         "reads and writes that column the way Calibre stores it in the book."))
+        self._feld(s, "meta_untertitel_spalte", _("Calibre column (lookup name):"),
+                   _("As in Calibre under Preferences > Add your own columns, with #, e.g. #subtitle. Columns with "
+                     "several values (ampersand or comma separated) are shown joined with \" & \" or \", \". "
+                     "Applies after reloading (F5)."), breite=20)
 
     # -- Gerät -------------------------------------------------------------------------
     def _seite_kobo(self, s):

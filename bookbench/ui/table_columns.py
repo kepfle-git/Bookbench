@@ -3,7 +3,8 @@
 table_columns.py - Spalten der Bibliothekstabelle (ttk.Treeview): Reihenfolge, Ein-/Ausblenden,
 Breiten, Sortierpfeil, Kontextmenü am Kopf.
 
-  Spalten(app, tabelle, spalten)   spalten = [(kennung, Text, Standardbreite)] wie app.SPALTEN
+  Spalten(app, tabelle, spalten, aus)   spalten = [(kennung, Text, Standardbreite)] wie app.SPALTEN,
+                    aus = Kennungen, die ohne gemerkte Einstellung ausgeblendet sind (seit 1.3)
   anwenden()        Reihenfolge, sichtbare Spalten und Breiten aus den Einstellungen setzen
   kopf_beschriften() Pfeil ▲/▼ an der Sortierspalte
   menue_fuellen(m, spalte)  Einträge fürs Kontextmenü (spalte = Spalte unter der Maus) bzw.
@@ -13,7 +14,7 @@ Breiten, Sortierpfeil, Kontextmenü am Kopf.
   sortieren_erlaubt() False direkt nach dem Verschieben einer Spalte (der Klick zählt nicht)
 
 Einstellungen: "spalten" {kennung: breite}, "spalten_reihe" [sichtbare Kennungen in Reihenfolge]
-(None = alle in Standard-Reihenfolge), "sortierung" [kennung, umgekehrt].
+(None = alle außer `aus` in Standard-Reihenfolge), "sortierung" [kennung, umgekehrt].
 
 Warum keine Spalte "stretch" hat: ttk verteilt freien Platz bzw. fehlenden Platz selbst auf
 dehnbare Spalten (Titel war die einzige). Dadurch kam eine schmaler gezogene Titelspalte beim
@@ -30,10 +31,11 @@ MINDEST = 40            # px Mindestbreite einer Spalte
 
 
 class Spalten:
-    def __init__(self, app, tabelle, spalten):
+    def __init__(self, app, tabelle, spalten, aus=()):
         self.app, self.t = app, tabelle
         self.spalten = list(spalten)
         self.kennungen = [c for c, __, __ in self.spalten]
+        self.grund = [c for c in self.kennungen if c not in aus]     # sichtbar ohne Einstellung
         self.text = {c: t for c, t, __ in self.spalten}
         self.standard = {c: w for c, __, w in self.spalten}
         self._ziehen = None                     # {"spalte", "x0", "aktiv"} beim Ziehen am Kopf
@@ -52,12 +54,12 @@ class Spalten:
     def sichtbar(self):
         reihe = self.app.e.get("spalten_reihe")
         if not reihe:
-            return list(self.kennungen)
+            return list(self.grund)
         erg = [c for c in reihe if c in self.kennungen]
-        return erg or list(self.kennungen)
+        return erg or list(self.grund)
 
     def _setzen(self, reihe):
-        self.app.e["spalten_reihe"] = None if reihe == self.kennungen else list(reihe)
+        self.app.e["spalten_reihe"] = None if reihe == self.grund else list(reihe)
         self.t.configure(displaycolumns=reihe)
         self.app.tabellen_streifen.zeichnen()
 
@@ -125,7 +127,7 @@ class Spalten:
         self.app.e["spalten_reihe"] = None
         for c in self.kennungen:
             self.t.column(c, width=self.standard[c])
-        self.t.configure(displaycolumns=self.kennungen)
+        self.t.configure(displaycolumns=self.grund)
         self.einpassen()
         self.app.tabellen_streifen.zeichnen()
 

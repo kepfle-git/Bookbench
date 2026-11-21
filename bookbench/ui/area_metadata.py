@@ -28,6 +28,7 @@ from bookbench.i18n import N_, _, ngettext
 from bookbench.ui import area_blurbs as kbb
 from bookbench.ui import area_covers as kbc
 from bookbench.ui import list_filter as klf
+from bookbench.ui import panes as kpn
 
 REIHE = ("reihe", "nummer")
 FELDBREITE = 24            # Zeichen (Mindestbreite); alle Felder gleich breit, sie füllen den Platz neben dem Cover
@@ -40,14 +41,13 @@ class MetadatenBereich:
         self.buch = None
         self._laden = False                       # Formular wird gerade programmseitig gefüllt
         s = self.seite = app._seite(_("Metadata"), "metadaten")
-        links = ttk.Frame(s)
-        links.pack(side="left", fill="y")
+        links, rechts_teil = kpn.teilen(app, s, "metadaten", 270)
         kopf = ttk.Label(links, text=_("Books:"))
         kopf.pack(anchor="w")
         self.liste = app._buchliste(links, self.anzeigen, self._status, filter=self.filter(),
                                     geaendert=lambda: self.liste_fuellen(), kopf=kopf,
                                     marken_fn=self._marken_von_name, breite=24)
-        rechts = ttk.Frame(s)
+        rechts = ttk.Frame(rechts_teil)
         rechts.pack(side="left", fill="both", expand=True, padx=(10, 0))
         # Kopf nur noch der Dateiname (der Titel steht im Formular) - der Platz geht an den Klappentext
         self.info = ttk.Label(rechts, text=_("Choose a book on the left."), style="Hinweis.TLabel")
@@ -70,9 +70,20 @@ class MetadatenBereich:
         unten = ttk.Frame(self.teiler)
         self.teiler.add(oben, weight=0)
         self.teiler.add(unten, weight=1)
-        self.formular = ttk.Frame(oben)
-        self.formular.pack(anchor="nw", fill="x", pady=(0, 6))
+        # Formular in einer Fläche mit Scrollbalken (seit 1.3-beta4): zieht man den Klappentext groß,
+        # verschwindet sonst unten ein Teil der Felder ohne Möglichkeit, hinzukommen
+        self.flaeche = tk.Canvas(oben, highlightthickness=0, borderwidth=0, height=1)
+        self.form_sb = ttk.Scrollbar(oben, orient="vertical", command=self.flaeche.yview)
+        self.flaeche.configure(yscrollcommand=self._form_scroll)
+        self.flaeche.pack(side="left", fill="both", expand=True)
+        self.formular = ttk.Frame(self.flaeche)
+        self._form_fenster = self.flaeche.create_window(0, 0, window=self.formular, anchor="nw")
         self.formular.columnconfigure(1, weight=1)
+        self.formular.bind("<Configure>", lambda e: self._form_groesse())
+        self.flaeche.bind("<Configure>", lambda e: self._form_groesse())
+        for w in (self.flaeche, self.formular):
+            w.bind("<Enter>", lambda e: self._rad(True), add="+")
+            w.bind("<Leave>", lambda e: self._rad(False), add="+")
         self.klappentext = kbb.KlappentextTafel(app, unten, self)
         self.teiler.bind("<ButtonRelease-1>", lambda e: self._teiler_merken())
         self.teiler.bind("<Double-Button-1>", lambda e: (self.app.e.__setitem__("meta_teiler", 0), self._teiler_setzen()))
@@ -109,6 +120,48 @@ class MetadatenBereich:
                 wert.text_vorne = text
                 vergleich[quelle] = (z, wert)
             self.zeilen[feld] = (lab, ein, vergleich)
+
+    # ================================================================ Formular mit Scrollbalken
+    def _form_groesse(self):
+        f = self.flaeche
+        try:
+            f.itemconfigure(self._form_fenster, width=max(1, f.winfo_width()))
+            f.configure(scrollregion=(0, 0, f.winfo_width(), self.formular.winfo_reqheight() + 6))
+            f.configure(bg=self.app._farben["bg"] if getattr(self.app, "_farben", None) else f.cget("bg"))
+        except tk.TclError:
+            pass
+
+    def _form_scroll(self, lo, hi):
+        """Scrollbalken nur zeigen, wenn das Formular nicht ganz hineinpasst."""
+        self.form_sb.set(lo, hi)
+        if float(lo) <= 0 and float(hi) >= 1:
+            if self.form_sb.winfo_ismapped():
+                self.form_sb.pack_forget()
+                self.flaeche.yview_moveto(0)
+        elif not self.form_sb.winfo_ismapped():
+            self.form_sb.pack(side="right", fill="y", before=self.flaeche)
+
+    def _rad(self, an):
+        """Mausrad scrollt das Formular, solange die Maus darüber ist (und es nicht ganz passt)."""
+        f = self.flaeche
+        if not an:
+            # Leave kommt auch beim Wechsel auf ein Feld im Formular - nur lösen, wenn die Maus wirklich weg ist
+            try:
+                w = f.winfo_containing(*f.winfo_pointerxy())
+            except (tk.TclError, KeyError):
+                w = None
+            if w is not None and str(w).startswith(str(f)):
+                return
+            for ev in ("<MouseWheel>", "<Button-4>", "<Button-5>"):
+                f.unbind_all(ev)
+            return
+
+        def rollen(schritte):
+            if self.form_sb.winfo_ismapped():
+                f.yview_scroll(schritte, "units")
+        f.bind_all("<MouseWheel>", lambda e: rollen(-1 if e.delta > 0 else 1))
+        f.bind_all("<Button-4>", lambda e: rollen(-1))
+        f.bind_all("<Button-5>", lambda e: rollen(1))
 
     def _teiler_setzen(self):
         """Teiler unter das Formular (dessen Höhe ändert sich mit den "← Calibre"-Zeilen) oder dorthin, wohin

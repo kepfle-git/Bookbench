@@ -16,6 +16,11 @@ Breiten, Sortierpfeil, Kontextmenü am Kopf.
 Einstellungen: "spalten" {kennung: breite}, "spalten_reihe" [sichtbare Kennungen in Reihenfolge]
 (None = alle außer `aus` in Standard-Reihenfolge), "sortierung" [kennung, umgekehrt].
 
+Statusspalte (seit 1.3-beta4): die Baumspalte "#0" der Treeview zeigt Punkt und Piktogramme
+(markers.TabellenStatus). Sie steht immer links (ttk lässt sie nicht verschieben), lässt sich über das
+Menü aus- und einblenden ("status_spalte"), in der Breite ziehen (Breite unter "#0" in "spalten";
+ohne gezogene Breite passt sie sich dem Buch mit den meisten Piktogrammen an) und sortiert per Klick.
+
 Warum keine Spalte "stretch" hat: ttk verteilt freien Platz bzw. fehlenden Platz selbst auf
 dehnbare Spalten (Titel war die einzige). Dadurch kam eine schmaler gezogene Titelspalte beim
 nächsten Start oder Größenwechsel wieder breit zurück. Ohne stretch gelten genau die gezogenen
@@ -41,6 +46,7 @@ class Spalten:
         self._ziehen = None                     # {"spalte", "x0", "aktiv"} beim Ziehen am Kopf
         self._kein_sortieren = False
         self._eingepasst = bool(app.e.get("spalten"))
+        self._breite = 0                        # zuletzt eingepasste Tabellenbreite (automatisches Einpassen)
         self.marke = tk.Frame(tabelle, width=3)           # Einfügestelle beim Ziehen
         self.marke._feste_farben = True                     # Farbe setzt _ziehen_bewegt (Akzent)
         t = tabelle
@@ -58,6 +64,39 @@ class Spalten:
         erg = [c for c in reihe if c in self.kennungen]
         return erg or list(self.grund)
 
+    # ================================================================ Statusspalte #0
+    def status_an(self):
+        return bool(self.app.e.get("status_spalte", True))
+
+    def status_umschalten(self):
+        self.app.e["status_spalte"] = not self.status_an()
+        self._status_zeigen()
+        if not self.app.e.get("spalten"):
+            self.einpassen()
+
+    def _status_zeigen(self):
+        self.t.configure(show="tree headings" if self.status_an() else "headings")
+        self.status_breite()
+
+    def status_breite(self):
+        """Breite der Statusspalte: gezogen (gemerkt) oder passend zu den Piktogrammen."""
+        if not self.status_an():
+            return
+        gemerkt = (self.app.e.get("spalten") or {}).get("#0")
+        try:
+            w = int(gemerkt) if gemerkt else self.app.tabellen_streifen.breite_noetig()
+        except (TypeError, ValueError, AttributeError):
+            w = 42
+        w = max(26, w)
+        if self.t.column("#0", "width") != w:
+            self.t.column("#0", width=w, minwidth=26, stretch=False)
+            # ohne gemerkte Breiten passen die übrigen Spalten neben die neue Statusbreite
+            if not self.app.e.get("spalten") and self.t.winfo_width() > 100:
+                self.einpassen()
+
+    def _status_px(self):
+        return self.t.column("#0", "width") if self.status_an() else 0
+
     def _setzen(self, reihe):
         self.app.e["spalten_reihe"] = None if reihe == self.grund else list(reihe)
         self.t.configure(displaycolumns=reihe)
@@ -72,10 +111,22 @@ class Spalten:
                 w = self.standard[c]
             self.t.column(c, width=w, minwidth=MINDEST, stretch=False)
         self.t.configure(displaycolumns=self.sichtbar())
+        self._status_zeigen()
         self.kopf_beschriften()
 
     def breiten(self):
-        return {c: self.t.column(c, "width") for c in self.kennungen}
+        """Breiten zum Merken; die Statusspalte nur, wenn sie von der automatischen Breite abweicht
+        (also gezogen wurde)."""
+        erg = {c: self.t.column(c, "width") for c in self.kennungen}
+        if self.status_an():
+            w = self.t.column("#0", "width")
+            try:
+                auto = self.app.tabellen_streifen.breite_noetig()
+            except AttributeError:
+                auto = w
+            if abs(w - auto) > 2:
+                erg["#0"] = w
+        return erg
 
     def kopf_beschriften(self):
         spalte, rueck = self.app.e.get("sortierung") or ["reihe", False]
@@ -111,7 +162,7 @@ class Spalten:
 
     def einpassen(self):
         """Sichtbare Spalten im Verhältnis ihrer jetzigen Breiten auf die Fensterbreite bringen."""
-        platz = self.t.winfo_width() - 4
+        platz = self.t.winfo_width() - 4 - self._status_px()
         reihe = self.sichtbar()
         jetzt = [self.t.column(c, "width") for c in reihe]
         summe = sum(jetzt)
@@ -125,6 +176,8 @@ class Spalten:
     def zuruecksetzen(self):
         self.app.e["spalten"] = {}
         self.app.e["spalten_reihe"] = None
+        self.app.e["status_spalte"] = True
+        self._status_zeigen()
         for c in self.kennungen:
             self.t.column(c, width=self.standard[c])
         self.t.configure(displaycolumns=self.grund)
@@ -135,9 +188,10 @@ class Spalten:
         return not self._kein_sortieren
 
     def _erste_groesse(self, e):
-        """Ohne gemerkte Breiten beim ersten Anzeigen einmal einpassen."""
-        if not self._eingepasst and e.width > 100:
-            self._eingepasst = True
+        """Ohne gemerkte Breiten einpassen - beim ersten Anzeigen und danach bei jeder Größenänderung, bis
+        der Nutzer eine Spalte zieht (seit 1.3-beta4: die Seitenleiste kann nach dem Laden breiter werden)."""
+        if not self._eingepasst and e.width > 100 and e.width != self._breite:
+            self._breite = e.width
             self.einpassen()
 
     # ================================================================ Menü
@@ -159,6 +213,9 @@ class Spalten:
                           command=lambda: self.umschalten(spalte))
             m.add_separator()
         self._vars = []
+        sv = tk.BooleanVar(value=self.status_an())
+        self._vars.append(sv)
+        m.add_checkbutton(label=_("Status"), variable=sv, command=self.status_umschalten)
         for c in self.kennungen:
             v = tk.BooleanVar(value=c in reihe)
             self._vars.append(v)
@@ -197,8 +254,9 @@ class Spalten:
         Kante der letzten, mit dem waagrechten Scrollen verrechnet."""
         reihe = self.sichtbar()
         breiten = [self.t.column(c, "width") for c in reihe]
-        versatz = self.t.xview()[0] * sum(breiten)
-        erg, x = [], -versatz
+        vorn = self._status_px()
+        versatz = self.t.xview()[0] * (sum(breiten) + vorn)
+        erg, x = [], vorn - versatz
         for w in breiten:
             erg.append(x)
             x += w
@@ -233,6 +291,8 @@ class Spalten:
         self.marke.lift()
 
     def _loslassen(self, e):
+        if self.t.identify_region(e.x, e.y) == "separator":
+            self._eingepasst = True                # Breite gezogen: ab jetzt nicht mehr automatisch einpassen
         z, self._ziehen = self._ziehen, None
         if not z or not z["aktiv"]:
             return

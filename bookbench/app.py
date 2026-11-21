@@ -50,6 +50,7 @@ import keller_theme as kth          # noqa: E402
 from bookbench.ui import area_device as kbk     # noqa: E402
 from bookbench.ui import area_metadata as kbm   # noqa: E402
 from bookbench.ui import markers as kmk         # noqa: E402
+from bookbench.ui import panes as kpn           # noqa: E402
 from bookbench.ui import area_preview as kbv  # noqa: E402
 from bookbench.ui import area_dictionary as kbw  # noqa: E402
 from bookbench.core import blurbs                       # noqa: E402
@@ -486,8 +487,10 @@ class App(tk.Tk):
         lf = klf.ListenFilter(eltern, filter or [("alle", "All books", None)], geaendert or (lambda: None), kopf)
         r = self._listenrahmen(eltern)
         r.pack(fill="both", expand=True)
-        lb = tk.Listbox(r, width=breite, borderwidth=0, highlightthickness=0, exportselection=False,
+        # schmal anfordern: die Breite gibt der verstellbare Teiler vor (panes.teilen, seit 1.3-beta4)
+        lb = tk.Listbox(r, width=min(breite, 12), borderwidth=0, highlightthickness=0, exportselection=False,
                         activestyle="none")
+        lb.tipp = kpn.ListenTipp(lb)
         sb = ttk.Scrollbar(r, orient="vertical", command=lb.yview)
         sb.pack(side="right", fill="y")
         lb.pack(side="left", fill="both", expand=True)
@@ -561,14 +564,6 @@ class App(tk.Tk):
         b = self._listen_buch.get(name)
         return self.kapitel_marken(b) if b else []
 
-    def _tabelle_nach_streifen(self):
-        """Der Streifen der Bibliothek ist breiter geworden (mehr Marken): ohne gemerkte Spaltenbreiten die
-        Spalten wieder einpassen, erst nachdem die Tabelle ihre neue Breite hat."""
-        if self.e.get("spalten"):
-            return
-        self.update_idletasks()
-        self.tabellen_spalten.einpassen()
-
     def _status_von_iid(self, iid):
         b = self.nach_schluessel.get(iid)
         return (b.stand(), b.warnung()) if b else (None, None)
@@ -593,7 +588,10 @@ class App(tk.Tk):
         self.ordner_label.pack(side="right")
         r = self._listenrahmen(s)
         r.pack(fill="both", expand=True)
-        t = self.tabelle = ttk.Treeview(r, columns=[c for c, __, __ in SPALTEN], show="headings", selectmode="browse")
+        # Spalte #0 (die Baumspalte, nur sie kann Bilder zeigen) ist seit 1.3-beta4 die Statusspalte
+        t = self.tabelle = ttk.Treeview(r, columns=[c for c, __, __ in SPALTEN], show="tree headings",
+                                        selectmode="browse", style="Bibliothek.Treeview")
+        t.heading("#0", text=_("Status"), anchor="w", command=lambda: self._sortieren("status"))
         for c, text, w in SPALTEN:
             t.heading(c, text=text, command=lambda c=c: self._sortieren(c))
             t.column(c, anchor="e" if c == "nummer" else "w")
@@ -610,15 +608,11 @@ class App(tk.Tk):
                 xsb.pack(side="bottom", fill="x", before=t)
         t.configure(xscrollcommand=waagrecht)
         t.pack(side="left", fill="both", expand=True)
-        self.tabellen_streifen = kmk.MarkenStreifen(
-            self, t, r, self._status_von_iid,
+        self.tabellen_streifen = kmk.TabellenStatus(
+            self, t, self._status_von_iid,
             lambda iid: self.bibliothek_marken(self.nach_schluessel[iid]) if iid in self.nach_schluessel else [],
-            lambda iid: self.nach_schluessel[iid].name,
-            alle_fn=lambda: list(self.nach_schluessel),
-            bei_breite=self._tabelle_nach_streifen)
-        t.configure(yscrollcommand=lambda *a: (sb.set(*a), self.tabellen_streifen.zeichnen()))
-        if self.status_liste.get():
-            self.tabellen_streifen.einpacken()
+            lambda iid: self.nach_schluessel[iid].name)
+        t.configure(yscrollcommand=sb.set)
         self._streifen.append(self.tabellen_streifen)
         self.tabellen_spalten = ktc.Spalten(self, t, SPALTEN, aus=SPALTEN_AUS)
         self.tabellen_spalten.anwenden()
@@ -658,6 +652,9 @@ class App(tk.Tk):
             schl = lambda b: (_nr(b.nummer), b.titel.casefold())
         elif spalte == "cover":
             schl = lambda b: (self.cover.hoehe(b), b.titel.casefold())       # nach Pixelhöhe, nicht als Text
+        elif spalte == "status":
+            # Statusspalte: unlesbar zuerst, dann nach Zahl der Marken, dann Ungespeichertes
+            schl = lambda b: (not b.fehler, -len(self.bibliothek_marken(b)), b.stand() is None, b.titel.casefold())
         else:
             schl = lambda b: (str(self._zelle(b, spalte)).casefold(), b.titel.casefold())
         return sorted(buecher, key=schl, reverse=rueck)
@@ -688,7 +685,9 @@ class App(tk.Tk):
         if gewaehlt and t.exists(gewaehlt[0]):
             t.selection_set(gewaehlt[0])
             t.see(gewaehlt[0])
+        self.tabellen_streifen.vergessen()
         self.tabellen_streifen.zeichnen()
+        self.tabellen_spalten.status_breite()
         if self.buecher:
             self.ordner_label.configure(text=ngettext("{n} of {gesamt} book", "{n} of {gesamt} books", len(self.buecher))
                                         .format(n=len(sichtbar), gesamt=len(self.buecher)) + f"  ·  {self.ordner}")
@@ -731,14 +730,13 @@ class App(tk.Tk):
     # ================================================================ Kapitel
     def _kapitel_bauen(self):
         s = self.seite_kapitel = self._seite(_("Chapters"), "kapitel")
-        links = ttk.Frame(s)
-        links.pack(side="left", fill="y")
+        links, rechts_teil = kpn.teilen(self, s, "kapitel", 300)
         kopf = ttk.Label(links, text=_("Books:"))
         kopf.pack(anchor="w")
         self.kap_liste = self._buchliste(links, self._kapitel_anzeigen, filter=self._kap_filter(),
                                          geaendert=lambda: self._liste_neu(self.kap_liste), kopf=kopf,
                                          marken_fn=self._marken_kapitel)
-        rechts = ttk.Frame(s)
+        rechts = ttk.Frame(rechts_teil)
         rechts.pack(side="left", fill="both", expand=True, padx=(10, 0))
         self.kap_cover, self.kap_kopf, self.kap_info = self._kopfzeile(rechts)
         teiler = ttk.PanedWindow(rechts, orient="vertical")
@@ -1644,7 +1642,11 @@ class App(tk.Tk):
         dunkel = self.dark_mode.get()
         p = kth.anwenden(self, dunkel)
         self._farben = p
-        ttk.Style(self).configure("Klein.TButton", padding=(6, 1), font=kth.schrift(9))
+        st = ttk.Style(self)
+        st.configure("Klein.TButton", padding=(6, 1), font=kth.schrift(9))
+        # Bibliothek: Statusspalte #0 ohne Platz für das Aufklapp-Dreieck (es gibt keine Unterzeilen)
+        st.layout("Bibliothek.Treeview.Item", [("Treeitem.padding", {"sticky": "nswe", "children": [
+            ("Treeitem.image", {"side": "left", "sticky": ""}), ("Treeitem.text", {"sticky": "nswe"})]})])
         for k, symbol in self._wz:
             self._knopf_faerben(k, symbol)
         for r in self._rahmen_liste:

@@ -19,6 +19,7 @@ from pathlib import Path
 from tkinter import filedialog, messagebox, ttk
 
 import keller_theme as kth
+from bookbench.ui import panes as kpn
 from bookbench.ui import settings as kei
 from bookbench.device import device as kg
 from bookbench.preview import emulator as kv
@@ -62,14 +63,13 @@ class VorschauBereich:
         # -- Mitte --------------------------------------------------------------
         self.mitte = ttk.Frame(s)
         self.mitte.pack(fill="both", expand=True, pady=(8, 0))
-        links = ttk.Frame(self.mitte)
-        links.pack(side="left", fill="both")
+        links, rechts_teil = kpn.teilen(app, self.mitte, "vorschau", 280)
         ttk.Label(links, text=_("Book"), style="Ueberschrift.TLabel").pack(anchor="w")
         # ohne Statusstreifen (der Stand gehört zu Kapitel), Suche ohne Filterauswahl
         self.liste = app._buchliste(links, self._buch_gewaehlt, streifen=False, geaendert=lambda: self.liste_fuellen())
         self.liste.bind("<Double-1>", lambda e: self.starten())
 
-        rechts = ttk.Frame(self.mitte, padding=(16, 0, 0, 0))
+        rechts = ttk.Frame(rechts_teil, padding=(16, 0, 0, 0))
         rechts.pack(side="left", fill="both", expand=True)
         ttk.Label(rechts, text=_("Profile (settings, plugins, fonts from the e-reader)"),
                   style="Ueberschrift.TLabel").pack(anchor="w")

@@ -19,7 +19,7 @@ import keller_theme as kth
 from bookbench.i18n import _
 
 PROGRAMM = "Bookbench"
-VERSION = "1.3-beta3"
+VERSION = "1.3-beta4"
 
 # (Elternthema, Kennung, Titel, Text). Übersetzt beim Import. Text: **fett**, Aufzählungen mit "-",
 # [[kennung]] = Verweis.
@@ -62,7 +62,9 @@ Next to the dot small **pictograms** show what is missing or needs a look - each
 - **Floppy disk** (yellow, sidebar only): books with changes that are not saved yet.
 - In Dictionary and E-reader: **book** (words looked up without result), **e-reader with !** (dictionaries missing or outdated), **tick** (connected).
 
-Colours: red = error, orange = check it, grey = missing, blue = information, yellow = not saved. Hovering over the strip or a sidebar entry explains the markers. The title bar shows an asterisk (*) after the version as long as something is not saved.
+Colours: red = error, orange = check it, grey = missing, blue = information, yellow = not saved. Hovering over the strip or a sidebar entry explains the markers. If the markers of an area do not fit into one line of the sidebar, they move to a second line below the name.
+
+In the **library** dot and pictograms are in a column of their own, **Status**, always on the left: a right-click on a column header hides or shows it, its width can be dragged, a click on it sorts (unreadable files first, then the books with the most markers). The title bar shows an asterisk (*) after the version as long as something is not saved.
 
 **Backgrounds**
 - In the chapter table questionable rows are **red**; a click shows the reason in the status bar. **Yellowish**: only a number, no name found.
@@ -131,6 +133,8 @@ The sidebar on the left switches between the areas (Ctrl+1 … 6):
 - [[vorschau]] - a book in the desktop KOReader (Linux/macOS)
 
 The toolbar has the buttons of the current area on the left; on the right, separated, are the ones that always apply: Open, Reload, Save and Help. [[speichern]] applies to all book areas together.
+
+The **book lists** on the left of Chapters, Metadata and Preview (and the list of the dictionary) can be made wider or narrower by dragging the divider to their right; the width is remembered, a double-click on the divider restores the default. A name that does not fit is shown completely below it when the mouse is over it.
 """)),
     ("bereiche", "suche_filter", _("Search and filters in the lists"), _("""
 Above the book lists of **Chapters**, **Metadata** and **Preview** there is a search field and (except in Preview) a filter. Each list has its own; they do not affect each other or the library.
@@ -162,13 +166,14 @@ All books of the opened folder (with all subfolders) with series, number, author
 - **Cover**: size of the title image in pixels, "changed" for a new one not yet saved.
 - **Series**: from the EPUB; if it is only in Calibre or KOReader's data, the status bar says where from ([[bibliothek_calibre]]).
 - **Publisher**, **Language**, **ISBN**: hidden at first; show them with a right-click on a header or View > Library columns.
+- **Status** (left): the coloured dot and the pictograms of each book ([[status]]).
 
 **Filters** All books, Changed (anything not yet saved, or saved since opening), Unreadable files, No series in the EPUB.
 """)),
     ("bibliothek", "bibliothek_spalten", _("Columns: sorting, moving, widths"), _("""
 **Sorting**
 - A click on a column header sorts by it, a second click reverses. The arrow ▲ (ascending) or ▼ (descending) shows the column.
-- Series sorts by series, then number, then title; No. by number; Cover by the height in pixels (no cover first).
+- Series sorts by series, then number, then title; No. by number; Cover by the height in pixels (no cover first); Status puts unreadable files first, then the books with the most markers.
 - Right-click on a header: **Sort ascending** / **Sort descending** for this column.
 
 **Moving columns**
@@ -177,9 +182,12 @@ All books of the opened folder (with all subfolders) with series, number, author
 
 **Showing and hiding**
 - Right-click on a header, or View > **Library columns**: one tick per column. A shown column comes back at its usual place. The last column cannot be hidden.
+- **Status** is always the first column and cannot be moved; it can be hidden like the others.
 
 **Widths**
 - Drag the line between two headers. The widths stay exactly as drawn, also after resizing the window or a restart; no column stretches by itself. If the columns are wider than the window, a scroll bar appears below.
+- As long as no width has been drawn, the columns are fitted to the window whenever its size changes.
+- **Status** is as wide as the book with the most pictograms needs, unless you drag it.
 - **Fit columns to the window** spreads the visible columns over the width, keeping their proportions.
 - **Reset columns**: usual order, all columns, default widths fitted to the window.
 
@@ -288,7 +296,7 @@ In Calibre you can add columns of your own (Preferences > Add your own columns),
 - KOReader only knows title, authors, series, language, tags and description; own fields are for Calibre and for you.
 """)),
     ("metadaten", "klappentexte", _("Blurb"), _("""
-The blurb is below the form in the Metadata area. The text can be edited directly; the divider between form and blurb can be dragged (a double-click puts it back below the form).
+The blurb is below the form in the Metadata area. The text can be edited directly; the divider between form and blurb can be dragged (a double-click puts it back below the form). If the form no longer fits above it, it gets a scrollbar (the mouse wheel scrolls it too).
 
 - Books without a blurb have a **speech bubble** in the list. If Calibre has a description for the book, the status bar says so when the mouse is over it; the filter **Blurb only in Calibre** lists these books.
 - **Apply** (Ctrl+Enter) applies the text together with the form, **Discard** restores both from the file. An empty field applied = remove the blurb.

@@ -11,7 +11,11 @@ keller_navigation und keller_streifen bleiben unverändert, hier stehen nur Unte
   MarkenStreifen   keller_streifen.StatusStreifen mit Piktogrammen statt ⚠; marken_fn(schlüssel)
                    liefert [(kennung, text)]. Die Breite richtet sich nach dem Buch mit den meisten.
   MarkenNavigation keller_navigation.Navigation; liest seite.nav_marken = [(kennung, anzahl)] und zeichnet
-                   rechts je Marke Piktogramm und Zahl; die Leiste wird so breit wie nötig.
+                   rechts je Marke Piktogramm und Zahl; die Leiste wird so breit wie nötig, bis MAX_BREIT -
+                   passt eine Zeile dann nicht, stehen die Marken in einer zweiten Zeile (seit 1.3-beta4).
+  status_bild(w, stand, kennungen, app)   ein Bild aus Punkt und Piktogrammen (Statusspalte der Bibliothek)
+  TabellenStatus   Statusspalte einer ttk.Treeview (Spalte #0 mit diesen Bildern) statt Streifen daneben:
+                   ein-/ausblendbar, in der Breite ziehbar, sortierbar (seit 1.3-beta4)
 """
 import tkinter as tk
 import tkinter.font as tkfont
@@ -23,6 +27,7 @@ from bookbench.i18n import N_, _
 from bookbench.ui import icons as ksy
 
 PRUEFEN = {"hell": "#d9822b", "dunkel": "#f0a548"}
+MAX_BREIT = 250          # px; breiter wird die Seitenleiste nicht, dann zweizeilig
 ORDNUNG = ("unlesbar", "kapitel", "vorschlag", "klappentext", "cover", "cover_klein", "calibre", "angaben",
            "woerterbuch", "ereader", "ungespeichert", "verbunden")
 # Stufe, (Einzahl, Mehrzahl) für die Seitenleiste
@@ -66,6 +71,24 @@ def bild(kennung, f, w):
     if schl not in _BILDER:
         _BILDER[schl] = tk.PhotoImage(master=w, data=knv._gefaerbt(ksy.MARKEN[kennung], f))
     return _BILDER[schl]
+
+
+def status_bild(w, stand, kennungen, app):
+    """Bild für die Statusspalte: Punkt für den Stand (oder Lücke), daneben die Piktogramme."""
+    dunkel = app.dark_mode.get()
+    schl = ("status", stand, tuple(kennungen), dunkel, id(w.tk))
+    if schl in _BILDER:
+        return _BILDER[schl]
+    breite = 16 + 16 * len(kennungen)
+    img = tk.PhotoImage(master=w, width=breite, height=16)
+    if stand:
+        punkt = bild("punkt", app._mark_farben()[stand], w)
+        img.tk.call(img, "copy", punkt, "-to", 1, 1)
+    for i, k in enumerate(kennungen):
+        if k in ksy.MARKEN:
+            img.tk.call(img, "copy", bild(k, farbe(ARTEN[k][0], dunkel, app), w), "-to", 17 + 16 * i, 1)
+    _BILDER[schl] = img
+    return img
 
 
 def text(kennung, anzahl):
@@ -141,6 +164,65 @@ class MarkenStreifen(kst.StatusStreifen):
             self.app.status.set(f"{self.name_fn(k)}: " + " - ".join(teile))
 
 
+class TabellenStatus:
+    """Statusspalte einer ttk.Treeview: Spalte #0 (die einzige, die Bilder zeigen kann) mit Punkt und
+    Piktogrammen je Zeile. Ersetzt den Streifen neben der Tabelle; Sichtbarkeit und Breite verwalten
+    die Spalten der Tabelle (table_columns.Spalten), hier nur Bilder und Hover-Text."""
+
+    def __init__(self, app, tabelle, status_fn, marken_fn, name_fn):
+        self.app, self.t = app, tabelle
+        self.liste = tabelle                       # wie bei den Streifen (Tests, app._streifen)
+        self.status_fn, self.marken_fn, self.name_fn = status_fn, marken_fn, name_fn
+        self._stand = {}
+        tabelle.bind("<Motion>", self._hover, add="+")
+
+    def marken(self, iid):
+        return [k for k, __ in sortiert(self.marken_fn(iid)) if k in ksy.MARKEN]
+
+    def breite_noetig(self):
+        """Breite für das Buch mit den meisten Piktogrammen (mindestens Platz für den Punkt)."""
+        meiste = max((len(self.marken(i)) for i in self.t.get_children()), default=0)
+        return 26 + 16 * meiste
+
+    def zeichnen(self):
+        try:
+            for iid in self.t.get_children():
+                stand, __ = self.status_fn(iid)
+                kennungen = self.marken(iid)
+                schl = (stand, tuple(kennungen), self.app.dark_mode.get())
+                if self._stand.get(iid) != schl:
+                    self._stand[iid] = schl
+                    self.t.item(iid, image=status_bild(self.t, stand, kennungen, self.app))
+            sp = getattr(self.app, "tabellen_spalten", None)
+            if sp is not None:
+                sp.status_breite()                 # mehr oder weniger Piktogramme: Breite nachziehen
+        except tk.TclError:
+            pass
+
+    def vergessen(self):
+        """Nach dem Leeren der Tabelle: Bilder beim nächsten Zeichnen neu setzen."""
+        self._stand = {}
+
+    # wie ein Streifen behandelt (app._streifen), ohne eigenes Widget
+    def einpacken(self):
+        pass
+
+    def auspacken(self):
+        pass
+
+    def _hover(self, e):
+        if self.t.identify_column(e.x) != "#0":
+            return
+        iid = self.t.identify_row(e.y)
+        if not iid:
+            return
+        stand, __ = self.status_fn(iid)
+        teile = [kst.TEXTE[stand]] if stand else []
+        teile += [t for __, t in sortiert(self.marken_fn(iid)) if t]
+        if teile:
+            self.app.status.set(f"{self.name_fn(iid)}: " + " - ".join(teile))
+
+
 class MarkenNavigation(knv.Navigation):
     """Seitenleiste mit Marken: rechts in der Zeile je Marke Piktogramm und Anzahl, alle, nicht nur eine.
     Eingeklappt zeigt der Punkt die schwerste Stufe. Ohne nav_marken wie keller_navigation (Zähler-Text)."""
@@ -157,16 +239,28 @@ class MarkenNavigation(knv.Navigation):
     def _markenbreite(self, marken):
         return sum(14 + 2 + self._mass(self.schrift_klein, str(n) if k != "verbunden" else "") + 7 for k, n in marken)
 
+    def _platz(self, b, marken):
+        """(einzeilig_breite, zweizeilig_breite) eines Bereichs mit Marken."""
+        name = knv.SCHMAL + self._mass(self.schrift_fett, b["name"]) + 18 + (16 if b["kinder"] else 0)
+        mb = self._markenbreite(marken)
+        return name + mb, max(name, knv.SCHMAL - 2 + mb + 10)
+
     def zeichnen(self):
-        # Breite nach dem Bereich mit dem meisten Platzbedarf (Name + Marken); keller_navigation
-        # liest BREIT bei jedem Zeichnen aus dem Modul, deshalb dort gesetzt
+        # Breite nach dem Bereich mit dem meisten Platzbedarf (Name + Marken), höchstens MAX_BREIT;
+        # Bereiche, deren Marken dann nicht in die Zeile passen, bekommen eine zweite Zeile.
+        # keller_navigation liest BREIT bei jedem Zeichnen aus dem Modul, deshalb dort gesetzt.
+        self._zweizeilig = set()
         try:
             noetig = self.GRUND
             for b in self.bereiche():
                 marken = self._marken(b)
                 if marken:
-                    noetig = max(noetig, knv.SCHMAL + self._mass(self.schrift_fett, b["name"]) + 18
-                                 + self._markenbreite(marken) + (16 if b["kinder"] else 0))
+                    eins, zwei = self._platz(b, marken)
+                    if eins <= MAX_BREIT:
+                        noetig = max(noetig, eins)
+                    else:
+                        self._zweizeilig.add(b["id"])
+                        noetig = max(noetig, min(zwei, MAX_BREIT))
             knv.BREIT = noetig
         except (AttributeError, tk.TclError):
             pass
@@ -184,7 +278,27 @@ class MarkenNavigation(knv.Navigation):
         dunkel = self.modus == "dunkel"
         tipp = b["name"] + ": " + ", ".join(text(k, n) for k, n in marken)
         neu = []
-        if self.ausgeklappt:
+        zweizeilig = self.ausgeklappt and b["id"] in getattr(self, "_zweizeilig", set())
+        if zweizeilig:
+            # Zeile höher machen; Symbol, Name und Pfeil in die obere Hälfte, Marken darunter von links
+            z.configure(height=knv.ZEILE_H + 18)
+            for w in z.place_slaves():
+                info = w.place_info()
+                if info.get("rely") in ("0.5", 0.5):
+                    w.place_configure(rely=0, y=knv.ZEILE_H // 2)
+            x = knv.SCHMAL - 2
+            for k, n in marken:
+                f = farbe(ARTEN[k][0], dunkel)
+                sym = self._label(z, image=bild(k, f, z))
+                sym.place(x=x, y=knv.ZEILE_H + 4, anchor="w")
+                x += 14 + 2
+                neu.append(sym)
+                if k != "verbunden":
+                    zl = self._label(z, text=str(n), fg=f, font=self.schrift_klein)
+                    zl.place(x=x, y=knv.ZEILE_H + 4, anchor="w")
+                    x += self._mass(self.schrift_klein, str(n)) + 7
+                    neu.append(zl)
+        elif self.ausgeklappt:
             x = knv.BREIT - 10 - (16 if b["kinder"] else 0)
             for k, n in reversed(marken):
                 f = farbe(ARTEN[k][0], dunkel)

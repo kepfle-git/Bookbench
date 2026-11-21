@@ -29,6 +29,7 @@ from bookbench.device import device as kg
 from bookbench.dictionary import store as kwb
 from bookbench.dictionary import wikidict as W
 from bookbench.i18n import _, ngettext
+from bookbench.ui import panes as kpn
 
 # Texte auf Modulebene: übersetzt beim Import (die Sprache wechselt nur mit einem Neustart)
 ANSICHTEN = (_("Entries"), _("Missing terms"), _("Ignored and removed"), _("Steps"))
@@ -128,9 +129,10 @@ class WoerterbuchBereich:
         self.db_label = ttk.Label(oben, text="", style="Hinweis.TLabel")
         self.db_label.pack(side="right")
 
-        self.arbeit = ttk.Frame(self.voll)       # Liste + Formular
-        self._liste_bauen(self.arbeit)
-        self._formular_bauen(self.arbeit)
+        self.arbeit = ttk.Frame(self.voll)       # Liste + Formular, dazwischen ein verstellbarer Teiler
+        links, rechts = kpn.teilen(self.app, self.arbeit, "woerterbuch", 270)
+        self._liste_bauen(links)
+        self._formular_bauen(rechts)
         self.aufbau = ttk.Frame(self.voll)       # Schritte von wikidict
         self._aufbau_bauen(self.aufbau)
 
@@ -156,11 +158,12 @@ class WoerterbuchBereich:
     # ================================================================ Aufbau der Seite
     def _liste_bauen(self, eltern):
         links = ttk.Frame(eltern)
-        links.pack(side="left", fill="y")
+        links.pack(side="left", fill="both", expand=True)
         r = self.app._listenrahmen(links)
         r.pack(fill="both", expand=True)
-        self.liste = tk.Listbox(r, width=30, borderwidth=0, highlightthickness=0, exportselection=False,
+        self.liste = tk.Listbox(r, width=12, borderwidth=0, highlightthickness=0, exportselection=False,
                                 activestyle="none")
+        self.liste.tipp = kpn.ListenTipp(self.liste)
         sb = ttk.Scrollbar(r, orient="vertical", command=self.liste.yview)
         sb.pack(side="right", fill="y")
         self.liste.pack(side="left", fill="both", expand=True)

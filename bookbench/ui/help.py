@@ -19,7 +19,7 @@ import keller_theme as kth
 from bookbench.i18n import _
 
 PROGRAMM = "Bookbench"
-VERSION = "1.3-beta2"
+VERSION = "1.3-beta3"
 
 # (Elternthema, Kennung, Titel, Text). Übersetzt beim Import. Text: **fett**, Aufzählungen mit "-",
 # [[kennung]] = Verweis.
@@ -30,13 +30,13 @@ Bookbench edits EPUB and KEPUB files for KOReader: **chapter names** and levels 
 **Workflow**
 - Open a folder (Ctrl+O): the books folder on the e-reader, a copy on the computer or the Calibre library.
 - In **Chapters** check the suggestions, change them if needed, apply them.
-- In **Blurbs** and **Metadata** (with the cover) fill in what is missing, apply it.
+- In **Metadata** (with blurb and cover) fill in what is missing, apply it.
 - **Save** (Ctrl+S) writes all applied changes to the files. A backup of every file is made first.
 
 Only the table of contents and the metadata (and the cover image) are changed, never the book text. Reading positions and highlights in KOReader stay valid.
 
 **More**
-- [[status]] - what the coloured dots and ⚠ mean
+- [[status]] - what the coloured dots and the small pictograms mean
 - [[tasten]]
 - [[dateien]] - where settings, caches and backups are
 - [[kosten]] - what is free, what costs money, what leaves the computer
@@ -49,13 +49,23 @@ The strip to the right of the book lists shows the status of each book:
 - **red** ●: changed, not yet applied
 - **yellow** ●: applied, not yet saved
 - **green** ●: saved (since opening)
-- **⚠**: something needs a look. In Chapters: questionable chapter names that are not decided yet; in Blurbs: no blurb; in Covers: no cover or a small one; everywhere: the file cannot be read.
 
-Hovering over the strip explains the status in the status bar. The title bar shows an asterisk (*) after the version as long as something is not saved.
+Next to the dot small **pictograms** show what is missing or needs a look - each list only those that belong to its area. The **sidebar** shows the same pictograms per area, each with the number of books.
+
+- **Torn page** (red): the file cannot be read.
+- **Question mark** (orange): questionable chapter names, not yet decided.
+- **Light bulb** (blue): chapter suggestions waiting to be applied.
+- **Speech bubble** (grey): no blurb.
+- **Picture** (grey): no cover. **Small picture with corners** (orange): cover lower than the limit ([[einst_cover]]).
+- **Not-equal sign** (orange): title, authors, series or number differ from Calibre.
+- **Label with !** (orange): missing language or an invalid ISBN.
+- **Floppy disk** (yellow, sidebar only): books with changes that are not saved yet.
+- In Dictionary and E-reader: **book** (words looked up without result), **e-reader with !** (dictionaries missing or outdated), **tick** (connected).
+
+Colours: red = error, orange = check it, grey = missing, blue = information, yellow = not saved. Hovering over the strip or a sidebar entry explains the markers. The title bar shows an asterisk (*) after the version as long as something is not saved.
 
 **Backgrounds**
 - In the chapter table questionable rows are **red**; a click shows the reason in the status bar. **Yellowish**: only a number, no name found.
-- In the lists of Blurbs and Covers, books without a blurb or cover have a **⚠** in the strip; the sidebar shows how many, like for Chapters.
 
 The strip can be switched off: Settings > General > Interface ([[einst_oberflaeche]]).
 """)),
@@ -64,9 +74,9 @@ The strip can be switched off: Settings > General > Interface ([[einst_oberflaec
 - **Ctrl+O** open a folder, **F5** reload it
 - **Ctrl+S** save
 - **Ctrl+Enter** apply (current book, or the dictionary form)
-- **Ctrl+F** search field of the current area (Chapters, Blurbs, Covers, Preview, Dictionary), otherwise of the library; **Esc** in a search field empties it
+- **Ctrl+F** search field of the current area (Chapters, Metadata, Preview, Dictionary), otherwise of the library; **Esc** in a search field empties it
 - **Ctrl+B** collapse and expand the sidebar
-- **Ctrl+1 … 7** choose an area in the order of the sidebar (7: Preview, Linux/macOS only)
+- **Ctrl+1 … 6** choose an area in the order of the sidebar (6: Preview, Linux/macOS only)
 - **F1** help for the current area; in the settings: help for the page shown
 
 **Chapter table**
@@ -112,11 +122,10 @@ Until version 0.23 the two JSON files were next to the program; until 0.24 the f
 - Look up all only asks Claude for books the free sources do not know, and asks before it starts.
 """)),
     ("", "bereiche", _("Areas"), _("""
-The sidebar on the left switches between the areas (Ctrl+1 … 7):
+The sidebar on the left switches between the areas (Ctrl+1 … 6):
 - [[bibliothek]] - all books in a table
 - [[kapitel]] - chapter names and levels
-- [[klappentexte]] - blurbs
-- [[metadaten]] - title, authors, series, publisher, language, ISBN, tags, own fields and the cover
+- [[metadaten]] - title, authors, series, publisher, language, ISBN, tags, own fields, blurb and cover
 - [[woerterbuch]] - your own dictionaries
 - [[kobo]] - the connected e-reader: backups, dictionaries, ejecting
 - [[vorschau]] - a book in the desktop KOReader (Linux/macOS)
@@ -124,7 +133,7 @@ The sidebar on the left switches between the areas (Ctrl+1 … 7):
 The toolbar has the buttons of the current area on the left; on the right, separated, are the ones that always apply: Open, Reload, Save and Help. [[speichern]] applies to all book areas together.
 """)),
     ("bereiche", "suche_filter", _("Search and filters in the lists"), _("""
-Above the book lists of **Chapters**, **Blurbs**, **Metadata** and **Preview** there is a search field and (except in Preview) a filter. Each list has its own; they do not affect each other or the library.
+Above the book lists of **Chapters**, **Metadata** and **Preview** there is a search field and (except in Preview) a filter. Each list has its own; they do not affect each other or the library.
 
 - **Search** finds parts of the title, series or author, case does not matter. **✕** or **Esc** in the field empties search and filter.
 - When a filter is active, the line above says how many books are shown: "Books: 3 of 12".
@@ -135,8 +144,7 @@ Above the book lists of **Chapters**, **Blurbs**, **Metadata** and **Preview** t
 
 **Filters**
 - **Chapters**: With suggestions, Questionable names (⚠, not yet decided), Some without names (single entries only with a number), Changed chapters (applied or edited, not yet saved).
-- **Blurbs**: No blurb, Only in Calibre (no blurb in the file, but Calibre has a description: **From Calibre**), Changed blurb.
-- **Metadata**: Changed metadata or cover, Differs from Calibre, No author sort, No language, No ISBN, Edited in KOReader, No cover, Small cover (below the limit in [[einst_cover]]).
+- **Metadata**: Changed, No blurb, Blurb only in Calibre, Differs from Calibre, No author sort, No language, No ISBN, Edited in KOReader, No cover, Small cover (below the limit in [[einst_cover]]).
 - **Preview**: search only.
 
 Search and filters are not remembered; after a restart all books are shown again.
@@ -188,7 +196,7 @@ Calibre writes metadata.calibre into the root folder of the e-reader when transf
 - Only in metadata.calibre: shown, the status bar says so, the filter **No series in the EPUB** lists these books.
 - Only in KOReader's own book data (metadata edited in KOReader, folder .sdr next to the book): shown too - this only works if the folder with the .sdr folders is opened, e.g. the e-reader directly.
 
-In the Blurbs area, **From Calibre** puts Calibre's description of a single book into the text field.
+In the Metadata area, **From Calibre** next to the blurb puts Calibre's description of a single book into the text field.
 """)),
     ("bereiche", "kapitel", _("Chapters"), _("""
 The books on the left, the table of contents on the right: **Entry** (as in the book), **New** (suggestion or own name), **Note**. Below are the first lines of book text at the selected entry.
@@ -229,13 +237,63 @@ A click on the row shows the reason in the status bar. Apply the name, change it
 **Decisions**
 Applied names are remembered in **tocfix_entscheidungen.json** in the settings folder ([[dateien]]). If the same book turns up again (another copy, after a new transfer from Calibre), these names are suggested at once.
 """)),
-    ("bereiche", "klappentexte", _("Blurbs"), _("""
-The books on the left, the blurb on the right. The text can be edited directly.
+    ("bereiche", "metadaten", _("Metadata"), _("""
+The books on the left, in the middle a form with the metadata stored in the book: **title**, **authors**, **author sort**, **series** and **number**, **publisher**, **language**, **ISBN** and **tags**, followed by your **own fields** from Calibre columns ([[metadaten_felder]]). Below the form the **blurb** ([[klappentexte]]), on the right the **cover** ([[cover]]).
 
-- Books without a blurb have a **⚠** in the list. If Calibre has a description for the book, the status bar says so when the mouse is over the ⚠.
-- **Apply** (Ctrl+Enter) applies the text, **Discard** restores the text from the file. An empty field applied = remove the blurb.
+- Type in the fields; the book turns red (changed, not applied). **Apply** (Ctrl+Enter or Enter in a field) applies form and blurb and makes the book yellow, **Save** (Ctrl+S) writes it into the file, with backup.
+- **Discard** restores values, blurb and cover from the file. This also drops a series taken over with **From Calibre** in the library.
+- Several authors are separated with **&**, as in Calibre: "Dan Abnett & Graham McNeill". The **author sort** works the same way ("Abnett, Dan & McNeill, Graham"); with as many names as authors each author gets his own, otherwise the first one gets the whole text.
+- **Number** may have decimals, e.g. 1.5 or 0.9 for a story between two books. A comma is turned into a point when applying, as in Calibre.
+- **Tags** are separated with commas.
+- **Language** as a code, e.g. en, de or en-GB. KOReader uses it for hyphenation.
+- Below the form Bookbench warns about an invalid ISBN, a missing language or title, a number without series and values that do not fit an own field (e.g. letters in a number column).
+- If Calibre or KOReader have a different value, it is shown below the field: **← Calibre: …**. A click on ← puts it into the field ([[metadaten_calibre]]).
+
+The file name is never changed: KOReader keeps reading positions and highlights in a folder named after the file (.sdr), they would be lost.
+
+After saving, KOReader only shows the new values after re-reading the book information (Cover browser > Extract and cache book information).
+
+**Toolbar**: Apply, Discard, From Calibre (only with the Calibre comparison on) and **Complete ▾** for all books: look up all missing blurbs, look up all missing covers, fill gaps from Calibre.
+
+**Markers** in the list show what a book lacks: speech bubble (blurb), picture (cover), not-equal sign (Calibre), label (language/ISBN) - see [[status]].
+
+**More**
+- [[metadaten_calibre]] - comparing with Calibre and KOReader
+- [[metadaten_felder]]
+- [[klappentexte]]
+- [[cover]]
+- [[suche_filter]]
+""")),
+    ("metadaten", "metadaten_calibre", _("Calibre and KOReader"), _("""
+**Calibre**
+If Calibre's **metadata.calibre** is found ([[bibliothek_calibre]]) and the comparison is on ([[einst_calibre]]), Calibre's value is shown below every field where it differs: **← Calibre: …**. A click on **←** puts the value into the field. Matching values are not shown.
+
+- **From Calibre** (toolbar) puts all differing values of this book into the form - check them, then apply.
+- **Complete ▾ > Fill gaps from Calibre** works on all books, but only on fields that are empty in the book. It applies directly (yellow); save afterwards.
+- A **not-equal sign** in the list means title, authors, series or number differ from Calibre. The filter **Differs from Calibre** also counts the other fields.
+- Calibre stores languages as three letters (eng); Bookbench compares them with the two-letter codes of the book (en) and takes over the short form.
+
+**Important:** When Calibre sends a book to the e-reader again, it writes its own values into the file. Change the metadata in Calibre as well, otherwise your changes in Bookbench are overwritten. If you no longer use Calibre, switch the comparison off: [[einst_calibre]].
+
+**KOReader**
+If you edited the book information in KOReader itself (Book information > long-press a field), KOReader keeps it in **custom_metadata.lua** in the .sdr folder next to the book and shows it **instead of** the values in the file. Bookbench shows these values below the fields as **← KOReader: …** (only when the folder with the .sdr folders is opened, e.g. the e-reader directly) and points it out below the form. The filter **Edited in KOReader** lists these books. To make KOReader show the file again, reset the fields in KOReader.
+""")),
+    ("metadaten", "metadaten_felder", _("Own fields"), _("""
+In Calibre you can add columns of your own (Preferences > Add your own columns), e.g. a subtitle with the lookup name **#subtitle**. Bookbench shows such columns as further fields below the usual ones - which ones and with what label, you decide in [[einst_metadaten]]. **From Calibre** there adds all columns found in metadata.calibre at once.
+
+- Bookbench reads and writes the columns the way Calibre stores them in the book: in EPUB 2 one entry per column, in EPUB 3 all own columns together in one entry. Columns you do not show stay untouched.
+- If the book does not have a column yet, Bookbench takes its definition (type, how values are separated) from metadata.calibre, so Calibre recognises it when adding the book again. Without metadata.calibre a plain text column is written.
+- Columns with several values ("Ampersand separated text", "Comma separated text") are shown joined with " & " or ", ". Careful: a text containing **&** is then split into two values, just like in Calibre.
+- Number columns (whole numbers, decimals, rating) only take numbers, yes/no columns yes or no; dates are shown without time.
+- KOReader only knows title, authors, series, language, tags and description; own fields are for Calibre and for you.
+""")),
+    ("metadaten", "klappentexte", _("Blurb"), _("""
+The blurb is below the form in the Metadata area. The text can be edited directly; the divider between form and blurb can be dragged (a double-click puts it back below the form).
+
+- Books without a blurb have a **speech bubble** in the list. If Calibre has a description for the book, the status bar says so when the mouse is over it; the filter **Blurb only in Calibre** lists these books.
+- **Apply** (Ctrl+Enter) applies the text together with the form, **Discard** restores both from the file. An empty field applied = remove the blurb.
+- **Look up** and **From Calibre** are small buttons above the text; **Complete ▾** in the toolbar looks up all missing blurbs.
 - Below the text: where it comes from. This is also saved in the EPUB (meta bookbench:blurb-source) and shown in the Blurb column of the library.
-- **From Calibre** puts Calibre's description into the text field ([[bibliothek_calibre]]).
 
 After saving, re-read the book information in KOReader (Cover browser > Extract and cache book information), otherwise Bookshelf still shows the old state.
 
@@ -245,7 +303,7 @@ After saving, re-read the book information in KOReader (Cover browser > Extract 
 - [[klappentexte_profile]]
 """)),
     ("klappentexte", "klappentexte_nachschlagen", _("Looking up blurbs"), _("""
-**Look up** (one book) and **Look up all** (all without a blurb, in the background) go through these steps until one has a text:
+**Look up** (one book, above the blurb) and **Complete ▾ > Look up all missing blurbs** (all without a blurb, in the background) go through these steps until one has a text:
 - **Google Books**, then **Open Library**: by ISBN, otherwise by title and author; the edition in the book's language is preferred. Free, no key ([[kosten]]).
 - **Claude** with the first source profile that fits the book ([[klappentexte_profile]]): fetches the pages of the profile and copies the publisher blurb word for word. About 1 to 2 cents.
 
@@ -282,58 +340,13 @@ Both can be changed, switched off or deleted; **Defaults** brings them back.
 - A fan wiki for a series ("Fandom") usually has the blurb: one line with {title}, section "Official Description".
 - Put specific profiles above general ones; the web search profile belongs at the bottom.
 """)),
-    ("bereiche", "metadaten", _("Metadata"), _("""
-The books on the left, in the middle a form with the metadata stored in the book: **title**, **authors**, **author sort**, **series** and **number**, **publisher**, **language**, **ISBN** and **tags**, followed by your **own fields** from Calibre columns ([[metadaten_felder]]). On the right the **cover** ([[cover]]).
-
-- Type in the fields; the book turns red (changed, not applied). **Apply** (Ctrl+Enter or Enter in a field) makes it yellow, **Save** (Ctrl+S) writes it into the file, with backup.
-- **Discard** restores the values and the cover from the file. This also drops a series taken over with **From Calibre** in the library.
-- Several authors are separated with **&**, as in Calibre: "Dan Abnett & Graham McNeill". The **author sort** works the same way ("Abnett, Dan & McNeill, Graham"); with as many names as authors each author gets his own, otherwise the first one gets the whole text.
-- **Number** may have decimals, e.g. 1.5 or 0.9 for a story between two books. A comma is turned into a point when applying, as in Calibre.
-- **Tags** are separated with commas.
-- **Language** as a code, e.g. en, de or en-GB. KOReader uses it for hyphenation.
-- Below the form Bookbench warns about an invalid ISBN, a missing language or title, a number without series and values that do not fit an own field (e.g. letters in a number column).
-- If Calibre or KOReader have a different value, it is shown below the field: **← Calibre: …**. A click on ← puts it into the field ([[metadaten_calibre]]).
-
-The file name is never changed: KOReader keeps reading positions and highlights in a folder named after the file (.sdr), they would be lost.
-
-After saving, KOReader only shows the new values after re-reading the book information (Cover browser > Extract and cache book information).
-
-**More**
-- [[metadaten_calibre]] - comparing with Calibre and KOReader
-- [[metadaten_felder]]
-- [[cover]]
-- [[suche_filter]]
-""")),
-    ("metadaten", "metadaten_calibre", _("Calibre and KOReader"), _("""
-**Calibre**
-If Calibre's **metadata.calibre** is found ([[bibliothek_calibre]]) and the comparison is on ([[einst_calibre]]), Calibre's value is shown below every field where it differs: **← Calibre: …**. A click on **←** puts the value into the field. Matching values are not shown.
-
-- **From Calibre** (toolbar) puts all differing values of this book into the form - check them, then apply.
-- **Fill gaps** works on all books, but only on fields that are empty in the book. It applies directly (yellow); save afterwards.
-- A **⚠** in the list means title, authors, series or number differ from Calibre. The filter **Differs from Calibre** also counts the other fields.
-- Calibre stores languages as three letters (eng); Bookbench compares them with the two-letter codes of the book (en) and takes over the short form.
-
-**Important:** When Calibre sends a book to the e-reader again, it writes its own values into the file. Change the metadata in Calibre as well, otherwise your changes in Bookbench are overwritten. If you no longer use Calibre, switch the comparison off: [[einst_calibre]].
-
-**KOReader**
-If you edited the book information in KOReader itself (Book information > long-press a field), KOReader keeps it in **custom_metadata.lua** in the .sdr folder next to the book and shows it **instead of** the values in the file. Bookbench shows these values below the fields as **← KOReader: …** (only when the folder with the .sdr folders is opened, e.g. the e-reader directly) and points it out below the form. The filter **Edited in KOReader** lists these books. To make KOReader show the file again, reset the fields in KOReader.
-""")),
-    ("metadaten", "metadaten_felder", _("Own fields"), _("""
-In Calibre you can add columns of your own (Preferences > Add your own columns), e.g. a subtitle with the lookup name **#subtitle**. Bookbench shows such columns as further fields below the usual ones - which ones and with what label, you decide in [[einst_metadaten]]. **From Calibre** there adds all columns found in metadata.calibre at once.
-
-- Bookbench reads and writes the columns the way Calibre stores them in the book: in EPUB 2 one entry per column, in EPUB 3 all own columns together in one entry. Columns you do not show stay untouched.
-- If the book does not have a column yet, Bookbench takes its definition (type, how values are separated) from metadata.calibre, so Calibre recognises it when adding the book again. Without metadata.calibre a plain text column is written.
-- Columns with several values ("Ampersand separated text", "Comma separated text") are shown joined with " & " or ", ". Careful: a text containing **&** is then split into two values, just like in Calibre.
-- Number columns (whole numbers, decimals, rating) only take numbers, yes/no columns yes or no; dates are shown without time.
-- KOReader only knows title, authors, series, language, tags and description; own fields are for Calibre and for you.
-""")),
     ("metadaten", "cover", _("Cover"), _("""
-The cover is shown right of the form, as large as there is room. **Click on the cover** (also the small one in Chapters and Blurbs) shows it as large as the screen allows; click or Esc closes it. A right-click opens a menu with all cover actions.
+The cover is shown right of the form, as large as there is room. **Click on the cover** (also the small one in Chapters) shows it as large as the screen allows; click or Esc closes it. A right-click opens a menu with all cover actions.
 
 - Below the cover: size in pixels, format, file size and where it is in the EPUB.
-- **From file …**, **Look up**, **Export …** (saves the cover shown as an image file) and **Discard new** are below the cover; **All without cover** is in the toolbar.
+- **From file …**, **Look up**, **Export …** (saves the cover shown as an image file) and **Discard new** are below the cover; **Complete ▾ > Look up all missing covers** is in the toolbar.
 - As long as a new cover is not saved, the old one and the new one are shown next to or below each other.
-- Books without a cover and covers lower than the limit have a **⚠** in the list ([[einst_cover]]); the filters **No cover** and **Small cover** list them.
+- Books without a cover have a **picture**, covers lower than the limit a **small picture** in the list ([[einst_cover]]); the filters **No cover** and **Small cover** list them.
 
 After saving, re-read the book information in KOReader (Cover browser > Extract and cache book information), otherwise the cover browser still shows the old cover.
 
@@ -344,14 +357,14 @@ After saving, re-read the book information in KOReader (Cover browser > Extract 
     ("cover", "cover_aendern", _("Changing and looking up covers"), _("""
 - **From file** takes an image file (JPEG, PNG, GIF, WebP).
 - **Look up** searches Open Library and Google Books (free, no key) by ISBN, title and author and shows what was found side by side, with size; a click chooses, OK takes it, a double-click takes it at once. Tiny preview images are left out.
-- **All without cover** does that in the background for all books without a cover and takes the largest image found. Check them afterwards.
+- **Complete ▾ > Look up all missing covers** does that in the background for all books without a cover and takes the largest image found. Check them afterwards.
 - **Discard** drops the new cover. **Ctrl+S** saves, with a backup as always.
 
 The sources, the smallest height that counts and how many to choose from: [[einst_cover_nachschlagen]].
 
 **Tips**
 - Open Library often has large scans, sometimes of another edition (another cover). Google Books has the publisher's image, usually smaller.
-- In the Edit menu the same actions work from Chapters and Blurbs; the program switches to Metadata with the same book.
+- In the Edit menu the same actions work from Chapters; the program switches to Metadata with the same book.
 """)),
     ("cover", "cover_bild", _("What happens to the image"), _("""
 - The new cover keeps the **format** and the **file name** of the old one (a PNG becomes a JPEG if the old cover is a JPEG). That way the manifest and a title page that shows the image stay valid.
@@ -424,7 +437,7 @@ Shows the connected e-reader with KOReader - Kobo, Kindle or PocketBook: model, 
 - Searched: on Linux /run/media, /media and /mnt, on Windows all drives; also the opened books folder and the folders above it.
 - With several connected e-readers a list appears next to the name.
 
-**Books** opens the whole e-reader in Library, Chapters, Blurbs and Covers. Then metadata.calibre is found automatically too.
+**Books** opens the whole e-reader in Library, Chapters and Metadata. Then metadata.calibre is found automatically too.
 
 **When connecting** Bookbench opens the books on the e-reader by itself if no other folder is open; otherwise it asks. Can be changed: [[einst_kobo]].
 
@@ -567,9 +580,9 @@ All settings are in **einstellungen.json** in the settings folder ([[dateien]]).
 - Light, dark, or like the system: follows the light/dark setting of Windows or KDE/GNOME, checked at start.
 """)),
     ("einstellungen", "einst_oberflaeche", _("Interface"), _("""
-- **Status strip next to the lists** (default: on): coloured dots and ⚠ ([[status]]). Also under View.
+- **Status strip next to the lists** (default: on): coloured dots and pictograms ([[status]]). Also under View.
 - **Show tooltips** (default: on) and **Delay** (default: 600 ms): explanations when the mouse stays over a button.
-- **Show covers in Chapters and Blurbs** (default: on) and **Height** (default: 96 px): the small cover next to the book title; a click shows it large. Also under View > Cover.
+- **Show cover in Chapters** (default: on) and **Height** (default: 96 px): the small cover next to the book title; a click shows it large. Also under View > Cover.
 - **Sidebar expanded** (default: on): with names and counters, or only symbols. Ctrl+B switches at any time; the last state is remembered.
 """)),
     ("einstellungen", "einst_start", _("Startup"), _("""
@@ -620,7 +633,7 @@ Changes count after OK. If a profile changes, Claude looks up again for its book
     ("einst_klappentexte", "einst_klappentexte_claude", _("Claude API"), _("""
 - **API key**: from console.anthropic.com (account with credit). Empty: the environment variable ANTHROPIC_API_KEY is used. Stored in plain text in einstellungen.json ([[dateien]]) - keep that in mind when exporting the settings.
 - **Model** (default: claude-haiku-5-5): choose from the list; Haiku is enough for looking things up and is the cheapest. **Load list** asks Anthropic with the API key for the models available right now (newest first). A name can also be typed in.
-- **Estimated cost per book** (default: 0.015 $): only for the question before Look up all; the real cost depends on page length and searches.
+- **Estimated cost per book** (default: 0.015 $): only for the question before looking up all missing blurbs; the real cost depends on page length and searches.
 
 Also needed: the package **anthropic** (pip install anthropic). What is sent: [[kosten]].
 """)),
@@ -639,7 +652,7 @@ Also needed: the package **anthropic** (pip install anthropic). What is sent: [[
 
 **Which images count**
 - **Smallest height** (default: 300 px): smaller images are left out (preview thumbnails, placeholders).
-- **At most this many to choose from** (default: 8): each image is downloaded, so more takes longer. All without cover takes at most 3 per book and uses the largest.
+- **At most this many to choose from** (default: 8): each image is downloaded, so more takes longer. Looking up all missing covers takes at most 3 per book and uses the largest.
 """)),
     ("einstellungen", "einst_metadaten", _("Metadata"), _("""
 **Own fields** ([[metadaten_felder]])

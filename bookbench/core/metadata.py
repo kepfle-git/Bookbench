@@ -627,7 +627,7 @@ def pruefen(werte, definitionen=None):
     if _norm(werte.get("isbn")) and not isbn_ok(werte["isbn"]):
         erg.append(("isbn", _("The ISBN is not valid (check digit or length).")))
     if not _norm(werte.get("sprache")):
-        erg.append(("sprache", _("No language: EPUB requires one, and KOReader uses it for hyphenation.")))
+        erg.append(("sprache", _("No language (KOReader needs it for hyphenation).")))
     if not _norm(werte.get("titel")):
         erg.append(("titel", _("No title.")))
     if _norm(werte.get("nummer")) and not _norm(werte.get("reihe")):

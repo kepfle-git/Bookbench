@@ -362,6 +362,7 @@ class KoboBereich:
 
     def zaehler(self):
         offen = sum(1 for __, st, __ in self._dicts if st in ("veraltet", "fehlt")) if self.wurzel else 0
+        self.seite.nav_marken = [("ereader", offen), ("verbunden", 1 if self.wurzel else 0)]     # ui/markers
         # Seitenleiste: Zähler rechtsbündig in schmaler Spalte - "(angeschlossen)" lief in den Namen
         text = f"{_(BEREICH)} ({offen} ⚠)" if offen else (f"{_(BEREICH)} (✓)" if self.wurzel else _(BEREICH))
         self.app.nb.tab(self.seite, text=text)

@@ -332,7 +332,7 @@ class EinstellungsDialog(tk.Toplevel):
         self._zahl(s, "tooltip_verzoegerung", _("Delay (ms):"),
                    _("How long the mouse has to stay still before the explanation appears."), 0, 3000, 100)
         self._abschnitt(s, _("Covers in the headers"))
-        self._schalter(s, "cover", _("Show covers in Chapters and Blurbs"),
+        self._schalter(s, "cover", _("Show cover in Chapters"),
                        _("Small cover next to the book title; a click shows it large. JPEG images need Pillow "
                          "(pip install pillow)."))
         self._zahl(s, "cover_kopf_hoehe", _("Height (px):"), _("Default 96."), 40, 300, 8)

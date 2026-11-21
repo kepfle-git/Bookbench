@@ -1,16 +1,19 @@
 # -*- coding: utf-8 -*-
 """
 area_metadata.py - Bereich "Metadaten" von Bookbench: Titel, Autoren, Reihe, Verlag, Sprache,
-ISBN, Schlagwörter und frei wählbare eigene Calibre-Spalten im OPF bearbeiten, rechts daneben das
-Cover (seit 1.3-beta2, wie in Calibres Metadaten-Dialog; ui/area_covers.CoverBereich).
+ISBN, Schlagwörter und frei wählbare eigene Calibre-Spalten im OPF bearbeiten, darunter der Klappentext
+(seit 1.3-beta3, ui/area_blurbs.KlappentextTafel), rechts das Cover (seit 1.3-beta2,
+ui/area_covers.CoverBereich) - wie in Calibres Metadaten-Dialog.
 Die Logik steckt in core/metadata (Lesen/Schreiben, Vergleich); gespeichert wird über library.speichern.
 
   Bücherliste links mit Suche und Filter (geändert, weicht von Calibre ab, ohne Cover …)
-  Mitte das Formular: Feld | Wert im Buch, darunter (nur wenn abweichend) "← Calibre: …" bzw.
-      "← KOReader: …"; ← übernimmt den Wert ins Feld
+  Mitte oben das Formular: Feld | Wert im Buch, darunter (nur wenn abweichend) "← Calibre: …" bzw.
+      "← KOReader: …"; ← übernimmt den Wert ins Feld. Mitte unten der Klappentext, dazwischen ein
+      verschiebbarer Teiler (Einstellung meta_teiler). Darunter Hinweise.
   rechts das Cover mit seinen Knöpfen
-  Werkzeugleiste: Übernehmen, Verwerfen, Aus Calibre, Lücken füllen (nur mit Calibre-Abgleich),
-      Alle ohne Cover
+  Werkzeugleiste: Übernehmen, Verwerfen (beide für Formular, Klappentext und Cover), Aus Calibre
+      (nur mit Calibre-Abgleich), Ergänzen ▾ (alle Bücher: Klappentexte/Cover nachschlagen, Lücken aus Calibre)
+  marken(b)        [(kennung, text)] für den Streifen der Liste und die Seitenleiste (ui/markers)
 
 Eigene Felder: Einstellung meta_spalten = [[Suchname, Bezeichnung]], z. B. [["#subtitle", "Untertitel"]].
 Stände wie überall: im Formular geändert = rot (buch.meta_entwurf), übernommen = gelb (buch.meta_neu,
@@ -22,12 +25,13 @@ from tkinter import ttk
 
 from bookbench.core import metadata as km
 from bookbench.i18n import N_, _, ngettext
+from bookbench.ui import area_blurbs as kbb
 from bookbench.ui import area_covers as kbc
 from bookbench.ui import list_filter as klf
 
 REIHE = ("reihe", "nummer")
 FELDBREITE = 24            # Zeichen (Mindestbreite); alle Felder gleich breit, sie füllen den Platz neben dem Cover
-COVER_BREITE = 280         # px, Tafel mit dem Cover rechts
+COVER_BREITE = 240         # px, Tafel mit dem Cover rechts
 
 
 class MetadatenBereich:
@@ -41,13 +45,14 @@ class MetadatenBereich:
         kopf = ttk.Label(links, text=_("Books:"))
         kopf.pack(anchor="w")
         self.liste = app._buchliste(links, self.anzeigen, self._status, filter=self.filter(),
-                                    geaendert=lambda: self.liste_fuellen(), kopf=kopf)
+                                    geaendert=lambda: self.liste_fuellen(), kopf=kopf,
+                                    marken_fn=self._marken_von_name, breite=24)
         rechts = ttk.Frame(s)
         rechts.pack(side="left", fill="both", expand=True, padx=(10, 0))
-        self.kopf = ttk.Label(rechts, text=_("Choose a book on the left."), style="Ueberschrift.TLabel")
-        self.kopf.pack(anchor="w")
-        self.info = ttk.Label(rechts, text="", style="Hinweis.TLabel")
-        self.info.pack(anchor="w", pady=(2, 8))
+        # Kopf nur noch der Dateiname (der Titel steht im Formular) - der Platz geht an den Klappentext
+        self.info = ttk.Label(rechts, text=_("Choose a book on the left."), style="Hinweis.TLabel")
+        self.info.pack(anchor="w", pady=(0, 6))
+        self.kopf = self.info
         koerper = ttk.Frame(rechts)
         koerper.pack(fill="both", expand=True)
         # Cover zuerst einpacken: es behält seine Breite, das Formular nimmt den Rest
@@ -56,12 +61,22 @@ class MetadatenBereich:
         tafel.pack_propagate(False)
         mitte = ttk.Frame(koerper)
         mitte.pack(side="left", fill="both", expand=True, anchor="n")
-        self.formular = ttk.Frame(mitte)
-        self.formular.pack(anchor="nw", fill="x")
-        self.formular.columnconfigure(1, weight=1)
         self.hinweis = ttk.Label(mitte, text="", style="Hinweis.TLabel", justify="left")
-        self.hinweis.pack(anchor="w", pady=(10, 0), fill="x")
+        self.hinweis.pack(side="bottom", anchor="w", pady=(6, 0), fill="x")
         self.hinweis.bind("<Configure>", lambda e: self.hinweis.configure(wraplength=max(300, e.width - 4)))
+        self.teiler = ttk.Panedwindow(mitte, orient="vertical")
+        self.teiler.pack(fill="both", expand=True)
+        oben = ttk.Frame(self.teiler)
+        unten = ttk.Frame(self.teiler)
+        self.teiler.add(oben, weight=0)
+        self.teiler.add(unten, weight=1)
+        self.formular = ttk.Frame(oben)
+        self.formular.pack(anchor="nw", fill="x", pady=(0, 6))
+        self.formular.columnconfigure(1, weight=1)
+        self.klappentext = kbb.KlappentextTafel(app, unten, self)
+        self.teiler.bind("<ButtonRelease-1>", lambda e: self._teiler_merken())
+        self.teiler.bind("<Double-Button-1>", lambda e: (self.app.e.__setitem__("meta_teiler", 0), self._teiler_setzen()))
+        self.teiler.bind("<Configure>", lambda e: self.teiler.after_idle(self._teiler_setzen), add="+")
         self.cover = kbc.CoverBereich(app, tafel, self)
         app.cover = self.cover                     # app.cover bleibt der Zugang für Bibliothek, Menü und Tests
         self.var, self.zeilen = {}, {}
@@ -95,21 +110,53 @@ class MetadatenBereich:
                 vergleich[quelle] = (z, wert)
             self.zeilen[feld] = (lab, ein, vergleich)
 
+    def _teiler_setzen(self):
+        """Teiler unter das Formular (dessen Höhe ändert sich mit den "← Calibre"-Zeilen) oder dorthin, wohin
+        der Nutzer ihn gezogen hat (Einstellung meta_teiler); dem Klappentext bleiben mindestens 110 px."""
+        try:
+            hoehe = self.teiler.winfo_height()
+            if hoehe < 150:
+                return
+            self.formular.update_idletasks()
+            pos = int(self.app.e.get("meta_teiler") or 0) or self.formular.winfo_reqheight() + 8
+            self.teiler.sashpos(0, max(80, min(pos, hoehe - 110)))
+        except tk.TclError:
+            pass
+
+    def _teiler_merken(self):
+        """Gezogenen Teiler merken; steht er (fast) unter dem Formular, wieder automatisch anpassen."""
+        try:
+            pos = int(self.teiler.sashpos(0))
+            auto = self.formular.winfo_reqheight() + 8
+            self.app.e["meta_teiler"] = 0 if abs(pos - auto) <= 4 else pos
+        except tk.TclError:
+            pass
+
     # ================================================================ Werkzeugleiste
     def werkzeug(self, eltern):
         a = self.app
-        a._wz_knopf(eltern, "uebernehmen", _("Apply"), self.uebernehmen, _("Apply the form for this book (Ctrl+Enter)"))
+        a._wz_knopf(eltern, "uebernehmen", _("Apply"), self.uebernehmen,
+                    _("Apply form and blurb for this book (Ctrl+Enter)"))
         a._wz_knopf(eltern, "rueckgaengig", _("Discard"), self.verwerfen,
-                    _("Restore metadata and cover from the file (also drops a series taken from Calibre)"))
+                    _("Restore metadata, blurb and cover from the file (also drops a series taken from Calibre)"))
+        ttk.Separator(eltern, orient="vertical").pack(side="left", fill="y", padx=6, pady=2)
         if self.calibre_an():
-            ttk.Separator(eltern, orient="vertical").pack(side="left", fill="y", padx=6, pady=2)
             a._wz_knopf(eltern, "oeffnen", _("From Calibre"), self.alle_von_calibre,
                         _("Put every value from metadata.calibre that differs into the form (this book)"))
-            a._wz_knopf(eltern, "pruefen", _("Fill gaps"), self.luecken_fuellen,
-                        _("All books: take values from metadata.calibre only where the book has none"))
-        ttk.Separator(eltern, orient="vertical").pack(side="left", fill="y", padx=6, pady=2)
-        a._wz_knopf(eltern, "neu_laden", _("All without cover"), self.cover.alle_ohne,
-                    _("For all books without a cover: take the largest cover found, in the background"))
+        k = a._wz_knopf(eltern, "neu_laden", _("Complete") + " ▾", lambda: self._ergaenzen_menue(k),
+                        _("For all books: look up missing blurbs or covers, fill gaps from Calibre"))
+
+    def _ergaenzen_menue(self, knopf):
+        m = tk.Menu(knopf, tearoff=False)
+        m.add_command(label=_("Look up all missing blurbs"), command=self.app.klappentexte_alle)
+        m.add_command(label=_("Look up all missing covers"), command=self.cover.alle_ohne)
+        if self.calibre_an():
+            m.add_separator()
+            m.add_command(label=_("Fill gaps from Calibre"), command=self.luecken_fuellen)
+        try:
+            m.tk_popup(knopf.winfo_rootx(), knopf.winfo_rooty() + knopf.winfo_height())
+        finally:
+            m.grab_release()
 
     # ================================================================ Werte
     def calibre_an(self):
@@ -155,29 +202,56 @@ class MetadatenBereich:
         cal = self.calibre(b)
         return km.unterschiede(self.aktuell(b), cal, felder or self.felder()) if cal else []
 
-    def _warnung(self, b):
+    def marken(self, b):
+        """[(kennung, text)] für Streifen und Seitenleiste: was dem Buch fehlt oder zu prüfen ist."""
         if b.fehler:
-            return b.fehler
-        teile = []
-        if b.meta.get("isbn") and not km.isbn_ok(self.aktuell(b).get("isbn", "")):
-            teile.append(_("ISBN not valid"))
-        wichtig = self.abweichend(b, km.WICHTIG)
-        if wichtig:
-            teile.append(_("differs from Calibre: {felder}").format(felder=", ".join(self.name(f) for f in wichtig)))
+            return [("unlesbar", b.fehler)]
+        erg = []
+        kt = self.klappentext.fehlt(b)
+        if kt:
+            erg.append(("klappentext", kt))
         c = self.cover.warnung(b)
         if c:
-            teile.append(c)
-        return "; ".join(teile) or None
+            erg.append(("cover" if self.cover.fehlt(b) else "cover_klein", c))
+        wichtig = self.abweichend(b, km.WICHTIG)
+        if wichtig:
+            erg.append(("calibre", _("differs from Calibre: {felder}").format(
+                felder=", ".join(self.name(f) for f in wichtig))))
+        w = self.aktuell(b)
+        angaben = []
+        if w.get("isbn") and not km.isbn_ok(w["isbn"]):
+            angaben.append(_("ISBN not valid"))
+        if not w.get("sprache"):
+            angaben.append(_("no language"))
+        if angaben:
+            erg.append(("angaben", ", ".join(angaben)))
+        return erg
+
+    def _warnung(self, b):
+        """Alle Marken als ein Text (für den Zähler im Reitertext und ältere Aufrufer)."""
+        return "; ".join(t for __, t in self.marken(b)) or None
 
     def warnungen(self):
-        return sum(1 for b in self.app.buecher if self._warnung(b))
+        return sum(1 for b in self.app.buecher if self.marken(b))
+
+    def zaehlen(self):
+        """[(kennung, anzahl)] für die Seitenleiste."""
+        n = {}
+        for b in self.app.buecher:
+            for k, __ in self.marken(b):
+                n[k] = n.get(k, 0) + 1
+        return list(n.items())
 
     # ================================================================ Liste
     def filter(self):
         return [("alle", N_("All books"), None),
-                ("geaendert", N_("Changed metadata or cover"),
+                ("geaendert", N_("Changed"),
                  lambda b: b.meta_entwurf is not None or b.meta_neu is not None or b.reihe_neu is not None
-                 or b.cover_neu is not None),
+                 or b.cover_neu is not None or b.klappentext_neu is not None or b.klappentext_entwurf is not None),
+                ("ohne", N_("No blurb"), lambda b: bool(self.klappentext.fehlt(b))),
+                ("kt_calibre", N_("Blurb only in Calibre"), lambda b: not b.fehler
+                 and not self.klappentext.aktueller_text(b).strip()
+                 and bool(b.calibre and (b.calibre.get("comments") or "").strip())),
                 ("calibre", N_("Differs from Calibre"), lambda b: bool(self.abweichend(b))),
                 ("sort", N_("No author sort"), lambda b: not b.fehler and not self.aktuell(b).get("autor_sort")),
                 ("sprache", N_("No language"), lambda b: not b.fehler and not self.aktuell(b).get("sprache")),
@@ -220,6 +294,10 @@ class MetadatenBereich:
         b = self.app._listen_buch.get(name)
         return (b.stand(), self._warnung(b)) if b else (None, None)
 
+    def _marken_von_name(self, name):
+        b = self.app._listen_buch.get(name)
+        return self.marken(b) if b else []
+
     def beim_zeigen(self):
         if not self.liste.curselection() and self.liste.size():
             self.liste.selection_set(0)
@@ -235,14 +313,13 @@ class MetadatenBereich:
             ein.configure(state="normal" if b and not b.fehler else "disabled")
         self._laden = False
         self.cover.anzeigen()
+        self.klappentext.anzeigen()
         if not b:
-            self.kopf.configure(text=_("Choose a book on the left."))
-            self.info.configure(text="")
+            self.info.configure(text=_("Choose a book on the left."))
             self.hinweis.configure(text="")
             self._vergleiche({})
             return
-        self.kopf.configure(text=b.name)
-        self.info.configure(text=b.pfad.name)
+        self.info.configure(text=_("File: {name}").format(name=b.pfad.name))
         self._aktualisieren()
 
     def _vergleiche(self, werte):
@@ -271,12 +348,9 @@ class MetadatenBereich:
         if not b.reihe_datei[0] and b.reihe_quelle and b.reihe_neu is None:
             zeilen.append(_("The series {reihe} only comes from the {quelle} data, not from the file; ← next to "
                             "Series puts it into the form.").format(reihe=b.reihe, quelle=b.reihe_quelle))
-        if b.calibre and self.calibre_an():
-            zeilen.append(_("Calibre writes its own values into the book the next time it sends it to the e-reader. "
-                            "Change them in Calibre as well, otherwise your changes here get lost."))
-        if b.meta_entwurf is not None:
+        if b.meta_entwurf is not None or b.klappentext_entwurf is not None:
             zeilen.append(_("Changed, not yet applied (Ctrl+Enter)."))
-        elif b.meta_neu is not None or b.reihe_neu is not None:
+        elif b.meta_neu is not None or b.reihe_neu is not None or b.klappentext_neu is not None:
             zeilen.append(_("Applied, not yet saved (Ctrl+S)."))
         self.hinweis.configure(text="\n".join(zeilen))
 
@@ -304,6 +378,7 @@ class MetadatenBereich:
         werte = self.formular_werte()
         self._vergleiche(werte)
         self._hinweise(werte)
+        self.teiler.after_idle(self._teiler_setzen)
 
     def von(self, quelle, feld):
         """← unter einem Feld: Wert aus Calibre bzw. KOReader ins Formular."""
@@ -314,8 +389,9 @@ class MetadatenBereich:
         if andere.get(feld) and feld in self.var:
             self.var[feld].set(andere[feld])
 
-    def uebernehmen(self, b=None, werte=None):
-        """Formular (oder werte) übernehmen: Reihe/Nummer nach reihe_neu, der Rest nach meta_neu."""
+    def uebernehmen(self, b=None, werte=None, mit_klappentext=True):
+        """Formular (oder werte) übernehmen: Reihe/Nummer nach reihe_neu, der Rest nach meta_neu, dazu der
+        Klappentext (nicht beim Lückenfüllen: nachgeschlagene Entwürfe soll man erst ansehen)."""
         b = b or self.buch
         if not b or b.fehler:
             self.app.status.set(_("Choose a book in the Metadata area first."))
@@ -330,11 +406,13 @@ class MetadatenBereich:
         rest = {f: werte[f] for f in werte if f not in REIHE}
         geaendert = [f for f in rest if km._norm(rest[f]) != km._norm(b.meta.get(f, ""))]
         b.meta_neu = rest if geaendert else None
+        kt = self.klappentext.uebernehmen(b) if mit_klappentext else False
         self.app._geaendert(b)
         if b is self.buch:
             self.anzeigen()
-        self.app.status.set(f"{b.name}: " + (_("metadata applied, not yet saved.")
-                                              if b.meta_neu is not None or b.reihe_neu is not None else _("unchanged.")))
+        self.app.status.set(f"{b.name}: " + (_("applied, not yet saved.")
+                                              if b.meta_neu is not None or b.reihe_neu is not None or kt
+                                              else _("unchanged.")))
 
     def verwerfen(self):
         b = self.buch
@@ -342,9 +420,10 @@ class MetadatenBereich:
             return
         b.meta_entwurf = b.meta_neu = b.reihe_neu = None
         b.cover_neu, b.cover_neu_quelle = None, ""
+        self.klappentext.verwerfen(b)
         self.app._geaendert(b)
         self.anzeigen()
-        self.app.status.set(f"{b.name}: " + _("metadata and cover restored from the file."))
+        self.app.status.set(f"{b.name}: " + _("metadata, blurb and cover restored from the file."))
 
     def _calibre_noetig(self):
         if not self.calibre_an():
@@ -387,7 +466,7 @@ class MetadatenBereich:
                 continue
             for f in leer:
                 werte[f] = cal[f]
-            self.uebernehmen(b, werte)
+            self.uebernehmen(b, werte, mit_klappentext=False)
             felder += len(leer)
             buecher += 1
         self.anzeigen()

@@ -5,16 +5,17 @@ Designleitfaden des Keller-Nietprogramm-Tools, Seitenleiste nach 5a).
 
   Menüleiste     Datei, Bearbeiten, Ansicht, Hilfe
   Werkzeugleiste links die Aktionen des aktuellen Bereichs, rechts Hilfe
-  Seitenleiste   Bibliothek, Kapitel, Klappentexte, Metadaten, Wörterbuch, E-Reader, Vorschau (keller_navigation)
+  Seitenleiste   Bibliothek, Kapitel, Metadaten, Wörterbuch, E-Reader, Vorschau (ui/markers.MarkenNavigation:
+                 keller_navigation mit Piktogrammen je Bereich statt ⚠, seit 1.3-beta3)
   Statuszeile    kurze Rückmeldungen
 
 Bereiche:
   Bibliothek     Tabelle aller Bücher, Suche und Filter
   Kapitel        Bücherliste links, Inhaltsverzeichnis alt/neu rechts (Namen und Ebenen
                  änderbar), Textanfang darunter
-  Klappentexte   Bücherliste links, Klappentext zum Bearbeiten rechts, Nachschlagen per API
-  Metadaten      Titel, Autoren, Reihe, Verlag, Sprache, ISBN, Schlagwörter, eigene Calibre-Spalten und
-                 rechts daneben das Cover (ui/area_metadata mit ui/area_covers, seit 1.3)
+  Metadaten      Titel, Autoren, Reihe, Verlag, Sprache, ISBN, Schlagwörter, eigene Calibre-Spalten, darunter
+                 der Klappentext, rechts das Cover (ui/area_metadata mit area_blurbs, area_covers, seit 1.3);
+                 das Nachschlagen der Klappentexte im Hintergrund steht weiter hier
   Wörterbuch     eigenes Wörterbuch (wikidict-Datenbank) lesen, bearbeiten, Lücken füllen
                  (kobo_bereich_woerterbuch)
   E-Reader       angeschlossener Kobo/Kindle/PocketBook, KOReader-Einstellungen sichern, Wörterbücher
@@ -48,6 +49,7 @@ import keller_streifen as kst       # noqa: E402
 import keller_theme as kth          # noqa: E402
 from bookbench.ui import area_device as kbk     # noqa: E402
 from bookbench.ui import area_metadata as kbm   # noqa: E402
+from bookbench.ui import markers as kmk         # noqa: E402
 from bookbench.ui import area_preview as kbv  # noqa: E402
 from bookbench.ui import area_dictionary as kbw  # noqa: E402
 from bookbench.core import blurbs                       # noqa: E402
@@ -157,7 +159,7 @@ class App(tk.Tk):
         self._hinweisleiste_bauen()
         self.nb = knv.NaviNotebook(self)
         self.nb.pack(fill="both", expand=True, padx=8, pady=(4, 0))
-        self.navi = knv.Navigation(self, self.nb, {"hell": ksy.HELL, "dunkel": ksy.DUNKEL},
+        self.navi = kmk.MarkenNavigation(self, self.nb, {"hell": ksy.HELL, "dunkel": ksy.DUNKEL},
                                    dunkel=self.dark_mode.get(), ausgeklappt=self.e["navi_ausgeklappt"],
                                    offen=self.e["navi_offen"],
                                    merken=lambda k, w: self.e.__setitem__("navi_" + k, w))
@@ -166,7 +168,6 @@ class App(tk.Tk):
         self.navi.tastenkuerzel(self)
         self._bibliothek_bauen()
         self._kapitel_bauen()
-        self._klappentext_bauen()
         self.OHNEZEILE = OHNEZEILE
         self.metadaten = kbm.MetadatenBereich(self)      # legt auch self.cover an (Cover-Tafel darin)
         self.woerterbuch = kbw.WoerterbuchBereich(self)
@@ -438,20 +439,6 @@ class App(tk.Tk):
             self.vorschau.werkzeug(self._wz_bereich)
         elif name == "woerterbuch":
             self.woerterbuch.werkzeug(self._wz_bereich)
-        else:
-            self._wz_knopf(self._wz_bereich, "suchen", _("Look up"), self.klappentext_nachschlagen,
-                           _("Look up the blurb of this book: free sources first, then Claude (about 1-2 cents)"))
-            self._wz_knopf(self._wz_bereich, "neu_laden", _("Look up all"), self.klappentexte_alle,
-                           _("Look up all books without a blurb, in the background"))
-            ttk.Separator(self._wz_bereich, orient="vertical").pack(side="left", fill="y", padx=6, pady=2)
-            self._wz_knopf(self._wz_bereich, "uebernehmen", _("Apply"), self.uebernehmen,
-                           _("Apply the text (Ctrl+Enter)"))
-            self._wz_knopf(self._wz_bereich, "rueckgaengig", _("Discard"), self.klappentext_verwerfen,
-                           _("Restore the text from the file"))
-            if self.e.get("calibre_an", True):
-                ttk.Separator(self._wz_bereich, orient="vertical").pack(side="left", fill="y", padx=6, pady=2)
-                self._wz_knopf(self._wz_bereich, "oeffnen", _("From Calibre"), self.klappentext_aus_calibre,
-                               _("Put the description from metadata.calibre into the text field"))
 
     # -- Tooltips als Einblendung (kein eigenes Fenster) -------------------------
     def _tipp_planen(self, widget, text):
@@ -489,15 +476,17 @@ class App(tk.Tk):
         self._rahmen_liste.append(r)
         return r
 
-    def _buchliste(self, eltern, auswahl, status_fn=None, streifen=True, filter=None, geaendert=None, kopf=None):
+    def _buchliste(self, eltern, auswahl, status_fn=None, streifen=True, filter=None, geaendert=None, kopf=None,
+                   marken_fn=None, breite=32):
         """Schmale Bücherliste mit Scrollbalken in einem Rahmen, mit Statusstreifen
         (streifen=False: ohne, z. B. in der Vorschau). Darüber die Such-/Filterzeile
         (list_filter.ListenFilter, als lb.filter): filter = [(kennung, Text, Prüfung)],
-        geaendert() füllt die Liste neu, kopf = Label "Bücher:" darüber."""
+        geaendert() füllt die Liste neu, kopf = Label "Bücher:" darüber. marken_fn(name) =
+        [(kennung, text)]: Piktogramme im Streifen statt ⚠ (ui/markers)."""
         lf = klf.ListenFilter(eltern, filter or [("alle", "All books", None)], geaendert or (lambda: None), kopf)
         r = self._listenrahmen(eltern)
         r.pack(fill="both", expand=True)
-        lb = tk.Listbox(r, width=32, borderwidth=0, highlightthickness=0, exportselection=False,
+        lb = tk.Listbox(r, width=breite, borderwidth=0, highlightthickness=0, exportselection=False,
                         activestyle="none")
         sb = ttk.Scrollbar(r, orient="vertical", command=lb.yview)
         sb.pack(side="right", fill="y")
@@ -507,7 +496,11 @@ class App(tk.Tk):
         if not streifen:
             lb.configure(yscrollcommand=sb.set)
             return lb
-        st = kst.StatusStreifen(self, lb, r, status_fn or self._status_von_name)
+        if marken_fn:
+            st = kmk.MarkenStreifen(self, lb, r, status_fn or self._status_von_name, marken_fn,
+                                    alle_fn=lambda: list(self._listen_buch))
+        else:
+            st = kst.StatusStreifen(self, lb, r, status_fn or self._status_von_name)
         lb.configure(yscrollcommand=lambda *a: (sb.set(*a), st.zeichnen()))
         if self.status_liste.get():
             st.einpacken()
@@ -541,19 +534,40 @@ class App(tk.Tk):
         b = self._listen_buch.get(name)
         return (b.stand(), b.warnung()) if b else (None, None)
 
-    def _status_klappentext(self, name):
-        """Klappentext-Liste: Kapitelwarnungen gehören nicht hierher - nur unlesbare
-        Dateien und fehlender Klappentext."""
-        b = self._listen_buch.get(name)
-        return (b.stand(), b.fehler or self._kt_fehlt(b)) if b else (None, None)
-
     def _kt_fehlt(self, b):
-        """Warntext, wenn das Buch (nach dem aktuellen Stand) keinen Klappentext hat."""
-        if self._kt_aktueller_text(b).strip():
-            return None
-        if b.calibre and (b.calibre.get("comments") or "").strip():
-            return _("no blurb (Calibre has one: From Calibre)")
-        return _("no blurb")
+        """Warntext, wenn das Buch keinen Klappentext hat (ui/area_blurbs)."""
+        return self.metadaten.klappentext.fehlt(b)
+
+    def kapitel_marken(self, b):
+        """Marken für Kapitel-Liste und Seitenleiste: unlesbar, fragwürdige Namen, Vorschläge offen."""
+        if b.fehler:
+            return [("unlesbar", b.fehler)]
+        erg = []
+        w = b.warnung()
+        if w:
+            erg.append(("kapitel", w))
+        if b.vorschlag and not b.neu and b.entwurf is None:
+            erg.append(("vorschlag", ngettext("{n} chapter suggestion", "{n} chapter suggestions",
+                                              len(b.vorschlag)).format(n=len(b.vorschlag))))
+        return erg
+
+    def bibliothek_marken(self, b):
+        """Marken in der Bibliothek: alles, was die Bereiche melden (Kapitel und Metadaten)."""
+        if b.fehler:
+            return [("unlesbar", b.fehler)]
+        return [m for m in self.kapitel_marken(b) if m[0] != "vorschlag"] + self.metadaten.marken(b)
+
+    def _marken_kapitel(self, name):
+        b = self._listen_buch.get(name)
+        return self.kapitel_marken(b) if b else []
+
+    def _tabelle_nach_streifen(self):
+        """Der Streifen der Bibliothek ist breiter geworden (mehr Marken): ohne gemerkte Spaltenbreiten die
+        Spalten wieder einpassen, erst nachdem die Tabelle ihre neue Breite hat."""
+        if self.e.get("spalten"):
+            return
+        self.update_idletasks()
+        self.tabellen_spalten.einpassen()
 
     def _status_von_iid(self, iid):
         b = self.nach_schluessel.get(iid)
@@ -596,8 +610,12 @@ class App(tk.Tk):
                 xsb.pack(side="bottom", fill="x", before=t)
         t.configure(xscrollcommand=waagrecht)
         t.pack(side="left", fill="both", expand=True)
-        self.tabellen_streifen = kst.StatusStreifen(self, t, r, self._status_von_iid,
-                                                    lambda iid: self.nach_schluessel[iid].name)
+        self.tabellen_streifen = kmk.MarkenStreifen(
+            self, t, r, self._status_von_iid,
+            lambda iid: self.bibliothek_marken(self.nach_schluessel[iid]) if iid in self.nach_schluessel else [],
+            lambda iid: self.nach_schluessel[iid].name,
+            alle_fn=lambda: list(self.nach_schluessel),
+            bei_breite=self._tabelle_nach_streifen)
         t.configure(yscrollcommand=lambda *a: (sb.set(*a), self.tabellen_streifen.zeichnen()))
         if self.status_liste.get():
             self.tabellen_streifen.einpacken()
@@ -700,7 +718,7 @@ class App(tk.Tk):
             self.woerterbuch.suchfeld.select_range(0, "end")
             return
         bereich = self._bereich()
-        liste = {"kapitel": self.kap_liste, "klappentexte": self.kt_liste,
+        liste = {"kapitel": self.kap_liste,
                  "metadaten": getattr(getattr(self, "metadaten", None), "liste", None),
                  "vorschau": getattr(getattr(self, "vorschau", None), "liste", None)}.get(bereich)
         if liste is not None and getattr(liste, "filter", None):
@@ -718,7 +736,8 @@ class App(tk.Tk):
         kopf = ttk.Label(links, text=_("Books:"))
         kopf.pack(anchor="w")
         self.kap_liste = self._buchliste(links, self._kapitel_anzeigen, filter=self._kap_filter(),
-                                         geaendert=lambda: self._liste_neu(self.kap_liste), kopf=kopf)
+                                         geaendert=lambda: self._liste_neu(self.kap_liste), kopf=kopf,
+                                         marken_fn=self._marken_kapitel)
         rechts = ttk.Frame(s)
         rechts.pack(side="left", fill="both", expand=True, padx=(10, 0))
         self.kap_cover, self.kap_kopf, self.kap_info = self._kopfzeile(rechts)
@@ -820,7 +839,6 @@ class App(tk.Tk):
     def _cover_umschalten(self):
         self.e["cover"] = self.cover_an.get()
         self._cover_zeigen(self.kap_cover, self._kap_buch)
-        self._cover_zeigen(self.kt_cover, self._kt_buch)
 
     def _linien(self, teile):
         """Zeichen aus baumlinien() als Text; jede Ebene gleich breit (Proportionalschrift:
@@ -852,14 +870,6 @@ class App(tk.Tk):
                 ("geaendert", N_("Changed chapters"), lambda b: bool(
                     b.neu or b.entwurf is not None or b.tiefen_neu is not None or b.tiefen_entwurf is not None))]
 
-    def _kt_filter(self):
-        return [("alle", N_("All books"), None),
-                ("ohne", N_("No blurb"), lambda b: bool(self._kt_fehlt(b))),
-                ("calibre", N_("Only in Calibre"), lambda b: not self._kt_aktueller_text(b).strip()
-                 and bool(b.calibre and (b.calibre.get("comments") or "").strip())),
-                ("geaendert", N_("Changed blurb"), lambda b: b.klappentext_neu is not None
-                 or b.klappentext_entwurf is not None)]
-
     def _links_sortiert(self):
         """Bücher wie in den Listen links: nach Reihe, Nummer, Titel - wie im Bookshelf."""
         return sorted(self.buecher, key=lambda b: (b.reihe.casefold() or "\uffff", _nr(b.nummer),
@@ -885,7 +895,9 @@ class App(tk.Tk):
 
     def _liste_neu(self, liste):
         """Suche oder Filter einer Liste geändert."""
-        anzeige = self._kapitel_anzeigen if liste is self.kap_liste else self._klappentext_anzeigen
+        if liste is not self.kap_liste:
+            return self.metadaten.liste_fuellen()
+        anzeige = self._kapitel_anzeigen
         if liste is self.kap_liste:
             self._bearbeiter_weg(speichern=True)
         self._liste_fuellen(liste, self._links_sortiert(), self._aktuelles_buch(liste), anzeige)
@@ -905,6 +917,8 @@ class App(tk.Tk):
         der Bibliothek), werden Suche und Filter dieser Liste zurückgesetzt."""
         namen = list(liste.get(0, "end"))
         lf = getattr(liste, "filter", None)
+        if liste is not self.kap_liste:
+            return self.metadaten.auswaehlen(buch)
         if self._anzeigename(buch) not in namen and lf and lf.aktiv() and buch in self.buecher:
             lf.zuruecksetzen()
             namen = list(liste.get(0, "end"))
@@ -914,7 +928,7 @@ class App(tk.Tk):
             liste.selection_set(i)
             liste.see(i)
             # direkt aufrufen: <<ListboxSelect>> kommt bei verdeckten Seiten nicht an
-            (self._kapitel_anzeigen if liste is self.kap_liste else self._klappentext_anzeigen)()
+            self._kapitel_anzeigen()
             for s in self._streifen:
                 s.zeichnen()
 
@@ -1084,8 +1098,6 @@ class App(tk.Tk):
         bereich = self._bereich()
         if bereich == "woerterbuch":
             return self.woerterbuch.uebernehmen()
-        if bereich == "klappentexte":
-            return self._klappentext_uebernehmen()
         if bereich == "metadaten":
             return self.metadaten.uebernehmen()
         if bereich != "kapitel" or not self._kap_buch:
@@ -1131,86 +1143,37 @@ class App(tk.Tk):
             self.status.set(f"{b.name}: " + _("original restored, not yet applied."))
 
     # ================================================================ Klappentexte
-    def _klappentext_bauen(self):
-        s = self.seite_klappentext = self._seite(_("Blurbs"), "klappentext")
-        links = ttk.Frame(s)
-        links.pack(side="left", fill="y")
-        kopf = ttk.Label(links, text=_("Books:"))
-        kopf.pack(anchor="w")
-        self.kt_liste = self._buchliste(links, self._klappentext_anzeigen, self._status_klappentext,
-                                        filter=self._kt_filter(), geaendert=lambda: self._liste_neu(self.kt_liste),
-                                        kopf=kopf)
-        rechts = ttk.Frame(s)
-        rechts.pack(side="left", fill="both", expand=True, padx=(10, 0))
-        self.kt_cover, self.kt_kopf, self.kt_info = self._kopfzeile(rechts)
-        r = self._listenrahmen(rechts)
-        r.pack(fill="both", expand=True)
-        self.kt_text = tk.Text(r, wrap="word", borderwidth=0, highlightthickness=0, padx=8, pady=6,
-                               font=kth.schrift(11), undo=True)
-        sb = ttk.Scrollbar(r, orient="vertical", command=self.kt_text.yview)
-        self.kt_text.configure(yscrollcommand=sb.set)
-        sb.pack(side="right", fill="y")
-        self.kt_text.pack(side="left", fill="both", expand=True)
-        self.kt_quelle = ttk.Label(rechts, text="", style="Hinweis.TLabel")
-        self.kt_quelle.pack(anchor="w", pady=(4, 0))
-        self.kt_text.bind("<<Modified>>", lambda e: self._klappentext_getippt())
-        self.kt_text.bind("<Control-Return>", lambda e: (self.uebernehmen(), "break")[1])
-        self._kt_buch = None
+    # Seit 1.3-beta3 im Bereich Metadaten (ui/area_blurbs.KlappentextTafel); die alten Namen bleiben
+    # als Zugang (Menü, Tests), das Nachschlagen im Hintergrund steht weiter hier.
+    @property
+    def kt_liste(self):
+        return self.metadaten.liste
+
+    @property
+    def seite_klappentext(self):
+        return self.metadaten.seite
+
+    @property
+    def _kt_buch(self):
+        return self.metadaten.buch
 
     def _kt_aktueller_text(self, b):
-        if b.klappentext_entwurf is not None:
-            return b.klappentext_entwurf
-        return b.klappentext_neu if b.klappentext_neu is not None else b.klappentext
+        return self.metadaten.klappentext.aktueller_text(b)
 
     def _klappentext_anzeigen(self):
-        b = self._kt_buch = self._aktuelles_buch(self.kt_liste)
-        self._kt_laden = True
-        self.kt_text.delete("1.0", "end")
-        if b:
-            self.kt_kopf.configure(text=b.name)
-            self._cover_zeigen(self.kt_cover, b)
-            info = [x for x in (b.autor, f"{b.reihe} {b.nummer}".strip()) if x]
-            self.kt_info.configure(text="  ·  ".join(info + [b.pfad.name]))
-            self.kt_text.insert("1.0", self._kt_aktueller_text(b))
-            self.kt_quelle.configure(text=_("Source: {quelle}").format(quelle=self._kt_quelle_text(b)) if b.klappentext_quelle else
-                                     ("" if b.klappentext else _("No blurb in the file.")))
-        else:
-            self._cover_zeigen(self.kt_cover, None)
-        self.kt_text.edit_modified(False)
-        self.kt_text.edit_reset()
-        self._kt_laden = False
-
-    def _klappentext_getippt(self):
-        if not self.kt_text.edit_modified():
-            return
-        self.kt_text.edit_modified(False)
-        b = self._kt_buch
-        if self._kt_laden or not b:
-            return
-        text = self.kt_text.get("1.0", "end-1c").strip()
-        vorher = b.klappentext_neu if b.klappentext_neu is not None else b.klappentext
-        b.klappentext_entwurf = None if text == vorher.strip() else text
-        self._geaendert(b)
-
-    def _klappentext_uebernehmen(self):
-        b = self._kt_buch
-        if not b:
-            return
-        text = self.kt_text.get("1.0", "end-1c").strip()
-        b.klappentext_entwurf = None
-        b.klappentext_neu = None if text == b.klappentext.strip() else text
-        self._geaendert(b)
-        self.status.set(f"{b.name}: " + (_("blurb applied, not yet saved.") if b.klappentext_neu is not None
-                                          else _("unchanged.")))
+        self.metadaten.klappentext.anzeigen()
 
     def klappentext_verwerfen(self):
-        b = self._kt_buch
+        b = self.metadaten.buch
         if b:
-            b.klappentext_entwurf = b.klappentext_neu = None
-            b.klappentext_quelle = b.klappentext_quelle_datei
-            self._klappentext_anzeigen()
+            self.metadaten.klappentext.verwerfen(b)
+            self.metadaten.klappentext.anzeigen()
             self._geaendert(b)
+            self.metadaten._aktualisieren()
             self.status.set(f"{b.name}: " + _("blurb restored from the file."))
+
+    def klappentext_aus_calibre(self):
+        self.metadaten.klappentext.aus_calibre()
 
     # -- Nachschlagen (Hintergrund) ------------------------------------------------
     def _api_client(self, stumm=False):
@@ -1228,15 +1191,10 @@ class App(tk.Tk):
             return None
         return anthropic.Anthropic(api_key=key)
 
-    def _kt_quelle_text(self, b):
-        q = b.klappentext_quelle
-        name = blurbs.source_name(q)
-        return q if name == q else f"{name} ({q})"
-
     def klappentext_nachschlagen(self):
-        b = self._kt_buch if self._bereich() == "klappentexte" else None
+        b = self._kt_buch if self._bereich() == "metadaten" else None
         if not b:
-            self.status.set(_("Look up: choose a book in the Blurbs area."))
+            self.status.set(_("Look up: choose a book in the Metadata area."))
             return
         self._nachschlagen_starten([b], einzeln=True)
 
@@ -1371,6 +1329,7 @@ class App(tk.Tk):
         self._geaendert(b)
         if b is self._kt_buch:
             self._klappentext_anzeigen()
+            self.metadaten._aktualisieren()
 
     # ================================================================ Calibre
     def _calibre_aus(self):
@@ -1403,22 +1362,6 @@ class App(tk.Tk):
         self.status.set(_("Taken from Calibre: {reihen} series, {texte} blurbs - not yet saved (Ctrl+S).")
                         .format(reihen=reihen, texte=texte)
                         if reihen or texte else _("Nothing to take from Calibre; the EPUBs already have everything."))
-
-    def klappentext_aus_calibre(self):
-        if self._calibre_aus():
-            return
-        b = self._kt_buch if self._bereich() == "klappentexte" else None
-        if not b:
-            return
-        text = kd.html_zu_text((b.calibre or {}).get("comments") or "")
-        if not text:
-            self.status.set(f"{b.name}: " + _("Calibre has no description."))
-            return
-        b.klappentext_entwurf = text
-        b.klappentext_quelle = "Calibre"
-        self._klappentext_anzeigen()
-        self._geaendert(b)
-        self.status.set(f"{b.name}: " + _("description from Calibre, not yet applied."))
 
     # ================================================================ Laden und Speichern
     def ordner_oeffnen(self):
@@ -1615,13 +1558,11 @@ class App(tk.Tk):
         self._zaehler()
 
     def _alles_neu_zeichnen(self):
-        alt = {liste: self._aktuelles_buch(liste) for liste in (self.kap_liste, self.kt_liste)}
+        vorher = self._aktuelles_buch(self.kap_liste)
         self._listen_buch = {self._anzeigename(b): b for b in self.buecher}
         sortiert = self._links_sortiert()
-        for liste, anzeige in ((self.kap_liste, self._kapitel_anzeigen), (self.kt_liste, self._klappentext_anzeigen)):
-            vorher = alt[liste]
-            alt_b = self.nach_schluessel.get(vorher.schluessel) if vorher else None
-            self._liste_fuellen(liste, sortiert, alt_b, anzeige)
+        alt_b = self.nach_schluessel.get(vorher.schluessel) if vorher else None
+        self._liste_fuellen(self.kap_liste, sortiert, alt_b, self._kapitel_anzeigen)
         self.metadaten.liste_fuellen(sortiert)
         self._tabelle_fuellen()
         if getattr(self, "vorschau", None) and self._bereich() == "vorschau":
@@ -1631,16 +1572,28 @@ class App(tk.Tk):
         self._zaehler()
 
     def _zaehler(self):
+        """Reitertexte und Marken der Seitenleiste (seite.nav_marken, ui/markers). Der Text behält
+        Zahl und ⚠ als Rückfall; die Leiste zeigt statt dessen je Marke Piktogramm und Anzahl."""
         n = len(self.buecher)
+
+        def zaehlen(marken_fn):
+            erg = {}
+            for b in self.buecher:
+                for k, __ in marken_fn(b):
+                    erg[k] = erg.get(k, 0) + 1
+            return list(erg.items())
+        kap = zaehlen(self.kapitel_marken)
         warn = sum(1 for b in self.buecher if b.warnung())
-        ohne = sum(1 for b in self.buecher if not self._kt_aktueller_text(b).strip())
+        unlesbar = sum(1 for b in self.buecher if b.fehler)
+        offen = sum(1 for b in self.buecher if b.stand() in ("rot", "gelb"))
+        self.seite_bibliothek.nav_marken = [("unlesbar", unlesbar), ("ungespeichert", offen)]
+        self.seite_kapitel.nav_marken = [m for m in kap if m[0] != "unlesbar"]
+        self.metadaten.seite.nav_marken = [m for m in self.metadaten.zaehlen() if m[0] != "unlesbar"]
         self.nb.tab(self.seite_bibliothek, text=_("Library ({n})").format(n=n) if n else _("Library"))
         self.nb.tab(self.seite_kapitel, text=_("Chapters ({n} ⚠)").format(n=warn) if warn else _("Chapters"))
-        # wie Kapitel: Zahl mit ⚠ (die Listen zeigen das ⚠ im Streifen, ohne farbige Zeilen)
-        self.nb.tab(self.seite_klappentext, text=_("Blurbs ({n} ⚠)").format(n=ohne) if ohne and n else _("Blurbs"))
         meta = self.metadaten.warnungen() if self.buecher else 0
         self.nb.tab(self.metadaten.seite, text=_("Metadata ({n} ⚠)").format(n=meta) if meta else _("Metadata"))
-        offen = any(b.stand() in ("rot", "gelb") for b in self.buecher)
+        self.navi.aktualisieren()
         self.title(f"{PROGRAMM} {VERSION}" + (" *" if offen else ""))
 
     def _bereich(self):
@@ -1648,7 +1601,7 @@ class App(tk.Tk):
             w = self.nb.nametowidget(self.nb.select())
         except (KeyError, tk.TclError):
             return "bibliothek"
-        seiten = {self.seite_kapitel: "kapitel", self.seite_klappentext: "klappentexte",
+        seiten = {self.seite_kapitel: "kapitel",
                   self.kobo.seite: "kobo", self.woerterbuch.seite: "woerterbuch"}
         if getattr(self, "metadaten", None):
             seiten[self.metadaten.seite] = "metadaten"
@@ -1664,9 +1617,6 @@ class App(tk.Tk):
         if name == "kapitel" and not self.kap_liste.curselection() and self.kap_liste.size():
             self.kap_liste.selection_set(0)
             self._kapitel_anzeigen()
-        if name == "klappentexte" and not self.kt_liste.curselection() and self.kt_liste.size():
-            self.kt_liste.selection_set(0)
-            self._klappentext_anzeigen()
         if name == "metadaten":
             self.metadaten.beim_zeigen()
         if name == "kobo":
@@ -1694,6 +1644,7 @@ class App(tk.Tk):
         dunkel = self.dark_mode.get()
         p = kth.anwenden(self, dunkel)
         self._farben = p
+        ttk.Style(self).configure("Klein.TButton", padding=(6, 1), font=kth.schrift(9))
         for k, symbol in self._wz:
             self._knopf_faerben(k, symbol)
         for r in self._rahmen_liste:
@@ -1730,6 +1681,7 @@ class App(tk.Tk):
         self._cover_umschalten()                         # auch für eine neue Höhe
         calibre_hinweis = self._calibre_umschalten()
         self.metadaten.felder_bauen()
+        self.metadaten.klappentext.knoepfe_bauen()
         self.metadaten.anzeigen()
         self._wz_bereich_bauen(self._bereich())
         if self.navi.ausgeklappt != bool(self.e.get("navi_ausgeklappt", True)):
@@ -1779,7 +1731,7 @@ class App(tk.Tk):
     def _cover_aktion(self, name):
         """Menü: in den Bereich Metadaten (mit dem Cover) wechseln, mit dem gewählten Buch, und ausführen."""
         if self._bereich() != "metadaten":
-            b = self._gewaehltes_buch() if self._bereich() in ("klappentexte", "kapitel") else None
+            b = self._gewaehltes_buch() if self._bereich() == "kapitel" else None
             self.nb.select(self.metadaten.seite)
             self.update_idletasks()
             if b:
@@ -1798,7 +1750,7 @@ class App(tk.Tk):
 
     def bereich_zeigen(self, name):
         seiten = {"bibliothek": self.seite_bibliothek, "kapitel": self.seite_kapitel,
-                  "klappentexte": self.seite_klappentext, "cover": self.metadaten.seite, "kobo": self.kobo.seite,
+                  "klappentexte": self.metadaten.seite, "cover": self.metadaten.seite, "kobo": self.kobo.seite,
                   "metadaten": self.metadaten.seite,
                   "woerterbuch": self.woerterbuch.seite}
         if self.vorschau:
@@ -1814,15 +1766,12 @@ class App(tk.Tk):
             self.tabelle.selection_set(b.schluessel)
             self.tabelle.see(b.schluessel)
         self._auswaehlen(self.kap_liste, b)
-        self._auswaehlen(self.kt_liste, b)
         self.metadaten.auswaehlen(b)
 
     def _gewaehltes_buch(self):
         bereich = self._bereich()
         if bereich == "kapitel":
             return self._kap_buch
-        if bereich == "klappentexte":
-            return self._kt_buch
         if bereich == "metadaten":
             return self.metadaten.buch
         sel = self.tabelle.selection()

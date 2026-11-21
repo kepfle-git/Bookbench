@@ -552,6 +552,7 @@ class WoerterbuchBereich:
 
     def zaehler(self):
         n = sum(1 for f in self.fehlend.values() if f["nachgeschlagen"]) if self.wb else 0
+        self.seite.nav_marken = [("woerterbuch", n)]           # Piktogramm in der Seitenleiste (ui/markers)
         self.app.nb.tab(self.seite, text=_("Dictionary ({n} ⚠)").format(n=n) if n else _("Dictionary"))
 
     # ================================================================ Formular

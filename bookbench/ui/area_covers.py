@@ -87,7 +87,8 @@ class CoverBereich:
         knoepfe.pack(fill="x", pady=(6, 0))
         for i, (text, befehl) in enumerate(((_("From file …"), self.aus_datei), (_("Look up"), self.nachschlagen),
                                             (_("Export …"), self.exportieren), (_("Discard new"), self.verwerfen))):
-            ttk.Button(knoepfe, text=text, command=befehl).grid(row=i // 2, column=i % 2, sticky="we", padx=2, pady=2)
+            ttk.Button(knoepfe, text=text, command=befehl, style="Klein.TButton").grid(
+                row=i // 2, column=i % 2, sticky="we", padx=2, pady=2)
         knoepfe.columnconfigure((0, 1), weight=1, uniform="k")
 
     # Liste und Seite gehören dem Bereich Metadaten (Tests und Bibliothek fragen hier nach)

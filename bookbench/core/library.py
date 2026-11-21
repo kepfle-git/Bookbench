@@ -131,6 +131,7 @@ class Buch:
         self.meta_neu = None             # {feld: text} übernommen, noch nicht gespeichert (Reihe geht über reihe_neu)
         self.meta_entwurf = None         # {feld: text} im Formular geändert, noch nicht übernommen
         self.meta_defs = {}              # Definitionen der eigenen Calibre-Spalten im Buch
+        self.meta_defs_import = {}       # Definitionen aus dem Calibre-Import (für Spalten, die das Buch noch nicht hat)
         self.meta_koreader = {}          # in KOReader bearbeitete Buchinfos (custom_metadata.lua), zum Vergleich
         self.calibre = None              # passender Eintrag aus metadata.calibre
         self.uuid = ""                   # Calibre-UUID aus dem EPUB (zum Zuordnen)
@@ -728,7 +729,9 @@ def speichern(buch, sicherungsordner, anzahl=5):
         if neu_opf is not None and buch.reihe_neu is not None:
             neu_opf = opf_mit_reihe(neu_opf, *buch.reihe_neu)
         if neu_opf is not None and buch.meta_neu is not None:
-            neu_opf = metadata.schreiben(neu_opf, buch.meta, buch.meta_neu, metadata.calibre_definitionen(buch.calibre))
+            defs = metadata.calibre_definitionen(buch.calibre)
+            defs.update(buch.meta_defs_import)
+            neu_opf = metadata.schreiben(neu_opf, buch.meta, buch.meta_neu, defs)
         if neu_opf is None:
             raise ValueError(_("the metadata file has an unusual format"))
         geaendert[opf_pfad] = neu_opf

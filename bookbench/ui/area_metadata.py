@@ -203,6 +203,8 @@ class MetadatenBereich:
         m = tk.Menu(knopf, tearoff=False)
         m.add_command(label=_("Look up all missing blurbs"), command=self.app.klappentexte_alle)
         m.add_command(label=_("Look up all missing covers"), command=self.cover.alle_ohne)
+        m.add_separator()
+        m.add_command(label=_("Import from Calibre library …"), command=self.app.calibre_importieren)
         if self.calibre_an():
             m.add_separator()
             m.add_command(label=_("Fill gaps from Calibre"), command=self.luecken_fuellen)
@@ -232,6 +234,7 @@ class MetadatenBereich:
     def definitionen(self, b):
         """Definitionen der eigenen Spalten: aus Calibre, darüber die aus dem Buch."""
         d = km.calibre_definitionen(b.calibre) if b and b.calibre else {}
+        d.update(getattr(b, "meta_defs_import", None) or {})
         d.update(getattr(b, "meta_defs", None) or {})
         return {k: v for k, v in d.items() if k in self.felder()}
 

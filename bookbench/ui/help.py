@@ -261,12 +261,13 @@ The file name is never changed: KOReader keeps reading positions and highlights 
 
 After saving, KOReader only shows the new values after re-reading the book information (Cover browser > Extract and cache book information).
 
-**Toolbar**: Apply, Discard, From Calibre (only with the Calibre comparison on) and **Complete ▾** for all books: look up all missing blurbs, look up all missing covers, fill gaps from Calibre.
+**Toolbar**: Apply, Discard, From Calibre (only with the Calibre comparison on) and **Complete ▾** for all books: look up all missing blurbs, look up all missing covers, import from a Calibre library ([[calibre_import]]), fill gaps from Calibre.
 
 **Markers** in the list show what a book lacks: speech bubble (blurb), picture (cover), not-equal sign (Calibre), label (language/ISBN) - see [[status]].
 
 **More**
 - [[metadaten_calibre]] - comparing with Calibre and KOReader
+- [[calibre_import]] - taking Calibre's data over once
 - [[metadaten_felder]]
 - [[klappentexte]]
 - [[cover]]
@@ -294,6 +295,17 @@ In Calibre you can add columns of your own (Preferences > Add your own columns),
 - Columns with several values ("Ampersand separated text", "Comma separated text") are shown joined with " & " or ", ". Careful: a text containing **&** is then split into two values, just like in Calibre.
 - Number columns (whole numbers, decimals, rating) only take numbers, yes/no columns yes or no; dates are shown without time.
 - KOReader only knows title, authors, series, language, tags and description; own fields are for Calibre and for you.
+""")),
+    ("metadaten", "calibre_import", _("Import from Calibre"), _("""
+If you want to stop using Calibre, take its metadata over once into the books: **File > Import from Calibre library …** (also in **Complete ▾** in the Metadata area).
+
+1. Choose the folder of your Calibre library, the one with **metadata.db** (in Calibre: right-click the library button > Show folder). Bookbench remembers it. The database is only read, so Calibre may stay open.
+2. Bookbench matches the books of the opened folder with Calibre: by the Calibre ID in the book (UUID), the ISBN, or title and first author. Only unique matches count; books without a match are listed on the tab **Not matched**.
+3. The table shows every field where Calibre has a different value: book, field, value in the book, value from Calibre. Untick rows you do not want (click on the box or press Space). **Only empty fields** shows only fields that are empty in the book. **Blurbs** adds Calibre's descriptions.
+4. If Calibre has own columns (e.g. #subtitle) that are not fields yet, **Add as own fields** adds them ([[metadaten_felder]]); then their values appear in the table too.
+5. **Apply ticked** applies the values (yellow), then save with Ctrl+S.
+
+Afterwards switch the Calibre comparison off ([[einst_calibre]]) if Calibre does not manage the books anymore. Calibre's own fields like date added, rating stars or read status only come along as own columns.
 """)),
     ("metadaten", "klappentexte", _("Blurb"), _("""
 The blurb is below the form in the Metadata area. The text can be edited directly; the divider between form and blurb can be dragged (a double-click puts it back below the form). If the form no longer fits above it, it gets a scrollbar (the mouse wheel scrolls it too).
@@ -672,6 +684,7 @@ Also needed: the package **anthropic** (pip install anthropic). What is sent: [[
 - **Compare with Calibre** (default: on): Bookbench reads Calibre's metadata.calibre (root of the e-reader, or the opened folder and the folders above it) and shows its values: in [[metadaten_calibre]] for comparing, in the library and in Blurbs for taking over series and blurbs ([[bibliothek_calibre]]).
 - Off: metadata.calibre is ignored, the Calibre buttons disappear from the toolbars, the Calibre entries in the Edit menu only give a hint. Useful once Bookbench has replaced Calibre for you.
 - Switching off applies at once, switching on after reloading (F5).
+- The one-time import from a Calibre library (metadata.db) works independently of this setting: [[calibre_import]].
 """)),
     ("einstellungen", "einst_kobo", _("E-reader"), _("""
 **Detection**

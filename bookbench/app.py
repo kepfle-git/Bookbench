@@ -205,6 +205,8 @@ class App(tk.Tk):
         m.add_separator()
         m.add_command(label=_("Save"), accelerator=_("Ctrl+S"), command=self.speichern)
         m.add_separator()
+        m.add_command(label=_("Import from Calibre library …"), command=self.calibre_importieren)
+        m.add_separator()
         m.add_command(label=_("Settings …"), command=lambda: kei.EinstellungsDialog(self))
         m.add_separator()
         m.add_command(label=_("Quit"), command=self.beenden)
@@ -1330,6 +1332,14 @@ class App(tk.Tk):
             self.metadaten._aktualisieren()
 
     # ================================================================ Calibre
+    def calibre_importieren(self):
+        """Einmaliger Import aus einer Calibre-Bibliothek (ui/calibre_import, seit 1.3-beta4)."""
+        if not self.buecher:
+            self.status.set(_("Open a folder with books first, then import from Calibre."))
+            return None
+        from bookbench.ui import calibre_import as kci
+        return kci.ImportDialog(self)
+
     def _calibre_aus(self):
         """True (mit Hinweis), wenn der Calibre-Abgleich abgeschaltet ist (Einstellungen > Bücher > Calibre)."""
         if self.e.get("calibre_an", True):

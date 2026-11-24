@@ -1,18 +1,21 @@
 # -*- coding: utf-8 -*-
 """
-area_preview.py - Bereich "Vorschau" von Bookbench: ein Buch im
-Desktop-KOReader so zeigen, wie es auf dem E-Reader aussieht (Schrift, Ränder, Kopf- und
-Fußzeilen von Bookends). Die Logik steckt in kobo_vorschau, hier nur die Oberfläche.
+area_preview.py - Bereich "Vorschau" von Bookbench, seit 1.4 die KOReader-Werkbank: KOReader läuft
+unsichtbar im Hintergrund (preview/workbench.py) und zeigt die Seite bzw. den Startbildschirm so, wie
+sie auf dem E-Reader aussehen (Schrift, Ränder, Bookends, Bookshelf). Die Logik steckt in
+preview/emulator.py und preview/workbench.py, hier nur die Oberfläche.
 
   Kopf      gefundener KOReader, sonst ein Hinweis zur Installation
-  links     Bücher der geöffneten Bibliothek (oder eine andere Datei)
-  rechts    Stand des Profils, Bildschirmgröße, Buchdaten, KOReaders Ausgabe
+  links     Ansicht (Leseseite/Startbildschirm), Buch (Blindtext, eins der Bibliothek, andere Datei),
+            Blättern, Stand des Profils, Gerät, KOReaders Ausgabe
+  rechts    das Bild von KOReader, auf die Fläche eingepasst; Klick links/rechts blättert
 
-Nur unter Linux und macOS gebaut (kobo_vorschau.verfuegbar()). KOReader läuft als
-eigener Prozess weiter, Bookbench schaut nur einmal je Sekunde nach, ob er noch läuft.
+"In KOReader öffnen" startet wie bis 1.3 den vollen KOReader im Fenster (zum Ausprobieren von Menüs).
+Nur unter Linux und macOS gebaut (emulator.verfuegbar()).
 """
 import subprocess
 import sys
+import time
 import tkinter as tk
 from datetime import datetime
 from pathlib import Path
@@ -23,9 +26,13 @@ from bookbench.ui import panes as kpn
 from bookbench.ui import settings as kei
 from bookbench.device import device as kg
 from bookbench.preview import emulator as kv
+from bookbench.preview import sample_book
+from bookbench.preview import workbench as kwb
 from bookbench.i18n import _
 
-ABSTAND = 1000                                   # ms, Nachschauen, ob KOReader noch läuft
+ABSTAND = 1000                                   # ms, Nachschauen, ob KOReader (Fenster) noch läuft
+TAKT = 50                                        # ms, Ereignisse der Werkbank abholen
+BLINDTEXT = "blindtext"                          # Kennung in der Buchauswahl
 INSTALLIEREN = (_("The preview needs the desktop KOReader. It is only needed for this, everything else works "
                   "without it. Install it (one of these):") + "\n"
                 "  •  Arch/EndeavourOS: yay -S koreader-bin\n"
@@ -47,13 +54,20 @@ class VorschauBereich:
         self.app = app
         self.profil = kv.profil_ordner(kei.pfad())
         self.befund = None
-        self.prozess = None
+        self.prozess = None                      # voller KOReader im Fenster
+        self.werkbank = None                     # KOReader im Hintergrund (kwb.Werkbank)
         self.andere_datei = None                 # Buch außerhalb der Bibliothek
-        self._namen = {}                         # Anzeigename -> Pfad
+        self._namen = {}                         # Anzeigename -> Pfad (BLINDTEXT: Blindtext-Buch)
+        self._bild_pfad = None                   # zuletzt gezeigtes Bild
+        self._bild_roh = None                    # PIL-Bild bzw. Pfad, zum Neu-Einpassen
+        self._foto = None
+        self._takt = None
+        self._wartet_bild = False
+        self._startzeit = 0.0
         s = self.seite = app._seite(_("Preview"), "vorschau")
 
         # -- Kopf -------------------------------------------------------------
-        ttk.Label(s, text=_("KOReader preview"), font=kth.schrift(12, fett=True)).pack(anchor="w")
+        ttk.Label(s, text=_("KOReader workbench"), font=kth.schrift(12, fett=True)).pack(anchor="w")
         self.zeile = ttk.Label(s, text="", style="Hinweis.TLabel")
         self.zeile.pack(anchor="w", pady=(2, 4))
         self.fehlt = ttk.Frame(s)
@@ -63,42 +77,79 @@ class VorschauBereich:
         # -- Mitte --------------------------------------------------------------
         self.mitte = ttk.Frame(s)
         self.mitte.pack(fill="both", expand=True, pady=(8, 0))
-        links, rechts_teil = kpn.teilen(app, self.mitte, "vorschau", 280)
-        ttk.Label(links, text=_("Book"), style="Ueberschrift.TLabel").pack(anchor="w")
-        # ohne Statusstreifen (der Stand gehört zu Kapitel), Suche ohne Filterauswahl
-        self.liste = app._buchliste(links, self._buch_gewaehlt, streifen=False, geaendert=lambda: self.liste_fuellen())
-        self.liste.bind("<Double-1>", lambda e: self.starten())
+        links, rechts_teil = kpn.teilen(app, self.mitte, "vorschau", 340)
+        links = ttk.Frame(links, padding=(0, 0, 12, 0))
+        links.pack(fill="both", expand=True)
 
-        rechts = ttk.Frame(rechts_teil, padding=(16, 0, 0, 0))
-        rechts.pack(side="left", fill="both", expand=True)
-        ttk.Label(rechts, text=_("Profile (settings, plugins, fonts from the e-reader)"),
-                  style="Ueberschrift.TLabel").pack(anchor="w")
-        self.profil_text = ttk.Label(rechts, text="", wraplength=620, justify="left")
+        ttk.Label(links, text=_("View"), style="Ueberschrift.TLabel").pack(anchor="w")
+        self.modus_var = tk.StringVar(value=app.e.get("werkbank_modus") or "lesen")
+        for wert, text in (("lesen", _("Reading page")), ("bibliothek", _("Start screen (library, Bookshelf)"))):
+            ttk.Radiobutton(links, text=text, value=wert, variable=self.modus_var,
+                            command=self._modus_gewechselt).pack(anchor="w")
+
+        ttk.Label(links, text=_("Book"), style="Ueberschrift.TLabel").pack(anchor="w", pady=(10, 0))
+        self.buch_var = tk.StringVar()
+        self.buch_wahl = ttk.Combobox(links, textvariable=self.buch_var, state="readonly", width=34)
+        self.buch_wahl.pack(anchor="w", fill="x")
+        self.buch_wahl.bind("<<ComboboxSelected>>", lambda e: self._buch_gewaehlt(neu_starten=True))
+        self.buch_text = ttk.Label(links, text="", style="Hinweis.TLabel", wraplength=320, justify="left")
+        self.buch_text.pack(anchor="w", pady=(2, 0), fill="x")
+
+        z = ttk.Frame(links)
+        z.pack(anchor="w", pady=(10, 0))
+        self.zurueck_knopf = ttk.Button(z, text="◀", width=3, command=lambda: self.blaettern(-1))
+        self.zurueck_knopf.pack(side="left")
+        self.weiter_knopf = ttk.Button(z, text="▶", width=3, command=lambda: self.blaettern(+1))
+        self.weiter_knopf.pack(side="left", padx=(4, 0))
+        ttk.Button(z, text=_("Restart"), command=self.werkbank_starten).pack(side="left", padx=(10, 0))
+        self.werk_text = ttk.Label(links, text="", style="Hinweis.TLabel", wraplength=320, justify="left")
+        self.werk_text.pack(anchor="w", pady=(4, 6), fill="x")
+
+        # Profil, Gerät, Fenstergröße und Ausgabe: aufklappbar, damit die Spalte auf kleine Bildschirme passt
+        self.details_var = tk.BooleanVar(value=bool(app.e.get("werkbank_details")))
+        self.details_knopf = ttk.Checkbutton(links, text=_("Profile, device and output"), variable=self.details_var,
+                                             command=self._details_zeigen, style="Toolbutton")
+        self.details_knopf.pack(anchor="w", pady=(0, 6))
+        details = self.details = ttk.Frame(links)
+        links = details
+
+        ttk.Label(links, text=_("Profile (settings, plugins, fonts from the e-reader)"),
+                  style="Ueberschrift.TLabel", wraplength=320).pack(anchor="w")
+        self.profil_text = ttk.Label(links, text="", wraplength=320, justify="left")
         self.profil_text.pack(anchor="w", pady=(0, 2))
-        self.profil_hinweis = ttk.Label(rechts, text="", style="Hinweis.TLabel", wraplength=620, justify="left")
+        self.profil_hinweis = ttk.Label(links, text="", style="Hinweis.TLabel", wraplength=320, justify="left")
         self.profil_hinweis.pack(anchor="w", pady=(0, 10))
 
-        ttk.Label(rechts, text=_("Screen"), style="Ueberschrift.TLabel").pack(anchor="w")
+        ttk.Label(links, text=_("Device"), style="Ueberschrift.TLabel").pack(anchor="w")
+        self.geraet_text = ttk.Label(links, text="", style="Hinweis.TLabel", wraplength=320, justify="left")
+        self.geraet_text.pack(anchor="w", pady=(0, 4))
+        ttk.Label(links, text=_("Window for \"Open in KOReader\":"), style="Hinweis.TLabel").pack(anchor="w")
         self.groesse_var = tk.StringVar(value=app.e.get("vorschau_groesse") or "passend")
         self.groesse_knopf = {}
         for name in kv.GROESSEN:
-            k = self.groesse_knopf[name] = ttk.Radiobutton(rechts, value=name, variable=self.groesse_var,
+            k = self.groesse_knopf[name] = ttk.Radiobutton(links, value=name, variable=self.groesse_var,
                                                             command=self._groesse_merken)
             k.pack(anchor="w")
-        self.geraet_text = ttk.Label(rechts, text="", style="Hinweis.TLabel", wraplength=620, justify="left")
-        self.geraet_text.pack(anchor="w", pady=(0, 10))
 
-        self.buch_text = ttk.Label(rechts, text="", style="Hinweis.TLabel", wraplength=620, justify="left")
-        self.buch_text.pack(anchor="w", pady=(0, 8))
-
-        ttk.Label(rechts, text=_("KOReader output"), style="Ueberschrift.TLabel").pack(anchor="w")
-        r = app._listenrahmen(rechts)
+        ttk.Label(links, text=_("KOReader output"), style="Ueberschrift.TLabel").pack(anchor="w", pady=(10, 0))
+        r = app._listenrahmen(links)
         r.pack(fill="both", expand=True)
-        self.log = tk.Text(r, height=8, wrap="none", borderwidth=0, highlightthickness=0, font=kth.schrift(9))
+        self.log = tk.Text(r, height=6, width=10, wrap="none", borderwidth=0, highlightthickness=0,
+                           font=kth.schrift(9))
         sb = ttk.Scrollbar(r, orient="vertical", command=self.log.yview)
         self.log.configure(yscrollcommand=sb.set, state="disabled")
         sb.pack(side="right", fill="y")
         self.log.pack(side="left", fill="both", expand=True)
+
+        # -- Bild -----------------------------------------------------------------
+        self.flaeche = tk.Canvas(rechts_teil, highlightthickness=0, borderwidth=0, cursor="hand2", takefocus=1)
+        self.flaeche.pack(fill="both", expand=True)
+        self.flaeche.bind("<Configure>", lambda e: self._bild_zeichnen())
+        self.flaeche.bind("<Button-1>", self._klick)
+        for taste, r in (("<Left>", -1), ("<Prior>", -1), ("<Right>", 1), ("<Next>", 1), ("<space>", 1)):
+            self.flaeche.bind(taste, lambda e, r=r: self.blaettern(r))
+        self.buch_wahl.configure(state="readonly" if self.modus_var.get() == "lesen" else "disabled")
+        self._details_zeigen()
 
         self.koreader_suchen(still=True)
         self.anzeigen()
@@ -106,9 +157,9 @@ class VorschauBereich:
     # ================================================================ Werkzeugleiste, Menü
     def werkzeug(self, eltern):
         a = self.app
-        a._wz_knopf(eltern, "starten", _("Start"), self.starten,
-                    _("Open the selected book in the desktop KOReader, with the settings from the e-reader "
-                      "(double-click)"))
+        a._wz_knopf(eltern, "starten", _("Open in KOReader"), self.starten,
+                    _("Open the selected book in the full desktop KOReader (window), with the settings from the "
+                      "e-reader - for trying out menus"))
         ttk.Separator(eltern, orient="vertical").pack(side="left", fill="y", padx=6, pady=2)
         a._wz_knopf(eltern, "uebernehmen", _("From the e-reader"), self.vom_kobo,
                     _("Rebuild the profile from the connected e-reader: settings, Bookends, patches, plugins, fonts"))
@@ -134,51 +185,40 @@ class VorschauBereich:
             self.koreader_suchen(still=True)
         self.liste_fuellen()
         self.anzeigen()
+        if not (self.werkbank and self.werkbank.laeuft()):
+            self.werkbank_starten(still=True)
 
     def liste_fuellen(self):
+        """Buchauswahl: Blindtext, die Bücher der Bibliothek (wie in Kapitel sortiert), andere Datei."""
         a = self.app
-        alt = self._gewaehlter_name()
-        if alt is None:                                     # sonst das Buch, das in Kapitel gerade offen ist
-            b = a._aktuelles_buch(a.kap_liste)
-            alt = a._anzeigename(b) if b else None
-        # gleiche Reihenfolge wie in Kapitel und Klappentexte (nach Reihe, Nummer, Titel), eigene Suche
-        lf = self.liste.filter
-        self._namen = {a._anzeigename(b): b.pfad for b in a._links_sortiert() if lf.passt(b)}
+        alt = self.buch_var.get()
+        self._namen = {_("Sample text (Lorem ipsum)"): BLINDTEXT}
+        self._namen.update({a._anzeigename(b): b.pfad for b in a._links_sortiert()})
         if self.andere_datei:
-            self._namen[f"[Datei] {self.andere_datei.name}"] = self.andere_datei
-        self.liste.delete(0, "end")
-        for n in self._namen:
-            self.liste.insert("end", n)
-        namen = list(self._namen)
-        if alt in self._namen:
-            i = namen.index(alt)
-            self.liste.selection_set(i)
-            self.liste.see(i)
+            self._namen[_("[File] {name}").format(name=self.andere_datei.name)] = self.andere_datei
+        self.buch_wahl.configure(values=list(self._namen))
+        if alt not in self._namen:
+            self.buch_var.set(next(iter(self._namen)))
         self._buch_gewaehlt()
 
-    def buch_waehlen(self, b):
-        """Buch in der Liste wählen (Bibliothek: Öffnen in der Vorschau); ist es weggesucht, Suche zurücksetzen."""
-        lf = self.liste.filter
-        if not lf.passt(b) and lf.aktiv():
-            lf.zuruecksetzen()
-        self.liste.selection_clear(0, "end")
-        name = self.app._anzeigename(b)
+    def buch_waehlen(self, b, starten=True):
+        """Buch wählen (Bibliothek: Öffnen in der Vorschau) und die Werkbank damit neu starten."""
         self.liste_fuellen()
-        namen = list(self._namen)
-        if name in namen:
-            i = namen.index(name)
-            self.liste.selection_clear(0, "end")
-            self.liste.selection_set(i)
-            self.liste.see(i)
-        self._buch_gewaehlt()
+        name = self.app._anzeigename(b)
+        if name in self._namen:
+            self.buch_var.set(name)
+        if self.modus_var.get() != "lesen":
+            self.modus_var.set("lesen")
+            self.app.e["werkbank_modus"] = "lesen"
+        self._buch_gewaehlt(neu_starten=starten)
 
     def _gewaehlter_name(self):
-        sel = self.liste.curselection()
-        return self.liste.get(sel[0]) if sel else None
+        return self.buch_var.get() or None
 
     def _gewaehltes_buch(self):
-        n = self._gewaehlter_name()
-        return self._namen.get(n) if n else None
+        """Pfad des gewählten Buchs; None beim Blindtext."""
+        p = self._namen.get(self.buch_var.get())
+        return None if p == BLINDTEXT else p
 
     def anzeigen(self):
         da = self.befund is not None
@@ -222,23 +262,40 @@ class VorschauBereich:
                  "profil": _("device of the profile"), "kobo": _("connected e-reader"),
                  "standard": _("⚠ device unknown, standard size - choose it in Settings > Preview")}[bs["quelle"]]
         self.geraet_text.configure(text=_(
-            "{name}: {w} × {h} pixels, {dpi} dpi, {farbe} ({woher}). Such a tall window rarely fits the screen; "
-            "smaller with a matching DPI the page looks the same, only coarser.").format(
+            "{name}: {w} × {h} pixels, {dpi} dpi, {farbe} ({woher}). The workbench always renders at full size "
+            "and fits the picture into the area.").format(
             name=bs["name"], w=bs["w"], h=bs["h"], dpi=bs["dpi"], woher=woher,
             farbe=_("colour") if bs["farbe"] else _("black and white")))
         self.protokoll_zeigen()
 
-    def _buch_gewaehlt(self):
+    def _buch_gewaehlt(self, neu_starten=False):
         p = self._gewaehltes_buch()
-        if not p:
-            self.buch_text.configure(text=_("Select a book on the left (open a library with Ctrl+O)."))
-            return
-        if p.with_name(p.stem + ".sdr").is_dir():
+        if self.modus_var.get() == "bibliothek":
+            text = _("The start screen shows eight sample books with covers.")
+        elif not p:
+            text = _("Sample text with chapters, title, author and series - enough for Bookends.")
+        elif p.with_name(p.stem + ".sdr").is_dir():
             text = _("Book data (.sdr) is next to the book: font size, margins etc. as on the e-reader.")
         else:
-            text = _("No book data next to the book. At start the connected e-reader and the newest backup are searched "
+            text = _("No book data next to the book. The connected e-reader and the newest backup are searched "
                      "for the same file name, otherwise the general settings apply.")
-        self.buch_text.configure(text=f"{p.name}\n{text}")
+        self.buch_text.configure(text=text)
+        if neu_starten:
+            self.werkbank_starten()
+
+    def _details_zeigen(self):
+        an = self.details_var.get()
+        self.app.e["werkbank_details"] = an
+        self.details_knopf.configure(text=("▾ " if an else "▸ ") + _("Profile, device and output"))
+        if an:
+            self.details.pack(fill="both", expand=True)
+        else:
+            self.details.pack_forget()
+
+    def _modus_gewechselt(self):
+        self.app.e["werkbank_modus"] = self.modus_var.get()
+        self.buch_wahl.configure(state="readonly" if self.modus_var.get() == "lesen" else "disabled")
+        self._buch_gewaehlt(neu_starten=True)
 
     def protokoll_zeigen(self):
         text, n, __ = kv.protokoll(self.profil)
@@ -252,6 +309,143 @@ class VorschauBereich:
     def farben(self):
         p = kth.PALETTE["dunkel" if self.app.dark_mode.get() else "hell"]
         self.log.configure(bg=p["feld"], fg=p["feld_fg"], insertbackground=p["feld_fg"])
+        self.flaeche.configure(bg=p["bg"])
+        self._bild_zeichnen()
+
+    # ================================================================ Werkbank
+    def _groesse_voll(self):
+        bs = self.bildschirm()
+        return bs["w"], bs["h"], bs["dpi"], not bs["farbe"]
+
+    def werkbank_starten(self, still=False):
+        """KOReader im Hintergrund (neu) starten: Ansicht und Buch aus der Auswahl, volle Gerätegröße."""
+        a = self.app
+        if not self.befund:
+            self.koreader_suchen(still=True)
+        if not self.befund:
+            self._werk_meldung(_("Desktop KOReader not found."))
+            return
+        if not kv.profil_stand(self.profil)["vorhanden"]:
+            self._werk_meldung(_("The profile is empty: first \"From the e-reader\" or \"From backup\"."))
+            return
+        if self.werkbank is None or self.werkbank.befund != self.befund:
+            if self.werkbank:
+                self.werkbank.beenden()
+            self.werkbank = kwb.Werkbank(self.befund, self.profil)
+        modus = self.modus_var.get()
+        buch = self._gewaehltes_buch() if modus == "lesen" else None
+        w, h, dpi, sw = self._groesse_voll()
+        sdr = None
+        if buch:
+            kobo = a.kobo.wurzel if a.kobo.wurzel and a.kobo.wurzel.exists() else None
+            sdr = kv.sdr_finden(buch, kobo, self._sicherung())
+        try:
+            self.werkbank.starten(modus, buch, w, h, dpi, sw, sdr)
+        except (RuntimeError, OSError) as e:
+            self._werk_meldung(str(e))
+            if not still:
+                a.status.set(str(e))
+            return
+        self._startzeit = time.monotonic()
+        self._wartet_bild = True
+        self._werk_meldung(_("KOReader is starting in the background …"))
+        self._takt_planen()
+
+    def _werk_meldung(self, text):
+        self.werk_text.configure(text=text)
+
+    def _takt_planen(self):
+        if self._takt is None:
+            self._takt = self.app.after(TAKT, self._takt_schritt)
+
+    def _takt_schritt(self):
+        self._takt = None
+        wb = self.werkbank
+        if wb is None:
+            return
+        for e in wb.ereignisse():
+            if e["art"] == "bereit":
+                wb.bild()
+                if wb.modus == "bibliothek":           # Cover kommen evtl. erst nach und nach
+                    self.app.after(1500, lambda: wb.laeuft() and wb.bild())
+            elif e["art"] == "bild":
+                self._bild_laden(e["pfad"])
+                wb.alte_bilder_weg(behalten=e["pfad"])
+                erstes = self._wartet_bild
+                self._wartet_bild = False
+                if erstes:
+                    self._werk_meldung(_("Running in the background. Started in {s:.1f} s.").format(
+                        s=time.monotonic() - self._startzeit))
+                else:
+                    self._werk_meldung(_("Running in the background. Last picture in {s:.2f} s.").format(s=e["dauer"]))
+            elif e["art"] == "erledigt" and not e["ok"]:
+                self._werk_meldung(_("KOReader reports: {text}").format(text=e["text"]))
+            elif e["art"] == "fehler":
+                self._werk_meldung(_("KOReader reports: {text}").format(text=e["text"]))
+            elif e["art"] == "ende":
+                n = self.protokoll_zeigen()
+                text = _("KOReader in the background has stopped") + (
+                    " " + _("(exit code {code})").format(code=e["code"]) if e["code"] else "") + "."
+                if n:
+                    text += " " + _("{n} warnings/errors in the output.").format(n=n)
+                if wb.prozess is None and not e["code"]:
+                    text = _("Stopped.")
+                self._werk_meldung(text)
+                return
+        if wb.laeuft() or not wb._q.empty():
+            self._takt_planen()
+
+    def blaettern(self, richtung):
+        wb = self.werkbank
+        if not (wb and wb.laeuft() and wb.bereit):
+            return
+        wb.blaettern(richtung)
+        wb.bild()
+        self._takt_planen()
+
+    def _klick(self, e):
+        """Wie auf dem E-Reader: linkes Drittel zurück, sonst weiter."""
+        self.flaeche.focus_set()
+        self.blaettern(-1 if e.x < self.flaeche.winfo_width() / 3 else +1)
+
+    def _bild_laden(self, pfad):
+        try:
+            from PIL import Image
+            with Image.open(pfad) as im:
+                self._bild_roh = im.convert("RGB")
+        except ImportError:
+            self._bild_roh = str(pfad)              # ohne Pillow: tk.PhotoImage mit ganzzahliger Verkleinerung
+        except OSError:
+            return
+        self._bild_pfad = Path(pfad)
+        self._bild_zeichnen()
+
+    def _bild_zeichnen(self):
+        c = self.flaeche
+        c.delete("all")
+        w, h = c.winfo_width(), c.winfo_height()
+        if w < 20 or h < 20:
+            return
+        if self._bild_roh is None:
+            c.create_text(w // 2, h // 2, text=_("The picture from KOReader appears here."),
+                          fill=kth.PALETTE["dunkel" if self.app.dark_mode.get() else "hell"]["fg"], width=w - 40)
+            return
+        if isinstance(self._bild_roh, str):
+            foto = tk.PhotoImage(file=self._bild_roh, master=c)
+            teiler = max(1, -(-foto.height() // h), -(-foto.width() // w))
+            self._foto = foto.subsample(teiler) if teiler > 1 else foto
+        else:
+            from PIL import Image, ImageTk
+            iw, ih = self._bild_roh.size
+            f = min(w / iw, h / ih, 1.0)
+            self._foto = ImageTk.PhotoImage(self._bild_roh.resize((max(1, int(iw * f)), max(1, int(ih * f))),
+                                                                  Image.LANCZOS), master=c)
+        c.create_image(w // 2, h // 2, image=self._foto, anchor="center")
+
+    def beenden(self):
+        """Beim Schließen von Bookbench: KOReader im Hintergrund beenden."""
+        if self.werkbank:
+            self.werkbank.beenden()
 
     def bildschirm(self, st=None):
         """Nachgebildetes Gerät nach Einstellung, Profil und angeschlossenem Gerät (emulator.bildschirm)."""
@@ -288,7 +482,11 @@ class VorschauBereich:
             st = kv.vom_geraet(wurzel, profil, info)
             return _("Profile taken from the e-reader: {plugins} plugins, {schriften} fonts, {vorlagen} Bookends presets.").format(
                 plugins=len(st["plugins"]), schriften=st["schriften"], vorlagen=st["bookends_vorlagen"])
-        self.app.hintergrund(_("Taking profile"), arbeit, nachher=self.anzeigen)
+        self.app.hintergrund(_("Taking profile"), arbeit, nachher=self._profil_neu)
+
+    def _profil_neu(self):
+        self.anzeigen()
+        self.werkbank_starten(still=True)
 
     def aus_sicherung(self):
         if self.app._arbeit:
@@ -306,7 +504,7 @@ class VorschauBereich:
             if not st["plugins_von"]:
                 text += " " + _("Plugins and fonts are still missing (take them from the e-reader once).")
             return text
-        self.app.hintergrund(_("Taking profile"), arbeit, nachher=self.anzeigen)
+        self.app.hintergrund(_("Taking profile"), arbeit, nachher=self._profil_neu)
 
     def datei_waehlen(self):
         p = filedialog.askopenfilename(parent=self.app, title=_("Book for the preview"),
@@ -316,12 +514,12 @@ class VorschauBereich:
             return
         self.andere_datei = Path(p)
         self.liste_fuellen()
-        name = f"[Datei] {self.andere_datei.name}"
-        namen = list(self._namen)
-        self.liste.selection_clear(0, "end")
-        self.liste.selection_set(namen.index(name))
-        self.liste.see(namen.index(name))
-        self._buch_gewaehlt()
+        self.buch_var.set(_("[File] {name}").format(name=self.andere_datei.name))
+        if self.modus_var.get() != "lesen":
+            self.modus_var.set("lesen")
+            self._modus_gewechselt()
+        else:
+            self._buch_gewaehlt(neu_starten=True)
 
     def koreader_waehlen(self):
         p = filedialog.askopenfilename(parent=self.app, title=_("Choose the KOReader program or AppImage"),
@@ -331,6 +529,7 @@ class VorschauBereich:
         self.app.e["koreader_pfad"] = p
         self.koreader_suchen()
         self.anzeigen()
+        self.werkbank_starten(still=True)
 
     def profil_oeffnen(self):
         self.profil.mkdir(parents=True, exist_ok=True)
@@ -358,9 +557,8 @@ class VorschauBereich:
                 self.anzeigen()
                 return
         buch = self._gewaehltes_buch()
-        if not buch:
-            a.status.set(_("Select a book on the left first."))
-            return
+        if not buch:                                    # Blindtext: eigene Kopie für den vollen KOReader
+            buch = sample_book.blindtext_buch(self.profil / "blindtext" / kwb.BLINDTEXT)
         if not kv.profil_stand(self.profil)["vorhanden"]:
             a.status.set(_("The profile is empty: first \"From the e-reader\" or \"From backup\"."))
             return
@@ -405,7 +603,7 @@ class VorschauBereich:
         n = self.protokoll_zeigen()
         text = _("KOReader closed") + (" " + _("(exit code {code})").format(code=code) if code else "")
         if n:
-            text += ", " + _("{n} warnings/errors in the output (at the bottom of the Preview area)").format(n=n)
+            text += ", " + _("{n} warnings/errors in the output (Preview > Profile, device and output)").format(n=n)
         self.app.status.set(text + ".")
         grund = kv.absturz_grund(self.profil, self.befund) if code else None
         if grund:                                       # Desktop-KOReader hält den Rechner für einen E-Reader

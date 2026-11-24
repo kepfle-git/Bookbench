@@ -19,7 +19,7 @@ msgstr ""
 msgid "saved (since opening)"
 msgstr ""
 
-#: app.py:79 app.py:915 area_metadata.py:305
+#: app.py:79 app.py:916 area_metadata.py:305
 msgid "All books"
 msgstr ""
 
@@ -51,15 +51,15 @@ msgstr ""
 msgid "Author"
 msgstr ""
 
-#: app.py:81 app.py:713 app.py:781 app.py:1680 help.py:210 help.py:652
+#: app.py:81 app.py:714 app.py:782 app.py:1681 help.py:209 help.py:668
 msgid "Chapters"
 msgstr ""
 
-#: app.py:81 area_blurbs.py:30 calibre_import.py:159 help.py:313
+#: app.py:81 area_blurbs.py:30 calibre_import.py:159 help.py:312
 msgid "Blurb"
 msgstr ""
 
-#: app.py:81 help.py:373
+#: app.py:81 help.py:372
 msgid "Cover"
 msgstr ""
 
@@ -67,7 +67,7 @@ msgstr ""
 msgid "Publisher"
 msgstr ""
 
-#: app.py:82 app.py:1890 metadata.py:38 settings.py:321
+#: app.py:82 app.py:1893 metadata.py:38 settings.py:322
 msgid "Language"
 msgstr ""
 
@@ -87,15 +87,15 @@ msgstr ""
 msgid "Recently opened"
 msgstr ""
 
-#: app.py:204 app.py:342
+#: app.py:204 app.py:343
 msgid "Reload"
 msgstr ""
 
-#: app.py:205 app.py:355
+#: app.py:205 app.py:356
 msgid "Close library"
 msgstr ""
 
-#: app.py:207 app.py:343 app.py:1548 app.py:1574
+#: app.py:207 app.py:344 app.py:1549 app.py:1575
 msgid "Save"
 msgstr ""
 
@@ -111,7 +111,7 @@ msgstr ""
 msgid "Settings …"
 msgstr ""
 
-#: app.py:213 app.py:1925 app.py:1930
+#: app.py:213 app.py:1928 app.py:1933
 msgid "Quit"
 msgstr ""
 
@@ -119,7 +119,7 @@ msgstr ""
 msgid "File"
 msgstr ""
 
-#: app.py:216 app.py:254 app.py:424 area_dictionary.py:335 area_dictionary.py:709 area_metadata.py:193
+#: app.py:216 app.py:254 app.py:425 area_dictionary.py:335 area_dictionary.py:709 area_metadata.py:193
 msgid "Apply"
 msgstr ""
 
@@ -275,670 +275,674 @@ msgstr ""
 msgid "Dictionary"
 msgstr ""
 
-#: app.py:273 area_device.py:41 help.py:462 help.py:713 settings.py:132 settings.py:751
+#: app.py:273 area_device.py:41 help.py:461 help.py:729 settings.py:133 settings.py:752
 msgid "E-reader"
 msgstr ""
 
-#: app.py:277 area_dictionary.py:281 area_preview.py:109
-msgid "Start"
+#: app.py:277 area_preview.py:160
+msgid "Open in KOReader"
 msgstr ""
 
-#: app.py:278
+#: app.py:277
+msgid "Restart the workbench"
+msgstr ""
+
+#: app.py:279
 msgid "Take profile from the e-reader"
 msgstr ""
 
-#: app.py:279
+#: app.py:280
 msgid "Take profile from a backup"
 msgstr ""
 
-#: app.py:279
+#: app.py:280
 msgid "Other file …"
 msgstr ""
 
-#: app.py:280
+#: app.py:281
 msgid "Find KOReader"
 msgstr ""
 
-#: app.py:281 area_preview.py:61
+#: app.py:282 area_preview.py:75
 msgid "Choose KOReader …"
 msgstr ""
 
-#: app.py:281
+#: app.py:282
 msgid "Open profile folder"
 msgstr ""
 
-#: app.py:286 app.py:713 area_preview.py:53 area_preview.py:412 help.py:533 help.py:727
+#: app.py:287 app.py:714 area_preview.py:67 area_preview.py:610 help.py:532 help.py:743
 msgid "Preview"
 msgstr ""
 
-#: app.py:288 settings.py:330
+#: app.py:289 settings.py:331
 msgid "Light"
 msgstr ""
 
-#: app.py:288 settings.py:330
+#: app.py:289 settings.py:331
 msgid "Dark"
 msgstr ""
 
-#: app.py:288 settings.py:330
+#: app.py:289 settings.py:331
 msgid "Like the system"
 msgstr ""
 
-#: app.py:291
+#: app.py:292
 msgid "Sidebar on/off"
 msgstr ""
 
-#: app.py:291
+#: app.py:292
 msgid "Ctrl+B"
 msgstr ""
 
-#: app.py:292
+#: app.py:293
 msgid "Status in the lists"
 msgstr ""
 
-#: app.py:295
+#: app.py:296
 msgid "Library columns"
 msgstr ""
 
-#: app.py:299
+#: app.py:300 area_preview.py:84
 msgid "View"
 msgstr ""
 
-#: app.py:301 app.py:307 app.py:346 help.py:823 settings.py:169
+#: app.py:302 app.py:308 app.py:347 help.py:842 settings.py:170
 msgid "Help"
 msgstr ""
 
-#: app.py:302
+#: app.py:303
 msgid "Check for updates …"
 msgstr ""
 
-#: app.py:304 app.py:305
+#: app.py:305 app.py:306
 msgid "About"
 msgstr ""
 
-#: app.py:305
+#: app.py:306
 msgid "Chapter names, blurbs and settings for KOReader on the e-reader."
 msgstr ""
 
-#: app.py:329
+#: app.py:330
 msgid "(empty)"
 msgstr ""
 
-#: app.py:341 area_dictionary.py:1049
+#: app.py:342 area_dictionary.py:1049
 msgid "Open"
 msgstr ""
 
-#: app.py:341
+#: app.py:342
 msgid "Open books folder (Ctrl+O)"
 msgstr ""
 
-#: app.py:342
+#: app.py:343
 msgid "Reload folder (F5)"
 msgstr ""
 
-#: app.py:344
+#: app.py:345
 msgid "Write applied changes to the files, with backup (Ctrl+S)"
 msgstr ""
 
-#: app.py:346
+#: app.py:347
 msgid "Help for the current area (F1)"
 msgstr ""
 
-#: app.py:369
+#: app.py:370
 msgid ""
 "The folder {ordner} is no longer reachable (e-reader unplugged?). The "
 "library stays visible, but saving only works again once the folder is back."
 msgstr ""
 
-#: app.py:376
+#: app.py:377
 msgid "The folder {ordner} is reachable again."
 msgstr ""
 
-#: app.py:392
+#: app.py:393
 msgid "Library closed."
 msgstr ""
 
-#: app.py:421 area_blurbs.py:55 area_metadata.py:199 calibre_import.py:89 settings.py:663
+#: app.py:422 area_blurbs.py:55 area_metadata.py:199 calibre_import.py:89 settings.py:664
 msgid "From Calibre"
 msgstr ""
 
-#: app.py:422
+#: app.py:423
 msgid ""
 "Take series, number and blurb from metadata.calibre where the EPUB lacks "
 "them"
 msgstr ""
 
-#: app.py:425
+#: app.py:426
 msgid "Apply the New column for this book (Ctrl+Enter)"
 msgstr ""
 
-#: app.py:426
+#: app.py:427
 msgid "Apply all"
 msgstr ""
 
-#: app.py:427
+#: app.py:428
 msgid "Apply the suggestions of all books without questionable entries"
 msgstr ""
 
-#: app.py:429 settings.py:503 settings.py:662
+#: app.py:430 settings.py:504 settings.py:663
 msgid "Up"
 msgstr ""
 
-#: app.py:430
+#: app.py:431
 msgid ""
 "Move the selected entries with their sub-entries one level up (Shift+Tab)"
 msgstr ""
 
-#: app.py:431 settings.py:504 settings.py:663
+#: app.py:432 settings.py:505 settings.py:664
 msgid "Down"
 msgstr ""
 
-#: app.py:432
+#: app.py:433
 msgid "Move the selected entries with their sub-entries one level down (Tab)"
 msgstr ""
 
-#: app.py:434
+#: app.py:435
 msgid "Suggestions"
 msgstr ""
 
-#: app.py:435
+#: app.py:436
 msgid "Reset the book to the suggestions"
 msgstr ""
 
-#: app.py:436
+#: app.py:437
 msgid "Original"
 msgstr ""
 
-#: app.py:437
+#: app.py:438
 msgid "Reset the book to the unchanged table of contents"
 msgstr ""
 
-#: app.py:556
+#: app.py:557
 msgid "{n} chapter suggestion"
 msgid_plural "{n} chapter suggestions"
 msgstr[0] ""
 msgstr[1] ""
 
-#: app.py:577 app.py:1679 help.py:156 markers.py:54 settings.py:347 settings.py:395
+#: app.py:578 app.py:1680 help.py:155 markers.py:54 settings.py:348 settings.py:396
 msgid "Library"
 msgstr ""
 
-#: app.py:580 area_dictionary.py:124 help.py:832 list_filter.py:65
+#: app.py:581 area_dictionary.py:124 help.py:851 list_filter.py:65
 msgid "Search:"
 msgstr ""
 
-#: app.py:585
+#: app.py:586
 msgid "Filter:"
 msgstr ""
 
-#: app.py:597 table_columns.py:218
+#: app.py:598 table_columns.py:218
 msgid "Status"
 msgstr ""
 
-#: app.py:671 app.py:677
+#: app.py:672 app.py:678
 msgid "changed"
 msgstr ""
 
-#: app.py:673 metadata.py:220 metadata.py:243
+#: app.py:674 metadata.py:220 metadata.py:243
 msgid "yes"
 msgstr ""
 
-#: app.py:674
+#: app.py:675
 msgid "in Calibre"
 msgstr ""
 
-#: app.py:696
+#: app.py:697
 msgid "{n} of {gesamt} book"
 msgid_plural "{n} of {gesamt} books"
 msgstr[0] ""
 msgstr[1] ""
 
-#: app.py:705
+#: app.py:706
 msgid "series applied, not yet saved"
 msgstr ""
 
-#: app.py:707
+#: app.py:708
 msgid ""
 "Series from metadata.calibre, not in the EPUB - \"From Calibre\" applies it"
 msgstr ""
 
-#: app.py:709
+#: app.py:710
 msgid "Series from the {quelle} data, not in the EPUB"
 msgstr ""
 
-#: app.py:713 app.py:1682 area_metadata.py:43 help.py:249 help.py:701 settings.py:129
+#: app.py:714 app.py:1683 area_metadata.py:43 help.py:248 help.py:717 settings.py:130
 msgid "Metadata"
 msgstr ""
 
-#: app.py:714
+#: app.py:715
 msgid "KOReader (start the preview)"
 msgstr ""
 
-#: app.py:754
+#: app.py:755
 msgid "Start in KOReader"
 msgstr ""
 
-#: app.py:754
+#: app.py:755
 msgid "Open in {ziel}"
 msgstr ""
 
-#: app.py:756
+#: app.py:757
 msgid "Double-click"
 msgstr ""
 
-#: app.py:783 area_dictionary.py:1119 area_metadata.py:45 wikidict.py:1242
+#: app.py:784 area_dictionary.py:1119 area_metadata.py:45 wikidict.py:1242
 msgid "Books:"
 msgstr ""
 
-#: app.py:796
+#: app.py:797
 msgid "Entry"
 msgstr ""
 
-#: app.py:796 area_covers.py:191 area_dictionary.py:339
+#: app.py:797 area_covers.py:191 area_dictionary.py:339
 msgid "New"
 msgstr ""
 
-#: app.py:796
+#: app.py:797
 msgid "Note"
 msgstr ""
 
-#: app.py:805
+#: app.py:806
 msgid "In the book at this point:"
 msgstr ""
 
-#: app.py:835 area_metadata.py:53 area_metadata.py:376
+#: app.py:836 area_metadata.py:53 area_metadata.py:376
 msgid "Choose a book on the left."
 msgstr ""
 
-#: app.py:882
+#: app.py:883
 msgid "JPEG covers need Pillow (pip install pillow)."
 msgstr ""
 
-#: app.py:916
+#: app.py:917
 msgid "With suggestions"
 msgstr ""
 
-#: app.py:917
+#: app.py:918
 msgid "Questionable names"
 msgstr ""
 
-#: app.py:918
+#: app.py:919
 msgid "Some without names"
 msgstr ""
 
-#: app.py:919
+#: app.py:920
 msgid "Changed chapters"
 msgstr ""
 
-#: app.py:997
+#: app.py:998
 msgid "No suggestions: {grund}"
 msgstr ""
 
-#: app.py:1012
+#: app.py:1013
 msgid "number only, no name found"
 msgstr ""
 
-#: app.py:1015
+#: app.py:1016
 msgid "Level {alt} → {neu}"
 msgstr ""
 
-#: app.py:1019 settings.py:863
+#: app.py:1020 settings.py:864
 msgid "{n} entry"
 msgid_plural "{n} entries"
 msgstr[0] ""
 msgstr[1] ""
 
-#: app.py:1020
+#: app.py:1021
 msgid "{n} suggestion."
 msgid_plural "{n} suggestions."
 msgstr[0] ""
 msgstr[1] ""
 
-#: app.py:1094
+#: app.py:1095
 msgid "changed, not yet applied (Ctrl+Enter)."
 msgstr ""
 
-#: app.py:1108
+#: app.py:1109
 msgid "Select entries in the table, then Tab (down) or Shift+Tab (up)."
 msgstr ""
 
-#: app.py:1111
+#: app.py:1112
 msgid "levels cannot be changed - {grund}."
 msgstr ""
 
-#: app.py:1116
+#: app.py:1117
 msgid "Cannot move down: {grund}."
 msgstr ""
 
-#: app.py:1116
+#: app.py:1117
 msgid "Cannot move up: {grund}."
 msgstr ""
 
-#: app.py:1127
+#: app.py:1128
 msgid "{n} entry moved down (with sub-entries), not yet applied (Ctrl+Enter)."
 msgid_plural ""
 "{n} entries moved down (with sub-entries), not yet applied (Ctrl+Enter)."
 msgstr[0] ""
 msgstr[1] ""
 
-#: app.py:1130
+#: app.py:1131
 msgid "{n} entry moved up (with sub-entries), not yet applied (Ctrl+Enter)."
 msgid_plural "{n} entries moved up (with sub-entries), not yet applied (Ctrl+Enter)."
 msgstr[0] ""
 msgstr[1] ""
 
-#: app.py:1153
+#: app.py:1154
 msgid "Apply: choose a book in the Chapters or Blurbs area."
 msgstr ""
 
-#: app.py:1160
+#: app.py:1161
 msgid "{n} chapter name applied, not yet saved."
 msgid_plural "{n} chapter names applied, not yet saved."
 msgstr[0] ""
 msgstr[1] ""
 
-#: app.py:1173
+#: app.py:1174
 msgid "Suggestions of {n} book applied."
 msgid_plural "Suggestions of {n} books applied."
 msgstr[0] ""
 msgstr[1] ""
 
-#: app.py:1174
+#: app.py:1175
 msgid "Please check {n} book with questionable entries one by one."
 msgid_plural "Please check {n} books with questionable entries one by one."
 msgstr[0] ""
 msgstr[1] ""
 
-#: app.py:1184
+#: app.py:1185
 msgid "reset to the suggestions."
 msgstr ""
 
-#: app.py:1192
+#: app.py:1193
 msgid "original restored, not yet applied."
 msgstr ""
 
-#: app.py:1222
+#: app.py:1223
 msgid "blurb restored from the file."
 msgstr ""
 
-#: app.py:1233 app.py:1239 area_blurbs.py:53 area_covers.py:89 area_covers.py:111
+#: app.py:1234 app.py:1240 area_blurbs.py:53 area_covers.py:89 area_covers.py:111
 msgid "Look up"
 msgstr ""
 
-#: app.py:1233
+#: app.py:1234
 msgid ""
 "The anthropic package is missing.\n"
 "\n"
 "pip install anthropic"
 msgstr ""
 
-#: app.py:1239
+#: app.py:1240
 msgid "No API key. Settings > Blurbs."
 msgstr ""
 
-#: app.py:1246
+#: app.py:1247
 msgid "Look up: choose a book in the Metadata area."
 msgstr ""
 
-#: app.py:1255
+#: app.py:1256
 msgid "All books have a blurb."
 msgstr ""
 
-#: app.py:1298 app.py:1468 app.py:1590 area_covers.py:288 area_covers.py:318 area_device.py:400
+#: app.py:1299 app.py:1469 app.py:1591 area_covers.py:288 area_covers.py:318 area_device.py:400
 msgid "Still running: {arbeit}."
 msgstr ""
 
-#: app.py:1313
+#: app.py:1314
 msgid "Look up all"
 msgstr ""
 
-#: app.py:1314
+#: app.py:1315
 msgid "{n} book without a blurb."
 msgid_plural "{n} books without a blurb."
 msgstr[0] ""
 msgstr[1] ""
 
-#: app.py:1315
+#: app.py:1316
 msgid ""
 "The free sources are asked first; Claude only for what they do not have."
 msgstr ""
 
-#: app.py:1317
+#: app.py:1318
 msgid "At most {n} book goes to Claude: up to about {kosten} $."
 msgid_plural "At most {n} books go to Claude: up to about {kosten} $."
 msgstr[0] ""
 msgstr[1] ""
 
-#: app.py:1320
+#: app.py:1321
 msgid "Start?"
 msgstr ""
 
-#: app.py:1327 help.py:328
+#: app.py:1328 help.py:327
 msgid "Looking up blurbs"
 msgstr ""
 
-#: app.py:1336
+#: app.py:1337
 msgid "Looking up ({i}/{n}): {name} …"
 msgstr ""
 
-#: app.py:1351
+#: app.py:1352
 msgid "API error ({fehler})"
 msgstr ""
 
-#: app.py:1363
+#: app.py:1364
 msgid "Look-up finished ({n} book)."
 msgid_plural "Look-up finished ({n} books)."
 msgstr[0] ""
 msgstr[1] ""
 
-#: app.py:1366
+#: app.py:1367
 msgid "{n} blurb found."
 msgid_plural "{n} blurbs found."
 msgstr[0] ""
 msgstr[1] ""
 
-#: app.py:1371
+#: app.py:1372
 msgid "Claude was not asked (no API key)."
 msgstr ""
 
-#: app.py:1382
+#: app.py:1383
 msgid "{quelle}: book found, but no blurb stored"
 msgstr ""
 
-#: app.py:1383
+#: app.py:1384
 msgid "{quelle}: no blurb stored for {n} book"
 msgid_plural "{quelle}: no blurb stored for {n} books"
 msgstr[0] ""
 msgstr[1] ""
 
-#: app.py:1386
+#: app.py:1387
 msgid "{quelle}: book not found"
 msgstr ""
 
-#: app.py:1387
+#: app.py:1388
 msgid "{quelle}: {n} book not found"
 msgid_plural "{quelle}: {n} books not found"
 msgstr[0] ""
 msgstr[1] ""
 
-#: app.py:1403
+#: app.py:1404
 msgid "blurb found ({quelle}), not yet applied."
 msgstr ""
 
-#: app.py:1406
+#: app.py:1407
 msgid "no blurb found."
 msgstr ""
 
-#: app.py:1417
+#: app.py:1418
 msgid "Open a folder with books first, then import from Calibre."
 msgstr ""
 
-#: app.py:1426 area_metadata.py:488
+#: app.py:1427 area_metadata.py:488
 msgid "The Calibre comparison is switched off (Settings > Books > Calibre)."
 msgstr ""
 
-#: app.py:1434
+#: app.py:1435
 msgid ""
 "No metadata.calibre found (it is in the root folder of the e-reader when "
 "Calibre transfers the books). Open the folder on the e-reader or copy the "
 "file into the books folder."
 msgstr ""
 
-#: app.py:1449
+#: app.py:1450
 msgid ""
 "Taken from Calibre: {reihen} series, {texte} blurbs - not yet saved "
 "(Ctrl+S)."
 msgstr ""
 
-#: app.py:1451
+#: app.py:1452
 msgid "Nothing to take from Calibre; the EPUBs already have everything."
 msgstr ""
 
-#: app.py:1457
+#: app.py:1458
 msgid "Open books folder"
 msgstr ""
 
-#: app.py:1475
+#: app.py:1476
 msgid "Reading"
 msgstr ""
 
-#: app.py:1486
+#: app.py:1487
 msgid "Reading books … {i}/{n}"
 msgstr ""
 
-#: app.py:1511
+#: app.py:1512
 msgid ""
 "The backup folder is inside the books folder - better put it elsewhere "
 "(Settings)."
 msgstr ""
 
-#: app.py:1514
+#: app.py:1515
 msgid "Calibre data for {n} book ({ordner})."
 msgid_plural "Calibre data for {n} books ({ordner})."
 msgstr[0] ""
 msgstr[1] ""
 
-#: app.py:1516
+#: app.py:1517
 msgid "metadata.calibre found, but it matches no book."
 msgstr ""
 
-#: app.py:1517
+#: app.py:1518
 msgid "{n} book read."
 msgid_plural "{n} books read."
 msgstr[0] ""
 msgstr[1] ""
 
-#: app.py:1518
+#: app.py:1519
 msgid "{n} not readable."
 msgstr ""
 
-#: app.py:1528
+#: app.py:1529
 msgid ""
 "The folder {ordner} is no longer reachable (e-reader ejected or "
 "unplugged?). Nothing was saved."
 msgstr ""
 
-#: app.py:1530
+#: app.py:1531
 msgid "{n} book file is missing, e.g. {datei}. Nothing was saved."
 msgid_plural "{n} book files are missing, e.g. {datei}. Nothing was saved."
 msgstr[0] ""
 msgstr[1] ""
 
-#: app.py:1533
+#: app.py:1534
 msgid ""
 "The changes are kept as long as Bookbench is open. Connect the e-reader "
 "again and save, or discard them with Reload."
 msgstr ""
 
-#: app.py:1542
+#: app.py:1543
 msgid "Nothing to save."
 msgstr ""
 
-#: app.py:1542
+#: app.py:1543
 msgid "{n} book with changes not yet applied."
 msgid_plural "{n} books with changes not yet applied."
 msgstr[0] ""
 msgstr[1] ""
 
-#: app.py:1549
+#: app.py:1550
 msgid "Not saved: the books are not reachable."
 msgstr ""
 
-#: app.py:1574
+#: app.py:1575
 msgid "Not saved:"
 msgstr ""
 
-#: app.py:1575
+#: app.py:1576
 msgid "{n} book saved, backups in {ordner}."
 msgid_plural "{n} books saved, backups in {ordner}."
 msgstr[0] ""
 msgstr[1] ""
 
-#: app.py:1577
+#: app.py:1578
 msgid "{n} with changes not yet applied."
 msgstr ""
 
-#: app.py:1582 calibre_import.py:87 updates.py:138
+#: app.py:1583 calibre_import.py:87 updates.py:138
 msgid "Changes"
 msgstr ""
 
-#: app.py:1582
+#: app.py:1583
 msgid "{n} book has unsaved changes. Discard them?"
 msgid_plural "{n} books have unsaved changes. Discard them?"
 msgstr[0] ""
 msgstr[1] ""
 
-#: app.py:1599
+#: app.py:1600
 msgid "error ({fehler})"
 msgstr ""
 
-#: app.py:1679
+#: app.py:1680
 msgid "Library ({n})"
 msgstr ""
 
-#: app.py:1680
+#: app.py:1681
 msgid "Chapters ({n} ⚠)"
 msgstr ""
 
-#: app.py:1682
+#: app.py:1683
 msgid "Metadata ({n} ⚠)"
 msgstr ""
 
-#: app.py:1790
+#: app.py:1793
 msgid "Settings saved. Chapter settings apply after reloading (F5)."
 msgstr ""
 
-#: app.py:1805
+#: app.py:1808
 msgid "Calibre comparison on: reload (F5) to read metadata.calibre."
 msgstr ""
 
-#: app.py:1885
+#: app.py:1888
 msgid "{n} book has unsaved changes."
 msgid_plural "{n} books have unsaved changes."
 msgstr[0] ""
 msgstr[1] ""
 
-#: app.py:1887
+#: app.py:1890
 msgid "{n} dictionary entry is changed in the form but not applied."
 msgid_plural "{n} dictionary entries are changed in the form but not applied."
 msgstr[0] ""
 msgstr[1] ""
 
-#: app.py:1890
+#: app.py:1893
 msgid ""
 "Restart now and lose them? (No: the language changes at the next start.)"
 msgstr ""
 
-#: app.py:1892
+#: app.py:1895
 msgid "The new language applies at the next start."
 msgstr ""
 
-#: app.py:1925
+#: app.py:1928
 msgid "{n} book has unsaved changes. Quit anyway?"
 msgid_plural "{n} books have unsaved changes. Quit anyway?"
 msgstr[0] ""
 msgstr[1] ""
 
-#: app.py:1930
+#: app.py:1933
 msgid ""
 "{n} dictionary entry is changed in the form but not applied. Quit anyway?"
 msgid_plural ""
@@ -946,7 +950,7 @@ msgid_plural ""
 msgstr[0] ""
 msgstr[1] ""
 
-#: app.py:1946
+#: app.py:1951
 msgid "books folder to open"
 msgstr ""
 
@@ -1062,7 +1066,7 @@ msgstr ""
 msgid "Images"
 msgstr ""
 
-#: area_covers.py:265 area_preview.py:314
+#: area_covers.py:265 area_preview.py:512
 msgid "All files"
 msgstr ""
 
@@ -1092,7 +1096,7 @@ msgstr ""
 msgid "looking for covers …"
 msgstr ""
 
-#: area_covers.py:307 area_covers.py:347 help.py:692 settings.py:128 settings.py:631
+#: area_covers.py:307 area_covers.py:347 help.py:708 settings.py:129 settings.py:632
 msgid "Looking up covers"
 msgstr ""
 
@@ -1156,7 +1160,7 @@ msgstr ""
 msgid "Choose a cover: {name}"
 msgstr ""
 
-#: area_covers.py:456 area_dictionary.py:321 area_dictionary.py:1048 area_dictionary.py:1136 settings.py:170 settings.py:989
+#: area_covers.py:456 area_dictionary.py:321 area_dictionary.py:1048 area_dictionary.py:1136 settings.py:171 settings.py:990
 msgid "Cancel"
 msgstr ""
 
@@ -1164,7 +1168,7 @@ msgstr ""
 msgid "Click a cover to choose it, double-click takes it at once."
 msgstr ""
 
-#: area_device.py:36 device.py:87 help.py:590 settings.py:150 settings.py:739 settings.py:829
+#: area_device.py:36 device.py:87 help.py:606 settings.py:151 settings.py:740 settings.py:830
 msgid "Settings"
 msgstr ""
 
@@ -1204,7 +1208,7 @@ msgstr ""
 msgid "before restoring"
 msgstr ""
 
-#: area_device.py:69 area_device.py:295 area_device.py:403 area_preview.py:283
+#: area_device.py:69 area_device.py:295 area_device.py:403 area_preview.py:477
 msgid "No e-reader connected."
 msgstr ""
 
@@ -1224,7 +1228,7 @@ msgstr ""
 msgid "Folder in the source"
 msgstr ""
 
-#: area_device.py:104 help.py:493
+#: area_device.py:104 help.py:492
 msgid "Backups of the KOReader settings"
 msgstr ""
 
@@ -1232,7 +1236,7 @@ msgstr ""
 msgid "Date"
 msgstr ""
 
-#: area_device.py:117 settings.py:131
+#: area_device.py:117 area_preview.py:123 settings.py:132
 msgid "Device"
 msgstr ""
 
@@ -1252,7 +1256,7 @@ msgstr ""
 msgid "Parts (for backing up and restoring)"
 msgstr ""
 
-#: area_device.py:149 settings.py:121
+#: area_device.py:149 settings.py:122
 msgid "Books"
 msgstr ""
 
@@ -1344,7 +1348,7 @@ msgid ""
 "the device (KOReader: USB mass storage). It is detected automatically."
 msgstr ""
 
-#: area_device.py:307 area_preview.py:214
+#: area_device.py:307 area_preview.py:254
 msgid "Folder: {ordner}"
 msgstr ""
 
@@ -1558,7 +1562,7 @@ msgstr ""
 msgid "StarDict folder"
 msgstr ""
 
-#: area_dictionary.py:39 area_dictionary.py:897 area_preview.py:203
+#: area_dictionary.py:39 area_dictionary.py:897 area_preview.py:243
 msgid "none"
 msgstr ""
 
@@ -1574,7 +1578,7 @@ msgstr ""
 msgid "Dictionary:"
 msgstr ""
 
-#: area_dictionary.py:102 settings.py:502
+#: area_dictionary.py:102 settings.py:503
 msgid "New …"
 msgstr ""
 
@@ -1636,7 +1640,11 @@ msgstr ""
 msgid "Entry from an imported dictionary: content as stored (HTML or text)."
 msgstr ""
 
-#: area_dictionary.py:289 area_dictionary.py:1150 settings.py:451 settings.py:768 settings.py:779
+#: area_dictionary.py:281
+msgid "Start"
+msgstr ""
+
+#: area_dictionary.py:289 area_dictionary.py:1150 settings.py:452 settings.py:769 settings.py:780
 msgid "Choose …"
 msgstr ""
 
@@ -1990,7 +1998,7 @@ msgstr ""
 msgid "last built: {wann}"
 msgstr ""
 
-#: area_dictionary.py:898 settings.py:412
+#: area_dictionary.py:898 settings.py:413
 msgid "never"
 msgstr ""
 
@@ -2088,7 +2096,7 @@ msgstr ""
 msgid "Name of the dictionary files (without extension), e.g. sw-legends."
 msgstr ""
 
-#: area_dictionary.py:1107 settings.py:1025
+#: area_dictionary.py:1107 settings.py:1026
 msgid "Topic:"
 msgstr ""
 
@@ -2295,265 +2303,321 @@ msgstr[1] ""
 msgid "Nothing to fill: no book has empty fields that Calibre knows."
 msgstr ""
 
-#: area_preview.py:29
+#: area_preview.py:36
 msgid ""
 "The preview needs the desktop KOReader. It is only needed for this, "
 "everything else works without it. Install it (one of these):"
 msgstr ""
 
-#: area_preview.py:33
+#: area_preview.py:40
 msgid ""
 "AppImage from github.com/koreader/koreader/releases into ~/Applications or "
 "~/Downloads, or \"Choose KOReader …\" below"
 msgstr ""
 
-#: area_preview.py:35
+#: area_preview.py:42
 msgid "Then \"Find KOReader\" in the Preview menu."
 msgstr ""
 
-#: area_preview.py:56
-msgid "KOReader preview"
+#: area_preview.py:70
+msgid "KOReader workbench"
 msgstr ""
 
-#: area_preview.py:67 calibre_import.py:88 calibre_import.py:96
+#: area_preview.py:86
+msgid "Reading page"
+msgstr ""
+
+#: area_preview.py:86
+msgid "Start screen (library, Bookshelf)"
+msgstr ""
+
+#: area_preview.py:90 calibre_import.py:88 calibre_import.py:96
 msgid "Book"
 msgstr ""
 
-#: area_preview.py:74
+#: area_preview.py:104
+msgid "Restart"
+msgstr ""
+
+#: area_preview.py:110 area_preview.py:289
+msgid "Profile, device and output"
+msgstr ""
+
+#: area_preview.py:116
 msgid "Profile (settings, plugins, fonts from the e-reader)"
 msgstr ""
 
-#: area_preview.py:81
-msgid "Screen"
+#: area_preview.py:126
+msgid "Window for \"Open in KOReader\":"
 msgstr ""
 
-#: area_preview.py:94
+#: area_preview.py:134
 msgid "KOReader output"
 msgstr ""
 
-#: area_preview.py:110
+#: area_preview.py:161
 msgid ""
-"Open the selected book in the desktop KOReader, with the settings from the "
-"e-reader (double-click)"
+"Open the selected book in the full desktop KOReader (window), with the "
+"settings from the e-reader - for trying out menus"
 msgstr ""
 
-#: area_preview.py:113
+#: area_preview.py:164
 msgid "From the e-reader"
 msgstr ""
 
-#: area_preview.py:114
+#: area_preview.py:165
 msgid ""
 "Rebuild the profile from the connected e-reader: settings, Bookends, "
 "patches, plugins, fonts"
 msgstr ""
 
-#: area_preview.py:115
+#: area_preview.py:166
 msgid "From backup"
 msgstr ""
 
-#: area_preview.py:116
+#: area_preview.py:167
 msgid ""
 "Settings from the backup selected in the E-reader area (otherwise the "
 "newest); plugins and fonts stay"
 msgstr ""
 
-#: area_preview.py:119
+#: area_preview.py:170
 msgid "Other file"
 msgstr ""
 
-#: area_preview.py:120
+#: area_preview.py:171
 msgid "Show a book that is not in the opened library"
 msgstr ""
 
-#: area_preview.py:186 emulator.py:523
+#: area_preview.py:195
+msgid "Sample text (Lorem ipsum)"
+msgstr ""
+
+#: area_preview.py:198 area_preview.py:517
+msgid "[File] {name}"
+msgstr ""
+
+#: area_preview.py:226 area_preview.py:326 emulator.py:523 workbench.py:231
 msgid "Desktop KOReader not found."
 msgstr ""
 
-#: area_preview.py:193
+#: area_preview.py:233
 msgid "Still empty."
 msgstr ""
 
-#: area_preview.py:194
+#: area_preview.py:234
 msgid ""
 "Connect the e-reader and \"From the e-reader\". \"From backup\" works too, "
 "but then plugins (Bookends) and fonts are missing."
 msgstr ""
 
-#: area_preview.py:200
+#: area_preview.py:240
 msgid "Taken from the e-reader on {datum}"
 msgstr ""
 
-#: area_preview.py:202
+#: area_preview.py:242
 msgid "Taken from backup {name} on {datum}"
 msgstr ""
 
-#: area_preview.py:203
+#: area_preview.py:243
 msgid "Plugins: {liste}"
 msgstr ""
 
-#: area_preview.py:204
+#: area_preview.py:244
 msgid "Fonts: {n}"
 msgstr ""
 
-#: area_preview.py:204
+#: area_preview.py:244
 msgid "Patches: {n}"
 msgstr ""
 
-#: area_preview.py:205
+#: area_preview.py:245
 msgid "Style tweaks: {n}"
 msgstr ""
 
-#: area_preview.py:206
+#: area_preview.py:246
 msgid "Bookends presets: {n}"
 msgstr ""
 
-#: area_preview.py:210
+#: area_preview.py:250
 msgid ""
 "⚠ Plugins and fonts are missing: take \"From the e-reader\" once, otherwise "
 "Bookends is missing."
 msgstr ""
 
-#: area_preview.py:213
+#: area_preview.py:253
 msgid "Bookends is not in the profile (not installed on the e-reader?)."
 msgstr ""
 
-#: area_preview.py:221
+#: area_preview.py:261
 msgid "own size from the settings"
 msgstr ""
 
-#: area_preview.py:221
+#: area_preview.py:261
 msgid "chosen in the settings"
 msgstr ""
 
-#: area_preview.py:222
+#: area_preview.py:262
 msgid "device of the profile"
 msgstr ""
 
-#: area_preview.py:222
+#: area_preview.py:262
 msgid "connected e-reader"
 msgstr ""
 
-#: area_preview.py:223
+#: area_preview.py:263
 msgid "⚠ device unknown, standard size - choose it in Settings > Preview"
 msgstr ""
 
-#: area_preview.py:224
+#: area_preview.py:264
 msgid ""
-"{name}: {w} × {h} pixels, {dpi} dpi, {farbe} ({woher}). Such a tall window "
-"rarely fits the screen; smaller with a matching DPI the page looks the "
-"same, only coarser."
+"{name}: {w} × {h} pixels, {dpi} dpi, {farbe} ({woher}). The workbench "
+"always renders at full size and fits the picture into the area."
 msgstr ""
 
-#: area_preview.py:228
+#: area_preview.py:268
 msgid "colour"
 msgstr ""
 
-#: area_preview.py:228
+#: area_preview.py:268
 msgid "black and white"
 msgstr ""
 
-#: area_preview.py:234
-msgid "Select a book on the left (open a library with Ctrl+O)."
+#: area_preview.py:274
+msgid "The start screen shows eight sample books with covers."
 msgstr ""
 
-#: area_preview.py:237
+#: area_preview.py:276
+msgid ""
+"Sample text with chapters, title, author and series - enough for Bookends."
+msgstr ""
+
+#: area_preview.py:278
 msgid ""
 "Book data (.sdr) is next to the book: font size, margins etc. as on the "
 "e-reader."
 msgstr ""
 
-#: area_preview.py:239
+#: area_preview.py:280
 msgid ""
-"No book data next to the book. At start the connected e-reader and the "
-"newest backup are searched for the same file name, otherwise the general "
-"settings apply."
+"No book data next to the book. The connected e-reader and the newest backup "
+"are searched for the same file name, otherwise the general settings apply."
 msgstr ""
 
-#: area_preview.py:289
+#: area_preview.py:329 area_preview.py:563
+msgid "The profile is empty: first \"From the e-reader\" or \"From backup\"."
+msgstr ""
+
+#: area_preview.py:351
+msgid "KOReader is starting in the background …"
+msgstr ""
+
+#: area_preview.py:377
+msgid "Running in the background. Started in {s:.1f} s."
+msgstr ""
+
+#: area_preview.py:380
+msgid "Running in the background. Last picture in {s:.2f} s."
+msgstr ""
+
+#: area_preview.py:382 area_preview.py:384
+msgid "KOReader reports: {text}"
+msgstr ""
+
+#: area_preview.py:387
+msgid "KOReader in the background has stopped"
+msgstr ""
+
+#: area_preview.py:388 area_preview.py:604
+msgid "(exit code {code})"
+msgstr ""
+
+#: area_preview.py:390
+msgid "{n} warnings/errors in the output."
+msgstr ""
+
+#: area_preview.py:392
+msgid "Stopped."
+msgstr ""
+
+#: area_preview.py:430
+msgid "The picture from KOReader appears here."
+msgstr ""
+
+#: area_preview.py:483
 msgid ""
 "Profile taken from the e-reader: {plugins} plugins, {schriften} fonts, "
 "{vorlagen} Bookends presets."
 msgstr ""
 
-#: area_preview.py:291 area_preview.py:309
+#: area_preview.py:485 area_preview.py:507
 msgid "Taking profile"
 msgstr ""
 
-#: area_preview.py:299
+#: area_preview.py:497
 msgid "No backup available (E-reader area: Back up)."
 msgstr ""
 
-#: area_preview.py:305
+#: area_preview.py:503
 msgid "Settings taken from {name}."
 msgstr ""
 
-#: area_preview.py:307
+#: area_preview.py:505
 msgid ""
 "Plugins and fonts are still missing (take them from the e-reader once)."
 msgstr ""
 
-#: area_preview.py:312
+#: area_preview.py:510
 msgid "Book for the preview"
 msgstr ""
 
-#: area_preview.py:327 settings.py:932
+#: area_preview.py:525 settings.py:933
 msgid "Choose the KOReader program or AppImage"
 msgstr ""
 
-#: area_preview.py:341
+#: area_preview.py:540
 msgid "The folder could not be opened: {fehler}"
 msgstr ""
 
-#: area_preview.py:352
+#: area_preview.py:551
 msgid "KOReader is already running. Close its window, then start again."
 msgstr ""
 
-#: area_preview.py:357
+#: area_preview.py:556
 msgid "Desktop KOReader not found (see the note at the top of the area)."
 msgstr ""
 
-#: area_preview.py:362
-msgid "Select a book on the left first."
-msgstr ""
-
-#: area_preview.py:365
-msgid "The profile is empty: first \"From the e-reader\" or \"From backup\"."
-msgstr ""
-
-#: area_preview.py:379
+#: area_preview.py:577
 msgid "without book data, general settings"
 msgstr ""
 
-#: area_preview.py:381
+#: area_preview.py:579
 msgid "book data from the backup"
 msgstr ""
 
-#: area_preview.py:383
+#: area_preview.py:581
 msgid "book data next to the book"
 msgstr ""
 
-#: area_preview.py:385
+#: area_preview.py:583
 msgid "book data from the e-reader"
 msgstr ""
 
-#: area_preview.py:386
+#: area_preview.py:584
 msgid "KOReader started: {name} ({w} × {h}, {dpi} dpi, {woher})."
 msgstr ""
 
-#: area_preview.py:394
+#: area_preview.py:592
 msgid "Starting preview"
 msgstr ""
 
-#: area_preview.py:406
+#: area_preview.py:604
 msgid "KOReader closed"
 msgstr ""
 
-#: area_preview.py:406
-msgid "(exit code {code})"
-msgstr ""
-
-#: area_preview.py:408
-msgid "{n} warnings/errors in the output (at the bottom of the Preview area)"
+#: area_preview.py:606
+msgid ""
+"{n} warnings/errors in the output (Preview > Profile, device and output)"
 msgstr ""
 
 #: blurbs.py:219
@@ -2742,7 +2806,7 @@ msgstr ""
 msgid "Baloo (KDE file search)"
 msgstr ""
 
-#: device.py:608 device.py:608 help.py:707 settings.py:130
+#: device.py:608 device.py:608 help.py:723 settings.py:131
 msgid "Calibre"
 msgstr ""
 
@@ -2873,16 +2937,16 @@ msgstr ""
 msgid "The backup contains no KOReader settings."
 msgstr ""
 
-#: emulator.py:467 settings.py:782
+#: emulator.py:467 settings.py:783
 msgid "Own size"
 msgstr ""
 
-#: emulator.py:526
+#: emulator.py:526 workbench.py:233
 msgid ""
 "The profile is empty: take it from the e-reader or from a backup first."
 msgstr ""
 
-#: emulator.py:541
+#: emulator.py:541 workbench.py:266
 msgid "KOReader could not be started: {fehler}"
 msgstr ""
 
@@ -2985,7 +3049,7 @@ msgid ""
 "- **Ctrl+O** open a folder, **F5** reload it\n"
 "- **Ctrl+S** save\n"
 "- **Ctrl+Enter** apply (current book, or the dictionary form)\n"
-"- **Ctrl+F** search field of the current area (Chapters, Metadata, Preview, "
+"- **Ctrl+F** search field of the current area (Chapters, Metadata, "
 "Dictionary), otherwise of the library; **Esc** in a search field empties "
 "it\n"
 "- **Ctrl+B** collapse and expand the sidebar\n"
@@ -3096,11 +3160,11 @@ msgid ""
 "separated, are the ones that always apply: Open, Reload, Save and Help. "
 "[[speichern]] applies to all book areas together.\n"
 "\n"
-"The **book lists** on the left of Chapters, Metadata and Preview (and the "
-"list of the dictionary) can be made wider or narrower by dragging the "
-"divider to their right; the width is remembered, a double-click on the "
-"divider restores the default. A name that does not fit is shown completely "
-"below it when the mouse is over it.\n"
+"The **book lists** on the left of Chapters and Metadata (and the list of "
+"the dictionary; in the Preview the left column) can be made wider or "
+"narrower by dragging the divider to their right; the width is remembered, a "
+"double-click on the divider restores the default. A name that does not fit "
+"is shown completely below it when the mouse is over it.\n"
 msgstr ""
 
 #: help.py:139
@@ -3110,9 +3174,10 @@ msgstr ""
 #: help.py:139
 msgid ""
 "\n"
-"Above the book lists of **Chapters**, **Metadata** and **Preview** there is "
-"a search field and (except in Preview) a filter. Each list has its own; "
-"they do not affect each other or the library.\n"
+"Above the book lists of **Chapters** and **Metadata** there is a search "
+"field and a filter (the Preview has a book selection instead of a list "
+"since 1.4). Each list has its own; they do not affect each other or the "
+"library.\n"
 "\n"
 "- **Search** finds parts of the title, series or author, case does not "
 "matter. **✕** or **Esc** in the field empties search and filter.\n"
@@ -3135,13 +3200,12 @@ msgid ""
 "- **Metadata**: Changed, No blurb, Blurb only in Calibre, Differs from "
 "Calibre, No author sort, No language, No ISBN, Edited in KOReader, No "
 "cover, Small cover (below the limit in [[einst_cover]]).\n"
-"- **Preview**: search only.\n"
 "\n"
 "Search and filters are not remembered; after a restart all books are shown "
 "again.\n"
 msgstr ""
 
-#: help.py:156
+#: help.py:155
 msgid ""
 "\n"
 "All books of the opened folder (with all subfolders) with series, number, "
@@ -3182,11 +3246,11 @@ msgid ""
 "opening), Unreadable files, No series in the EPUB.\n"
 msgstr ""
 
-#: help.py:174
+#: help.py:173
 msgid "Columns: sorting, moving, widths"
 msgstr ""
 
-#: help.py:174
+#: help.py:173
 msgid ""
 "\n"
 "**Sorting**\n"
@@ -3228,11 +3292,11 @@ msgid ""
 "Order, shown columns, widths and sorting are remembered in the settings.\n"
 msgstr ""
 
-#: help.py:197
+#: help.py:196
 msgid "Calibre and series"
 msgstr ""
 
-#: help.py:197
+#: help.py:196
 msgid ""
 "\n"
 "**From Calibre** (toolbar of the library) takes series, number and blurb "
@@ -3260,7 +3324,7 @@ msgid ""
 "description of a single book into the text field.\n"
 msgstr ""
 
-#: help.py:210
+#: help.py:209
 msgid ""
 "\n"
 "The books on the left, the table of contents on the right: **Entry** (as in "
@@ -3290,11 +3354,11 @@ msgid ""
 "- [[kapitel_fragwuerdig]]\n"
 msgstr ""
 
-#: help.py:228
+#: help.py:227
 msgid "Changing levels"
 msgstr ""
 
-#: help.py:228
+#: help.py:227
 msgid ""
 "\n"
 "- Select entries (several with Ctrl- or Shift-click), then **Tab** or "
@@ -3311,11 +3375,11 @@ msgid ""
 "of this book cannot be changed; the status bar gives the reason.\n"
 msgstr ""
 
-#: help.py:236
+#: help.py:235
 msgid "Questionable names and decisions"
 msgstr ""
 
-#: help.py:236
+#: help.py:235
 msgid ""
 "\n"
 "**Questionable** (red background, ⚠ in the list) are:\n"
@@ -3337,7 +3401,7 @@ msgid ""
 "once.\n"
 msgstr ""
 
-#: help.py:249
+#: help.py:248
 msgid ""
 "\n"
 "The books on the left, in the middle a form with the metadata stored in the "
@@ -3395,11 +3459,11 @@ msgid ""
 "- [[suche_filter]]\n"
 msgstr ""
 
-#: help.py:279
+#: help.py:278
 msgid "Calibre and KOReader"
 msgstr ""
 
-#: help.py:279
+#: help.py:278
 msgid ""
 "\n"
 "**Calibre**\n"
@@ -3435,11 +3499,11 @@ msgid ""
 "the fields in KOReader.\n"
 msgstr ""
 
-#: help.py:293 settings.py:645
+#: help.py:292 settings.py:646
 msgid "Own fields"
 msgstr ""
 
-#: help.py:293
+#: help.py:292
 msgid ""
 "\n"
 "In Calibre you can add columns of your own (Preferences > Add your own "
@@ -3464,11 +3528,11 @@ msgid ""
 "description; own fields are for Calibre and for you.\n"
 msgstr ""
 
-#: help.py:302
+#: help.py:301
 msgid "Import from Calibre"
 msgstr ""
 
-#: help.py:302
+#: help.py:301
 msgid ""
 "\n"
 "If you want to stop using Calibre, take its metadata over once into the "
@@ -3496,7 +3560,7 @@ msgid ""
 "rating stars or read status only come along as own columns.\n"
 msgstr ""
 
-#: help.py:313
+#: help.py:312
 msgid ""
 "\n"
 "The blurb is below the form in the Metadata area. The text can be edited "
@@ -3525,7 +3589,7 @@ msgid ""
 "- [[klappentexte_profile]]\n"
 msgstr ""
 
-#: help.py:328
+#: help.py:327
 msgid ""
 "\n"
 "**Look up** (one book, above the blurb) and **Complete ▾ > Look up all "
@@ -3572,11 +3636,11 @@ msgid ""
 "anthropic): [[einst_klappentexte_claude]].\n"
 msgstr ""
 
-#: help.py:352 help.py:667 settings.py:124 settings.py:485
+#: help.py:351 help.py:683 settings.py:125 settings.py:486
 msgid "Source profiles"
 msgstr ""
 
-#: help.py:352
+#: help.py:351
 msgid ""
 "\n"
 "A source profile tells Claude where to look for a blurb. They are set up "
@@ -3617,7 +3681,7 @@ msgid ""
 "at the bottom.\n"
 msgstr ""
 
-#: help.py:373
+#: help.py:372
 msgid ""
 "\n"
 "The cover is shown right of the form, as large as there is room. **Click on "
@@ -3646,11 +3710,11 @@ msgid ""
 "- [[cover_bild]]\n"
 msgstr ""
 
-#: help.py:387
+#: help.py:386
 msgid "Changing and looking up covers"
 msgstr ""
 
-#: help.py:387
+#: help.py:386
 msgid ""
 "\n"
 "- **From file** takes an image file (JPEG, PNG, GIF, WebP).\n"
@@ -3674,11 +3738,11 @@ msgid ""
 "switches to Metadata with the same book.\n"
 msgstr ""
 
-#: help.py:399
+#: help.py:398
 msgid "What happens to the image"
 msgstr ""
 
-#: help.py:399
+#: help.py:398
 msgid ""
 "\n"
 "- The new cover keeps the **format** and the **file name** of the old one "
@@ -3696,7 +3760,7 @@ msgid ""
 "- Transparent areas become white when converting to JPEG.\n"
 msgstr ""
 
-#: help.py:406
+#: help.py:405
 msgid ""
 "\n"
 "Your own dictionaries for KOReader: read, edit, fill missing terms, build "
@@ -3731,11 +3795,11 @@ msgid ""
 "- [[woerterbuch_unterwegs]]\n"
 msgstr ""
 
-#: help.py:422
+#: help.py:421
 msgid "Views and missing terms"
 msgstr ""
 
-#: help.py:422
+#: help.py:421
 msgid ""
 "\n"
 "- **Entries**: everything in the dictionary. The search also finds other "
@@ -3753,11 +3817,11 @@ msgid ""
 "- **Steps** (only with a database): [[woerterbuch_aufbau]].\n"
 msgstr ""
 
-#: help.py:429
+#: help.py:428
 msgid "Editing entries and Claude"
 msgstr ""
 
-#: help.py:429
+#: help.py:428
 msgid ""
 "\n"
 "**Editing**\n"
@@ -3785,11 +3849,11 @@ msgid ""
 "Costs and what is sent: [[kosten]].\n"
 msgstr ""
 
-#: help.py:443
+#: help.py:442
 msgid "Steps and building"
 msgstr ""
 
-#: help.py:443
+#: help.py:442
 msgid ""
 "\n"
 "**Steps** (the steps of wikidict.py, with status, options and output; "
@@ -3819,11 +3883,11 @@ msgid ""
 "building.\n"
 msgstr ""
 
-#: help.py:457
+#: help.py:456
 msgid "On the go without a database"
 msgstr ""
 
-#: help.py:457
+#: help.py:456
 msgid ""
 "\n"
 "Open the StarDict folder (e.g. the copy on the e-reader or on a stick) and "
@@ -3834,7 +3898,7 @@ msgid ""
 "folder**, otherwise the next build overwrites them.\n"
 msgstr ""
 
-#: help.py:462
+#: help.py:461
 msgid ""
 "\n"
 "Shows the connected e-reader with KOReader - Kobo, Kindle or PocketBook: "
@@ -3863,11 +3927,11 @@ msgid ""
 "- [[kobo_auswerfen]]\n"
 msgstr ""
 
-#: help.py:480
+#: help.py:479
 msgid "Kobo, Kindle, PocketBook"
 msgstr ""
 
-#: help.py:480
+#: help.py:479
 msgid ""
 "\n"
 "KOReader keeps its settings in its own installation folder. Where that is "
@@ -3896,7 +3960,7 @@ msgid ""
 "follow the KOReader source code.\n"
 msgstr ""
 
-#: help.py:493
+#: help.py:492
 msgid ""
 "\n"
 "- **Back up** packs the parts ticked on the right into a ZIP file in the "
@@ -3932,11 +3996,11 @@ msgid ""
 "The preview can take its profile from a backup too ([[vorschau_profil]]).\n"
 msgstr ""
 
-#: help.py:511
+#: help.py:510
 msgid "Copying dictionaries"
 msgstr ""
 
-#: help.py:511
+#: help.py:510
 msgid ""
 "\n"
 "- **Choose source**: a folder on the computer somewhere inside which the "
@@ -3959,11 +4023,11 @@ msgid ""
 "there after asking; changes are then saved on the e-reader.\n"
 msgstr ""
 
-#: help.py:517 settings.py:769
+#: help.py:516 settings.py:770
 msgid "Ejecting"
 msgstr ""
 
-#: help.py:517
+#: help.py:516
 msgid ""
 "\n"
 "**Eject** unmounts the e-reader (Linux: udisksctl, Windows: like \"Eject\" "
@@ -4000,13 +4064,15 @@ msgid ""
 "actions).\n"
 msgstr ""
 
-#: help.py:533
+#: help.py:532
 msgid ""
 "\n"
-"Shows a book in the **desktop KOReader** as it looks on the device: font, "
-"margins, headers and footers from Bookends, style tweaks and patches. Only "
-"on Linux and macOS; there is no official KOReader for Windows, so the area "
-"is missing there.\n"
+"The **KOReader workbench**: the desktop KOReader runs invisibly in the "
+"background with the settings from your e-reader and shows the page or the "
+"start screen as it looks on the device - font, margins, headers and footers "
+"from Bookends, the shelves of Bookshelf, style tweaks and patches. Only on "
+"Linux and macOS; there is no official KOReader for Windows, so the area is "
+"missing there.\n"
 "\n"
 "**Installing KOReader** (optional, only needed for this)\n"
 "- Arch/EndeavourOS: **yay -S koreader-bin**\n"
@@ -4018,17 +4084,59 @@ msgid ""
 "KOReader** after installing.\n"
 "\n"
 "**More**\n"
-"- [[suche_filter]]\n"
+"- [[vorschau_werkbank]]\n"
 "- [[vorschau_profil]]\n"
 "- [[vorschau_starten]]\n"
 "- [[vorschau_bildschirm]]\n"
 msgstr ""
 
-#: help.py:548 settings.py:494 settings.py:1048
+#: help.py:547
+msgid "Workbench"
+msgstr ""
+
+#: help.py:547
+msgid ""
+"\n"
+"**View**\n"
+"- **Reading page**: the chosen book, opened. ◀ and ▶ turn pages, so does a "
+"click into the picture (left third back, otherwise forward, as on the "
+"e-reader) and the arrow keys once the picture has the focus.\n"
+"- **Start screen**: KOReader without a book - the file browser or "
+"Bookshelf, whatever the profile starts with. It shows eight sample books "
+"with covers. Covers can appear a moment later; the picture is taken again "
+"after 1.5 s.\n"
+"\n"
+"**Book**\n"
+"- **Sample text** (default): three chapters of Lorem ipsum with title, "
+"author and series, enough for the Bookends placeholders.\n"
+"- A book of the opened library, or **Other file** (toolbar). Its book data "
+"(.sdr) is searched next to the book, on the connected e-reader and in the "
+"backup, so font size and margins are those of the e-reader. From the "
+"library: right-click on a book > **Open in Preview**.\n"
+"\n"
+"**How it works**\n"
+"KOReader starts without a window (SDL offscreen) at the full resolution of "
+"the device ([[vorschau_bildschirm]]); the picture is fitted into the area. "
+"Starting takes about a second, every further picture a tenth of a second. "
+"Changing the view or the book restarts it; **Restart** does it by hand. "
+"Bookbench stops it when closing; if Bookbench crashes, it stops by itself "
+"after 30 seconds.\n"
+"\n"
+"It works on a throw-away copy of the profile (folder vorschau/werkbank), "
+"new at every start: reading position, history and settings of the profile "
+"stay untouched. Only the plugins Bookends and Bookshelf are loaded - other "
+"plugins can lay a full screen over everything. The built-in plugins of "
+"KOReader are there as always.\n"
+"\n"
+"**Open in KOReader** (toolbar) starts the full KOReader in a window as "
+"before, for trying out menus: [[vorschau_starten]].\n"
+msgstr ""
+
+#: help.py:563 settings.py:495 settings.py:1049
 msgid "Profile"
 msgstr ""
 
-#: help.py:548
+#: help.py:563
 msgid ""
 "\n"
 "The preview runs in its own profile in the settings folder (subfolder "
@@ -4050,39 +4158,45 @@ msgid ""
 "profile, book data is always next to the book.\n"
 msgstr ""
 
-#: help.py:555
+#: help.py:570
 msgid "Starting and output"
 msgstr ""
 
-#: help.py:555
+#: help.py:570
 msgid ""
 "\n"
-"**Start** (or double-click)\n"
-"- The selected book is copied with its book data (.sdr) to vorschau/buecher "
-"and opened there. KOReader writes to the book data while reading; that way "
-"the original stays untouched, on the e-reader too.\n"
+"**Open in KOReader** (toolbar)\n"
+"- Starts the full desktop KOReader in a window, with menus - for trying "
+"things out. The workbench keeps running beside it ([[vorschau_werkbank]]).\n"
+"- The selected book (the sample text too) is copied with its book data "
+"(.sdr) to vorschau/buecher and opened there. KOReader writes to the book "
+"data while reading; that way the original stays untouched, on the e-reader "
+"too.\n"
 "- Book data is searched: next to the book, on the connected e-reader (same "
 "file name), in the backup. Without book data the general settings apply, so "
 "font size and margins may differ.\n"
 "- **Other file** shows a book that is not in the opened library.\n"
 "\n"
 "**KOReader output**\n"
-"At the bottom of the area is what KOReader reports at start and while "
-"running. After it closes, the status bar gives the number of warnings and "
-"errors, for example a patch that does not run on the computer because it "
-"needs something specific to the e-reader.\n"
+"Under **Profile, device and output** (click to unfold) is what the KOReader "
+"in the window reports at start and while running; the workbench writes its "
+"own output to vorschau/werkbank/koreader.log. After it closes, the status "
+"bar gives the number of warnings and errors, for example a patch that does "
+"not run on the computer because it needs something specific to the "
+"e-reader.\n"
 msgstr ""
 
-#: help.py:564
+#: help.py:580
 msgid "Screen and device"
 msgstr ""
 
-#: help.py:564
+#: help.py:580
 msgid ""
 "\n"
-"The window copies the screen of a device: size in pixels, pixel density, "
-"colour or black and white (black and white switches off the colours in "
-"KOReader, as on the device). Which device is under the size buttons:\n"
+"The workbench and the window copy the screen of a device: size in pixels, "
+"pixel density, colour or black and white (black and white switches off the "
+"colours in KOReader, as on the device). The workbench always uses the full "
+"size. Which device it is stands under **Profile, device and output**:\n"
 "- **Automatic** (default): the device the profile was taken from (From the "
 "e-reader, or the device noted in the backup), otherwise the connected "
 "e-reader, otherwise the Libra Colour - then with a ⚠.\n"
@@ -4092,8 +4206,8 @@ msgid ""
 "size** for other e-readers with KOReader (pixels in portrait format and ppi "
 "from the data sheet) - [[einst_vorschau]].\n"
 "\n"
-"A Libra Colour has 1264 × 1680 pixels at 300 dpi; hardly any screen is that "
-"tall.\n"
+"For **Open in KOReader** (window) the size is chosen there: a Libra Colour "
+"has 1264 × 1680 pixels at 300 dpi; hardly any screen is that tall.\n"
 "- **Fitted to the screen** takes the height of the screen and lowers the "
 "DPI to match; KOReader sizes fonts and spacing by the DPI, so the page "
 "looks the same, only coarser.\n"
@@ -4104,11 +4218,11 @@ msgid ""
 "of the window.\n"
 msgstr ""
 
-#: help.py:576 help.py:648 settings.py:120 settings.py:446
+#: help.py:592 help.py:664 settings.py:121 settings.py:447
 msgid "Saving and backups"
 msgstr ""
 
-#: help.py:576
+#: help.py:592
 msgid ""
 "\n"
 "**Save** (Ctrl+S) writes all applied changes (yellow) of all books: chapter "
@@ -4135,7 +4249,7 @@ msgid ""
 "information (Cover browser > Extract and cache book information).\n"
 msgstr ""
 
-#: help.py:590
+#: help.py:606
 msgid ""
 "\n"
 "File > **Settings …** opens the settings. The tree on the left has groups "
@@ -4160,11 +4274,11 @@ msgid ""
 "- [[einst_erweitert]]\n"
 msgstr ""
 
-#: help.py:604 settings.py:115 settings.py:320
+#: help.py:620 settings.py:116 settings.py:321
 msgid "Language and theme"
 msgstr ""
 
-#: help.py:604
+#: help.py:620
 msgid ""
 "\n"
 "**Language** (default: automatic)\n"
@@ -4180,11 +4294,11 @@ msgid ""
 "Windows or KDE/GNOME, checked at start.\n"
 msgstr ""
 
-#: help.py:612 settings.py:116 settings.py:334
+#: help.py:628 settings.py:117 settings.py:335
 msgid "Interface"
 msgstr ""
 
-#: help.py:612
+#: help.py:628
 msgid ""
 "\n"
 "- **Status strip next to the lists** (default: on): coloured dots and "
@@ -4205,11 +4319,11 @@ msgid ""
 "Which pictograms are shown where: [[einst_marken]].\n"
 msgstr ""
 
-#: help.py:621 settings.py:117 settings.py:357
+#: help.py:637 settings.py:118 settings.py:358
 msgid "Status symbols"
 msgstr ""
 
-#: help.py:621
+#: help.py:637
 msgid ""
 "\n"
 "One row per pictogram ([[status]]), one column per place:\n"
@@ -4226,11 +4340,11 @@ msgid ""
 "Dictionary, e-reader and \"connected\" only exist in the sidebar.\n"
 msgstr ""
 
-#: help.py:631 settings.py:118 settings.py:390
+#: help.py:647 settings.py:119 settings.py:391
 msgid "Startup"
 msgstr ""
 
-#: help.py:631
+#: help.py:647
 msgid ""
 "\n"
 "- **Open the last folder** (default: on): the books folder that was open "
@@ -4243,11 +4357,11 @@ msgid ""
 "A folder given on the command line (start.py <folder>) is always opened.\n"
 msgstr ""
 
-#: help.py:637 settings.py:119 settings.py:399 updates.py:84 updates.py:92 updates.py:263
+#: help.py:653 settings.py:120 settings.py:400 updates.py:84 updates.py:92 updates.py:263
 msgid "Updates"
 msgstr ""
 
-#: help.py:637
+#: help.py:653
 msgid ""
 "\n"
 "**This copy** says how Bookbench was installed: with the Windows setup, "
@@ -4272,7 +4386,7 @@ msgid ""
 "more than the check needs.\n"
 msgstr ""
 
-#: help.py:648
+#: help.py:664
 msgid ""
 "\n"
 "- **Backup folder** (default: Bookbench Backups in the user folder): books "
@@ -4283,7 +4397,7 @@ msgid ""
 "are deleted when saving.\n"
 msgstr ""
 
-#: help.py:652
+#: help.py:668
 msgid ""
 "\n"
 "- **Subtitle lines per chapter** (default: 1): how many lines below a "
@@ -4297,11 +4411,11 @@ msgid ""
 "reading the books. See also [[kapitel]].\n"
 msgstr ""
 
-#: help.py:658 settings.py:123 settings.py:466
+#: help.py:674 settings.py:124 settings.py:467
 msgid "Blurbs"
 msgstr ""
 
-#: help.py:658
+#: help.py:674
 msgid ""
 "\n"
 "The page shows the order of the sources ([[klappentexte_nachschlagen]]).\n"
@@ -4322,7 +4436,7 @@ msgid ""
 "enter yourself.\n"
 msgstr ""
 
-#: help.py:667
+#: help.py:683
 msgid ""
 "\n"
 "The list of profiles in the order in which they are checked. The first "
@@ -4341,11 +4455,11 @@ msgid ""
 "books; books it already found stay as they are.\n"
 msgstr ""
 
-#: help.py:677 settings.py:126 settings.py:511
+#: help.py:693 settings.py:127 settings.py:512
 msgid "Claude API"
 msgstr ""
 
-#: help.py:677
+#: help.py:693
 msgid ""
 "\n"
 "- **API key**: from console.anthropic.com (account with credit). Empty: the "
@@ -4364,11 +4478,11 @@ msgid ""
 "sent: [[kosten]].\n"
 msgstr ""
 
-#: help.py:684 settings.py:127 settings.py:618
+#: help.py:700 settings.py:128 settings.py:619
 msgid "Covers"
 msgstr ""
 
-#: help.py:684
+#: help.py:700
 msgid ""
 "\n"
 "**Inserting a new cover** ([[cover_bild]])\n"
@@ -4384,7 +4498,7 @@ msgid ""
 "Metadata area and its filter \"Small cover\".\n"
 msgstr ""
 
-#: help.py:692
+#: help.py:708
 msgid ""
 "\n"
 "**Sources** (both free, no key needed; Google Books uses your own key if "
@@ -4401,7 +4515,7 @@ msgid ""
 "most 3 per book and uses the largest.\n"
 msgstr ""
 
-#: help.py:701
+#: help.py:717
 msgid ""
 "\n"
 "**Own fields** ([[metadaten_felder]])\n"
@@ -4415,7 +4529,7 @@ msgid ""
 "the opened folder, with Calibre's labels. Delete the ones you do not want.\n"
 msgstr ""
 
-#: help.py:707
+#: help.py:723
 msgid ""
 "\n"
 "- **Compare with Calibre** (default: on): Bookbench reads Calibre's "
@@ -4431,7 +4545,7 @@ msgid ""
 "independently of this setting: [[calibre_import]].\n"
 msgstr ""
 
-#: help.py:713
+#: help.py:729
 msgid ""
 "\n"
 "**Detection**\n"
@@ -4455,7 +4569,7 @@ msgid ""
 "written to the e-reader in this session ([[kobo_auswerfen]]).\n"
 msgstr ""
 
-#: help.py:727
+#: help.py:743
 msgid ""
 "\n"
 "Only on Linux and macOS.\n"
@@ -4470,11 +4584,11 @@ msgid ""
 "KOReader. See [[vorschau_bildschirm]].\n"
 msgstr ""
 
-#: help.py:733 settings.py:134 settings.py:824
+#: help.py:749 settings.py:135 settings.py:825
 msgid "Advanced"
 msgstr ""
 
-#: help.py:733
+#: help.py:749
 msgid ""
 "\n"
 "**Files of the program**\n"
@@ -4498,11 +4612,11 @@ msgid ""
 "key.\n"
 msgstr ""
 
-#: help.py:747
+#: help.py:763
 msgid "Installing and updating"
 msgstr ""
 
-#: help.py:747
+#: help.py:763
 msgid ""
 "\n"
 "**Installing**\n"
@@ -4544,11 +4658,11 @@ msgid ""
 "installation ([[vorschau]]).\n"
 msgstr ""
 
-#: help.py:765
+#: help.py:781
 msgid "Troubleshooting"
 msgstr ""
 
-#: help.py:765
+#: help.py:781
 msgid ""
 "\n"
 "**KOReader still shows the old chapter names, blurb or cover**\n"
@@ -4594,8 +4708,13 @@ msgid ""
 "\n"
 "**Preview: window too large or patches fail**\n"
 "- Choose \"Fitted to the screen\" ([[vorschau_bildschirm]]). Patches that "
-"need Kobo hardware fail on the computer; the output at the bottom of the "
-"area says which.\n"
+"need Kobo hardware fail on the computer; the output under **Profile, device "
+"and output** says which (workbench: vorschau/werkbank/koreader.log).\n"
+"\n"
+"**Preview: the workbench shows no picture**\n"
+"- The line under ◀ ▶ says what KOReader reports. **Restart** tries again; a "
+"profile from the e-reader is needed ([[vorschau_profil]]). If KOReader "
+"itself does not start, the same causes as for the window apply (below).\n"
 "\n"
 "**Preview: KOReader closes at once (\"device/kobo/device.lua\" in the "
 "output)**\n"
@@ -4619,15 +4738,15 @@ msgid ""
 "are in the backup folder ([[speichern]]).\n"
 msgstr ""
 
-#: help.py:852
+#: help.py:871
 msgid "Back"
 msgstr ""
 
-#: help.py:911
+#: help.py:930
 msgid "{n} topics found"
 msgstr ""
 
-#: help.py:912
+#: help.py:931
 msgid "Nothing found."
 msgstr ""
 
@@ -4803,7 +4922,7 @@ msgstr ""
 msgid "connected"
 msgstr ""
 
-#: markers.py:54 settings.py:352
+#: markers.py:54 settings.py:353
 msgid "Sidebar"
 msgstr ""
 
@@ -4907,319 +5026,319 @@ msgstr ""
 msgid "{feld} must be {art}."
 msgstr ""
 
-#: settings.py:66
+#: settings.py:67
 msgid "Web search"
 msgstr ""
 
-#: settings.py:97
+#: settings.py:98
 msgid "Subtitle"
 msgstr ""
 
-#: settings.py:114
+#: settings.py:115
 msgid "General"
 msgstr ""
 
-#: settings.py:114
+#: settings.py:115
 msgid "Language, look, start, updates"
 msgstr ""
 
-#: settings.py:115
+#: settings.py:116
 msgid "Language of the interface, light or dark"
 msgstr ""
 
-#: settings.py:116
+#: settings.py:117
 msgid "Status strip, tooltips, covers in the headers, sidebar"
 msgstr ""
 
-#: settings.py:117
+#: settings.py:118
 msgid "Which symbols are shown where"
 msgstr ""
 
-#: settings.py:118
+#: settings.py:119
 msgid "What opens when the program starts"
 msgstr ""
 
-#: settings.py:119
+#: settings.py:120
 msgid "Checking for new versions"
 msgstr ""
 
-#: settings.py:120
+#: settings.py:121
 msgid "Backup folder and how many backups are kept"
 msgstr ""
 
-#: settings.py:121
+#: settings.py:122
 msgid "Chapters, blurbs, covers and metadata"
 msgstr ""
 
-#: settings.py:122
+#: settings.py:123
 msgid "How chapter names are taken from the book text"
 msgstr ""
 
-#: settings.py:123
+#: settings.py:124
 msgid "Order of the sources, free sources, checks"
 msgstr ""
 
-#: settings.py:125
+#: settings.py:126
 msgid "Where Claude looks, per publisher, series or author"
 msgstr ""
 
-#: settings.py:126
+#: settings.py:127
 msgid "Key, model, cost estimate"
 msgstr ""
 
-#: settings.py:127
+#: settings.py:128
 msgid "Inserting and marking covers"
 msgstr ""
 
-#: settings.py:128
+#: settings.py:129
 msgid "Sources and which images count"
 msgstr ""
 
-#: settings.py:129
+#: settings.py:130
 msgid "Own fields from Calibre columns, e.g. a subtitle"
 msgstr ""
 
-#: settings.py:130
+#: settings.py:131
 msgid "Comparing with Calibre's metadata.calibre on or off"
 msgstr ""
 
-#: settings.py:131
+#: settings.py:132
 msgid "E-reader and preview"
 msgstr ""
 
-#: settings.py:132
+#: settings.py:133
 msgid "Detection, backups, dictionaries, ejecting"
 msgstr ""
 
-#: settings.py:133
+#: settings.py:134
 msgid "Desktop KOReader and the device shown"
 msgstr ""
 
-#: settings.py:134
+#: settings.py:135
 msgid "Files of the program, cache, export, reset"
 msgstr ""
 
-#: settings.py:310
+#: settings.py:311
 msgid "Automatic (system language)"
 msgstr ""
 
-#: settings.py:327
+#: settings.py:328
 msgid ""
 "Automatic: German if the system language is German, otherwise English. "
 "Changing it restarts the program; folder, area, selected book and window "
 "stay as they are."
 msgstr ""
 
-#: settings.py:329
+#: settings.py:330
 msgid "Theme"
 msgstr ""
 
-#: settings.py:331
+#: settings.py:332
 msgid ""
 "Like the system: follows the light/dark setting of Windows or KDE/GNOME, "
 "checked at start."
 msgstr ""
 
-#: settings.py:335
+#: settings.py:336
 msgid "Lists"
 msgstr ""
 
-#: settings.py:336
+#: settings.py:337
 msgid "Status strip next to the lists"
 msgstr ""
 
-#: settings.py:337
+#: settings.py:338
 msgid ""
 "Coloured dots (changed, applied, saved) and ⚠ to the right of the book "
 "lists."
 msgstr ""
 
-#: settings.py:338
+#: settings.py:339
 msgid "Tooltips"
 msgstr ""
 
-#: settings.py:339
+#: settings.py:340
 msgid "Show tooltips"
 msgstr ""
 
-#: settings.py:339
+#: settings.py:340
 msgid "Explanations when the mouse stays over a button."
 msgstr ""
 
-#: settings.py:340
+#: settings.py:341
 msgid "Delay (ms):"
 msgstr ""
 
-#: settings.py:341
+#: settings.py:342
 msgid "How long the mouse has to stay still before the explanation appears."
 msgstr ""
 
-#: settings.py:342
+#: settings.py:343
 msgid "Covers in the headers"
 msgstr ""
 
-#: settings.py:343
+#: settings.py:344
 msgid "Show cover in Chapters"
 msgstr ""
 
-#: settings.py:344
+#: settings.py:345
 msgid ""
 "Small cover next to the book title; a click shows it large. JPEG images "
 "need Pillow (pip install pillow)."
 msgstr ""
 
-#: settings.py:346
+#: settings.py:347
 msgid "Height (px):"
 msgstr ""
 
-#: settings.py:346
+#: settings.py:347
 msgid "Default 96."
 msgstr ""
 
-#: settings.py:348
+#: settings.py:349
 msgid "Double-click on a book opens it in:"
 msgstr ""
 
-#: settings.py:350
+#: settings.py:351
 msgid ""
 "Right-click on a book offers all of them. KOReader: selects the book in the "
 "Preview and starts the desktop KOReader with it."
 msgstr ""
 
-#: settings.py:353
+#: settings.py:354
 msgid "Sidebar expanded"
 msgstr ""
 
-#: settings.py:354
+#: settings.py:355
 msgid ""
 "With names and counters; collapsed only the symbols. Ctrl+B switches at any "
 "time."
 msgstr ""
 
-#: settings.py:358
+#: settings.py:359
 msgid ""
 "The small symbols next to the books and in the sidebar (no cover, no blurb, "
 "questionable chapter names …). Switched off, a symbol is only hidden: "
 "filters and sorting by status still count it."
 msgstr ""
 
-#: settings.py:379
+#: settings.py:380
 msgid "All on"
 msgstr ""
 
-#: settings.py:380
+#: settings.py:381
 msgid "All off"
 msgstr ""
 
-#: settings.py:381
+#: settings.py:382
 msgid ""
 "Book lists: the narrow lists in Chapters and Metadata. Library: the Status "
 "column of the library. The coloured dot for changed, applied and saved "
 "stays; the whole strip can be switched off under Interface."
 msgstr ""
 
-#: settings.py:391
+#: settings.py:392
 msgid "Open the last folder"
 msgstr ""
 
-#: settings.py:392
+#: settings.py:393
 msgid ""
 "The books folder that was open when the program was last closed, if it "
 "still exists (e.g. the e-reader is connected). Otherwise the program starts "
 "empty."
 msgstr ""
 
-#: settings.py:394
+#: settings.py:395
 msgid "Area at start"
 msgstr ""
 
-#: settings.py:395
+#: settings.py:396
 msgid "The last area used"
 msgstr ""
 
-#: settings.py:401
+#: settings.py:402
 msgid "This copy"
 msgstr ""
 
-#: settings.py:402
+#: settings.py:403
 msgid "Installed with the Windows setup: updates are installed by the setup."
 msgstr ""
 
-#: settings.py:403
+#: settings.py:404
 msgid ""
 "Installed with install.sh: updates replace the program folder {ordner}."
 msgstr ""
 
-#: settings.py:405
+#: settings.py:406
 msgid ""
 "Runs from the source code ({ordner}), e.g. a git clone: updates are only "
 "shown, not installed, and there is no automatic check."
 msgstr ""
 
-#: settings.py:410
+#: settings.py:411
 msgid "Check now"
 msgstr ""
 
-#: settings.py:412
+#: settings.py:413
 msgid "Last check: {wann}"
 msgstr ""
 
-#: settings.py:414
+#: settings.py:415
 msgid "Automatic check"
 msgstr ""
 
-#: settings.py:415
+#: settings.py:416
 msgid "Off"
 msgstr ""
 
-#: settings.py:415
+#: settings.py:416
 msgid "At every start"
 msgstr ""
 
-#: settings.py:416
+#: settings.py:417
 msgid "At start, at most once a day"
 msgstr ""
 
-#: settings.py:417
+#: settings.py:418
 msgid "At start, at most once a week"
 msgstr ""
 
-#: settings.py:418
+#: settings.py:419
 msgid ""
 "Looks a few seconds after the start whether GitHub has a newer release. "
 "Only a new version shows a window; errors (no network) only appear in the "
 "status line."
 msgstr ""
 
-#: settings.py:424
+#: settings.py:425
 msgid "Skipped version: {version}"
 msgstr ""
 
-#: settings.py:429
+#: settings.py:430
 msgid "Skipped version: none"
 msgstr ""
 
-#: settings.py:430
+#: settings.py:431
 msgid "Show again"
 msgstr ""
 
-#: settings.py:431
+#: settings.py:432
 msgid "Include pre-releases"
 msgstr ""
 
-#: settings.py:432
+#: settings.py:433
 msgid "Also offers releases marked as pre-release on GitHub (test versions)."
 msgstr ""
 
-#: settings.py:433
+#: settings.py:434
 msgid "The releases come from github.com/{repo}."
 msgstr ""
 
-#: settings.py:447
+#: settings.py:448
 msgid "Backup folder"
 msgstr ""
 
-#: settings.py:448
+#: settings.py:449
 msgid ""
 "Before each save the book is copied here (name with date and time). Do not "
 "put it on the e-reader, or KOReader shows the backups as books. The "
@@ -5227,59 +5346,59 @@ msgid ""
 "dictionaries into Wörterbücher."
 msgstr ""
 
-#: settings.py:452
+#: settings.py:453
 msgid "Backups per book:"
 msgstr ""
 
-#: settings.py:453
+#: settings.py:454
 msgid "The newest ones are kept, older ones are deleted when saving."
 msgstr ""
 
-#: settings.py:458
+#: settings.py:459
 msgid "Subtitle lines per chapter:"
 msgstr ""
 
-#: settings.py:459
+#: settings.py:460
 msgid ""
 "1: only the first line below the number. Some books have three; with 3 all "
 "of them are joined with \" / \". Applies after reloading (F5)."
 msgstr ""
 
-#: settings.py:461
+#: settings.py:462
 msgid "Write entries in capitals normally"
 msgstr ""
 
-#: settings.py:462
+#: settings.py:463
 msgid ""
 "THE SHIRE becomes The Shire, A LONG-EXPECTED PARTY becomes A Long-Expected "
 "Party. Applies after reloading (F5)."
 msgstr ""
 
-#: settings.py:467
+#: settings.py:468
 msgid ""
 "Order when looking up: the EPUB itself, Calibre (From Calibre), the free "
 "sources, then Claude with the matching source profile."
 msgstr ""
 
-#: settings.py:469
+#: settings.py:470
 msgid "Free sources"
 msgstr ""
 
-#: settings.py:470
+#: settings.py:471
 msgid "Ask Google Books and Open Library first"
 msgstr ""
 
-#: settings.py:471
+#: settings.py:472
 msgid ""
 "No key, no cost. Claude is only asked if they have nothing. Switched off, "
 "every look-up goes to Claude."
 msgstr ""
 
-#: settings.py:473
+#: settings.py:474
 msgid "Own Google Books API key (optional)"
 msgstr ""
 
-#: settings.py:474
+#: settings.py:475
 msgid ""
 "Without a key, Google Books often answers \"quota exceeded\": everyone "
 "without a key shares one daily quota. With your own key (free, Google Cloud "
@@ -5288,236 +5407,236 @@ msgid ""
 "settings file."
 msgstr ""
 
-#: settings.py:478
+#: settings.py:479
 msgid "Checks"
 msgstr ""
 
-#: settings.py:479
+#: settings.py:480
 msgid "Shortest blurb (characters):"
 msgstr ""
 
-#: settings.py:480
+#: settings.py:481
 msgid "Shorter texts from a source are not taken (often only a teaser line)."
 msgstr ""
 
-#: settings.py:481
+#: settings.py:482
 msgid "Longest blurb (characters):"
 msgstr ""
 
-#: settings.py:482
+#: settings.py:483
 msgid ""
 "Longer texts are not taken (usually a plot summary or a whole article)."
 msgstr ""
 
-#: settings.py:486
+#: settings.py:487
 msgid ""
 "A profile says where Claude looks for a blurb. The first active profile "
 "that fits the book is used; order with Up/Down. Double-click edits."
 msgstr ""
 
-#: settings.py:495 settings.py:1001
+#: settings.py:496 settings.py:1002
 msgid "Applies to"
 msgstr ""
 
-#: settings.py:502
+#: settings.py:503
 msgid "Edit …"
 msgstr ""
 
-#: settings.py:503 settings.py:662
+#: settings.py:504 settings.py:663
 msgid "Delete"
 msgstr ""
 
-#: settings.py:504
+#: settings.py:505
 msgid "Defaults"
 msgstr ""
 
-#: settings.py:506
+#: settings.py:507
 msgid ""
 "Defaults puts the included profiles (Lexicanum, web search) back; your own "
 "profiles are removed."
 msgstr ""
 
-#: settings.py:512
+#: settings.py:513
 msgid "API key"
 msgstr ""
 
-#: settings.py:512
+#: settings.py:513
 msgid ""
 "From console.anthropic.com. Empty: environment variable ANTHROPIC_API_KEY. "
 "Stored in plain text in the settings file."
 msgstr ""
 
-#: settings.py:515
+#: settings.py:516
 msgid "Model"
 msgstr ""
 
-#: settings.py:523
+#: settings.py:524
 msgid "Load list"
 msgstr ""
 
-#: settings.py:524
+#: settings.py:525
 msgid ""
 "Haiku is enough for looking things up and is the cheapest. Load list asks "
 "Anthropic with the API key which models there are; typing a name also works."
 msgstr ""
 
-#: settings.py:529
+#: settings.py:530
 msgid "Estimated cost per book ($):"
 msgstr ""
 
-#: settings.py:530
+#: settings.py:531
 msgid ""
 "Only for the question before \"Look up all\"; the real cost depends on page "
 "length and searches."
 msgstr ""
 
-#: settings.py:537
+#: settings.py:538
 msgid "Enter the API key first."
 msgstr ""
 
-#: settings.py:539
+#: settings.py:540
 msgid "Asking Anthropic …"
 msgstr ""
 
-#: settings.py:545
+#: settings.py:546
 msgid "Anthropic returned no models."
 msgstr ""
 
-#: settings.py:547
+#: settings.py:548
 msgid "The package anthropic is missing (pip install anthropic)."
 msgstr ""
 
-#: settings.py:549
+#: settings.py:550
 msgid "Could not load the models ({fehler})."
 msgstr ""
 
-#: settings.py:559
+#: settings.py:560
 msgid "{n} model loaded; the list is newest first."
 msgid_plural "{n} models loaded; the list is newest first."
 msgstr[0] ""
 msgstr[1] ""
 
-#: settings.py:572
+#: settings.py:573
 msgid "all books"
 msgstr ""
 
-#: settings.py:573
+#: settings.py:574
 msgid "(off) {text}"
 msgstr ""
 
-#: settings.py:589
+#: settings.py:590
 msgid "New profile"
 msgstr ""
 
-#: settings.py:619
+#: settings.py:620
 msgid "Inserting a new cover"
 msgstr ""
 
-#: settings.py:620
+#: settings.py:621
 msgid "Shrink to at most this height (px):"
 msgstr ""
 
-#: settings.py:621
+#: settings.py:622
 msgid ""
 "0: never shrink. Your e-reader shows at most its screen height (e.g. 1680 "
 "px); larger images only make the file bigger. Images are never enlarged."
 msgstr ""
 
-#: settings.py:623
+#: settings.py:624
 msgid "JPEG quality:"
 msgstr ""
 
-#: settings.py:624
+#: settings.py:625
 msgid ""
 "Only when an image is converted or shrunk; otherwise it is taken unchanged. "
 "The new cover keeps the format of the old one (JPEG stays JPEG)."
 msgstr ""
 
-#: settings.py:626
+#: settings.py:627
 msgid "Marking"
 msgstr ""
 
-#: settings.py:627
+#: settings.py:628
 msgid "Mark covers below this height (px):"
 msgstr ""
 
-#: settings.py:628
+#: settings.py:629
 msgid ""
 "Shown with ⚠ in the Metadata area and in the filter \"Small cover\". 0: "
 "never."
 msgstr ""
 
-#: settings.py:632
+#: settings.py:633
 msgid "Sources"
 msgstr ""
 
-#: settings.py:633
+#: settings.py:634
 msgid "Open Library"
 msgstr ""
 
-#: settings.py:633
+#: settings.py:634
 msgid ""
 "Free, no key. Often large scans of the cover, sometimes of another edition."
 msgstr ""
 
-#: settings.py:635
+#: settings.py:636
 msgid "Google Books"
 msgstr ""
 
-#: settings.py:635
+#: settings.py:636
 msgid ""
 "Free. Usually smaller images. Uses your own Google Books key if there is "
 "one (Blurbs)."
 msgstr ""
 
-#: settings.py:637
+#: settings.py:638
 msgid "Which images count"
 msgstr ""
 
-#: settings.py:638
+#: settings.py:639
 msgid "Smallest height (px):"
 msgstr ""
 
-#: settings.py:639
+#: settings.py:640
 msgid "Smaller images are left out (preview thumbnails)."
 msgstr ""
 
-#: settings.py:640
+#: settings.py:641
 msgid "At most this many to choose from:"
 msgstr ""
 
-#: settings.py:641
+#: settings.py:642
 msgid "Each image is downloaded, so more takes longer."
 msgstr ""
 
-#: settings.py:646
+#: settings.py:647
 msgid ""
 "Extra fields in the Metadata area, one per Calibre column (Calibre: "
 "Preferences > Add your own columns). Bookbench reads and writes them the "
 "way Calibre stores them in the book."
 msgstr ""
 
-#: settings.py:654
+#: settings.py:655
 msgid "Lookup name"
 msgstr ""
 
-#: settings.py:655
+#: settings.py:656
 msgid "Label"
 msgstr ""
 
-#: settings.py:668
+#: settings.py:669
 msgid "Lookup name:"
 msgstr ""
 
-#: settings.py:670
+#: settings.py:671
 msgid "Label:"
 msgstr ""
 
-#: settings.py:672
+#: settings.py:673
 msgid "Add / change"
 msgstr ""
 
-#: settings.py:673
+#: settings.py:674
 msgid ""
 "Lookup name as in Calibre, with #, e.g. #subtitle; the label is what "
 "Bookbench shows. From Calibre adds all own columns found in the "
@@ -5525,21 +5644,21 @@ msgid ""
 "or comma separated) are shown joined with \" & \" or \", \"."
 msgstr ""
 
-#: settings.py:737
+#: settings.py:738
 msgid "{n} column added."
 msgid_plural "{n} columns added."
 msgstr[0] ""
 msgstr[1] ""
 
-#: settings.py:738
+#: settings.py:739
 msgid "No own columns found (open a folder with metadata.calibre first)."
 msgstr ""
 
-#: settings.py:743
+#: settings.py:744
 msgid "Compare with Calibre"
 msgstr ""
 
-#: settings.py:744
+#: settings.py:745
 msgid ""
 "Reads Calibre's metadata.calibre (on the e-reader or in the opened folder) "
 "and shows its values: in the Metadata area for comparing, in Blurbs and the "
@@ -5548,77 +5667,77 @@ msgid ""
 "applies after reloading (F5)."
 msgstr ""
 
-#: settings.py:752
+#: settings.py:753
 msgid "Detection"
 msgstr ""
 
-#: settings.py:753
+#: settings.py:754
 msgid "Look for the e-reader every (seconds):"
 msgstr ""
 
-#: settings.py:754
+#: settings.py:755
 msgid ""
 "While Bookbench is open it checks this often whether an e-reader is "
 "connected or unplugged."
 msgstr ""
 
-#: settings.py:756
+#: settings.py:757
 msgid "When an e-reader is connected:"
 msgstr ""
 
-#: settings.py:758
+#: settings.py:759
 msgid "Open its books (ask if another folder is open)"
 msgstr ""
 
-#: settings.py:759
+#: settings.py:760
 msgid "Always ask whether to open its books"
 msgstr ""
 
-#: settings.py:760
+#: settings.py:761
 msgid "Do nothing (open with Books in the E-reader area)"
 msgstr ""
 
-#: settings.py:761
+#: settings.py:762
 msgid "Backups"
 msgstr ""
 
-#: settings.py:762
+#: settings.py:763
 msgid "Backups of the KOReader settings:"
 msgstr ""
 
-#: settings.py:763
+#: settings.py:764
 msgid ""
 "This many stay in the KOReader subfolder of the backup folder; older ones "
 "are deleted. This includes the backup made before each restore."
 msgstr ""
 
-#: settings.py:765
+#: settings.py:766
 msgid "Dictionaries"
 msgstr ""
 
-#: settings.py:766
+#: settings.py:767
 msgid "Dictionaries (folder on the computer)"
 msgstr ""
 
-#: settings.py:767
+#: settings.py:768
 msgid ""
 "A dictionary folder (with an .ifo file, e.g. My-Dictionary) or a folder "
 "with several of them."
 msgstr ""
 
-#: settings.py:770
+#: settings.py:771
 msgid "Remind me to eject when quitting"
 msgstr ""
 
-#: settings.py:771
+#: settings.py:772
 msgid "Only if something was written to the e-reader in this session."
 msgstr ""
 
-#: settings.py:775
+#: settings.py:776
 msgid "Desktop KOReader (optional)"
 msgstr ""
 
-#: settings.py:776
+#: settings.py:777
 msgid ""
 "Empty: searched for (koreader in PATH, AppImage in ~/Applications or "
 "~/Downloads, Flatpak). Only fill in if it is somewhere else. flatpak: "
@@ -5626,59 +5745,59 @@ msgid ""
 "installed normally."
 msgstr ""
 
-#: settings.py:780
+#: settings.py:781
 msgid "Device shown"
 msgstr ""
 
-#: settings.py:781
+#: settings.py:782
 msgid "Automatic (device of the profile, otherwise the connected e-reader)"
 msgstr ""
 
-#: settings.py:795
+#: settings.py:796
 msgid ""
 "Size and pixel density of the window, and colour or black and white. Tolino "
 "devices from 2024 on are Kobo hardware and are listed too."
 msgstr ""
 
-#: settings.py:803
+#: settings.py:804
 msgid "Width:"
 msgstr ""
 
-#: settings.py:803
+#: settings.py:804
 msgid "Height:"
 msgstr ""
 
-#: settings.py:804
+#: settings.py:805
 msgid "ppi:"
 msgstr ""
 
-#: settings.py:807
+#: settings.py:808
 msgid "Colour screen"
 msgstr ""
 
-#: settings.py:809
+#: settings.py:810
 msgid ""
 "Pixels in portrait format. For other e-readers with KOReader: see the "
 "maker's data sheet."
 msgstr ""
 
-#: settings.py:825
+#: settings.py:826
 msgid "Files of the program"
 msgstr ""
 
-#: settings.py:830
+#: settings.py:831
 msgid "Chapter decisions"
 msgstr ""
 
-#: settings.py:831 settings.py:841 settings.py:867
+#: settings.py:832 settings.py:842 settings.py:868
 msgid "Blurb cache"
 msgstr ""
 
-#: settings.py:837
+#: settings.py:838
 msgid "Open settings folder"
 msgstr ""
 
-#: settings.py:838
+#: settings.py:839
 msgid ""
 "The chapter decisions remember which names were applied, so they are "
 "suggested again for other copies of the same book. The cache holds "
@@ -5686,144 +5805,144 @@ msgid ""
 "nothing."
 msgstr ""
 
-#: settings.py:846
+#: settings.py:847
 msgid "Empty …"
 msgstr ""
 
-#: settings.py:848
+#: settings.py:849
 msgid "Afterwards everything is looked up again (and Claude costs again)."
 msgstr ""
 
-#: settings.py:849
+#: settings.py:850
 msgid "Export and import"
 msgstr ""
 
-#: settings.py:852
+#: settings.py:853
 msgid "Export settings …"
 msgstr ""
 
-#: settings.py:853
+#: settings.py:854
 msgid "Import settings …"
 msgstr ""
 
-#: settings.py:854
+#: settings.py:855
 msgid ""
 "A JSON file, e.g. to take the settings to another computer. It contains the "
 "API keys. Importing replaces the current settings; the language applies at "
 "the next start."
 msgstr ""
 
-#: settings.py:856 settings.py:908
+#: settings.py:857 settings.py:909
 msgid "Reset"
 msgstr ""
 
-#: settings.py:857
+#: settings.py:858
 msgid "Reset all settings …"
 msgstr ""
 
-#: settings.py:858
+#: settings.py:859
 msgid ""
 "Everything back to the defaults. Kept: opened folders, the list of "
 "dictionaries, window size, language and the API keys."
 msgstr ""
 
-#: settings.py:867
+#: settings.py:868
 msgid "Empty the blurb cache?"
 msgstr ""
 
-#: settings.py:874 settings.py:883
+#: settings.py:875 settings.py:884
 msgid "Export settings"
 msgstr ""
 
-#: settings.py:885
+#: settings.py:886
 msgid "Settings exported: {datei}"
 msgstr ""
 
-#: settings.py:888 settings.py:897
+#: settings.py:889 settings.py:898
 msgid "Import settings"
 msgstr ""
 
-#: settings.py:895
+#: settings.py:896
 msgid "not a settings file"
 msgstr ""
 
-#: settings.py:902
+#: settings.py:903
 msgid "Settings imported from {datei}."
 msgstr ""
 
-#: settings.py:908
+#: settings.py:909
 msgid "Reset all settings to the defaults?"
 msgstr ""
 
-#: settings.py:915
+#: settings.py:916
 msgid "All settings reset to the defaults."
 msgstr ""
 
-#: settings.py:983
+#: settings.py:984
 msgid "Source profile"
 msgstr ""
 
-#: settings.py:997
+#: settings.py:998
 msgid "Name:"
 msgstr ""
 
-#: settings.py:1000
+#: settings.py:1001
 msgid "Active"
 msgstr ""
 
-#: settings.py:1004
+#: settings.py:1005
 msgid "Publisher:"
 msgstr ""
 
-#: settings.py:1004
+#: settings.py:1005
 msgid "Series:"
 msgstr ""
 
-#: settings.py:1005
+#: settings.py:1006
 msgid "Author:"
 msgstr ""
 
-#: settings.py:1008
+#: settings.py:1009
 msgid ""
 "Parts of names, separated by commas. One match is enough. All empty: every "
 "book."
 msgstr ""
 
-#: settings.py:1009
+#: settings.py:1010
 msgid "Where Claude looks"
 msgstr ""
 
-#: settings.py:1010
+#: settings.py:1011
 msgid "Pages to fetch (one address per line, in this order):"
 msgstr ""
 
-#: settings.py:1020
+#: settings.py:1021
 msgid ""
 "Placeholders: {title}, {author}, {series} as a wiki page name, {title_q} "
 "and {author_q} for search addresses, {base} = title without \"Omnibus\". "
 "Empty: search only."
 msgstr ""
 
-#: settings.py:1024
+#: settings.py:1025
 msgid "Further allowed sites:"
 msgstr ""
 
-#: settings.py:1025
+#: settings.py:1026
 msgid "Section with the blurb:"
 msgstr ""
 
-#: settings.py:1028
+#: settings.py:1029
 msgid ""
 "Further sites separated by commas, e.g. tor.com; the sites of the addresses "
 "above are always allowed. Section and topic are optional hints for Claude, "
 "e.g. \"Official Description\" or \"Star Wars\"."
 msgstr ""
 
-#: settings.py:1031
+#: settings.py:1032
 msgid "Web search if no page fits"
 msgstr ""
 
-#: settings.py:1032
+#: settings.py:1033
 msgid "Only in the allowed sites; without any, on the whole web."
 msgstr ""
 

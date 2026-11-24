@@ -40,6 +40,7 @@ STANDARD = {
     "woerterbuecher": [], "woerterbuch_aktiv": "",
     "koreader_pfad": "", "vorschau_groesse": "passend", "sprache": "auto",
     "vorschau_geraet": "auto", "vorschau_eigen": [1264, 1680, 300, False],   # eigen: Breite, Höhe, ppi, Farbe
+    "werkbank_modus": "lesen", "werkbank_details": False,           # Vorschau als Werkbank (seit 1.4)
     "start_ordner": True, "start_bereich": "bibliothek", "bereich_zuletzt": "bibliothek",
     "tooltip_verzoegerung": 600, "cover_kopf_hoehe": 96, "kt_min": 80, "kt_max": 4000, "kt_kosten": 0.015,
     "cover_min_hoehe": 300, "cover_anzahl": 8, "kobo_suche_sekunden": 3,

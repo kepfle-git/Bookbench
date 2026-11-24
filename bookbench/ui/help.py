@@ -19,7 +19,7 @@ import keller_theme as kth
 from bookbench.i18n import _
 
 PROGRAMM = "Bookbench"
-VERSION = "1.3"
+VERSION = "1.4-beta1"
 
 # (Elternthema, Kennung, Titel, Text). Übersetzt beim Import. Text: **fett**, Aufzählungen mit "-",
 # [[kennung]] = Verweis.
@@ -76,7 +76,7 @@ The strip can be switched off: Settings > General > Interface ([[einst_oberflaec
 - **Ctrl+O** open a folder, **F5** reload it
 - **Ctrl+S** save
 - **Ctrl+Enter** apply (current book, or the dictionary form)
-- **Ctrl+F** search field of the current area (Chapters, Metadata, Preview, Dictionary), otherwise of the library; **Esc** in a search field empties it
+- **Ctrl+F** search field of the current area (Chapters, Metadata, Dictionary), otherwise of the library; **Esc** in a search field empties it
 - **Ctrl+B** collapse and expand the sidebar
 - **Ctrl+1 … 6** choose an area in the order of the sidebar (6: Preview, Linux/macOS only)
 - **F1** help for the current area; in the settings: help for the page shown
@@ -134,10 +134,10 @@ The sidebar on the left switches between the areas (Ctrl+1 … 6):
 
 The toolbar has the buttons of the current area on the left; on the right, separated, are the ones that always apply: Open, Reload, Save and Help. [[speichern]] applies to all book areas together.
 
-The **book lists** on the left of Chapters, Metadata and Preview (and the list of the dictionary) can be made wider or narrower by dragging the divider to their right; the width is remembered, a double-click on the divider restores the default. A name that does not fit is shown completely below it when the mouse is over it.
+The **book lists** on the left of Chapters and Metadata (and the list of the dictionary; in the Preview the left column) can be made wider or narrower by dragging the divider to their right; the width is remembered, a double-click on the divider restores the default. A name that does not fit is shown completely below it when the mouse is over it.
 """)),
     ("bereiche", "suche_filter", _("Search and filters in the lists"), _("""
-Above the book lists of **Chapters**, **Metadata** and **Preview** there is a search field and (except in Preview) a filter. Each list has its own; they do not affect each other or the library.
+Above the book lists of **Chapters** and **Metadata** there is a search field and a filter (the Preview has a book selection instead of a list since 1.4). Each list has its own; they do not affect each other or the library.
 
 - **Search** finds parts of the title, series or author, case does not matter. **✕** or **Esc** in the field empties search and filter.
 - When a filter is active, the line above says how many books are shown: "Books: 3 of 12".
@@ -149,7 +149,6 @@ Above the book lists of **Chapters**, **Metadata** and **Preview** there is a se
 **Filters**
 - **Chapters**: With suggestions, Questionable names (⚠, not yet decided), Some without names (single entries only with a number), Changed chapters (applied or edited, not yet saved).
 - **Metadata**: Changed, No blurb, Blurb only in Calibre, Differs from Calibre, No author sort, No language, No ISBN, Edited in KOReader, No cover, Small cover (below the limit in [[einst_cover]]).
-- **Preview**: search only.
 
 Search and filters are not remembered; after a restart all books are shown again.
 """)),
@@ -531,7 +530,7 @@ On Linux ejecting fails while a program still has a file or folder on the e-read
 - That KDE opens the file manager when the e-reader is connected can be switched off in the KDE system settings (removable storage / device actions).
 """)),
     ("bereiche", "vorschau", _("Preview"), _("""
-Shows a book in the **desktop KOReader** as it looks on the device: font, margins, headers and footers from Bookends, style tweaks and patches. Only on Linux and macOS; there is no official KOReader for Windows, so the area is missing there.
+The **KOReader workbench**: the desktop KOReader runs invisibly in the background with the settings from your e-reader and shows the page or the start screen as it looks on the device - font, margins, headers and footers from Bookends, the shelves of Bookshelf, style tweaks and patches. Only on Linux and macOS; there is no official KOReader for Windows, so the area is missing there.
 
 **Installing KOReader** (optional, only needed for this)
 - Arch/EndeavourOS: **yay -S koreader-bin**
@@ -540,10 +539,26 @@ Shows a book in the **desktop KOReader** as it looks on the device: font, margin
 It is searched in this order: own path ([[einst_vorschau]]), koreader in PATH, macOS applications folder, AppImage, Flatpak. Preview menu > **Find KOReader** after installing.
 
 **More**
-- [[suche_filter]]
+- [[vorschau_werkbank]]
 - [[vorschau_profil]]
 - [[vorschau_starten]]
 - [[vorschau_bildschirm]]
+""")),
+    ("vorschau", "vorschau_werkbank", _("Workbench"), _("""
+**View**
+- **Reading page**: the chosen book, opened. ◀ and ▶ turn pages, so does a click into the picture (left third back, otherwise forward, as on the e-reader) and the arrow keys once the picture has the focus.
+- **Start screen**: KOReader without a book - the file browser or Bookshelf, whatever the profile starts with. It shows eight sample books with covers. Covers can appear a moment later; the picture is taken again after 1.5 s.
+
+**Book**
+- **Sample text** (default): three chapters of Lorem ipsum with title, author and series, enough for the Bookends placeholders.
+- A book of the opened library, or **Other file** (toolbar). Its book data (.sdr) is searched next to the book, on the connected e-reader and in the backup, so font size and margins are those of the e-reader. From the library: right-click on a book > **Open in Preview**.
+
+**How it works**
+KOReader starts without a window (SDL offscreen) at the full resolution of the device ([[vorschau_bildschirm]]); the picture is fitted into the area. Starting takes about a second, every further picture a tenth of a second. Changing the view or the book restarts it; **Restart** does it by hand. Bookbench stops it when closing; if Bookbench crashes, it stops by itself after 30 seconds.
+
+It works on a throw-away copy of the profile (folder vorschau/werkbank), new at every start: reading position, history and settings of the profile stay untouched. Only the plugins Bookends and Bookshelf are loaded - other plugins can lay a full screen over everything. The built-in plugins of KOReader are there as always.
+
+**Open in KOReader** (toolbar) starts the full KOReader in a window as before, for trying out menus: [[vorschau_starten]].
 """)),
     ("vorschau", "vorschau_profil", _("Profile"), _("""
 The preview runs in its own profile in the settings folder (subfolder vorschau, [[dateien]]). A normal KOReader installation on the computer stays untouched.
@@ -553,21 +568,22 @@ The preview runs in its own profile in the settings folder (subfolder vorschau, 
 - When taking a profile and before every start, these are removed from the settings: **screen_dpi** (it would override the screen size of the preview), plugin paths and the last files/folders on the e-reader. In the profile, book data is always next to the book.
 """)),
     ("vorschau", "vorschau_starten", _("Starting and output"), _("""
-**Start** (or double-click)
-- The selected book is copied with its book data (.sdr) to vorschau/buecher and opened there. KOReader writes to the book data while reading; that way the original stays untouched, on the e-reader too.
+**Open in KOReader** (toolbar)
+- Starts the full desktop KOReader in a window, with menus - for trying things out. The workbench keeps running beside it ([[vorschau_werkbank]]).
+- The selected book (the sample text too) is copied with its book data (.sdr) to vorschau/buecher and opened there. KOReader writes to the book data while reading; that way the original stays untouched, on the e-reader too.
 - Book data is searched: next to the book, on the connected e-reader (same file name), in the backup. Without book data the general settings apply, so font size and margins may differ.
 - **Other file** shows a book that is not in the opened library.
 
 **KOReader output**
-At the bottom of the area is what KOReader reports at start and while running. After it closes, the status bar gives the number of warnings and errors, for example a patch that does not run on the computer because it needs something specific to the e-reader.
+Under **Profile, device and output** (click to unfold) is what the KOReader in the window reports at start and while running; the workbench writes its own output to vorschau/werkbank/koreader.log. After it closes, the status bar gives the number of warnings and errors, for example a patch that does not run on the computer because it needs something specific to the e-reader.
 """)),
     ("vorschau", "vorschau_bildschirm", _("Screen and device"), _("""
-The window copies the screen of a device: size in pixels, pixel density, colour or black and white (black and white switches off the colours in KOReader, as on the device). Which device is under the size buttons:
+The workbench and the window copy the screen of a device: size in pixels, pixel density, colour or black and white (black and white switches off the colours in KOReader, as on the device). The workbench always uses the full size. Which device it is stands under **Profile, device and output**:
 - **Automatic** (default): the device the profile was taken from (From the e-reader, or the device noted in the backup), otherwise the connected e-reader, otherwise the Libra Colour - then with a ⚠.
 - Kindle and PocketBook note no model, so automatic falls back to the Libra Colour for them; choose **Own size** there.
 - **Settings > Device > Preview**: a fixed Kobo or tolino model, or **Own size** for other e-readers with KOReader (pixels in portrait format and ppi from the data sheet) - [[einst_vorschau]].
 
-A Libra Colour has 1264 × 1680 pixels at 300 dpi; hardly any screen is that tall.
+For **Open in KOReader** (window) the size is chosen there: a Libra Colour has 1264 × 1680 pixels at 300 dpi; hardly any screen is that tall.
 - **Fitted to the screen** takes the height of the screen and lowers the DPI to match; KOReader sizes fonts and spacing by the DPI, so the page looks the same, only coarser.
 - **Half size**: half the pixels and half the DPI.
 - **Full size** is pixel-exact, but the window then goes beyond the screen.
@@ -790,7 +806,10 @@ The **desktop KOReader** for the preview (Linux only) is not part of the install
 - nav.xhtml and toc.ncx of this book have a different number of entries; the status bar names the reason ([[kapitel_ebenen]]).
 
 **Preview: window too large or patches fail**
-- Choose "Fitted to the screen" ([[vorschau_bildschirm]]). Patches that need Kobo hardware fail on the computer; the output at the bottom of the area says which.
+- Choose "Fitted to the screen" ([[vorschau_bildschirm]]). Patches that need Kobo hardware fail on the computer; the output under **Profile, device and output** says which (workbench: vorschau/werkbank/koreader.log).
+
+**Preview: the workbench shows no picture**
+- The line under ◀ ▶ says what KOReader reports. **Restart** tries again; a profile from the e-reader is needed ([[vorschau_profil]]). If KOReader itself does not start, the same causes as for the window apply (below).
 
 **Preview: KOReader closes at once ("device/kobo/device.lua" in the output)**
 - The desktop KOReader takes the computer for an e-reader: up to at least version 2026.07 it recognizes the device by files such as /usr/bin/hwdetect (Arch/EndeavourOS: package hwdetect), /bin/kobo_config.sh or /proc/usid. KOReader alone does the same.

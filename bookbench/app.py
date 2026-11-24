@@ -274,7 +274,8 @@ class App(tk.Tk):
         if kv.verfuegbar():
             v = tk.Menu(leiste, tearoff=False)
             # die Befehle gehören dem Bereich, der hier noch nicht gebaut ist
-            for text, f in ((N_("Start"), "starten"), (None, None),
+            for text, f in ((N_("Open in KOReader"), "starten"), (N_("Restart the workbench"), "werkbank_starten"),
+                            (None, None),
                             (N_("Take profile from the e-reader"), "vom_kobo"),
                             (N_("Take profile from a backup"), "aus_sicherung"), (N_("Other file …"), "datei_waehlen"),
                             (None, None), (N_("Find KOReader"), "koreader_suchen_menue"),
@@ -730,8 +731,8 @@ class App(tk.Tk):
             self.metadaten.auswaehlen(b)
             self.nb.select(self.metadaten.seite)
         elif ziel in ("vorschau", "koreader"):
+            self.vorschau.buch_waehlen(b, starten=ziel == "vorschau")   # vor dem Wechsel: kein Doppelstart
             self.nb.select(self.vorschau.seite)
-            self.vorschau.buch_waehlen(b)
             if ziel == "koreader":
                 self.vorschau.starten()
         else:
@@ -1786,6 +1787,8 @@ class App(tk.Tk):
         if self.vorschau:
             self.vorschau.koreader_suchen(still=True)
             self.vorschau.anzeigen()
+            if self.vorschau.werkbank and self.vorschau.werkbank.laeuft():
+                self.vorschau.werkbank_starten(still=True)       # Gerät/KOReader evtl. geändert
         kei.speichern(self._e_zum_speichern())
         self.status.set(_("Settings saved. Chapter settings apply after reloading (F5).")
                         + (" " + calibre_hinweis if calibre_hinweis else ""))
@@ -1937,6 +1940,8 @@ class App(tk.Tk):
         if not self.schliessen_ok():
             return
         self._einstellungen_sichern()
+        if getattr(self, "vorschau", None):
+            self.vorschau.beenden()                     # KOReader im Hintergrund (Werkbank)
         self.destroy()
 
 

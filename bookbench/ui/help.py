@@ -19,7 +19,7 @@ import keller_theme as kth
 from bookbench.i18n import _
 
 PROGRAMM = "Bookbench"
-VERSION = "1.4-beta4"
+VERSION = "1.4-beta5"
 
 # (Elternthema, Kennung, Titel, Text). Übersetzt beim Import. Text: **fett**, Aufzählungen mit "-",
 # [[kennung]] = Verweis.
@@ -551,7 +551,13 @@ It is searched in this order: own path ([[einst_vorschau]]), koreader in PATH, m
     ("vorschau", "vorschau_werkbank", _("Workbench"), _("""
 **View**
 - **Reading page**: the chosen book, opened. ◀ and ▶ turn pages, so does a click into the picture (left third back, otherwise forward, as on the e-reader) and the arrow keys once the picture has the focus.
-- **Start screen**: KOReader without a book - the file browser or Bookshelf, whatever the profile starts with. It shows eight sample books with covers. Covers can appear a moment later; the picture is taken again after 1.5 s.
+- **Start screen**: KOReader without a book - the file browser or Bookshelf, whatever the profile starts with. **With sample books** shows eight sample books with covers; **with the opened library** shows the books of the library opened in Bookbench, with their reading progress (from the book data next to the books) and the most recently read ones first - Bookshelf's top area then shows your current book. Nothing is written into the library. Covers can appear a moment later; the picture is taken again after 1.5 s.
+
+**Tapping in KOReader**
+- On the start screen a click into the picture is a tap at that spot - Bookshelf's shelf buttons (Home, Recent, Series …), its menus, a book. A right-click is a long press.
+- On the reading page a click turns pages; Ctrl+click taps (for example to open KOReader's menus), right-click is a long press.
+- If KOReader does not get to the book within 5 seconds (a question, an unsupported file …), Bookbench says what is on top and shows KOReader's screen; a click taps there, so a dialog can be answered.
+- Books named .kepub (without .epub) are opened as .kepub.epub; KOReader does not know the shorter ending.
 
 **Book**
 - **Sample text** (default): three chapters of Lorem ipsum with title, author and series, enough for the Bookends placeholders.

@@ -29,7 +29,12 @@ Buch bzw. der Startbildschirm da ist ("ready"), und liest dann alle 50 ms den Or
   bookends <datei>       Bookends-Vorlage aus settings/bookends_presets übernehmen (seit 1.4-beta2,
                          Bookends:applyPresetFile, wie Bookends' eigene Vorschau); nur auf der Leseseite
   bookends_enabled 0|1   Bookends ein-/ausschalten (Bookends:onSetBookends)
+  tap <x> <y> / hold <x> <y>   Fingertipp bzw. langes Drücken auf den Bildschirm (seit 1.4-beta5): ein
+                         "Gesture"-Ereignis wie von Input, geht an das oberste Fenster - so lassen sich z. B.
+                         Bookshelfs Regal-Knöpfe bedienen
   quit          beenden
+Hängt KOReader nach 5 s noch vor dem Buch (Dialog, Datei nicht unterstützt …), meldet der Patch
+"stuck <oberstes Fenster>" und nimmt trotzdem Befehle an, damit das Bild zeigt, was KOReader zeigt.
 Wachhund: Bookbench berührt befehle/alive alle 5 s; ist die Datei älter als 30 s (Bookbench abgestürzt),
 beendet sich KOReader selbst.
 
@@ -39,7 +44,8 @@ Antworten auf stdout: "BOOKBENCH-WB ready <modus>", "BOOKBENCH-WB done <nummer> 
     .starten(modus, buch, w, h, dpi, sw, sdr, bibliothek, anpassen)   modus "lesen" oder "bibliothek";
                            anpassen(ko_ordner) ändert die Wegwerf-Kopie vor dem Start (Entwürfe, seit 1.4-beta2)
     .bild() / .blaettern(+1|-1)   Befehl schicken, gibt die Nummer zurück
-    .ereignisse()          neue Ereignisse (dicts, art: bereit, bild, erledigt, fehler, ende)
+    .ereignisse()          neue Ereignisse (dicts, art: bereit, haengt, bild, erledigt, fehler, ende)
+    .tippen(x, y, halten)  Fingertipp in Bildschirmpixeln
     .beenden()             KOReader beenden (erst freundlich, dann hart)
 """
 import os
@@ -98,6 +104,17 @@ local function bookends(r)
     end
 end
 
+local function top_widget()
+    local st = UIManager._window_stack
+    local w = st and st[#st] and st[#st].widget
+    if not w then return "none" end
+    local name = w.name or w.title or ""
+    local text = w.text or ""
+    if type(text) ~= "string" then text = "" end
+    text = text:gsub("%s+", " ")
+    return (tostring(name) .. " " .. text):sub(1, 300)
+end
+
 local function run(cmd)
     local verb, arg = cmd:match("^(%S+)%s*(.*)$")
     if verb == "shot" then
@@ -130,6 +147,18 @@ local function run(cmd)
         be.dirty = true
         be._tick_cache = nil
         UIManager:setDirty(r, "ui")
+        return "ok"
+    elseif verb == "tap" or verb == "hold" then
+        local x, y = arg:match("^(%-?%d+)%s+(%-?%d+)$")
+        if not x then return "error bad-arguments" end
+        local Geom = require("ui/geometry")
+        local okt, T = pcall(require, "ui/time")
+        local now = okt and T.now() or os.time()
+        local pos = Geom:new{ x = tonumber(x), y = tonumber(y), w = 0, h = 0 }
+        UIManager:sendEvent(Event:new("Gesture", { ges = verb, pos = pos, time = now }))
+        if verb == "hold" then
+            UIManager:sendEvent(Event:new("Gesture", { ges = "hold_release", pos = pos, time = now }))
+        end
         return "ok"
     elseif verb == "quit" then
         UIManager:quit()
@@ -170,12 +199,22 @@ local function watchdog()
 end
 UIManager:scheduleIn(2, watchdog)
 
+local polling = false
 local function wait(n)
     local r = reader()
     if (mode == "library" and filemanager()) or (mode ~= "library" and r and r.document) then
         say("ready " .. mode)
-        UIManager:scheduleIn(0.05, poll)
+        if not polling then
+            polling = true
+            UIManager:scheduleIn(0.05, poll)
+        end
         return
+    end
+    if n == 50 and not polling then
+        -- after 5 s still no book: say what is on top and accept commands anyway (picture, taps)
+        say("stuck " .. top_widget())
+        polling = true
+        UIManager:scheduleIn(0.05, poll)
     end
     if n > 600 then
         say("error timeout")
@@ -186,6 +225,13 @@ local function wait(n)
 end
 UIManager:scheduleIn(0.1, function() wait(0) end)
 '''
+
+
+def kopiename(buch):
+    """Name der Kopie in der Werkbank: "x.kepub" (ohne .epub) wird zu "x.kepub.epub" - KOReader kennt keine
+    Endung .kepub und öffnet die Datei sonst nicht ("not supported", seit 1.4-beta5)."""
+    name = Path(buch).name
+    return name + ".epub" if name.lower().endswith(".kepub") else name
 
 
 def arbeitsordner(profil):
@@ -238,6 +284,33 @@ def arbeitsprofil(profil, modus="lesen", plugins=PLUGINS, bibliothek=None):
     return arbeit
 
 
+def bibliothek_vorbereiten(arbeit, buecher, hoechstens=50):
+    """Startbildschirm mit der echten Bibliothek (seit 1.4-beta5): Buchdaten (.sdr neben den Büchern) in den
+    zentralen Buchdaten-Ordner der Kopie spiegeln (document_metadata_folder "dir": KO_HOME/docsettings +
+    voller Pfad ohne letzte Endung + .sdr), damit Fortschritt und Status zu sehen sind, und daraus einen
+    Leseverlauf (history.lua) bauen, neueste zuerst - Bookshelf zeigt oben das zuletzt gelesene Buch.
+    In die Bibliothek selbst wird nichts geschrieben. Gibt die Zahl der Bücher im Verlauf zurück."""
+    ko = Path(arbeit) / "koreader"
+    verlauf = []
+    for buch in buecher:
+        buch = Path(buch)
+        sdr = buch.with_name(kv._sdr_name(buch))
+        dateien = sorted(sdr.glob("metadata.*.lua")) if sdr.is_dir() else []
+        if not dateien:
+            continue
+        ziel = ko / "docsettings" / (str(buch.parent).lstrip("/")) / sdr.name
+        try:
+            shutil.copytree(sdr, ziel, dirs_exist_ok=True)
+            zeit = int(max(p.stat().st_mtime for p in dateien))
+        except OSError:
+            continue
+        verlauf.append({"file": str(buch), "time": zeit})
+    verlauf.sort(key=lambda e: -e["time"])
+    from bookbench.core import lua_data
+    (ko / "history.lua").write_text("return " + lua_data.schreiben(verlauf[:hoechstens]) + "\n", encoding="utf-8")
+    return min(len(verlauf), hoechstens)
+
+
 class Werkbank:
     def __init__(self, befund, profil):
         self.befund = befund
@@ -250,6 +323,8 @@ class Werkbank:
         self._gesendet = {}                      # Nummer -> (Befehl, Zeitpunkt)
         self._start = 0.0
         self.bereit = False
+        self.haengt = False                      # KOReader steckt vor dem Buch (Dialog o. Ä.)
+        self.verlauf = 0
 
     @property
     def arbeit(self):
@@ -258,7 +333,8 @@ class Werkbank:
     def laeuft(self):
         return self.prozess is not None and self.prozess.poll() is None
 
-    def starten(self, modus, buch, w, h, dpi, sw=False, sdr=None, bibliothek=None, plugins=PLUGINS, anpassen=None):
+    def starten(self, modus, buch, w, h, dpi, sw=False, sdr=None, bibliothek=None, plugins=PLUGINS, anpassen=None,
+                buecher=None):
         """modus "lesen": buch (Pfad) oder None für das Blindtext-Buch; "bibliothek": Startbildschirm.
         anpassen(ko): Entwürfe in die Wegwerf-Kopie schreiben, bevor KOReader startet."""
         if not self.befund:
@@ -269,13 +345,19 @@ class Werkbank:
         arbeit = arbeitsprofil(self.profil, modus, plugins, bibliothek)
         if modus == "lesen":
             if buch:
-                kopie = arbeit / "buecher" / Path(buch).name
+                kopie = arbeit / "buecher" / kopiename(buch)
                 shutil.copy2(buch, kopie)
-                kv._sdr_kopieren(sdr, arbeit / "buecher" / kv._sdr_name(buch))
+                kv._sdr_kopieren(sdr, arbeit / "buecher" / kv._sdr_name(kopie))
+                if kopie.name != Path(buch).name:          # x.kepub -> x.kepub.epub: Buchdaten heißen nach der Endung
+                    d = arbeit / "buecher" / kv._sdr_name(kopie)
+                    alt, neu = d / "metadata.kepub.lua", d / "metadata.epub.lua"
+                    if alt.is_file() and not neu.exists():
+                        alt.rename(neu)
             else:
                 kopie = sample_book.blindtext_buch(arbeit / "buecher" / BLINDTEXT)
         else:
             kopie = None
+            self.verlauf = bibliothek_vorbereiten(arbeit, buecher) if bibliothek and buecher else 0
         if anpassen:                                  # nach dem Buch: Buchdaten können mit angepasst werden
             anpassen(arbeit / "koreader")
         variablen = kv.umgebung(arbeit, w, h, dpi, sw)
@@ -289,7 +371,7 @@ class Werkbank:
                 p.chmod(p.stat().st_mode | stat.S_IXUSR)
         self._q = queue.Queue()
         self._gesendet = {}
-        self.bereit = False
+        self.bereit = self.haengt = False
         self.modus, self.buch = modus, buch
         self._start = time.monotonic()
         try:
@@ -334,6 +416,8 @@ class Werkbank:
                 jetzt = time.monotonic()
                 if teile[0] == "ready":
                     self._q.put({"art": "bereit", "dauer": jetzt - self._start})
+                elif teile[0] == "stuck":
+                    self._q.put({"art": "haengt", "text": " ".join(teile[1:]).strip()})
                 elif teile[0] == "done" and len(teile) >= 3:
                     befehl, gesendet = self._gesendet.pop(teile[1], ("", jetzt))
                     ergebnis = teile[2]
@@ -363,6 +447,9 @@ class Werkbank:
     def bild(self):
         return self.senden("shot")
 
+    def tippen(self, x, y, halten=False):
+        return self.senden(f"{'hold' if halten else 'tap'} {int(x)} {int(y)}")
+
     def blaettern(self, richtung):
         return self.senden("next" if richtung > 0 else "prev")
 
@@ -386,7 +473,9 @@ class Werkbank:
             except queue.Empty:
                 return neu
             if e["art"] == "bereit":
-                self.bereit = True
+                self.bereit, self.haengt = True, False
+            elif e["art"] == "haengt":
+                self.haengt = True
             neu.append(e)
 
     def alte_bilder_weg(self, behalten=None):

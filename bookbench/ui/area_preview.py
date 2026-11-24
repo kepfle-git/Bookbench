@@ -98,6 +98,16 @@ class VorschauBereich:
         for wert, text in (("lesen", _("Reading page")), ("bibliothek", _("Start screen (library, Bookshelf)"))):
             ttk.Radiobutton(links, text=text, value=wert, variable=self.modus_var,
                             command=self._modus_gewechselt).pack(anchor="w")
+        # Startbildschirm mit Beispielbüchern oder der geöffneten Bibliothek (seit 1.4-beta5)
+        sb = ttk.Frame(links)
+        sb.pack(anchor="w", padx=(20, 0))
+        self.startbuecher_var = tk.StringVar(value=app.e.get("werkbank_startbuecher") or "beispiel")
+        self.startbuecher_knopf = {}
+        for wert, text in (("beispiel", _("with sample books")), ("bibliothek", _("with the opened library"))):
+            k = self.startbuecher_knopf[wert] = ttk.Radiobutton(sb, text=text, value=wert,
+                                                               variable=self.startbuecher_var,
+                                                               command=self._startbuecher_gewechselt)
+            k.pack(anchor="w")
 
         ttk.Label(links, text=_("Book"), style="Ueberschrift.TLabel").pack(anchor="w", pady=(10, 0))
         self.buch_var = tk.StringVar()
@@ -158,6 +168,8 @@ class VorschauBereich:
         self.flaeche.pack(fill="both", expand=True)
         self.flaeche.bind("<Configure>", lambda e: self._bild_zeichnen())
         self.flaeche.bind("<Button-1>", self._klick)
+        self.flaeche.bind("<Control-Button-1>", lambda e: self._tippen(e))
+        self.flaeche.bind("<Button-3>", lambda e: self._tippen(e, halten=True))
         for taste, r in (("<Left>", -1), ("<Prior>", -1), ("<Right>", 1), ("<Next>", 1), ("<space>", 1)):
             self.flaeche.bind(taste, lambda e, r=r: self.blaettern(r))
         self.buch_wahl.configure(state="readonly" if self.modus_var.get() == "lesen" else "disabled")
@@ -378,8 +390,16 @@ class VorschauBereich:
 
     def _buch_gewaehlt(self, neu_starten=False):
         p = self._gewaehltes_buch()
+        hat_bib = bool(self.app.buecher and getattr(self.app, "ordner", None))
+        self.startbuecher_knopf["bibliothek"].configure(state="normal" if hat_bib else "disabled")
         if self.modus_var.get() == "bibliothek":
-            text = _("The start screen shows eight sample books with covers.")
+            if self._startbuecher():
+                text = _("The start screen shows the opened library, with the reading progress from the book data and "
+                         "the most recently read books first. Click into the picture to tap there (e.g. Bookshelf's "
+                         "shelf buttons), right-click for a long press.")
+            else:
+                text = _("The start screen shows eight sample books with covers. Click into the picture to tap there "
+                         "(e.g. Bookshelf's shelf buttons), right-click for a long press.")
         elif not p:
             text = _("Sample text with chapters, title, author and series - enough for Bookends.")
         elif p.with_name(p.stem + ".sdr").is_dir():
@@ -399,6 +419,18 @@ class VorschauBereich:
             self.details.pack(fill="both", expand=True)
         else:
             self.details.pack_forget()
+
+    def _startbuecher_gewechselt(self):
+        self.app.e["werkbank_startbuecher"] = self.startbuecher_var.get()
+        if self.modus_var.get() == "bibliothek":
+            self._buch_gewaehlt(neu_starten=True)
+
+    def _startbuecher(self):
+        """Bücher der geöffneten Bibliothek für den Startbildschirm, oder None (Beispielbücher)."""
+        a = self.app
+        if self.startbuecher_var.get() != "bibliothek" or not a.buecher or not getattr(a, "ordner", None):
+            return None
+        return Path(a.ordner), [b.pfad for b in a.buecher]
 
     def _modus_gewechselt(self):
         self.app.e["werkbank_modus"] = self.modus_var.get()
@@ -450,8 +482,10 @@ class VorschauBereich:
         if buch:
             kobo = a.kobo.wurzel if a.kobo.wurzel and a.kobo.wurzel.exists() else None
             sdr = kv.sdr_finden(buch, kobo, self._sicherung())
+        bib = self._startbuecher() if modus == "bibliothek" else None
         try:
-            self.werkbank.starten(modus, buch, w, h, dpi, sw, sdr, anpassen=self._entwuerfe_in_kopie)
+            self.werkbank.starten(modus, buch, w, h, dpi, sw, sdr, bibliothek=bib[0] if bib else None,
+                                  buecher=bib[1] if bib else None, anpassen=self._entwuerfe_in_kopie)
         except (RuntimeError, OSError) as e:
             self._werk_meldung(str(e))
             if not still:
@@ -459,6 +493,7 @@ class VorschauBereich:
             return
         self._startzeit = time.monotonic()
         self._wartet_bild = True
+        self._bild_zeichnen()                          # altes Bild mit "lädt"-Hinweis
         self._werk_meldung(_("KOReader is starting in the background …"))
         self._takt_planen()
 
@@ -481,12 +516,20 @@ class VorschauBereich:
                 wb.bild()
                 if wb.modus == "bibliothek":           # Cover kommen evtl. erst nach und nach
                     self.app.after(1500, lambda: wb.laeuft() and wb.bild())
+            elif e["art"] == "haengt":
+                wb.bild()                                   # zeigen, was KOReader zeigt
+                self._wartet_bild = False
+                self._werk_meldung(_("KOReader did not open the book. On top: {fenster}. The picture shows KOReader's "
+                                     "screen; click into it to tap there (e.g. a button of a dialog).").format(
+                    fenster=e["text"] or "?"))
             elif e["art"] == "bild":
+                erstes = self._wartet_bild
+                self._wartet_bild = False                   # vor dem Zeichnen: kein "lädt"-Hinweis mehr
                 self._bild_laden(e["pfad"])
                 wb.alte_bilder_weg(behalten=e["pfad"])
-                erstes = self._wartet_bild
-                self._wartet_bild = False
-                if erstes:
+                if wb.haengt:
+                    pass
+                elif erstes:
                     self._werk_meldung(_("Running in the background. Started in {s:.1f} s.").format(
                         s=time.monotonic() - self._startzeit))
                 else:
@@ -517,9 +560,39 @@ class VorschauBereich:
         self._takt_planen()
 
     def _klick(self, e):
-        """Wie auf dem E-Reader: linkes Drittel zurück, sonst weiter."""
+        """Leseseite wie auf dem E-Reader: linkes Drittel zurück, sonst weiter. Startbildschirm (und wenn
+        KOReader vor dem Buch hängt): an dieser Stelle tippen (seit 1.4-beta5)."""
         self.flaeche.focus_set()
+        wb = self.werkbank
+        if wb and (wb.modus == "bibliothek" or wb.haengt):
+            self._tippen(e)
+            return
         self.blaettern(-1 if e.x < self.flaeche.winfo_width() / 3 else +1)
+
+    def _bildpunkt(self, x, y):
+        """Klick auf der Fläche -> Pixel auf KOReaders Bildschirm (None außerhalb des Bilds)."""
+        geo = getattr(self, "_bild_geo", None)
+        if not geo:
+            return None
+        x0, y0, f, iw, ih = geo
+        bx, by = (x - x0) / f, (y - y0) / f
+        if not (0 <= bx < iw and 0 <= by < ih):
+            return None
+        return int(bx), int(by)
+
+    def _tippen(self, e, halten=False):
+        """Tippen (Strg+Klick, auf dem Startbildschirm jeder Klick) bzw. lange drücken (Rechtsklick) an
+        dieser Stelle in KOReader, danach neue Bilder (KOReader zeichnet manches erst etwas später)."""
+        self.flaeche.focus_set()
+        wb = self.werkbank
+        punkt = self._bildpunkt(e.x, e.y)
+        if not (wb and wb.laeuft() and (wb.bereit or wb.haengt)) or punkt is None:
+            return
+        wb.tippen(*punkt, halten=halten)
+        wb.bild()
+        for ms in (400, 1500):
+            self.app.after(ms, lambda: wb.laeuft() and wb.bild())
+        self._takt_planen()
 
     def _bild_laden(self, pfad):
         try:
@@ -547,6 +620,7 @@ class VorschauBereich:
             foto = tk.PhotoImage(file=self._bild_roh, master=c)
             teiler = max(1, -(-foto.height() // h), -(-foto.width() // w))
             self._foto = foto.subsample(teiler) if teiler > 1 else foto
+            self._teiler = teiler
         else:
             from PIL import Image, ImageTk
             iw, ih = self._bild_roh.size
@@ -554,6 +628,16 @@ class VorschauBereich:
             self._foto = ImageTk.PhotoImage(self._bild_roh.resize((max(1, int(iw * f)), max(1, int(ih * f))),
                                                                   Image.LANCZOS), master=c)
         c.create_image(w // 2, h // 2, image=self._foto, anchor="center")
+        fw, fh = self._foto.width(), self._foto.height()
+        ohne_pil = isinstance(self._bild_roh, str)
+        voll_w = fw * self._teiler if ohne_pil else self._bild_roh.size[0]
+        voll_h = fh * self._teiler if ohne_pil else self._bild_roh.size[1]
+        f = fw / voll_w if voll_w else 1
+        self._bild_geo = ((w - fw) / 2, (h - fh) / 2, f, voll_w, voll_h)
+        if self._wartet_bild:                          # neues Bild unterwegs: altes als veraltet kennzeichnen
+            p = kth.PALETTE["dunkel" if self.app.dark_mode.get() else "hell"]
+            c.create_rectangle(w // 2 - 110, h // 2 - 18, w // 2 + 110, h // 2 + 18, fill=p["kopf"], outline=p["rahmen"])
+            c.create_text(w // 2, h // 2, text=_("KOReader is loading …"), fill=p["fg"])
 
     def beenden(self):
         """Beim Schließen von Bookbench: KOReader im Hintergrund beenden."""

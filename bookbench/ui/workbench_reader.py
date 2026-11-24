@@ -235,7 +235,8 @@ class LesenSeite(_NeustartSeite):
         b = self.bereich
         buch = b._gewaehltes_buch() if b.modus_var.get() == "lesen" else None
         if buch:
-            sdr = Path(ko).parent / "buecher" / kv._sdr_name(Path(buch))
+            from bookbench.preview import workbench as kwb
+            sdr = Path(ko).parent / "buecher" / kv._sdr_name(kwb.kopiename(buch))
             self.buchwerte = kks.buchwerte(sdr)
             if self.buch_aus_var.get():
                 kks.buchwerte_entfernen(sdr)

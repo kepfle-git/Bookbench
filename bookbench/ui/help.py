@@ -19,7 +19,7 @@ import keller_theme as kth
 from bookbench.i18n import _
 
 PROGRAMM = "Bookbench"
-VERSION = "1.4-beta2"
+VERSION = "1.4-beta3"
 
 # (Elternthema, Kennung, Titel, Text). Übersetzt beim Import. Text: **fett**, Aufzählungen mit "-",
 # [[kennung]] = Verweis.
@@ -565,6 +565,8 @@ It works on a throw-away copy of the profile (folder vorschau/werkbank), new at 
     ("vorschau", "vorschau_bookends", _("Bookends settings"), _("""
 If the profile contains the plugin **Bookends**, the sidebar shows **Bookends** below Preview. Its settings page sits in the left column; the picture stays on the right and shows every change after a short pause (a tenth of a second, KOReader keeps running). The workbench switches to the reading page for this.
 
+The page is divided into sections (Preset, Lines, Selected line, General); a click on the heading folds a section away or opens it. Bookbench remembers which are open.
+
 **Draft and profile**
 - Changes are a draft at first: they only show in the picture. The red line says so.
 - **Save to profile** (toolbar) writes the preset and the switch into the preview profile; **Discard** goes back to what is in the profile.
@@ -577,8 +579,10 @@ If the profile contains the plugin **Bookends**, the sidebar shows **Bookends** 
 
 **Lines**
 - Six positions (top and bottom, each left, centre, right), one line per row. Tokens such as %title, %chap_title or %page_num are filled in by Bookends; **Insert token** lists those of the installed Bookends version, sorted like in Bookends.
-- Click into a line to set its **style** (bold, italic), **size** (empty = the general size) and **capitals**. Inserting or deleting lines keeps the settings with their line.
-- Settings Bookbench does not offer yet (font per line, nudging, bars inside a line, colours, progress bars) are kept unchanged when saving.
+- **Special characters …** opens Bookends' list of symbols (battery, book, arrows, blocks, separators …), sorted in groups as in Bookends. A click inserts at the cursor of the line you used last; "dynamic" symbols insert their token (%batt_icon changes with the battery). The symbols come from KOReader's symbol font (nerdfonts/symbols.ttf); Bookbench shows them in the lines as small pictures and takes the font from the profile (fonts of the e-reader) or from the desktop KOReader.
+- **Extra margin** next to each position moves the whole position away from the edge (↕ top or bottom, ↔ left or right for the corners), in pixels.
+- Click into a line (section **Selected line**) to set its **style** (bold, italic), **size** (empty = the general size), **capitals** and **offset**: ← → and ↑ ↓ in pixels, negative = left or up, **Reset** sets both to 0. Inserting or deleting lines keeps the settings with their line.
+- Settings Bookbench does not offer yet (font per line, bars inside a line, colours, progress bars, conditions) are kept unchanged when saving.
 
 **General**
 Font size and scale, the four margins, the gap before texts overlap and what is shortened first. Empty fields use Bookends' defaults.
@@ -592,9 +596,26 @@ Bookshelf cannot reload its settings while KOReader runs. After a change, the wo
 
 **Draft and profile** work as for Bookends ([[vorschau_bookends]]): first only in the picture, **Save to profile** keeps them, **Discard** goes back.
 
-**Settings**
-- Above: a selection of settings that change the look (layout, font sizes, covers and spines, display), with Bookshelf's defaults where the file has no value.
-- **All keys in the file**: everything in settings/bookshelf/settings.lua, also what is not listed above. Double-click (or **Change …**) changes a simple value (number, text, on/off) in its type. Tables - shelves, modules, colours, the start menu - can only be changed in Bookshelf itself. **Default** removes the key, then Bookshelf's default applies. Changed keys have a ●.
+The page is divided into sections; a click on the heading folds a section away or opens it. Bookbench remembers which are open.
+
+**Theme**
+- **Default theme**: the theme every shelf wears unless it has its own. **Custom theme** is your own look (wallpaper, plank, colours below), **Plain** Bookshelf's plain look, and every theme pack in the profile. A theme is a layer over the custom theme: it replaces only the parts it brings.
+- **Light or dark**: automatic (like KOReader's night mode) or fixed.
+- **Theme per shelf**: each shelf can wear its own theme or follow the default. Only shown if the shelves were changed in Bookshelf at least once (otherwise Bookshelf uses its standard shelves, and there is nothing to write yet).
+- Theme packs are folders in settings/bookshelf/ornaments with a theme/theme.json. New ones come from Bookshelf's theme library on the e-reader; take the profile again afterwards.
+
+**Wallpaper, plank, colours** (of the custom theme)
+- **Wallpaper**: a picture from settings/bookshelf/wallpapers, a second one for full screen shelves, how strongly the panels over it are shaded, transparent buttons, blur under the panels, inverting in night mode. **Add picture …** copies a picture into the profile at once.
+- **Plank**: oak, colour only, or a plank from a theme pack.
+- **Colours**: day and night colour for each part (text, progress bar, plank, menu bar …). Click a field to choose; "-" is the default, ✕ resets day and night. Grey is stored as Bookshelf does (as a grey level).
+
+**Decoration (ornaments)**
+- **How often per shelf**: none, rarely, often (default), always. Ornaments only appear on spine shelves.
+- The list shows all ornaments of the profile (loose files and packs); a double-click switches a piece or a whole pack off and on.
+
+**More settings**
+- A selection of settings that change the look (layout, font sizes, covers and spines, display), with Bookshelf's defaults where the file has no value.
+- **All keys in the file**: everything in settings/bookshelf/settings.lua, also what is not listed above. Double-click (or **Change …**) changes a simple value (number, text, on/off) in its type. Tables - shelves, modules, the start menu - can only be changed in Bookshelf itself or in the sections above (colours, theme and ornaments per shelf). **Default** removes the key, then Bookshelf's default applies. Changed keys have a ●.
 - Values Bookshelf writes by itself while running (current shelf and page, version notes) are not listed.
 
 Bookshelf is a plugin by AndyHazz (github.com/AndyHazz/bookshelf.koplugin); Bookbench only reads and writes its settings file.

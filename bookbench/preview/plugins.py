@@ -386,3 +386,198 @@ def wert_aus_text(text, alt):
     if isinstance(alt, float):
         return float(text.replace(",", "."))
     return text
+
+
+# ================================================================ Bookends: Sonderzeichen (seit 1.4-beta3)
+def ist_symbol(ch):
+    """Zeichen aus dem privaten Bereich (Nerd-Font-Symbole), das eine normale Schrift nicht zeigt."""
+    o = ord(ch)
+    return 0xE000 <= o <= 0xF8FF or 0xF0000 <= o <= 0x10FFFD
+
+
+def symbole(plugin_ordner):
+    """[(Gruppe, [(Zeichen, Beschreibung, Einfügetext)])] aus menu/icons_catalogue.lua des installierten
+    Bookends (CURATED_BY_CHIP). Einfügetext ist meist das Zeichen selbst, bei "dynamischen" Symbolen
+    ein Token (%batt_icon …). Ohne Datei: []."""
+    try:
+        text = (Path(plugin_ordner) / "menu" / "icons_catalogue.lua").read_text(encoding="utf-8")
+    except OSError:
+        return []
+    gruppen = dict(re.findall(r'\{\s*key\s*=\s*"([^"]+)"\s*,\s*label\s*=\s*_\("((?:[^"\\]|\\.)*)"\)', text))
+    erg, aktuell, liste = [], None, None
+    drin = False
+    for zeile in text.splitlines():
+        if re.match(r"\s*M\.CURATED_BY_CHIP\s*=\s*\{", zeile):
+            drin = True
+            continue
+        if not drin:
+            continue
+        if re.match(r"^\}", zeile):
+            break
+        m = re.match(r"^\s{4}([A-Za-z_]+)\s*=\s*\{\s*$", zeile)
+        if m:
+            aktuell, liste = m.group(1), []
+            erg.append((gruppen.get(aktuell, aktuell), liste))
+            continue
+        if liste is None:
+            continue
+        m = re.match(r'\s*\{\s*code\s*=\s*0x([0-9A-Fa-f]+)\s*(?:,\s*label\s*=\s*_\("((?:[^"\\]|\\.)*)"\))?'
+                     r'\s*(?:,\s*insert_value\s*=\s*"((?:[^"\\]|\\.)*)")?\s*\},?\s*(?:--\s*(.*))?$', zeile)
+        if m:
+            ch = chr(int(m.group(1), 16))
+            name = (lua_data.lesen('"' + m.group(2) + '"') if m.group(2) else (m.group(4) or "").strip()) or f"U+{ord(ch):04X}"
+            liste.append((ch, name, lua_data.lesen('"' + m.group(3) + '"') if m.group(3) else ch))
+            continue
+        m = re.match(r'\s*\{\s*glyph\s*=\s*"((?:[^"\\]|\\.)*)"\s*,\s*label\s*=\s*_\("((?:[^"\\]|\\.)*)"\)', zeile)
+        if m:
+            ch = lua_data.lesen('"' + m.group(1) + '"')
+            liste.append((ch, lua_data.lesen('"' + m.group(2) + '"'), ch))
+    return [(g, l) for g, l in erg if l]
+
+
+def symbolschrift(profil, befund=None):
+    """Pfad der Nerd-Font-Symbolschrift (nerdfonts/symbols.ttf), mit der KOReader diese Zeichen zeichnet:
+    im Profil (Schriften vom E-Reader), sonst neben dem Desktop-KOReader. None, wenn keine da ist."""
+    kandidaten = []
+    fonts = Path(profil) / "share" / "fonts"
+    if fonts.is_dir():
+        kandidaten += sorted(fonts.rglob("nerdfonts/symbols.ttf"))
+    if befund and befund.get("art") in ("programm", "appimage") and befund.get("pfad"):
+        p = Path(befund["pfad"]).resolve()
+        kandidaten += [p.parent / "fonts" / "nerdfonts" / "symbols.ttf",
+                       p.parent.parent / "lib" / "koreader" / "fonts" / "nerdfonts" / "symbols.ttf"]
+    kandidaten += [Path(p) / "fonts" / "nerdfonts" / "symbols.ttf" for p in
+                   ("/usr/lib/koreader", "/opt/koreader", "/usr/share/koreader", "/usr/local/lib/koreader")]
+    return next((p for p in kandidaten if p.is_file()), None)
+
+
+# Zusätzlicher Rand je Position (Bookends position_menu: v_offset alle, h_offset nur Ecken, 0…999 px)
+def mit_seitenrand(pos):
+    return pos in ("tl", "tr", "bl", "br")
+
+
+def positionswert(daten, pos, feld):
+    return ((daten.get("positions") or {}).get(pos) or {}).get(feld)
+
+
+def positionswert_setzen(daten, pos, feld, wert):
+    p = daten.setdefault("positions", {}).setdefault(pos, {"lines": []})
+    if wert in (None, 0):
+        p.pop(feld, None)
+    else:
+        p[feld] = wert
+
+
+# ================================================================ Bookshelf: Theme und Dekoration (seit 1.4-beta3)
+# Nachgesehen in Bookshelf 6.6 (lib/bookshelf_theme_pack.lua, _wallpaper.lua, _ornaments.lua, _color.lua).
+# Ein Theme ist eine Schicht über dem eigenen Aussehen ("Eigenes Theme"): library_theme bzw. tab.theme
+# wählt es, Hintergrund/Brett/Farben unten bearbeiten das eigene Theme.
+THEME_EIGEN = None                                  # library_theme fehlt = eigenes Theme
+THEME_SCHLICHT = "plain"
+HELLDUNKEL = (("auto", N_("Automatic (like KOReader)")), ("light", N_("Light")), ("dark", N_("Dark")))
+ABDUNKELN = ((0, N_("Transparent")), (0.35, N_("Low")), (0.6, N_("Moderate")), (0.85, N_("Heavy")), (1, N_("Solid")))
+HAEUFIGKEIT = ((0, N_("None")), (0.5, N_("Rarely")), (1, N_("Often")), (2, N_("Always")))
+HAEUFIGKEIT_VORGABE = 1
+FARBEN = (("ink_color", N_("Text")), ("progress_fill", N_("Progress bar")), ("progress_track", N_("Progress track")),
+          ("bookmark_color", N_("Bookmark")), ("complete_bookmark_color", N_("Finished bookmark")),
+          ("favorite_star_color", N_("Favourite star")), ("favorite_heart_color", N_("Favourite heart")),
+          ("rating_star_color", N_("Rating stars")), ("badge_fg", N_("Badge text")),
+          ("badge_bg", N_("Badge background")), ("chrome_bg", N_("Menu bar")), ("module_bg", N_("Module card")),
+          ("module_border", N_("Module border")), ("panel_color", N_("Panel")), ("panel_ink", N_("Panel text")),
+          ("border_color", N_("Cover border")), ("selection_color", N_("Selection")),
+          ("card_shadow_color", N_("Cover shadow")), ("spine_plank_color", N_("Plank")),
+          ("folder_overlay_bg", N_("Folder label")), ("folder_overlay_fg", N_("Folder text")),
+          ("chip_selected_bg", N_("Selected shelf")), ("chip_selected_fg", N_("Selected shelf text")),
+          ("wallpaper_bg", N_("Page")))
+BILD_ENDUNGEN = {".png", ".jpg", ".jpeg", ".bmp", ".gif", ".webp"}
+DEKO_ENDUNGEN = {".png", ".svg"}
+
+
+def deko_ordner(ko):
+    """Ordner der Dekoration (Ornamente, Theme-Pakete): settings/bookshelf/ornaments (ab 5.3),
+    früher icons/bookshelf.ornaments (wird von Bookshelf weiter gelesen)."""
+    return [p for p in (Path(ko) / "settings" / "bookshelf" / "ornaments", Path(ko) / "icons" / "bookshelf.ornaments")
+            if p.is_dir()]
+
+
+def _json(pfad):
+    import json
+    try:
+        w = json.loads(Path(pfad).read_text(encoding="utf-8"))
+        return w if isinstance(w, dict) else {}
+    except (OSError, ValueError):
+        return {}
+
+
+def themes(ko):
+    """[(Wert für library_theme/tab.theme, Name)] der Theme-Pakete (Ordner mit theme/theme.json)."""
+    erg = {}
+    for ordner in deko_ordner(ko):
+        for p in sorted(ordner.iterdir()):
+            m = p / "theme" / "theme.json"
+            if p.is_dir() and m.is_file() and p.name not in erg:
+                erg[p.name] = _json(m).get("name") or p.name
+    return sorted(erg.items(), key=lambda x: x[1].lower())
+
+
+def hintergrundbilder(ko):
+    """Dateinamen in settings/bookshelf/wallpapers (Wert für wallpaper_default/wallpaper_full)."""
+    d = Path(ko) / "settings" / "bookshelf" / "wallpapers"
+    return sorted((p.name for p in d.iterdir() if p.is_file() and p.suffix.lower() in BILD_ENDUNGEN),
+                  key=str.lower) if d.is_dir() else []
+
+
+def bretter(ko):
+    """[(Wert für theme_plank_pack, Name)] der Bretter aus Paketen (<paket>/theme/plank[.<name>].middle.png)."""
+    erg = []
+    for ordner in deko_ordner(ko):
+        for p in sorted(ordner.iterdir()):
+            t = p / "theme"
+            if not t.is_dir():
+                continue
+            for f in sorted(t.iterdir()):
+                m = re.fullmatch(r"plank(?:\.(.+))?\.middle\.png", f.name, re.I)
+                if m:
+                    wert = f"{p.name}/theme/plank" + (f".{m.group(1)}" if m.group(1) else "")
+                    erg.append((wert, f"{p.name}: {m.group(1) or _('plank')}"))
+    return erg
+
+
+def dekoration(ko):
+    """{Paket oder "": [relpfad]} aller Ornamente (lose Dateien und eine Ebene Pakete; ohne theme/)."""
+    erg = {}
+    for ordner in deko_ordner(ko):
+        for p in sorted(ordner.iterdir()):
+            if p.is_file() and p.suffix.lower() in DEKO_ENDUNGEN:
+                erg.setdefault("", []).append(p.name)
+            elif p.is_dir():
+                teile = [f"{p.name}/{f.name}" for f in sorted(p.iterdir())
+                         if f.is_file() and f.suffix.lower() in DEKO_ENDUNGEN]
+                if teile:
+                    erg.setdefault(p.name, []).extend(teile)
+    return erg
+
+
+def regal_name(tab):
+    if not isinstance(tab, dict):
+        return "?"
+    return str(tab.get("label") or tab.get("name") or tab.get("id") or "?")
+
+
+def farbe_hex(w):
+    """Bookshelf-Farbe ({hex=} / {grey=} / Zahl) als #RRGGBB, sonst None."""
+    if isinstance(w, dict):
+        if isinstance(w.get("hex"), str) and re.fullmatch(r"#?[0-9A-Fa-f]{6}", w["hex"]):
+            return "#" + w["hex"].lstrip("#").upper()
+        w = w.get("grey")
+    if isinstance(w, (int, float)) and not isinstance(w, bool):
+        g = max(0, min(255, int(w)))
+        return f"#{g:02X}{g:02X}{g:02X}"
+    return None
+
+
+def farbe_wert(hexwert):
+    """#RRGGBB -> Bookshelfs Speicherform: {grey=N} bei Grau (r=g=b), sonst {hex="#RRGGBB"}."""
+    h = hexwert.lstrip("#").upper()
+    r, g, b = int(h[0:2], 16), int(h[2:4], 16), int(h[4:6], 16)
+    return {"grey": r} if r == g == b else {"hex": "#" + h}

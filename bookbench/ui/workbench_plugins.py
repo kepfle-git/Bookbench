@@ -15,6 +15,7 @@ das Profil neu. Bei jedem Neustart der Werkbank schreibt in_kopie() die Entwürf
 """
 import copy
 import tkinter as tk
+from pathlib import Path
 from tkinter import messagebox, simpledialog, ttk
 
 import keller_theme as kth
@@ -25,6 +26,13 @@ from bookbench.i18n import _
 PAUSE_BOOKENDS = 350                              # ms nach der letzten Eingabe, dann ins Bild
 PAUSE_BOOKSHELF = 900                             # ms, dann Neustart (länger: kostet ~1,2 s)
 BREITE = 360                                      # Umbruchbreite der Hinweise
+
+
+def _gleich(a, b):
+    """Gleichheit ohne Pythons True == 1 und False == 0 (Bookshelf unterscheidet false und 0)."""
+    if isinstance(a, bool) or isinstance(b, bool):
+        return type(a) is type(b) and a == b
+    return a == b
 
 
 def _zahl_oder_leer(text):
@@ -53,6 +61,35 @@ class _Seite:
         self.stand.pack(anchor="w", fill="x", pady=(2, 8))
         self.info = None                         # kpl.erkennen()[plugin]
         self._job = None
+        self.abschnitte = {}                     # Kennung -> (BooleanVar, Rahmen, zeigen)
+
+    def _abschnitt(self, kennung, titel, offen=True):
+        """Aufklappbarer Abschnitt (wie "Profil, Gerät und Ausgabe" in der Ansicht, seit 1.4-beta3); offen/zu
+        steht je Plugin und Abschnitt in der Einstellung werkbank_abschnitte. Gibt den Inhaltsrahmen zurück."""
+        zustand = self.app.e.setdefault("werkbank_abschnitte", {})
+        schl = f"{self.plugin}.{kennung}"
+        var = tk.BooleanVar(value=bool(zustand.get(schl, offen)))
+        knopf = ttk.Checkbutton(self.innen, variable=var, style="Toolbutton")
+        knopf.pack(anchor="w", pady=(6, 0))
+        rahmen = ttk.Frame(self.innen, padding=(8, 2, 0, 4))
+
+        def zeigen():
+            an = var.get()
+            self.app.e.setdefault("werkbank_abschnitte", {})[schl] = an
+            knopf.configure(text=("▾ " if an else "▸ ") + titel)
+            if an:
+                rahmen.pack(after=knopf, anchor="w", fill="x")
+            else:
+                rahmen.pack_forget()
+        knopf.configure(command=zeigen)
+        zeigen()
+        self.abschnitte[kennung] = (var, rahmen, zeigen)
+        return rahmen
+
+    def aufklappen(self, kennung, an=True):
+        var, __, zeigen = self.abschnitte[kennung]
+        var.set(an)
+        zeigen()
 
     @property
     def ko(self):
@@ -114,16 +151,18 @@ class BookendsSeite(_Seite):
         self._zeile = None                        # (pos, nr) für Stil/Größe
         self._fokus = None                        # zuletzt benutztes Textfeld (Token einfügen)
         self._laden_laeuft = False
-        i = self.innen
+        self._glyphen = {}                        # Zeichen -> PhotoImage (Symbole in den Textfeldern)
+        self._bild_zeichen = {}                   # Name des PhotoImage -> Zeichen
+        self._symbolfenster = None
 
+        # -- Vorlage -------------------------------------------------------------------
+        i = self._abschnitt("vorlage", _("Preset"))
         self.an_var = tk.BooleanVar()
         ttk.Checkbutton(i, text=_("Bookends switched on"), variable=self.an_var,
                         command=self._geaendert).pack(anchor="w")
-
-        ttk.Label(i, text=_("Preset"), style="Ueberschrift.TLabel").pack(anchor="w", pady=(8, 0))
         self.wahl_var = tk.StringVar()
         self.wahl = ttk.Combobox(i, textvariable=self.wahl_var, state="readonly")
-        self.wahl.pack(anchor="w", fill="x")
+        self.wahl.pack(anchor="w", fill="x", pady=(4, 0))
         self.wahl.bind("<<ComboboxSelected>>", lambda e: self._wahl_gewechselt())
         z = ttk.Frame(i)
         z.pack(anchor="w", fill="x", pady=(4, 0))
@@ -133,7 +172,6 @@ class BookendsSeite(_Seite):
         self.aktiv_text.pack(anchor="w", fill="x", pady=(4, 0))
         self.aktiv_knopf = ttk.Button(i, text=_("Make active"), command=self.aktiv_machen, style="Klein.TButton")
         self.aktiv_knopf.pack(anchor="w", pady=(2, 0))
-
         g = ttk.Frame(i)
         g.pack(anchor="w", fill="x", pady=(6, 0))
         g.columnconfigure(1, weight=1)
@@ -144,19 +182,34 @@ class BookendsSeite(_Seite):
             e.grid(row=r, column=1, sticky="we", pady=1)
             var.trace_add("write", lambda *a: self._kopf_geaendert())
 
-        # -- Zeilen ----------------------------------------------------------------
+        # -- Zeilen ----------------------------------------------------------------------
+        i = self._abschnitt("zeilen", _("Lines"))
         k = ttk.Frame(i)
-        k.pack(anchor="w", fill="x", pady=(10, 0))
-        ttk.Label(k, text=_("Lines"), style="Ueberschrift.TLabel").pack(side="left")
+        k.pack(anchor="w", fill="x")
         self.token_knopf = ttk.Menubutton(k, text=_("Insert token"), style="Klein.TButton")
-        self.token_knopf.pack(side="right")
+        self.token_knopf.pack(side="left")
         self.token_menue = tk.Menu(self.token_knopf, tearoff=False)
         self.token_knopf.configure(menu=self.token_menue)
-        ttk.Label(i, text=_("One line per row; tokens like %title or %page_num are filled in by Bookends."),
+        self.symbol_knopf = ttk.Button(k, text=_("Special characters …"), style="Klein.TButton",
+                                       command=self.symbole_zeigen)
+        self.symbol_knopf.pack(side="left", padx=(4, 0))
+        ttk.Label(i, text=_("One line per row; tokens like %title or %page_num are filled in by Bookends. Extra "
+                            "margin moves the whole position away from the edge (px)."),
                   style="Hinweis.TLabel", wraplength=BREITE, justify="left").pack(anchor="w", fill="x")
-        self.texte = {}
+        self.texte, self.rand_var = {}, {}
         for pos, name in kpl.POSITIONEN:
-            ttk.Label(i, text=_(name)).pack(anchor="w", pady=(4, 0))
+            kz = ttk.Frame(i)
+            kz.pack(anchor="w", fill="x", pady=(4, 0))
+            ttk.Label(kz, text=_(name)).pack(side="left")
+            felder = (("v_offset", "↕"),) + ((("h_offset", "↔"),) if kpl.mit_seitenrand(pos) else ())
+            for feld, zeichen in reversed(felder):
+                v = self.rand_var[(pos, feld)] = tk.StringVar()
+                sp = ttk.Spinbox(kz, from_=0, to=999, width=4, textvariable=v,
+                                 command=lambda p=pos: self._rand_geaendert(p))
+                sp.pack(side="right")
+                sp.bind("<KeyRelease>", lambda e, p=pos: self._rand_geaendert(p))
+                ttk.Label(kz, text=zeichen).pack(side="right", padx=(6, 2))
+            ttk.Label(kz, text=_("extra margin"), style="Hinweis.TLabel").pack(side="right")
             r = self.app._listenrahmen(i)
             r.pack(fill="x")
             t = tk.Text(r, height=2, width=20, wrap="none", undo=True, borderwidth=0, highlightthickness=0,
@@ -167,11 +220,12 @@ class BookendsSeite(_Seite):
                 t.bind(ev, lambda e, p=pos: self._zeile_gewaehlt(p), add="+")
             self.texte[pos] = t
 
-        # -- aktuelle Zeile ------------------------------------------------------------
-        self.zeile_kopf = ttk.Label(i, text=_("Line: click into a line above"), style="Ueberschrift.TLabel")
-        self.zeile_kopf.pack(anchor="w", pady=(10, 0))
+        # -- gewählte Zeile -----------------------------------------------------------------
+        i = self._abschnitt("zeile", _("Selected line"))
+        self.zeile_kopf = ttk.Label(i, text=_("Click into a line above."))
+        self.zeile_kopf.pack(anchor="w")
         zr = ttk.Frame(i)
-        zr.pack(anchor="w", fill="x")
+        zr.pack(anchor="w", fill="x", pady=(2, 0))
         ttk.Label(zr, text=_("Style")).pack(side="left")
         self.stil_var = tk.StringVar()
         self.stil = ttk.Combobox(zr, textvariable=self.stil_var, state="disabled", width=11,
@@ -188,12 +242,26 @@ class BookendsSeite(_Seite):
         self.gross = ttk.Checkbutton(zr, text=_("Capitals"), variable=self.gross_var, state="disabled",
                                      command=self._zeilenwerte_uebernehmen)
         self.gross.pack(side="left")
-        ttk.Label(i, text=_("Empty size = the general font size. Further line settings (font, nudging, bars in "
-                            "the line) stay as they are; change them on the e-reader."),
+        vr = ttk.Frame(i)
+        vr.pack(anchor="w", fill="x", pady=(4, 0))
+        ttk.Label(vr, text=_("Offset")).pack(side="left")
+        self.versatz_var, self.versatz = {}, {}
+        for feld, text in (("line_h_nudge", _("← →")), ("line_v_nudge", _("↑ ↓"))):
+            ttk.Label(vr, text=text).pack(side="left", padx=(8, 2))
+            v = self.versatz_var[feld] = tk.StringVar()
+            sp = self.versatz[feld] = ttk.Spinbox(vr, from_=-999, to=999, width=5, textvariable=v, state="disabled",
+                                                  command=self._zeilenwerte_uebernehmen)
+            sp.pack(side="left")
+            sp.bind("<KeyRelease>", lambda e: self._zeilenwerte_uebernehmen())
+        ttk.Button(vr, text=_("Reset"), style="Klein.TButton",
+                   command=self._versatz_zurueck).pack(side="left", padx=(8, 0))
+        ttk.Label(i, text=_("Empty size = the general font size. Offset in pixels: negative = left or up. Font "
+                            "per line, bars in a line and conditions stay as they are; change them on the "
+                            "e-reader."),
                   style="Hinweis.TLabel", wraplength=BREITE, justify="left").pack(anchor="w", fill="x")
 
         # -- allgemein -------------------------------------------------------------------
-        ttk.Label(i, text=_("General"), style="Ueberschrift.TLabel").pack(anchor="w", pady=(10, 0))
+        i = self._abschnitt("allgemein", _("General"), offen=False)
         ga = ttk.Frame(i)
         ga.pack(anchor="w", fill="x")
         self.allg_var = {}
@@ -216,6 +284,11 @@ class BookendsSeite(_Seite):
     def zuruecksetzen(self):
         self.datei = self.daten = self.gespeichert = None
         self.aktiv_neu = None
+
+    def farben(self):
+        super().farben()
+        if self.daten is not None:                 # Symbole in den Textfeldern in der neuen Schriftfarbe
+            self._formular_fuellen()
 
     # ------------------------------------------------------------------ Laden
     def neu_laden(self, datei=None):
@@ -278,7 +351,7 @@ class BookendsSeite(_Seite):
                 t.configure(state="normal")
                 t.delete("1.0", "end")
                 z = kpl.zeilen(d, pos)
-                t.insert("1.0", "\n".join(z))
+                self._text_einsetzen(t, "1.0", "\n".join(z))
                 t.configure(height=max(2, min(6, len(z) + 1)))
                 t.edit_modified(False)
                 t.edit_reset()
@@ -287,6 +360,9 @@ class BookendsSeite(_Seite):
             for schl, v in self.allg_var.items():
                 w = kpl.allgemein(d, schl)
                 v.set("" if w is None else str(w))
+            for (pos, feld), v in self.rand_var.items():
+                w = kpl.positionswert(d, pos, feld)
+                v.set("" if not w else str(w))
             self.kuerzen_var.set(kpl.allgemein(d, "truncation_priority") or "center")
             self._zeile = None
             self._zeile_zeigen()
@@ -337,8 +413,76 @@ class BookendsSeite(_Seite):
         t = self._fokus or self.texte["tc"]
         if self.daten is None:
             return
-        t.insert("insert", token)
+        self._text_einsetzen(t, "insert", token)
         t.focus_set()
+
+    # ------------------------------------------------------------------ Symbole in den Textfeldern
+    # Nerd-Font-Symbole (privater Unicode-Bereich) zeigt Tk mit keiner normalen Schrift. Sie stehen
+    # deshalb als kleines Bild im Textfeld (mit KOReaders symbols.ttf gezeichnet); beim Auslesen wird
+    # das Bild wieder zum Zeichen. Ohne Pillow oder ohne Schrift bleiben es Zeichen (meist Kästchen).
+    def _schrift(self):
+        if not hasattr(self, "_symbolschrift"):
+            self._symbolschrift = kpl.symbolschrift(self.bereich.profil, self.bereich.befund)
+        return self._symbolschrift
+
+    def glyph_bild(self, ch, groesse=15, farbe=None):
+        """PhotoImage für ein Symbol (gecacht) oder None."""
+        farbe = farbe or kth.PALETTE["dunkel" if self.app.dark_mode.get() else "hell"]["feld_fg"]
+        schl = (ch, groesse, farbe)
+        if schl in self._glyphen:
+            return self._glyphen[schl]
+        bild = None
+        pfad = self._schrift()
+        if pfad:
+            try:
+                from PIL import Image, ImageDraw, ImageFont, ImageTk
+                f = ImageFont.truetype(str(pfad), groesse)
+                links, oben, rechts, unten = f.getbbox(ch)
+                w, h = max(1, rechts - links), groesse + 2
+                im = Image.new("RGBA", (w + 2, h), (0, 0, 0, 0))
+                ImageDraw.Draw(im).text((1 - links, (h - (unten - oben)) // 2 - oben), ch, font=f, fill=farbe)
+                bild = ImageTk.PhotoImage(im, master=self.app)
+                self._bild_zeichen[str(bild)] = ch
+            except (ImportError, OSError, ValueError):
+                bild = None
+        self._glyphen[schl] = bild
+        return bild
+
+    def _text_einsetzen(self, t, index, text):
+        """Text einfügen; Symbole als Bild (siehe oben)."""
+        stueck = ""
+        for ch in text:
+            bild = self.glyph_bild(ch) if kpl.ist_symbol(ch) else None
+            if bild is None:
+                stueck += ch
+                continue
+            if stueck:
+                t.insert(index, stueck)
+                stueck = ""
+            t.image_create(index, image=bild, padx=0)
+        if stueck:
+            t.insert(index, stueck)
+
+    def _text_lesen(self, t):
+        """Inhalt eines Textfelds mit den Symbol-Bildern als Zeichen."""
+        teile = []
+        for art, wert, index in t.dump("1.0", "end-1c", text=True, image=True):
+            if art == "text":
+                teile.append(wert)
+            elif art == "image":
+                teile.append(self._bild_zeichen.get(str(t.image_cget(index, "image")), ""))
+        return "".join(teile)
+
+    def symbole_zeigen(self):
+        """Fenster mit den Sonderzeichen aus Bookends' Katalog; Klick fügt ins zuletzt benutzte Feld ein."""
+        if self._symbolfenster is not None and self._symbolfenster.winfo_exists():
+            self._symbolfenster.lift()
+            return
+        gruppen = kpl.symbole(self.info["ordner"]) if self.info else []
+        if not gruppen:
+            self.app.status.set(_("This Bookends version has no list of special characters."))
+            return
+        self._symbolfenster = SymbolFenster(self, gruppen)
 
     def _text_geaendert(self, pos):
         t = self.texte[pos]
@@ -347,7 +491,7 @@ class BookendsSeite(_Seite):
         t.edit_modified(False)
         if self._laden_laeuft or self.daten is None:
             return
-        z = t.get("1.0", "end-1c").split("\n")
+        z = self._text_lesen(t).split("\n")
         while z and not z[-1].strip():
             z.pop()
         if z != kpl.zeilen(self.daten, pos):
@@ -369,19 +513,24 @@ class BookendsSeite(_Seite):
         self._laden_laeuft = True
         try:
             if not self._zeile:
-                self.zeile_kopf.configure(text=_("Line: click into a line above"))
-                for w in (self.stil, self.groesse, self.gross):
+                self.zeile_kopf.configure(text=_("Click into a line above."))
+                for w in (self.stil, self.groesse, self.gross, *self.versatz.values()):
                     w.configure(state="disabled")
                 self.stil_var.set("")
                 self.groesse_var.set("")
                 self.gross_var.set(False)
+                for v in self.versatz_var.values():
+                    v.set("")
                 return
             pos, nr = self._zeile
             name = dict(kpl.POSITIONEN)[pos]
-            self.zeile_kopf.configure(text=_("Line: {position}, line {nr}").format(position=_(name), nr=nr))
+            self.zeile_kopf.configure(text=_("{position}, line {nr}").format(position=_(name), nr=nr))
             self.stil.configure(state="readonly")
             self.groesse.configure(state="normal")
             self.gross.configure(state="normal")
+            for feld, v in self.versatz_var.items():
+                self.versatz[feld].configure(state="normal")
+                v.set(str(kpl.zeilenwert(self.daten, pos, feld, nr) or 0))
             stil = kpl.zeilenwert(self.daten, pos, "line_style", nr) or "regular"
             self.stil_var.set(_(dict(kpl.STILE).get(stil, kpl.STILE[0][1])))
             g = kpl.zeilenwert(self.daten, pos, "line_font_size", nr)
@@ -402,6 +551,30 @@ class BookendsSeite(_Seite):
             return
         kpl.zeilenwert_setzen(self.daten, pos, "line_font_size", nr, g)
         kpl.zeilenwert_setzen(self.daten, pos, "line_uppercase", nr, True if self.gross_var.get() else None)
+        for feld, v in self.versatz_var.items():
+            try:
+                w = int(float(v.get().strip().replace(",", ".") or 0))
+            except ValueError:
+                return
+            kpl.zeilenwert_setzen(self.daten, pos, feld, nr, w or None)    # 0 = kein Eintrag, wie Bookends
+        self._geaendert()
+
+    def _versatz_zurueck(self):
+        for v in self.versatz_var.values():
+            v.set("0")
+        self._zeilenwerte_uebernehmen()
+
+    def _rand_geaendert(self, pos):
+        if self._laden_laeuft or self.daten is None:
+            return
+        for (p, feld), v in self.rand_var.items():
+            if p != pos:
+                continue
+            try:
+                w = _zahl_oder_leer(v.get())
+            except ValueError:
+                return
+            kpl.positionswert_setzen(self.daten, pos, feld, int(w) if w else None)
         self._geaendert()
 
     def _allgemein_geaendert(self):
@@ -567,6 +740,60 @@ class BookendsSeite(_Seite):
         self.ins_bild()
 
 
+class SymbolFenster(tk.Toplevel):
+    """Sonderzeichen aus Bookends' Katalog (menu/icons_catalogue.lua), nach Gruppen. Bleibt offen;
+    jeder Klick fügt an der Schreibmarke des zuletzt benutzten Zeilenfelds ein."""
+    SPALTEN = 10
+
+    def __init__(self, seite, gruppen):
+        super().__init__(seite.app)
+        self.seite = seite
+        self.gruppen = gruppen
+        self.title(_("Special characters"))
+        self.transient(seite.app)
+        self.geometry("460x420")
+        oben = ttk.Frame(self, padding=8)
+        oben.pack(fill="x")
+        ttk.Label(oben, text=_("Group")).pack(side="left")
+        self.gruppe_var = tk.StringVar(value=gruppen[0][0])
+        cb = ttk.Combobox(oben, textvariable=self.gruppe_var, state="readonly", width=18,
+                          values=[g for g, __ in gruppen])
+        cb.pack(side="left", padx=(6, 0))
+        cb.bind("<<ComboboxSelected>>", lambda e: self.fuellen())
+        self.roll = kpn.RollFlaeche(self)
+        self.roll.pack(fill="both", expand=True, padx=8)
+        self.roll.farbe(kth.PALETTE["dunkel" if seite.app.dark_mode.get() else "hell"]["bg"])
+        self.text = ttk.Label(self, text="", style="Hinweis.TLabel", padding=8)
+        self.text.pack(fill="x")
+        if not seite._schrift():
+            self.text.configure(text=_("KOReader's symbol font (nerdfonts/symbols.ttf) was not found: symbols show as "
+                                       "names. Take the profile from the e-reader to get its fonts."))
+        self.knoepfe = []
+        self.fuellen()
+
+    def fuellen(self):
+        for k in self.knoepfe:
+            k.destroy()
+        self.knoepfe = []
+        liste = dict(self.gruppen).get(self.gruppe_var.get(), [])
+        p = kth.PALETTE["dunkel" if self.seite.app.dark_mode.get() else "hell"]
+        for n, (ch, name, einfuegen) in enumerate(liste):
+            bild = self.seite.glyph_bild(ch, 22, p["fg"]) if kpl.ist_symbol(ch) else None
+            if bild is not None:
+                k = tk.Label(self.roll.innen, image=bild, width=34, height=34, cursor="hand2", bg=p["feld"])
+            else:
+                text = ch if not kpl.ist_symbol(ch) else name[:6]
+                k = tk.Label(self.roll.innen, text=text, width=3, height=1, font=kth.schrift(14), cursor="hand2",
+                             bg=p["feld"], fg=p["fg"])
+            k._feste_farben = True
+            k.grid(row=n // self.SPALTEN, column=n % self.SPALTEN, padx=1, pady=1, sticky="nsew")
+            hinweis = name + (f"  ({einfuegen})" if einfuegen != ch else "")
+            k.bind("<Enter>", lambda e, h=hinweis: self.text.configure(text=h))
+            k.bind("<Button-1>", lambda e, w=einfuegen: self.seite._einfuegen(w))
+            self.knoepfe.append(k)
+        self.roll.nach_oben()
+
+
 # ====================================================================== Bookshelf
 class BookshelfSeite(_Seite):
     plugin = kpl.BOOKSHELF
@@ -577,14 +804,22 @@ class BookshelfSeite(_Seite):
         self.aenderungen = {}                     # Entwurf: Schlüssel -> Wert (None = löschen)
         self._laden_laeuft = False
         self.var = {}
-        i = self.innen
-        ttk.Label(i, text=_("Bookshelf has no way to reload its settings while running: after a change the "
-                            "workbench restarts on the start screen (about a second)."),
+        self.wahlen = {}                          # Name -> (StringVar, [(wert, text)], holen(), setzen(wert))
+        self.farb_felder = {}                     # Schlüssel -> Label (Farbfeld)
+        ttk.Label(self.innen, text=_("Bookshelf has no way to reload its settings while running: after a change the "
+                                     "workbench restarts on the start screen (about a second)."),
                   style="Hinweis.TLabel", wraplength=BREITE, justify="left").pack(anchor="w", fill="x")
+
+        # -- Theme, Hintergrund, Brett, Dekoration, Farben (seit 1.4-beta3; Inhalt hängt vom Profil ab) ----
+        self.f_theme = self._abschnitt("theme", _("Themes"))
+        self.f_hintergrund = self._abschnitt("hintergrund", _("Wallpaper"), offen=False)
+        self.f_brett = self._abschnitt("brett", _("Plank"), offen=False)
+        self.f_deko = self._abschnitt("deko", _("Decoration (ornaments)"), offen=False)
+        self.f_farben = self._abschnitt("farben", _("Colours"), offen=False)
+
+        # -- feste Auswahl ------------------------------------------------------------------
         for gruppe, gtext in kpl.BOOKSHELF_GRUPPEN:
-            ttk.Label(i, text=_(gtext), style="Ueberschrift.TLabel").pack(anchor="w", pady=(10, 0))
-            f = ttk.Frame(i)
-            f.pack(anchor="w", fill="x")
+            f = self._abschnitt(gruppe, _(gtext), offen=(gruppe == "anordnung"))
             f.columnconfigure(1, weight=1)
             r = 0
             for schl, g, text, art, vorgabe, wahl in kpl.BOOKSHELF_WERTE:
@@ -611,9 +846,9 @@ class BookshelfSeite(_Seite):
                 r += 1
 
         # -- alle Schlüssel ---------------------------------------------------------------
-        ttk.Label(i, text=_("All keys in the file"), style="Ueberschrift.TLabel").pack(anchor="w", pady=(12, 0))
+        i = self._abschnitt("alle", _("All keys in the file"), offen=False)
         ttk.Label(i, text=_("For everything not listed above. Double-click a simple value to change it; tables "
-                            "(shelves, modules, colours) can only be changed in Bookshelf itself. \"Default\" removes "
+                            "(shelves, modules) only in the sections above or in Bookshelf itself. \"Default\" removes "
                             "the key, then Bookshelf's default applies."),
                   style="Hinweis.TLabel", wraplength=BREITE, justify="left").pack(anchor="w", fill="x")
         r = self.app._listenrahmen(i)
@@ -634,8 +869,246 @@ class BookshelfSeite(_Seite):
                    command=self.schluessel_bearbeiten).pack(side="left", padx=(0, 4))
         ttk.Button(z, text=_("Default"), style="Klein.TButton", command=self.schluessel_loeschen).pack(side="left")
 
+    # ------------------------------------------------------------------ Theme und Dekoration
+    def _wahl(self, eltern, zeile, name, text, optionen, holen, setzen, breite=24):
+        """Auswahlliste mit Werten: optionen [(wert, text)], holen() liefert den aktuellen Wert."""
+        ttk.Label(eltern, text=text).grid(row=zeile, column=0, sticky="w", padx=(0, 6), pady=1)
+        v = tk.StringVar()
+        cb = ttk.Combobox(eltern, textvariable=v, state="readonly", width=breite, values=[t for __, t in optionen])
+        cb.grid(row=zeile, column=1, sticky="we", pady=1)
+        cb.bind("<<ComboboxSelected>>", lambda e: self._wahl_gewaehlt(name))
+        self.wahlen[name] = (v, optionen, holen, setzen)
+
+    def _wahl_gewaehlt(self, name):
+        if self._laden_laeuft:
+            return
+        v, optionen, __, setzen = self.wahlen[name]
+        wert = next((w for w, t in optionen if t == v.get()), None)
+        setzen(wert)
+
+    def _wahlen_fuellen(self):
+        for v, optionen, holen, __ in self.wahlen.values():
+            w = holen()
+            text = next((t for x, t in optionen if _gleich(x, w)), None)
+            v.set(text if text is not None else (f"{w}" if w is not None else optionen[0][1]))
+
+    def _regale(self):
+        tabs = self._wert("tabs")
+        return tabs if isinstance(tabs, list) else []
+
+    def _regal_setzen(self, nr, feld, wert):
+        tabs = copy.deepcopy(self._regale())
+        if not (0 <= nr < len(tabs)) or not isinstance(tabs[nr], dict):
+            return
+        if wert is None:
+            tabs[nr].pop(feld, None)
+        else:
+            tabs[nr][feld] = wert
+        self._setzen("tabs", tabs)
+
+    def _leeren(self, f):
+        for w in f.winfo_children():
+            w.destroy()
+
+    def _dynamisch_bauen(self):
+        """Abschnitte, deren Inhalt vom Profil abhängt (Theme-Pakete, Bilder, Regale, Ornamente)."""
+        for name in [n for n in self.wahlen if n.startswith(("theme", "regal", "bild", "brett", "deko"))]:
+            del self.wahlen[name]
+        ko = self.ko
+        themes = kpl.themes(ko)
+        regale = self._regale()
+
+        f = self.f_theme
+        self._leeren(f)
+        f.columnconfigure(1, weight=1)
+        standard = [(kpl.THEME_EIGEN, _("Custom theme")), (kpl.THEME_SCHLICHT, _("Plain"))] + themes
+        self._wahl(f, 0, "theme", _("Default theme"), standard, lambda: self._wert("library_theme"),
+                   lambda w: self._setzen("library_theme", w))
+        self._wahl(f, 1, "theme_hell", _("Light or dark"), [(k, _(t)) for k, t in kpl.HELLDUNKEL],
+                   lambda: self._wert("shelf_theme", "auto"), lambda w: self._setzen("shelf_theme", w, "auto"))
+        r = 2
+        if regale:
+            ttk.Label(f, text=_("Theme per shelf"), style="Ueberschrift.TLabel").grid(row=r, column=0, columnspan=2,
+                                                                                     sticky="w", pady=(6, 0))
+            r += 1
+            je = [(None, _("Like the default")), ("mine", _("Custom theme")), (kpl.THEME_SCHLICHT, _("Plain"))] + themes
+            for n, tab in enumerate(regale):
+                self._wahl(f, r, f"regal_theme_{n}", kpl.regal_name(tab), je,
+                           lambda n=n: (self._regale()[n] or {}).get("theme"),
+                           lambda w, n=n: self._regal_setzen(n, "theme", w))
+                r += 1
+        ttk.Label(f, text=_("Theme packs are folders in settings/bookshelf/ornaments with a theme/theme.json; new ones "
+                            "come from Bookshelf's theme library. Wallpaper, plank and colours below belong to the "
+                            "custom theme; a theme pack lays its own parts over it.") +
+                  ("" if themes else " " + _("No theme pack in the profile.")),
+                  style="Hinweis.TLabel", wraplength=BREITE, justify="left").grid(row=r, column=0, columnspan=2,
+                                                                                 sticky="we", pady=(4, 0))
+
+        f = self.f_hintergrund
+        self._leeren(f)
+        f.columnconfigure(1, weight=1)
+        bilder = [(b, b) for b in kpl.hintergrundbilder(ko)]
+        self._wahl(f, 0, "bild", _("Picture"), [(None, _("None"))] + bilder,
+                   lambda: self._wert("wallpaper_default"), lambda w: self._setzen("wallpaper_default", w))
+        self._wahl(f, 1, "bild_voll", _("Full screen shelves"), [(None, _("Same as above"))] + bilder,
+                   lambda: self._wert("wallpaper_full"), lambda w: self._setzen("wallpaper_full", w))
+        self._wahl(f, 2, "bild_abdunkeln", _("Panel shading"), [(k, _(t)) for k, t in kpl.ABDUNKELN],
+                   lambda: self._wert("wallpaper_chrome_scrim", 0.85),
+                   lambda w: self._setzen("wallpaper_chrome_scrim", w, 0.85))
+        for r, (schl, text) in enumerate((("wallpaper_transparent_buttons", _("Transparent buttons")),
+                                          ("wallpaper_panel_blur", _("Blur the picture under panels")),
+                                          ("wallpaper_invert_night", _("Invert the picture in night mode")),
+                                          ("covers_full_panel", _("One panel over the whole covers shelf"))), 3):
+            v = self.var[schl] = tk.BooleanVar()
+            ttk.Checkbutton(f, text=text, variable=v,
+                            command=lambda s=schl: self._setzen(s, bool(self.var[s].get()), False)).grid(
+                row=r, column=0, columnspan=2, sticky="w", pady=1)
+        z = ttk.Frame(f)
+        z.grid(row=7, column=0, columnspan=2, sticky="w", pady=(4, 0))
+        ttk.Button(z, text=_("Add picture …"), style="Klein.TButton", command=self.bild_hinzufuegen).pack(side="left")
+        ttk.Label(f, text=_("Pictures are in settings/bookshelf/wallpapers of the profile. \"Add picture\" copies one "
+                            "there at once (it still has to get to the e-reader)."),
+                  style="Hinweis.TLabel", wraplength=BREITE, justify="left").grid(row=8, column=0, columnspan=2,
+                                                                                 sticky="we", pady=(2, 0))
+
+        f = self.f_brett
+        self._leeren(f)
+        f.columnconfigure(1, weight=1)
+        self._wahl(f, 0, "brett", _("Plank"), [(None, _("Default (oak, unless you chose a plank colour)")),
+                                               ("oak", _("Oak")), (False, _("Colour only"))] + kpl.bretter(ko),
+                   lambda: self._wert("theme_plank_pack"), lambda w: self._setzen("theme_plank_pack", w))
+        ttk.Label(f, text=_("The plank colour is under Colours (Plank)."), style="Hinweis.TLabel",
+                  wraplength=BREITE, justify="left").grid(row=1, column=0, columnspan=2, sticky="we", pady=(2, 0))
+
+        f = self.f_deko
+        self._leeren(f)
+        f.columnconfigure(1, weight=1)
+        r = 0
+        if regale:
+            ttk.Label(f, text=_("How often per shelf"), style="Ueberschrift.TLabel").grid(row=r, column=0, columnspan=2,
+                                                                                         sticky="w")
+            r += 1
+            stufen = [(k, _(t)) for k, t in kpl.HAEUFIGKEIT]
+            for n, tab in enumerate(regale):
+                self._wahl(f, r, f"deko_{n}", kpl.regal_name(tab), stufen,
+                           lambda n=n: (self._regale()[n] or {}).get("ornament_frequency", kpl.HAEUFIGKEIT_VORGABE),
+                           lambda w, n=n: self._regal_setzen(n, "ornament_frequency", w), breite=12)
+                r += 1
+        ttk.Label(f, text=_("Ornaments (double-click switches on/off)"), style="Ueberschrift.TLabel").grid(
+            row=r, column=0, columnspan=2, sticky="w", pady=(6, 0))
+        rr = self.app._listenrahmen(f)
+        rr.grid(row=r + 1, column=0, columnspan=2, sticky="we")
+        self.deko_baum = ttk.Treeview(rr, show="tree", height=8, selectmode="browse")
+        sb = ttk.Scrollbar(rr, orient="vertical", command=self.deko_baum.yview)
+        self.deko_baum.configure(yscrollcommand=sb.set)
+        sb.pack(side="right", fill="y")
+        self.deko_baum.pack(side="left", fill="x", expand=True)
+        self.deko_baum.bind("<Double-Button-1>", lambda e: self.deko_umschalten())
+        self.deko_baum.bind("<space>", lambda e: self.deko_umschalten())
+        self._deko = kpl.dekoration(ko)
+        ttk.Label(f, text=_("Ornaments stand in the gaps of spine shelves only. Their files are in "
+                            "settings/bookshelf/ornaments (one level of packs).") +
+                  ("" if self._deko else " " + _("No ornaments in the profile.")),
+                  style="Hinweis.TLabel", wraplength=BREITE, justify="left").grid(row=r + 2, column=0, columnspan=2,
+                                                                                 sticky="we", pady=(2, 0))
+
+        f = self.f_farben
+        if not self.farb_felder:
+            ttk.Label(f, text=_("Day")).grid(row=0, column=1, padx=4)
+            ttk.Label(f, text=_("Night")).grid(row=0, column=2, padx=4)
+            for r, (schl, text) in enumerate(kpl.FARBEN, 1):
+                ttk.Label(f, text=_(text)).grid(row=r, column=0, sticky="w", padx=(0, 6), pady=1)
+                for sp, k in ((1, schl), (2, schl + "_night")):
+                    feld = tk.Label(f, width=6, relief="solid", borderwidth=1, cursor="hand2")
+                    feld._feste_farben = True
+                    feld.grid(row=r, column=sp, padx=4, pady=1)
+                    feld.bind("<Button-1>", lambda e, k=k: self.farbe_waehlen(k))
+                    self.farb_felder[k] = feld
+                ttk.Button(f, text="✕", width=2, style="Klein.TButton",
+                           command=lambda s=schl: (self._setzen(s, None), self._setzen(s + "_night", None))).grid(
+                    row=r, column=3, padx=(4, 0), pady=1)
+            ttk.Label(f, text=_("Click a field to choose a colour; \"-\" = the default. ✕ resets day and night. Colours "
+                                "belong to the custom theme."),
+                      style="Hinweis.TLabel", wraplength=BREITE, justify="left").grid(row=len(kpl.FARBEN) + 1,
+                                                                                     column=0, columnspan=4,
+                                                                                     sticky="we", pady=(4, 0))
+
+    def _deko_fuellen(self):
+        b = self.deko_baum
+        offen = {i for i in b.get_children() if b.item(i, "open")}
+        b.delete(*b.get_children())
+        aus = self._wert("ornaments_off") or {}
+        pakete_aus = self._wert("ornament_packs_off") or {}
+
+        def zeichen(an):
+            return "☑ " if an else "☐ "
+        for paket, teile in sorted(self._deko.items()):
+            eltern = ""
+            if paket:
+                an = not pakete_aus.get(paket) if isinstance(pakete_aus, dict) else True
+                eltern = b.insert("", "end", iid="paket:" + paket, text=zeichen(an) + paket,
+                                  open=("paket:" + paket) in offen)
+            for rel in teile:
+                an = not aus.get(rel) if isinstance(aus, dict) else True
+                b.insert(eltern, "end", iid="teil:" + rel, text=zeichen(an) + rel.split("/")[-1])
+
+    def deko_umschalten(self):
+        sel = self.deko_baum.selection()
+        if not sel:
+            return
+        art, name = sel[0].split(":", 1)
+        schl = "ornament_packs_off" if art == "paket" else "ornaments_off"
+        menge = dict(self._wert(schl) or {})
+        if menge.get(name):
+            menge.pop(name)
+        else:
+            menge[name] = True
+        self._setzen(schl, menge or None)
+        if self.deko_baum.exists(sel[0]):
+            self.deko_baum.selection_set(sel[0])
+
+    def _farben_fuellen(self):
+        p = kth.PALETTE["dunkel" if self.app.dark_mode.get() else "hell"]
+        for k, feld in self.farb_felder.items():
+            h = kpl.farbe_hex(self._wert(k))
+            if h:
+                feld.configure(bg=h, text="", fg=p["fg"])
+            else:
+                feld.configure(bg=p["feld"], fg=p["hinweis"], text="-")
+
+    def farbe_waehlen(self, schl):
+        from tkinter import colorchooser
+        alt = kpl.farbe_hex(self._wert(schl))
+        erg = colorchooser.askcolor(color=alt or "#808080", parent=self.app, title=_("Colour"))
+        if erg and erg[1]:
+            self._setzen(schl, kpl.farbe_wert(erg[1]))
+
+    def bild_hinzufuegen(self):
+        from tkinter import filedialog
+        import shutil
+        p = filedialog.askopenfilename(parent=self.app, title=_("Wallpaper for Bookshelf"),
+                                       filetypes=[(_("Pictures"), " ".join("*" + e for e in sorted(kpl.BILD_ENDUNGEN))),
+                                                  (_("All files"), "*")])
+        if not p:
+            return
+        ziel = self.ko / "settings" / "bookshelf" / "wallpapers"
+        ziel.mkdir(parents=True, exist_ok=True)
+        try:
+            shutil.copy2(p, ziel / Path(p).name)
+        except OSError as e:
+            self.app.status.set(str(e))
+            return
+        kpl._profil_geaendert(self.bereich.profil, "bookshelf")
+        self._dynamisch_bauen()
+        self._setzen("wallpaper_default", Path(p).name)
+
     def zuruecksetzen(self):
         self.datei_werte, self.aenderungen = None, {}
+
+    def farben(self):
+        super().farben()
+        if self.farb_felder and self.datei_werte is not None:
+            self._farben_fuellen()
 
     # ------------------------------------------------------------------ Werte
     def _wert(self, schl, vorgabe=None):
@@ -652,6 +1125,7 @@ class BookshelfSeite(_Seite):
             version=self.info["version"] or "?", datei=kpl.bookshelf_datei(self.ko).relative_to(self.ko)))
         self.datei_werte = kpl.bookshelf_lesen(self.ko)
         self.aenderungen = {}
+        self._dynamisch_bauen()
         self._formular_fuellen()
 
     def _formular_fuellen(self):
@@ -665,6 +1139,14 @@ class BookshelfSeite(_Seite):
                     self.var[schl].set("" if w is None else str(w))
                 else:
                     self.var[schl].set(_(dict(wahl).get(w, dict(wahl)[vorgabe])))
+            for schl in ("wallpaper_transparent_buttons", "wallpaper_panel_blur", "wallpaper_invert_night",
+                         "covers_full_panel"):
+                if schl in self.var:
+                    self.var[schl].set(bool(self._wert(schl, False)))
+            self._wahlen_fuellen()
+            if hasattr(self, "deko_baum"):
+                self._deko_fuellen()
+            self._farben_fuellen()
             self.baum.delete(*self.baum.get_children())
             alle = dict(self.datei_werte or {})
             alle.update({k: v for k, v in self.aenderungen.items()})
@@ -695,7 +1177,7 @@ class BookshelfSeite(_Seite):
 
     def _setzen(self, schl, w, vorgabe=None):
         im_profil = (self.datei_werte or {}).get(schl)
-        if w == im_profil or (w is None and im_profil is None) or (w == vorgabe and im_profil is None):
+        if _gleich(w, im_profil) or (w is not None and _gleich(w, vorgabe) and im_profil is None):
             self.aenderungen.pop(schl, None)
         else:
             self.aenderungen[schl] = w

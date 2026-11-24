@@ -5,6 +5,7 @@
 #
 # Ergebnis: Release-Entwurf "Bookbench <Version>" zum Tag mit Bookbench_Setup_<Version>.exe und SHA256SUMS;
 # Text aus .github/release-notes/<Version>.md (englisch, wird mit dem Release erstellt), sonst ein Platzhalter.
+# Beginnt der Text mit "**Titel**" (fertige Versionen, seit 1.3), heißt der Release "Bookbench <Version> – Titel".
 # Gibt es zum Tag schon eine Veröffentlichung (auch veröffentlicht), werden die Dateien dort
 # angehängt bzw. ersetzt. Text schreiben, ggf. "Vorabversion" anhaken und veröffentlichen macht
 # der Nutzer selbst; Entwürfe sieht der Updater nicht.
@@ -137,11 +138,17 @@ jobs:
             gh release upload $env:TAG $setup SHA256SUMS --clobber --repo $env:GITHUB_REPOSITORY
           } else {
             $notizen = "$env:GITHUB_WORKSPACE/.github/release-notes/$env:VERSION.md"
+            $titel = "Bookbench $env:VERSION"
+            if (Test-Path $notizen) {
+              # Titel fertiger Versionen: Release-Text beginnt mit "**Titel**" -> "Bookbench 1.3 – Titel"
+              $erste = Get-Content -Path $notizen -Encoding utf8 -TotalCount 1
+              if ($erste -match '^\*\*(.+?)\*\*') { $titel = "Bookbench $env:VERSION $([char]0x2013) $($Matches[1])" }
+            }
             if (-not (Test-Path $notizen)) {
               $notizen = "$env:RUNNER_TEMP/notes.md"
               "Windows-Setup und SHA256SUMS automatisch gebaut. Text ergänzen, ggf. *Vorabversion* anhaken, dann veröffentlichen." |
                 Out-File -FilePath $notizen -Encoding utf8
             }
-            gh release create $env:TAG $setup SHA256SUMS --draft --verify-tag --title "Bookbench $env:VERSION" --notes-file $notizen --repo $env:GITHUB_REPOSITORY
+            gh release create $env:TAG $setup SHA256SUMS --draft --verify-tag --title $titel --notes-file $notizen --repo $env:GITHUB_REPOSITORY
           }
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }

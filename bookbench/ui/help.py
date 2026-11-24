@@ -19,7 +19,7 @@ import keller_theme as kth
 from bookbench.i18n import _
 
 PROGRAMM = "Bookbench"
-VERSION = "1.4-beta3"
+VERSION = "1.4-beta4"
 
 # (Elternthema, Kennung, Titel, Text). Übersetzt beim Import. Text: **fett**, Aufzählungen mit "-",
 # [[kennung]] = Verweis.
@@ -540,6 +540,8 @@ It is searched in this order: own path ([[einst_vorschau]]), koreader in PATH, m
 
 **More**
 - [[vorschau_werkbank]]
+- [[vorschau_lesen]]
+- [[vorschau_patches]]
 - [[vorschau_bookends]]
 - [[vorschau_bookshelf]]
 - [[vorschau_profil]]
@@ -561,6 +563,29 @@ KOReader starts without a window (SDL offscreen) at the full resolution of the d
 It works on a throw-away copy of the profile (folder vorschau/werkbank), new at every start: reading position, history and settings of the profile stay untouched. Only the plugins Bookends and Bookshelf are loaded - other plugins can lay a full screen over everything. The built-in plugins of KOReader are there as always.
 
 **Open in KOReader** (toolbar) starts the full KOReader in a window as before, for trying out menus: [[vorschau_starten]].
+""")),
+    ("vorschau", "vorschau_lesen", _("Font and margins"), _("""
+Below Preview, **Font and margins** holds KOReader's own general reading settings - what "Set as default" in KOReader's reading menu (the bottom menu while reading) stores in settings.reader.lua. The page appears as soon as there is a profile ([[vorschau_profil]]).
+
+**Font**: the font (the family names of the fonts in the profile and in the desktop KOReader; you can also type a name), size, weight, line spacing, word spacing (scaling and reduction), word expansion, kerning, hinting, contrast (gamma), and whether the book's embedded fonts and style are used.
+**Margins**: left and right, top, bottom, and whether top and bottom stay the same. In KOReader's units. The margins of Bookends are on the Bookends page ([[vorschau_bookends]]).
+
+Empty fields use KOReader's defaults. Changes are a draft until **Save to profile**; KOReader reads these values when it opens a book, so the workbench restarts after a change (about a second) and switches to the reading page.
+
+**Values of the book shown**
+KOReader stores font and margins in the book data (.sdr) of every book it has opened once - all of them, when the book is closed. There they win over the general values, which therefore only apply to books never opened before. The section shows which values the book in the workbench brings along.
+**Ignore the book's own values in the workbench** removes them from the copy of the book data in the workbench, so the general values show. The book data of the book itself stays untouched. The sample text never has book data.
+""")),
+    ("vorschau", "vorschau_patches", _("Patches"), _("""
+Below Preview, **Patches** lists the user patches of the profile (folder koreader/patches) as KOReader's patch management does (Tools > More tools > Patch management on the e-reader).
+
+- Patches are grouped by when they run: early once after an update (0), early (1), late after the start (2), before quitting (8), when quitting (9) - the first digit of the file name. Files without such a number or without .lua never run and are not listed.
+- ☑ on, ☐ off. Double-click, Space or **On/off** switches. Like KOReader, Bookbench renames the file: off = ".disabled" behind ".lua".
+- **Switch off all patches** is KOReader's main switch (file .patches_disabled). In the workbench Bookbench switches the patches off one by one instead, so its own patch keeps running.
+- ⚠ marks a patch that failed in the workbench; select it to see KOReader's message. Many patches need the e-reader (a Kobo-only function, the frontlight …) and can never run on the computer - that says nothing about the e-reader.
+- **Show …** opens the patch read-only. **Add …** copies a .lua file into the profile (without a number it gets "2-", otherwise KOReader would never run it); **Delete** removes one. Adding and deleting change the profile at once.
+
+Switching on and off is a draft until **Save to profile**. Patches run when KOReader starts, so the workbench restarts after every change. Bookbench's own patches (1-bookbench-desktop, 2-bookbench-workbench) are not listed.
 """)),
     ("vorschau", "vorschau_bookends", _("Bookends settings"), _("""
 If the profile contains the plugin **Bookends**, the sidebar shows **Bookends** below Preview. Its settings page sits in the left column; the picture stays on the right and shows every change after a short pause (a tenth of a second, KOReader keeps running). The workbench switches to the reading page for this.

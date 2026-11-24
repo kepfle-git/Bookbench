@@ -51,7 +51,7 @@ msgstr "Nr."
 msgid "Author"
 msgstr "Autor"
 
-#: app.py:81 app.py:714 app.py:782 app.py:1681 help.py:209 help.py:728
+#: app.py:81 app.py:714 app.py:782 app.py:1681 help.py:209 help.py:753
 msgid "Chapters"
 msgstr "Kapitel"
 
@@ -235,7 +235,7 @@ msgstr "Änderungen aus einem StarDict-Ordner übernehmen …"
 msgid "New entry"
 msgstr "Neuer Eintrag"
 
-#: app.py:256 area_dictionary.py:337 area_metadata.py:195 area_preview.py:244
+#: app.py:256 area_dictionary.py:337 area_metadata.py:195 area_preview.py:254
 msgid "Discard"
 msgstr "Verwerfen"
 
@@ -275,11 +275,11 @@ msgstr "Aufbau (Schritte aus dem Wiki)"
 msgid "Dictionary"
 msgstr "Wörterbuch"
 
-#: app.py:273 area_device.py:41 help.py:461 help.py:789 settings.py:133 settings.py:752
+#: app.py:273 area_device.py:41 help.py:461 help.py:814 settings.py:133 settings.py:752
 msgid "E-reader"
 msgstr "E-Reader"
 
-#: app.py:277 area_preview.py:250 area_preview.py:254
+#: app.py:277 area_preview.py:260 area_preview.py:264
 msgid "Open in KOReader"
 msgstr "In KOReader öffnen"
 
@@ -303,7 +303,7 @@ msgstr "Andere Datei …"
 msgid "Find KOReader"
 msgstr "KOReader suchen"
 
-#: app.py:282 area_preview.py:81
+#: app.py:282 area_preview.py:83
 msgid "Choose KOReader …"
 msgstr "KOReader wählen …"
 
@@ -311,7 +311,7 @@ msgstr "KOReader wählen …"
 msgid "Open profile folder"
 msgstr "Profilordner öffnen"
 
-#: app.py:287 app.py:714 area_preview.py:73 area_preview.py:595 area_preview.py:732 help.py:532
+#: app.py:287 app.py:714 area_preview.py:75 area_preview.py:607 area_preview.py:745 help.py:532
 msgid "Preview"
 msgstr "Vorschau"
 
@@ -343,11 +343,11 @@ msgstr "Status in den Listen"
 msgid "Library columns"
 msgstr "Spalten der Bibliothek"
 
-#: app.py:300 area_preview.py:91 area_preview.py:94
+#: app.py:300 area_preview.py:93 area_preview.py:96
 msgid "View"
 msgstr "Ansicht"
 
-#: app.py:302 app.py:308 app.py:347 help.py:902 settings.py:170
+#: app.py:302 app.py:308 app.py:347 help.py:927 settings.py:170
 msgid "Help"
 msgstr "Hilfe"
 
@@ -473,7 +473,7 @@ msgstr[1] "{n} Kapitelvorschläge"
 msgid "Library"
 msgstr "Bibliothek"
 
-#: app.py:581 area_dictionary.py:124 help.py:911 list_filter.py:65
+#: app.py:581 area_dictionary.py:124 help.py:936 list_filter.py:65
 msgid "Search:"
 msgstr "Suchen:"
 
@@ -518,7 +518,7 @@ msgstr ""
 msgid "Series from the {quelle} data, not in the EPUB"
 msgstr "Reihe aus den {quelle}-Daten, steht nicht im EPUB"
 
-#: app.py:714 app.py:1683 area_metadata.py:43 help.py:248 help.py:777 settings.py:130
+#: app.py:714 app.py:1683 area_metadata.py:43 help.py:248 help.py:802 settings.py:130
 msgid "Metadata"
 msgstr "Metadaten"
 
@@ -546,7 +546,7 @@ msgstr "Bücher:"
 msgid "Entry"
 msgstr "Eintrag"
 
-#: app.py:797 area_covers.py:191 area_dictionary.py:339 workbench_plugins.py:169
+#: app.py:797 area_covers.py:191 area_dictionary.py:339 workbench_plugins.py:171
 msgid "New"
 msgstr "Neu"
 
@@ -1125,7 +1125,7 @@ msgstr "Neues Cover wählen"
 msgid "Images"
 msgstr "Bilder"
 
-#: area_covers.py:265 area_preview.py:634 workbench_plugins.py:1091
+#: area_covers.py:265 area_preview.py:647 workbench_plugins.py:1094 workbench_reader.py:420
 msgid "All files"
 msgstr "Alle Dateien"
 
@@ -1155,7 +1155,7 @@ msgstr "Cover von {quelle} übernommen, noch nicht gespeichert (Strg+S)."
 msgid "looking for covers …"
 msgstr "suche Cover …"
 
-#: area_covers.py:307 area_covers.py:347 help.py:768 settings.py:129 settings.py:632
+#: area_covers.py:307 area_covers.py:347 help.py:793 settings.py:129 settings.py:632
 msgid "Looking up covers"
 msgstr "Cover nachschlagen"
 
@@ -1235,7 +1235,7 @@ msgstr "Abbrechen"
 msgid "Click a cover to choose it, double-click takes it at once."
 msgstr "Klick wählt ein Cover, Doppelklick übernimmt es sofort."
 
-#: area_device.py:36 device.py:87 help.py:666 settings.py:151 settings.py:740 settings.py:830
+#: area_device.py:36 device.py:87 help.py:691 settings.py:151 settings.py:740 settings.py:830
 msgid "Settings"
 msgstr "Einstellungen"
 
@@ -1275,7 +1275,7 @@ msgstr "nur auf dem E-Reader"
 msgid "before restoring"
 msgstr "vor dem Zurückspielen"
 
-#: area_device.py:69 area_device.py:295 area_device.py:403 area_preview.py:578
+#: area_device.py:69 area_device.py:295 area_device.py:403 area_preview.py:590
 msgid "No e-reader connected."
 msgstr "Kein E-Reader angeschlossen."
 
@@ -1303,7 +1303,7 @@ msgstr "Sicherungen der KOReader-Einstellungen"
 msgid "Date"
 msgstr "Datum"
 
-#: area_device.py:117 area_preview.py:133 settings.py:132
+#: area_device.py:117 area_preview.py:135 settings.py:132
 msgid "Device"
 msgstr "Gerät"
 
@@ -1315,7 +1315,7 @@ msgstr "Anlass"
 msgid "Contents"
 msgstr "Inhalt"
 
-#: area_device.py:119 workbench_plugins.py:235
+#: area_device.py:119 workbench_plugins.py:237
 msgid "Size"
 msgstr "Größe"
 
@@ -1422,7 +1422,7 @@ msgstr ""
 "Verbindung bestätigen (KOReader: USB-Massenspeicher). Er wird von selbst "
 "erkannt."
 
-#: area_device.py:307 area_preview.py:352
+#: area_device.py:307 area_preview.py:362
 msgid "Folder: {ordner}"
 msgstr "Ordner: {ordner}"
 
@@ -1672,7 +1672,7 @@ msgstr "eigene Einträge"
 msgid "StarDict folder"
 msgstr "StarDict-Ordner"
 
-#: area_dictionary.py:39 area_dictionary.py:897 area_preview.py:341
+#: area_dictionary.py:39 area_dictionary.py:897 area_preview.py:351
 msgid "none"
 msgstr "keine"
 
@@ -2466,7 +2466,7 @@ msgstr[1] ""
 msgid "Nothing to fill: no book has empty fields that Calibre knows."
 msgstr "Nichts zu füllen: kein Buch hat leere Felder, die Calibre kennt."
 
-#: area_preview.py:42
+#: area_preview.py:44
 msgid ""
 "The preview needs the desktop KOReader. It is only needed for this, "
 "everything else works without it. Install it (one of these):"
@@ -2474,7 +2474,7 @@ msgstr ""
 "Die Vorschau braucht den Desktop-KOReader. Er wird nur dafür gebraucht, "
 "alles andere geht auch ohne. Installieren (eins davon):"
 
-#: area_preview.py:46
+#: area_preview.py:48
 msgid ""
 "AppImage from github.com/koreader/koreader/releases into ~/Applications or "
 "~/Downloads, or \"Choose KOReader …\" below"
@@ -2482,51 +2482,51 @@ msgstr ""
 "AppImage von github.com/koreader/koreader/releases nach ~/Applications oder "
 "~/Downloads legen, oder unten \"KOReader wählen …\""
 
-#: area_preview.py:48
+#: area_preview.py:50
 msgid "Then \"Find KOReader\" in the Preview menu."
 msgstr "Danach \"KOReader suchen\" im Menü Vorschau."
 
-#: area_preview.py:76
+#: area_preview.py:78
 msgid "KOReader workbench"
 msgstr "KOReader-Werkbank"
 
-#: area_preview.py:96
+#: area_preview.py:98
 msgid "Reading page"
 msgstr "Leseseite"
 
-#: area_preview.py:96
+#: area_preview.py:98
 msgid "Start screen (library, Bookshelf)"
 msgstr "Startbildschirm (Bibliothek, Bookshelf)"
 
-#: area_preview.py:100 calibre_import.py:88 calibre_import.py:96
+#: area_preview.py:102 calibre_import.py:88 calibre_import.py:96
 msgid "Book"
 msgstr "Buch"
 
-#: area_preview.py:114
+#: area_preview.py:116
 msgid "Restart"
 msgstr "Neu starten"
 
-#: area_preview.py:120 area_preview.py:387
+#: area_preview.py:122 area_preview.py:397
 msgid "Profile, device and output"
 msgstr "Profil, Gerät und Ausgabe"
 
-#: area_preview.py:126
+#: area_preview.py:128
 msgid "Profile (settings, plugins, fonts from the e-reader)"
 msgstr "Profil (Einstellungen, Plugins, Schriften vom E-Reader)"
 
-#: area_preview.py:136
+#: area_preview.py:138
 msgid "Window for \"Open in KOReader\":"
 msgstr "Fenster für „In KOReader öffnen“:"
 
-#: area_preview.py:144
+#: area_preview.py:146
 msgid "KOReader output"
 msgstr "Ausgabe von KOReader"
 
-#: area_preview.py:242
+#: area_preview.py:252
 msgid "Save to profile"
 msgstr "Ins Profil speichern"
 
-#: area_preview.py:243
+#: area_preview.py:253
 msgid ""
 "Keep the changes in the preview profile (until now they only show in the "
 "picture)"
@@ -2534,19 +2534,19 @@ msgstr ""
 "Die Änderungen im Vorschau-Profil behalten (bisher sind sie nur im Bild zu "
 "sehen)"
 
-#: area_preview.py:245
+#: area_preview.py:255
 msgid "Back to what is in the profile"
 msgstr "Zurück zum Stand im Profil"
 
-#: area_preview.py:248 workbench_plugins.py:673
+#: area_preview.py:258 workbench_plugins.py:675
 msgid "New preset"
 msgstr "Neue Vorlage"
 
-#: area_preview.py:248
+#: area_preview.py:258
 msgid "Make a new, empty Bookends preset"
 msgstr "Eine neue, leere Bookends-Vorlage anlegen"
 
-#: area_preview.py:251 area_preview.py:255
+#: area_preview.py:261 area_preview.py:265
 msgid ""
 "Open the selected book in the full desktop KOReader (window), with the "
 "settings from the e-reader - for trying out menus"
@@ -2554,11 +2554,11 @@ msgstr ""
 "Das gewählte Buch im vollen Desktop-KOReader öffnen (Fenster), mit den "
 "Einstellungen vom E-Reader - zum Ausprobieren der Menüs"
 
-#: area_preview.py:258
+#: area_preview.py:268
 msgid "From the e-reader"
 msgstr "Vom E-Reader"
 
-#: area_preview.py:259
+#: area_preview.py:269
 msgid ""
 "Rebuild the profile from the connected e-reader: settings, Bookends, "
 "patches, plugins, fonts"
@@ -2566,11 +2566,11 @@ msgstr ""
 "Profil aus dem angeschlossenen E-Reader neu aufbauen: Einstellungen, "
 "Bookends, Patches, Plugins, Schriften"
 
-#: area_preview.py:260
+#: area_preview.py:270
 msgid "From backup"
 msgstr "Aus Sicherung"
 
-#: area_preview.py:261
+#: area_preview.py:271
 msgid ""
 "Settings from the backup selected in the E-reader area (otherwise the "
 "newest); plugins and fonts stay"
@@ -2578,31 +2578,31 @@ msgstr ""
 "Einstellungen aus der im Bereich E-Reader markierten (sonst der neuesten) "
 "Sicherung; Plugins und Schriften bleiben"
 
-#: area_preview.py:264
+#: area_preview.py:274
 msgid "Other file"
 msgstr "Andere Datei"
 
-#: area_preview.py:265
+#: area_preview.py:275
 msgid "Show a book that is not in the opened library"
 msgstr "Ein Buch zeigen, das nicht in der geöffneten Bibliothek steht"
 
-#: area_preview.py:292
+#: area_preview.py:302
 msgid "Sample text (Lorem ipsum)"
 msgstr "Blindtext (Lorem ipsum)"
 
-#: area_preview.py:295 area_preview.py:639
+#: area_preview.py:305 area_preview.py:652
 msgid "[File] {name}"
 msgstr "[Datei] {name}"
 
-#: area_preview.py:324 area_preview.py:427 emulator.py:525 workbench.py:258
+#: area_preview.py:334 area_preview.py:437 emulator.py:525 workbench.py:265
 msgid "Desktop KOReader not found."
 msgstr "Desktop-KOReader nicht gefunden."
 
-#: area_preview.py:331
+#: area_preview.py:341
 msgid "Still empty."
 msgstr "Noch leer."
 
-#: area_preview.py:332
+#: area_preview.py:342
 msgid ""
 "Connect the e-reader and \"From the e-reader\". \"From backup\" works too, "
 "but then plugins (Bookends) and fonts are missing."
@@ -2610,35 +2610,35 @@ msgstr ""
 "E-Reader anschließen und \"Vom E-Reader\". \"Aus Sicherung\" geht auch, "
 "dann fehlen aber Plugins (Bookends) und Schriften."
 
-#: area_preview.py:338
+#: area_preview.py:348
 msgid "Taken from the e-reader on {datum}"
 msgstr "Vom E-Reader übernommen am {datum}"
 
-#: area_preview.py:340
+#: area_preview.py:350
 msgid "Taken from backup {name} on {datum}"
 msgstr "Aus Sicherung {name} übernommen am {datum}"
 
-#: area_preview.py:341
+#: area_preview.py:351
 msgid "Plugins: {liste}"
 msgstr "Plugins: {liste}"
 
-#: area_preview.py:342
+#: area_preview.py:352
 msgid "Fonts: {n}"
 msgstr "Schriften: {n}"
 
-#: area_preview.py:342
+#: area_preview.py:352
 msgid "Patches: {n}"
 msgstr "Patches: {n}"
 
-#: area_preview.py:343
+#: area_preview.py:353
 msgid "Style tweaks: {n}"
 msgstr "Stil-Anpassungen: {n}"
 
-#: area_preview.py:344
+#: area_preview.py:354
 msgid "Bookends presets: {n}"
 msgstr "Bookends-Vorlagen: {n}"
 
-#: area_preview.py:348
+#: area_preview.py:358
 msgid ""
 "⚠ Plugins and fonts are missing: take \"From the e-reader\" once, otherwise "
 "Bookends is missing."
@@ -2646,32 +2646,32 @@ msgstr ""
 "⚠ Plugins und Schriften fehlen: einmal \"Vom E-Reader\" übernehmen, sonst "
 "fehlt Bookends."
 
-#: area_preview.py:351
+#: area_preview.py:361
 msgid "Bookends is not in the profile (not installed on the e-reader?)."
 msgstr "Bookends ist nicht im Profil (auf dem E-Reader nicht installiert?)."
 
-#: area_preview.py:359
+#: area_preview.py:369
 msgid "own size from the settings"
 msgstr "eigene Größe aus den Einstellungen"
 
-#: area_preview.py:359
+#: area_preview.py:369
 msgid "chosen in the settings"
 msgstr "in den Einstellungen gewählt"
 
-#: area_preview.py:360
+#: area_preview.py:370
 msgid "device of the profile"
 msgstr "Gerät des Profils"
 
-#: area_preview.py:360
+#: area_preview.py:370
 msgid "connected e-reader"
 msgstr "angeschlossener E-Reader"
 
-#: area_preview.py:361
+#: area_preview.py:371
 msgid "⚠ device unknown, standard size - choose it in Settings > Preview"
 msgstr ""
 "⚠ Gerät unbekannt, Standardgröße - unter Einstellungen > Vorschau wählen"
 
-#: area_preview.py:362
+#: area_preview.py:372
 msgid ""
 "{name}: {w} × {h} pixels, {dpi} dpi, {farbe} ({woher}). The workbench "
 "always renders at full size and fits the picture into the area."
@@ -2679,24 +2679,24 @@ msgstr ""
 "{name}: {w} × {h} Pixel, {dpi} dpi, {farbe} ({woher}). Die Werkbank "
 "zeichnet immer in voller Größe und passt das Bild in die Fläche ein."
 
-#: area_preview.py:366
+#: area_preview.py:376
 msgid "colour"
 msgstr "Farbe"
 
-#: area_preview.py:366
+#: area_preview.py:376
 msgid "black and white"
 msgstr "Schwarzweiß"
 
-#: area_preview.py:372
+#: area_preview.py:382
 msgid "The start screen shows eight sample books with covers."
 msgstr "Der Startbildschirm zeigt acht Beispielbücher mit Covern."
 
-#: area_preview.py:374
+#: area_preview.py:384
 msgid ""
 "Sample text with chapters, title, author and series - enough for Bookends."
 msgstr "Blindtext mit Kapiteln, Titel, Autor und Reihe - genug für Bookends."
 
-#: area_preview.py:376
+#: area_preview.py:386
 msgid ""
 "Book data (.sdr) is next to the book: font size, margins etc. as on the "
 "e-reader."
@@ -2704,7 +2704,7 @@ msgstr ""
 "Buchdaten (.sdr) liegen neben dem Buch: Schriftgröße, Ränder usw. wie auf "
 "dem E-Reader."
 
-#: area_preview.py:378
+#: area_preview.py:388
 msgid ""
 "No book data next to the book. The connected e-reader and the newest backup "
 "are searched for the same file name, otherwise the general settings apply."
@@ -2713,47 +2713,47 @@ msgstr ""
 "E-Reader und in der neuesten Sicherung nach demselben Dateinamen, sonst "
 "gelten die allgemeinen Einstellungen."
 
-#: area_preview.py:430 area_preview.py:685
+#: area_preview.py:440 area_preview.py:698
 msgid "The profile is empty: first \"From the e-reader\" or \"From backup\"."
 msgstr "Profil ist leer: erst \"Vom E-Reader\" oder \"Aus Sicherung\"."
 
-#: area_preview.py:452
+#: area_preview.py:462
 msgid "KOReader is starting in the background …"
 msgstr "KOReader startet im Hintergrund …"
 
-#: area_preview.py:478
+#: area_preview.py:490
 msgid "Running in the background. Started in {s:.1f} s."
 msgstr "Läuft im Hintergrund. Gestartet in {s:.1f} s."
 
-#: area_preview.py:481
+#: area_preview.py:493
 msgid "Running in the background. Last picture in {s:.2f} s."
 msgstr "Läuft im Hintergrund. Letztes Bild in {s:.2f} s."
 
-#: area_preview.py:483 area_preview.py:485
+#: area_preview.py:495 area_preview.py:497
 msgid "KOReader reports: {text}"
 msgstr "KOReader meldet: {text}"
 
-#: area_preview.py:488
+#: area_preview.py:500
 msgid "KOReader in the background has stopped"
 msgstr "KOReader im Hintergrund wurde beendet"
 
-#: area_preview.py:489 area_preview.py:726
+#: area_preview.py:501 area_preview.py:739
 msgid "(exit code {code})"
 msgstr "(Rückgabewert {code})"
 
-#: area_preview.py:491
+#: area_preview.py:503
 msgid "{n} warnings/errors in the output."
 msgstr "{n} Warnungen/Fehler in der Ausgabe."
 
-#: area_preview.py:493
+#: area_preview.py:505
 msgid "Stopped."
 msgstr "Beendet."
 
-#: area_preview.py:531
+#: area_preview.py:543
 msgid "The picture from KOReader appears here."
 msgstr "Hier erscheint das Bild von KOReader."
 
-#: area_preview.py:586
+#: area_preview.py:598
 msgid ""
 "Profile taken from the e-reader: {plugins} plugins, {schriften} fonts, "
 "{vorlagen} Bookends presets."
@@ -2761,11 +2761,11 @@ msgstr ""
 "Profil vom E-Reader übernommen: {plugins} Plugins, {schriften} Schriften, "
 "{vorlagen} Bookends-Vorlagen."
 
-#: area_preview.py:588 area_preview.py:629
+#: area_preview.py:600 area_preview.py:642
 msgid "Taking profile"
 msgstr "Profil übernehmen"
 
-#: area_preview.py:595
+#: area_preview.py:607
 msgid ""
 "Bookbench has changed {liste} in the profile, and these changes are not on "
 "the e-reader yet. Taking the profile again replaces them. Continue?"
@@ -2773,68 +2773,68 @@ msgstr ""
 "Bookbench hat im Profil {liste} geändert, und diese Änderungen sind noch "
 "nicht auf dem E-Reader. Das Profil neu zu holen ersetzt sie. Weiter?"
 
-#: area_preview.py:617
+#: area_preview.py:630
 msgid "No backup available (E-reader area: Back up)."
 msgstr "Keine Sicherung vorhanden (Bereich E-Reader: Sichern)."
 
-#: area_preview.py:625
+#: area_preview.py:638
 msgid "Settings taken from {name}."
 msgstr "Einstellungen aus {name} übernommen."
 
-#: area_preview.py:627
+#: area_preview.py:640
 msgid ""
 "Plugins and fonts are still missing (take them from the e-reader once)."
 msgstr "Plugins und Schriften fehlen noch (einmal vom E-Reader übernehmen)."
 
-#: area_preview.py:632
+#: area_preview.py:645
 msgid "Book for the preview"
 msgstr "Buch für die Vorschau"
 
-#: area_preview.py:647 settings.py:933
+#: area_preview.py:660 settings.py:933
 msgid "Choose the KOReader program or AppImage"
 msgstr "KOReader-Programm oder AppImage wählen"
 
-#: area_preview.py:662
+#: area_preview.py:675
 msgid "The folder could not be opened: {fehler}"
 msgstr "Ordner ließ sich nicht öffnen: {fehler}"
 
-#: area_preview.py:673
+#: area_preview.py:686
 msgid "KOReader is already running. Close its window, then start again."
 msgstr "KOReader läuft schon. Fenster schließen, dann neu starten."
 
-#: area_preview.py:678
+#: area_preview.py:691
 msgid "Desktop KOReader not found (see the note at the top of the area)."
 msgstr "Desktop-KOReader nicht gefunden (Hinweis oben im Bereich)."
 
-#: area_preview.py:699
+#: area_preview.py:712
 msgid "without book data, general settings"
 msgstr "ohne Buchdaten, allgemeine Einstellungen"
 
-#: area_preview.py:701
+#: area_preview.py:714
 msgid "book data from the backup"
 msgstr "Buchdaten aus der Sicherung"
 
-#: area_preview.py:703
+#: area_preview.py:716
 msgid "book data next to the book"
 msgstr "Buchdaten neben dem Buch"
 
-#: area_preview.py:705
+#: area_preview.py:718
 msgid "book data from the e-reader"
 msgstr "Buchdaten vom E-Reader"
 
-#: area_preview.py:706
+#: area_preview.py:719
 msgid "KOReader started: {name} ({w} × {h}, {dpi} dpi, {woher})."
 msgstr "KOReader gestartet: {name} ({w} × {h}, {dpi} dpi, {woher})."
 
-#: area_preview.py:714
+#: area_preview.py:727
 msgid "Starting preview"
 msgstr "Vorschau starten"
 
-#: area_preview.py:726
+#: area_preview.py:739
 msgid "KOReader closed"
 msgstr "KOReader beendet"
 
-#: area_preview.py:728
+#: area_preview.py:741
 msgid ""
 "{n} warnings/errors in the output (Preview > Profile, device and output)"
 msgstr ""
@@ -3036,7 +3036,7 @@ msgstr "Konsole (Terminal)"
 msgid "Baloo (KDE file search)"
 msgstr "Baloo (KDE-Dateisuche)"
 
-#: device.py:608 device.py:608 help.py:783 settings.py:131
+#: device.py:608 device.py:608 help.py:808 settings.py:131
 msgid "Calibre"
 msgstr "Calibre"
 
@@ -3193,13 +3193,13 @@ msgstr "Die Sicherung enthält keine KOReader-Einstellungen."
 msgid "Own size"
 msgstr "Eigene Größe"
 
-#: emulator.py:528 workbench.py:260
+#: emulator.py:528 workbench.py:267
 msgid ""
 "The profile is empty: take it from the e-reader or from a backup first."
 msgstr ""
 "Profil ist leer: erst vom E-Reader oder aus einer Sicherung übernehmen."
 
-#: emulator.py:543 workbench.py:295
+#: emulator.py:543 workbench.py:302
 msgid "KOReader could not be started: {fehler}"
 msgstr "KOReader ließ sich nicht starten: {fehler}"
 
@@ -4486,7 +4486,7 @@ msgstr ""
 "Claude braucht einen API-Schlüssel und das Paket **anthropic** (pip install "
 "anthropic): [[einst_klappentexte_claude]].\n"
 
-#: help.py:351 help.py:743 settings.py:125 settings.py:486
+#: help.py:351 help.py:768 settings.py:125 settings.py:486
 msgid "Source profiles"
 msgstr "Quellprofile"
 
@@ -5287,6 +5287,8 @@ msgid ""
 "\n"
 "**More**\n"
 "- [[vorschau_werkbank]]\n"
+"- [[vorschau_lesen]]\n"
+"- [[vorschau_patches]]\n"
 "- [[vorschau_bookends]]\n"
 "- [[vorschau_bookshelf]]\n"
 "- [[vorschau_profil]]\n"
@@ -5312,17 +5314,19 @@ msgstr ""
 "\n"
 "**Mehr**\n"
 "- [[vorschau_werkbank]]\n"
+"- [[vorschau_lesen]]\n"
+"- [[vorschau_patches]]\n"
 "- [[vorschau_bookends]]\n"
 "- [[vorschau_bookshelf]]\n"
 "- [[vorschau_profil]]\n"
 "- [[vorschau_starten]]\n"
 "- [[vorschau_bildschirm]]\n"
 
-#: help.py:549
+#: help.py:551
 msgid "Workbench"
 msgstr "Werkbank"
 
-#: help.py:549
+#: help.py:551
 msgid ""
 "\n"
 "**View**\n"
@@ -5395,11 +5399,142 @@ msgstr ""
 "**In KOReader öffnen** (Werkzeugleiste) startet wie bisher den vollen "
 "KOReader im Fenster, zum Ausprobieren der Menüs: [[vorschau_starten]].\n"
 
-#: help.py:565
+#: help.py:567 workbench_reader.py:58
+msgid "Font and margins"
+msgstr "Schrift und Ränder"
+
+#: help.py:567
+msgid ""
+"\n"
+"Below Preview, **Font and margins** holds KOReader's own general reading "
+"settings - what \"Set as default\" in KOReader's reading menu (the bottom "
+"menu while reading) stores in settings.reader.lua. The page appears as soon "
+"as there is a profile ([[vorschau_profil]]).\n"
+"\n"
+"**Font**: the font (the family names of the fonts in the profile and in the "
+"desktop KOReader; you can also type a name), size, weight, line spacing, "
+"word spacing (scaling and reduction), word expansion, kerning, hinting, "
+"contrast (gamma), and whether the book's embedded fonts and style are "
+"used.\n"
+"**Margins**: left and right, top, bottom, and whether top and bottom stay "
+"the same. In KOReader's units. The margins of Bookends are on the Bookends "
+"page ([[vorschau_bookends]]).\n"
+"\n"
+"Empty fields use KOReader's defaults. Changes are a draft until **Save to "
+"profile**; KOReader reads these values when it opens a book, so the "
+"workbench restarts after a change (about a second) and switches to the "
+"reading page.\n"
+"\n"
+"**Values of the book shown**\n"
+"KOReader stores font and margins in the book data (.sdr) of every book it "
+"has opened once - all of them, when the book is closed. There they win over "
+"the general values, which therefore only apply to books never opened "
+"before. The section shows which values the book in the workbench brings "
+"along.\n"
+"**Ignore the book's own values in the workbench** removes them from the "
+"copy of the book data in the workbench, so the general values show. The "
+"book data of the book itself stays untouched. The sample text never has "
+"book data.\n"
+msgstr ""
+"\n"
+"Unter Vorschau stehen bei **Schrift und Ränder** KOReaders eigene "
+"allgemeine Leseeinstellungen - das, was \"Als Standard festlegen\" in "
+"KOReaders Lesemenü (dem unteren Menü beim Lesen) in settings.reader.lua "
+"speichert. Die Seite erscheint, sobald es ein Profil gibt "
+"([[vorschau_profil]]).\n"
+"\n"
+"**Schrift**: die Schrift (die Familiennamen der Schriften im Profil und im "
+"Desktop-KOReader; ein Name lässt sich auch eintippen), Größe, Stärke, "
+"Zeilenabstand, Wortabstand (Skalierung und Verringerung), Wortdehnung, "
+"Kerning, Hinting, Kontrast (Gamma) und ob eingebettete Schriften und Stil "
+"des Buchs gelten.\n"
+"**Ränder**: links und rechts, oben, unten und ob oben und unten gleich "
+"bleiben. In KOReaders Einheiten. Die Ränder von Bookends stehen auf der "
+"Bookends-Seite ([[vorschau_bookends]]).\n"
+"\n"
+"Leere Felder nehmen KOReaders Vorgaben. Änderungen sind ein Entwurf bis "
+"**Ins Profil speichern**; KOReader liest diese Werte beim Öffnen eines "
+"Buchs, deshalb startet die Werkbank nach einer Änderung neu (etwa eine "
+"Sekunde) und wechselt auf die Leseseite.\n"
+"\n"
+"**Werte des gezeigten Buchs**\n"
+"KOReader speichert Schrift und Ränder in den Buchdaten (.sdr) jedes Buchs, "
+"das einmal offen war - und zwar alle, beim Schließen des Buchs. Dort "
+"gewinnen sie gegen die allgemeinen Werte, die deshalb nur für Bücher "
+"gelten, die noch nie offen waren. Der Abschnitt zeigt, welche Werte das "
+"Buch in der Werkbank mitbringt.\n"
+"**Eigene Werte des Buchs in der Werkbank übergehen** entfernt sie aus der "
+"Kopie der Buchdaten in der Werkbank, dann sind die allgemeinen Werte zu "
+"sehen. Die Buchdaten des Buchs selbst bleiben unberührt. Der Blindtext hat "
+"nie Buchdaten.\n"
+
+#: help.py:579 workbench_reader.py:269 workbench_reader.py:281
+msgid "Patches"
+msgstr "Patches"
+
+#: help.py:579
+msgid ""
+"\n"
+"Below Preview, **Patches** lists the user patches of the profile (folder "
+"koreader/patches) as KOReader's patch management does (Tools > More tools > "
+"Patch management on the e-reader).\n"
+"\n"
+"- Patches are grouped by when they run: early once after an update (0), "
+"early (1), late after the start (2), before quitting (8), when quitting (9) "
+"- the first digit of the file name. Files without such a number or without "
+".lua never run and are not listed.\n"
+"- ☑ on, ☐ off. Double-click, Space or **On/off** switches. Like KOReader, "
+"Bookbench renames the file: off = \".disabled\" behind \".lua\".\n"
+"- **Switch off all patches** is KOReader's main switch (file "
+".patches_disabled). In the workbench Bookbench switches the patches off one "
+"by one instead, so its own patch keeps running.\n"
+"- ⚠ marks a patch that failed in the workbench; select it to see KOReader's "
+"message. Many patches need the e-reader (a Kobo-only function, the "
+"frontlight …) and can never run on the computer - that says nothing about "
+"the e-reader.\n"
+"- **Show …** opens the patch read-only. **Add …** copies a .lua file into "
+"the profile (without a number it gets \"2-\", otherwise KOReader would "
+"never run it); **Delete** removes one. Adding and deleting change the "
+"profile at once.\n"
+"\n"
+"Switching on and off is a draft until **Save to profile**. Patches run when "
+"KOReader starts, so the workbench restarts after every change. Bookbench's "
+"own patches (1-bookbench-desktop, 2-bookbench-workbench) are not listed.\n"
+msgstr ""
+"\n"
+"Unter Vorschau listet **Patches** die Userpatches des Profils (Ordner "
+"koreader/patches) so, wie KOReaders Patch-Verwaltung es tut (auf dem "
+"E-Reader: Werkzeuge > Weitere Werkzeuge > Patch-Verwaltung).\n"
+"\n"
+"- Die Patches sind danach gruppiert, wann sie laufen: früh einmal nach "
+"einem Update (0), früh (1), spät nach dem Start (2), vor dem Beenden (8), "
+"beim Beenden (9) - die erste Ziffer des Dateinamens. Dateien ohne solche "
+"Nummer oder ohne .lua laufen nie und stehen nicht in der Liste.\n"
+"- ☑ an, ☐ aus. Doppelklick, Leertaste oder **An/aus** schaltet um. Wie "
+"KOReader benennt Bookbench die Datei um: aus = \".disabled\" hinter "
+"\".lua\".\n"
+"- **Alle Patches ausschalten** ist KOReaders Hauptschalter (Datei "
+".patches_disabled). In der Werkbank schaltet Bookbench stattdessen die "
+"Patches einzeln aus, damit sein eigener Patch weiterläuft.\n"
+"- ⚠ markiert einen Patch, der in der Werkbank fehlgeschlagen ist; "
+"ausgewählt zeigt er KOReaders Meldung. Viele Patches brauchen den E-Reader "
+"(eine Funktion nur für Kobo, das Frontlicht …) und können am Rechner nie "
+"laufen - über den E-Reader sagt das nichts.\n"
+"- **Anzeigen …** öffnet den Patch nur zum Lesen. **Hinzufügen …** kopiert "
+"eine .lua-Datei ins Profil (ohne Nummer bekommt sie \"2-\", sonst würde "
+"KOReader sie nie ausführen); **Löschen** entfernt einen. Hinzufügen und "
+"Löschen ändern das Profil sofort.\n"
+"\n"
+"An und aus sind ein Entwurf bis **Ins Profil speichern**. Patches laufen "
+"beim Start von KOReader, deshalb startet die Werkbank nach jeder Änderung "
+"neu. Bookbenchs eigene Patches (1-bookbench-desktop, 2-bookbench-workbench) "
+"stehen nicht in der Liste.\n"
+
+#: help.py:590
 msgid "Bookends settings"
 msgstr "Bookends-Einstellungen"
 
-#: help.py:565
+#: help.py:590
 msgid ""
 "\n"
 "If the profile contains the plugin **Bookends**, the sidebar shows "
@@ -5502,9 +5637,8 @@ msgstr ""
 "stammen aus KOReaders Symbolschrift (nerdfonts/symbols.ttf); Bookbench "
 "zeigt sie in den Zeilen als kleine Bilder und nimmt die Schrift aus dem "
 "Profil (Schriften vom E-Reader) oder vom Desktop-KOReader.\n"
-"- **Zusatzrand** neben jeder Position rückt die ganze Position vom "
-"Rand weg (↕ oben bzw. unten, ↔ links bzw. rechts bei den Ecken), in "
-"Pixeln.\n"
+"- **Zusatzrand** neben jeder Position rückt die ganze Position vom Rand weg "
+"(↕ oben bzw. unten, ↔ links bzw. rechts bei den Ecken), in Pixeln.\n"
 "- Klick in eine Zeile (Abschnitt **Gewählte Zeile**), um **Stil** (fett, "
 "kursiv), **Größe** (leer = die allgemeine Größe), **Großbuchstaben** und "
 "**Versatz** zu setzen: ← → und ↑ ↓ in Pixeln, negativ = nach links bzw. "
@@ -5524,11 +5658,11 @@ msgstr ""
 "seine Dateien. Neuere Bookends-Versionen können das Format ändern; "
 "Unbekanntes bleibt, wie es ist.\n"
 
-#: help.py:592
+#: help.py:617
 msgid "Bookshelf settings"
 msgstr "Bookshelf-Einstellungen"
 
-#: help.py:592
+#: help.py:617
 msgid ""
 "\n"
 "If the profile contains the plugin **Bookshelf**, the sidebar shows "
@@ -5659,11 +5793,11 @@ msgstr ""
 "(github.com/AndyHazz/bookshelf.koplugin); Bookbench liest und schreibt nur "
 "seine Einstellungsdatei.\n"
 
-#: help.py:623 settings.py:495 settings.py:1049
+#: help.py:648 settings.py:495 settings.py:1049
 msgid "Profile"
 msgstr "Profil"
 
-#: help.py:623
+#: help.py:648
 msgid ""
 "\n"
 "The preview runs in its own profile in the settings folder (subfolder "
@@ -5704,11 +5838,11 @@ msgstr ""
 "Plugin-Pfade und die letzten Dateien/Ordner auf dem E-Reader. Buchdaten "
 "liegen im Profil immer neben dem Buch.\n"
 
-#: help.py:630
+#: help.py:655
 msgid "Starting and output"
 msgstr "Starten und Ausgabe"
 
-#: help.py:630
+#: help.py:655
 msgid ""
 "\n"
 "**Open in KOReader** (toolbar)\n"
@@ -5752,11 +5886,11 @@ msgstr ""
 "etwa ein Patch, der auf dem Rechner nicht läuft, weil er etwas "
 "E-Reader-Eigenes braucht.\n"
 
-#: help.py:640
+#: help.py:665
 msgid "Screen and device"
 msgstr "Bildschirm und Gerät"
 
-#: help.py:640
+#: help.py:665
 msgid ""
 "\n"
 "The workbench and the window copy the screen of a device: size in pixels, "
@@ -5810,11 +5944,11 @@ msgstr ""
 "Ein Bildschirmfoto aus KOReader (Menü oder Geste) hat immer die volle "
 "Auflösung des Fensters.\n"
 
-#: help.py:652 help.py:724 settings.py:121 settings.py:447
+#: help.py:677 help.py:749 settings.py:121 settings.py:447
 msgid "Saving and backups"
 msgstr "Speichern und Sicherungen"
 
-#: help.py:652
+#: help.py:677
 msgid ""
 "\n"
 "**Save** (Ctrl+S) writes all applied changes (yellow) of all books: chapter "
@@ -5866,7 +6000,7 @@ msgstr ""
 "Nach dem Speichern zeigt KOReader neue Metadaten erst nach dem Neueinlesen "
 "der Buchinfos (Cover-Browser > Extract and cache book information).\n"
 
-#: help.py:666
+#: help.py:691
 msgid ""
 "\n"
 "File > **Settings …** opens the settings. The tree on the left has groups "
@@ -5914,11 +6048,11 @@ msgstr ""
 "- Gerät: [[einst_kobo]], [[einst_vorschau]]\n"
 "- [[einst_erweitert]]\n"
 
-#: help.py:680 settings.py:116 settings.py:321
+#: help.py:705 settings.py:116 settings.py:321
 msgid "Language and theme"
 msgstr "Sprache und Farben"
 
-#: help.py:680
+#: help.py:705
 msgid ""
 "\n"
 "**Language** (default: automatic)\n"
@@ -5946,11 +6080,11 @@ msgstr ""
 "- Hell, Dunkel, oder wie das System: richtet sich nach der "
 "Hell/Dunkel-Einstellung von Windows bzw. KDE/GNOME, geprüft beim Start.\n"
 
-#: help.py:688 settings.py:117 settings.py:335
+#: help.py:713 settings.py:117 settings.py:335
 msgid "Interface"
 msgstr "Oberfläche"
 
-#: help.py:688
+#: help.py:713
 msgid ""
 "\n"
 "- **Status strip next to the lists** (default: on): coloured dots and "
@@ -5988,11 +6122,11 @@ msgstr ""
 "\n"
 "Welche Piktogramme wo erscheinen: [[einst_marken]].\n"
 
-#: help.py:697 settings.py:118 settings.py:358
+#: help.py:722 settings.py:118 settings.py:358
 msgid "Status symbols"
 msgstr "Status-Piktogramme"
 
-#: help.py:697
+#: help.py:722
 msgid ""
 "\n"
 "One row per pictogram ([[status]]), one column per place:\n"
@@ -6023,11 +6157,11 @@ msgstr ""
 "Wörterbuch, E-Reader und \"angeschlossen\" gibt es nur in der "
 "Seitenleiste.\n"
 
-#: help.py:707 settings.py:119 settings.py:391
+#: help.py:732 settings.py:119 settings.py:391
 msgid "Startup"
 msgstr "Start"
 
-#: help.py:707
+#: help.py:732
 msgid ""
 "\n"
 "- **Open the last folder** (default: on): the books folder that was open "
@@ -6049,11 +6183,11 @@ msgstr ""
 "\n"
 "Ein Ordner auf der Kommandozeile (start.py <Ordner>) wird immer geöffnet.\n"
 
-#: help.py:713 settings.py:120 settings.py:400 updates.py:84 updates.py:92 updates.py:263
+#: help.py:738 settings.py:120 settings.py:400 updates.py:84 updates.py:92 updates.py:263
 msgid "Updates"
 msgstr "Updates"
 
-#: help.py:713
+#: help.py:738
 msgid ""
 "\n"
 "**This copy** says how Bookbench was installed: with the Windows setup, "
@@ -6101,7 +6235,7 @@ msgstr ""
 "steht fest im Programm. Ohne Anmeldung erlaubt GitHub 60 Anfragen pro "
 "Stunde, weit mehr, als die Suche braucht.\n"
 
-#: help.py:724
+#: help.py:749
 msgid ""
 "\n"
 "- **Backup folder** (default: Bookbench Backups in the user folder): books "
@@ -6119,7 +6253,7 @@ msgstr ""
 "- **Sicherungen je Buch** (Standard: 5): die neuesten bleiben, ältere "
 "werden beim Speichern gelöscht.\n"
 
-#: help.py:728
+#: help.py:753
 msgid ""
 "\n"
 "- **Subtitle lines per chapter** (default: 1): how many lines below a "
@@ -6143,11 +6277,11 @@ msgstr ""
 "Beides gilt nach dem Neu-Einlesen (F5), weil die Vorschläge beim Einlesen "
 "entstehen. Siehe auch [[kapitel]].\n"
 
-#: help.py:734 settings.py:124 settings.py:467
+#: help.py:759 settings.py:124 settings.py:467
 msgid "Blurbs"
 msgstr "Klappentexte"
 
-#: help.py:734
+#: help.py:759
 msgid ""
 "\n"
 "The page shows the order of the sources ([[klappentexte_nachschlagen]]).\n"
@@ -6187,7 +6321,7 @@ msgstr ""
 "Die Grenzen gelten für alle Quellen (kostenlose und Claude), nicht für "
 "selbst eingetragenen Text.\n"
 
-#: help.py:743
+#: help.py:768
 msgid ""
 "\n"
 "The list of profiles in the order in which they are checked. The first "
@@ -6221,11 +6355,11 @@ msgstr ""
 "Änderungen gelten nach OK. Ändert sich ein Profil, schlägt Claude für "
 "dessen Bücher neu nach; schon gefundene bleiben, wie sie sind.\n"
 
-#: help.py:753 settings.py:127 settings.py:512
+#: help.py:778 settings.py:127 settings.py:512
 msgid "Claude API"
 msgstr "Claude-API"
 
-#: help.py:753
+#: help.py:778
 msgid ""
 "\n"
 "- **API key**: from console.anthropic.com (account with credit). Empty: the "
@@ -6259,11 +6393,11 @@ msgstr ""
 "Außerdem nötig: das Paket **anthropic** (pip install anthropic). Was "
 "gesendet wird: [[kosten]].\n"
 
-#: help.py:760 settings.py:128 settings.py:619
+#: help.py:785 settings.py:128 settings.py:619
 msgid "Covers"
 msgstr "Cover"
 
-#: help.py:760
+#: help.py:785
 msgid ""
 "\n"
 "**Inserting a new cover** ([[cover_bild]])\n"
@@ -6292,7 +6426,7 @@ msgstr ""
 "- **Cover unter dieser Höhe markieren** (Standard: 800 px, 0 = nie): ⚠ im "
 "Bereich Metadaten und dessen Filter \"Kleines Cover\".\n"
 
-#: help.py:768
+#: help.py:793
 msgid ""
 "\n"
 "**Sources** (both free, no key needed; Google Books uses your own key if "
@@ -6323,7 +6457,7 @@ msgstr ""
 "heruntergeladen, mehr dauert also länger. Das Nachschlagen aller fehlenden "
 "Cover nimmt höchstens 3 je Buch und davon das größte.\n"
 
-#: help.py:777
+#: help.py:802
 msgid ""
 "\n"
 "**Own fields** ([[metadaten_felder]])\n"
@@ -6349,7 +6483,7 @@ msgstr ""
 "geöffneten Ordners dazu, mit den Bezeichnungen aus Calibre. Die "
 "unerwünschten danach löschen.\n"
 
-#: help.py:783
+#: help.py:808
 msgid ""
 "\n"
 "- **Compare with Calibre** (default: on): Bookbench reads Calibre's "
@@ -6378,7 +6512,7 @@ msgstr ""
 "- Der einmalige Import aus einer Calibre-Bibliothek (metadata.db) geht "
 "unabhängig von dieser Einstellung: [[calibre_import]].\n"
 
-#: help.py:789
+#: help.py:814
 msgid ""
 "\n"
 "**Detection**\n"
@@ -6423,7 +6557,7 @@ msgstr ""
 "- **Beim Beenden ans Auswerfen erinnern** (Standard: an): nur, wenn in der "
 "Sitzung etwas auf den E-Reader geschrieben wurde ([[kobo_auswerfen]]).\n"
 
-#: help.py:803
+#: help.py:828
 msgid ""
 "\n"
 "Only on Linux and macOS.\n"
@@ -6449,11 +6583,11 @@ msgstr ""
 "mit Breite, Höhe (Pixel im Hochformat), ppi und Farbbildschirm für andere "
 "E-Reader mit KOReader. Siehe [[vorschau_bildschirm]].\n"
 
-#: help.py:809 settings.py:135 settings.py:825
+#: help.py:834 settings.py:135 settings.py:825
 msgid "Advanced"
 msgstr "Erweitert"
 
-#: help.py:809
+#: help.py:834
 msgid ""
 "\n"
 "**Files of the program**\n"
@@ -6499,11 +6633,11 @@ msgstr ""
 "Bleiben: geöffnete Ordner, die Liste der Wörterbücher, Fenstergröße, "
 "Sprache und der API-Schlüssel.\n"
 
-#: help.py:823
+#: help.py:848
 msgid "Installing and updating"
 msgstr "Installieren und aktualisieren"
 
-#: help.py:823
+#: help.py:848
 msgid ""
 "\n"
 "**Installing**\n"
@@ -6587,11 +6721,11 @@ msgstr ""
 "Der **Desktop-KOReader** für die Vorschau (nur Linux) gehört nicht zur "
 "Installation ([[vorschau]]).\n"
 
-#: help.py:841
+#: help.py:866
 msgid "Troubleshooting"
 msgstr "Fehlerbehebung"
 
-#: help.py:841
+#: help.py:866
 msgid ""
 "\n"
 "**KOReader still shows the old chapter names, blurb or cover**\n"
@@ -6744,17 +6878,129 @@ msgstr ""
 "- Die Statuszeile hat immer die letzte Meldung. Sicherungen aller "
 "gespeicherten Bücher liegen im Sicherungsordner ([[speichern]]).\n"
 
-#: help.py:931
+#: help.py:956
 msgid "Back"
 msgstr "Zurück"
 
-#: help.py:990
+#: help.py:1015
 msgid "{n} topics found"
 msgstr "{n} Themen gefunden"
 
-#: help.py:991
+#: help.py:1016
 msgid "Nothing found."
 msgstr "Nichts gefunden."
+
+#: koreader_settings.py:30 plugins.py:51
+msgid "Font size"
+msgstr "Schriftgröße"
+
+#: koreader_settings.py:31
+msgid "Font weight"
+msgstr "Schriftstärke"
+
+#: koreader_settings.py:32
+msgid "normal"
+msgstr "normal"
+
+#: koreader_settings.py:33
+msgid "Line spacing (%)"
+msgstr "Zeilenabstand (%)"
+
+#: koreader_settings.py:34
+msgid "Word spacing (%): scaling, reduction"
+msgstr "Wortabstand (%): Skalierung, Verringerung"
+
+#: koreader_settings.py:35
+msgid "Word expansion (%)"
+msgstr "Wortdehnung (%)"
+
+#: koreader_settings.py:36
+msgid "Kerning"
+msgstr "Kerning"
+
+#: koreader_settings.py:37 koreader_settings.py:38 plugins.py:365 plugins.py:381
+msgid "off"
+msgstr "aus"
+
+#: koreader_settings.py:37
+msgid "fast"
+msgstr "schnell"
+
+#: koreader_settings.py:37
+msgid "good"
+msgstr "gut"
+
+#: koreader_settings.py:37
+msgid "best"
+msgstr "beste"
+
+#: koreader_settings.py:38
+msgid "Hinting"
+msgstr "Hinting"
+
+#: koreader_settings.py:38
+msgid "native"
+msgstr "nativ"
+
+#: koreader_settings.py:38
+msgid "auto"
+msgstr "automatisch"
+
+#: koreader_settings.py:39
+msgid "Contrast (gamma)"
+msgstr "Kontrast (Gamma)"
+
+#: koreader_settings.py:41
+msgid "Embedded fonts of the book"
+msgstr "Eingebettete Schriften des Buchs"
+
+#: koreader_settings.py:42
+msgid "Embedded style of the book"
+msgstr "Eingebetteter Stil des Buchs"
+
+#: koreader_settings.py:45
+msgid "Left and right"
+msgstr "Links und rechts"
+
+#: koreader_settings.py:46
+msgid "Top"
+msgstr "Oben"
+
+#: koreader_settings.py:47
+msgid "Bottom"
+msgstr "Unten"
+
+#: koreader_settings.py:48
+msgid "Keep top and bottom the same"
+msgstr "Oben und unten gleich halten"
+
+#: koreader_settings.py:134
+msgid "Early, once after an update"
+msgstr "Früh, einmal nach einem Update"
+
+#: koreader_settings.py:134
+msgid "Early"
+msgstr "Früh"
+
+#: koreader_settings.py:134
+msgid "Late (after the start)"
+msgstr "Spät (nach dem Start)"
+
+#: koreader_settings.py:135
+msgid "Before quitting"
+msgstr "Vor dem Beenden"
+
+#: koreader_settings.py:135
+msgid "When quitting"
+msgstr "Beim Beenden"
+
+#: koreader_settings.py:214
+msgid "The file is not a text file."
+msgstr "Die Datei ist keine Textdatei."
+
+#: koreader_settings.py:217
+msgid "The file only contains data, no patch code."
+msgstr "Die Datei enthält nur Daten, keinen Patch-Code."
 
 #: library.py:186
 msgid "{n} questionable chapter name"
@@ -7073,10 +7319,6 @@ msgid "Bold italic"
 msgstr "Fett kursiv"
 
 #: plugins.py:51
-msgid "Font size"
-msgstr "Schriftgröße"
-
-#: plugins.py:51
 msgid "Font scale (%)"
 msgstr "Schriftskalierung (%)"
 
@@ -7176,7 +7418,7 @@ msgstr "Regal-Knöpfe so breit wie ihr Text"
 msgid "Shelf buttons in capitals"
 msgstr "Regal-Knöpfe in Großbuchstaben"
 
-#: plugins.py:328 settings.py:115 workbench_plugins.py:264
+#: plugins.py:328 settings.py:115 workbench_plugins.py:266
 msgid "General"
 msgstr "Allgemein"
 
@@ -7200,7 +7442,7 @@ msgstr "Stapel-Beschriftungen"
 msgid "Modules in the hero card"
 msgstr "Module in der Hero-Karte"
 
-#: plugins.py:334 workbench_plugins.py:953
+#: plugins.py:334 workbench_plugins.py:956
 msgid "Full screen shelves"
 msgstr "Vollbild-Regale"
 
@@ -7244,10 +7486,6 @@ msgstr "Voller Bildaufbau beim Blättern im Regal"
 msgid "on"
 msgstr "an"
 
-#: plugins.py:365 plugins.py:381
-msgid "off"
-msgstr "aus"
-
 #: plugins.py:369
 msgid "list with {n} entries"
 msgstr "Liste mit {n} Einträgen"
@@ -7280,7 +7518,7 @@ msgstr "Stark"
 msgid "Solid"
 msgstr "Deckend"
 
-#: plugins.py:479 workbench_plugins.py:951
+#: plugins.py:479 workbench_plugins.py:954
 msgid "None"
 msgstr "Keine"
 
@@ -7368,7 +7606,7 @@ msgstr "Auswahl"
 msgid "Cover shadow"
 msgstr "Cover-Schatten"
 
-#: plugins.py:488 workbench_plugins.py:816 workbench_plugins.py:977
+#: plugins.py:488 workbench_plugins.py:819 workbench_plugins.py:980
 msgid "Plank"
 msgstr "Brett"
 
@@ -7857,7 +8095,7 @@ msgstr "Gilt für"
 msgid "Edit …"
 msgstr "Bearbeiten …"
 
-#: settings.py:504 settings.py:663 workbench_plugins.py:169
+#: settings.py:504 settings.py:663 workbench_plugins.py:171 workbench_reader.py:298
 msgid "Delete"
 msgstr "Löschen"
 
@@ -8304,7 +8542,7 @@ msgstr ""
 "mitzunehmen. Die API-Schlüssel stehen mit drin. Importieren ersetzt die "
 "jetzigen Einstellungen; die Sprache gilt ab dem nächsten Start."
 
-#: settings.py:857 settings.py:909 workbench_plugins.py:256
+#: settings.py:857 settings.py:909 workbench_plugins.py:258
 msgid "Reset"
 msgstr "Zurücksetzen"
 
@@ -9182,14 +9420,14 @@ msgstr ""
 "Kein Wiki eingestellt - beim ersten Lauf mit --wiki <Adresse> (und --topic) "
 "angeben."
 
-#: workbench_plugins.py:122
+#: workbench_plugins.py:123
 msgid ""
 "The {plugin} settings have unsaved changes. Save them in the profile first?"
 msgstr ""
 "Die {plugin}-Einstellungen haben ungespeicherte Änderungen. Erst im Profil "
 "speichern?"
 
-#: workbench_plugins.py:132
+#: workbench_plugins.py:133
 msgid ""
 "● Unsaved changes - so far only in the picture. \"Save to profile\" keeps "
 "them."
@@ -9197,7 +9435,7 @@ msgstr ""
 "● Ungespeicherte Änderungen - bisher nur im Bild. \"Ins Profil speichern\" "
 "behält sie."
 
-#: workbench_plugins.py:135
+#: workbench_plugins.py:136
 msgid ""
 "Same as in the profile. Back to the e-reader: comes with 1.4-beta4 (until "
 "then on the e-reader itself)."
@@ -9205,43 +9443,43 @@ msgstr ""
 "Wie im Profil. Zurück auf den E-Reader: kommt mit 1.4-beta4 (bis dahin auf "
 "dem E-Reader selbst)."
 
-#: workbench_plugins.py:159
+#: workbench_plugins.py:161
 msgid "Preset"
 msgstr "Vorlage"
 
-#: workbench_plugins.py:161
+#: workbench_plugins.py:163
 msgid "Bookends switched on"
 msgstr "Bookends eingeschaltet"
 
-#: workbench_plugins.py:169
+#: workbench_plugins.py:171
 msgid "Duplicate"
 msgstr "Duplizieren"
 
-#: workbench_plugins.py:173
+#: workbench_plugins.py:175
 msgid "Make active"
 msgstr "Aktiv machen"
 
-#: workbench_plugins.py:179
+#: workbench_plugins.py:181
 msgid "Name"
 msgstr "Name"
 
-#: workbench_plugins.py:179
+#: workbench_plugins.py:181
 msgid "Description"
 msgstr "Beschreibung"
 
-#: workbench_plugins.py:186
+#: workbench_plugins.py:188
 msgid "Lines"
 msgstr "Zeilen"
 
-#: workbench_plugins.py:189
+#: workbench_plugins.py:191
 msgid "Insert token"
 msgstr "Token einfügen"
 
-#: workbench_plugins.py:193
+#: workbench_plugins.py:195
 msgid "Special characters …"
 msgstr "Sonderzeichen …"
 
-#: workbench_plugins.py:196
+#: workbench_plugins.py:198
 msgid ""
 "One line per row; tokens like %title or %page_num are filled in by "
 "Bookends. Extra margin moves the whole position away from the edge (px)."
@@ -9249,39 +9487,39 @@ msgstr ""
 "Eine Zeile je Reihe; Tokens wie %title oder %page_num füllt Bookends aus. "
 "Der Zusatzrand rückt die ganze Position vom Rand weg (px)."
 
-#: workbench_plugins.py:212
+#: workbench_plugins.py:214
 msgid "extra margin"
 msgstr "Zusatzrand"
 
-#: workbench_plugins.py:224
+#: workbench_plugins.py:226
 msgid "Selected line"
 msgstr "Gewählte Zeile"
 
-#: workbench_plugins.py:225 workbench_plugins.py:516
+#: workbench_plugins.py:227 workbench_plugins.py:518
 msgid "Click into a line above."
 msgstr "Oben in eine Zeile klicken."
 
-#: workbench_plugins.py:229
+#: workbench_plugins.py:231
 msgid "Style"
 msgstr "Stil"
 
-#: workbench_plugins.py:242
+#: workbench_plugins.py:244
 msgid "Capitals"
 msgstr "Großbuchstaben"
 
-#: workbench_plugins.py:247
+#: workbench_plugins.py:249
 msgid "Offset"
 msgstr "Versatz"
 
-#: workbench_plugins.py:249
+#: workbench_plugins.py:251
 msgid "← →"
 msgstr "← →"
 
-#: workbench_plugins.py:249
+#: workbench_plugins.py:251
 msgid "↑ ↓"
 msgstr "↑ ↓"
 
-#: workbench_plugins.py:258
+#: workbench_plugins.py:260
 msgid ""
 "Empty size = the general font size. Offset in pixels: negative = left or "
 "up. Font per line, bars in a line and conditions stay as they are; change "
@@ -9291,24 +9529,24 @@ msgstr ""
 "nach links bzw. oben. Schrift je Zeile, Balken in der Zeile und Bedingungen "
 "bleiben, wie sie sind; die auf dem E-Reader ändern."
 
-#: workbench_plugins.py:274
+#: workbench_plugins.py:276 workbench_reader.py:129
 msgid "empty = {wert}"
 msgstr "leer = {wert}"
 
-#: workbench_plugins.py:275
+#: workbench_plugins.py:277
 msgid "size of KOReader's status bar"
 msgstr "Größe von KOReaders Statusleiste"
 
-#: workbench_plugins.py:299
+#: workbench_plugins.py:301
 msgid ""
 "Bookends {version} in the profile. Changes show in the picture at once."
 msgstr "Bookends {version} im Profil. Änderungen erscheinen sofort im Bild."
 
-#: workbench_plugins.py:335
+#: workbench_plugins.py:337
 msgid "Preset {datei} could not be read: {fehler}"
 msgstr "Vorlage {datei} ließ sich nicht lesen: {fehler}"
 
-#: workbench_plugins.py:372
+#: workbench_plugins.py:374
 msgid ""
 "Progress bars in this preset: {n} switched on. They are kept as they are; "
 "edit them on the e-reader for now."
@@ -9316,15 +9554,15 @@ msgstr ""
 "Fortschrittsbalken in dieser Vorlage: {n} eingeschaltet. Sie bleiben, wie "
 "sie sind; vorerst auf dem E-Reader bearbeiten."
 
-#: workbench_plugins.py:382
+#: workbench_plugins.py:384
 msgid "No preset in the profile. \"New\" makes one."
 msgstr "Keine Vorlage im Profil. \"Neu\" legt eine an."
 
-#: workbench_plugins.py:384
+#: workbench_plugins.py:386
 msgid "This is the active preset (Bookends uses it on the e-reader)."
 msgstr "Das ist die aktive Vorlage (Bookends nimmt sie auf dem E-Reader)."
 
-#: workbench_plugins.py:386
+#: workbench_plugins.py:388
 msgid ""
 "Not active: on the e-reader Bookends uses \"{name}\". The picture shows "
 "this one."
@@ -9332,56 +9570,56 @@ msgstr ""
 "Nicht aktiv: Auf dem E-Reader nimmt Bookends \"{name}\". Das Bild zeigt "
 "diese hier."
 
-#: workbench_plugins.py:483
+#: workbench_plugins.py:485
 msgid "This Bookends version has no list of special characters."
 msgstr "Diese Bookends-Version hat keine Liste mit Sonderzeichen."
 
-#: workbench_plugins.py:527
+#: workbench_plugins.py:529
 msgid "{position}, line {nr}"
 msgstr "{position}, Zeile {nr}"
 
-#: workbench_plugins.py:661 workbench_plugins.py:697 workbench_plugins.py:735
+#: workbench_plugins.py:663 workbench_plugins.py:699 workbench_plugins.py:737
 msgid "Bookends"
 msgstr "Bookends"
 
-#: workbench_plugins.py:661
+#: workbench_plugins.py:663
 msgid "The preset \"{name}\" has unsaved changes. Save them in the profile?"
 msgstr ""
 "Die Vorlage \"{name}\" hat ungespeicherte Änderungen. Im Profil speichern?"
 
-#: workbench_plugins.py:673
+#: workbench_plugins.py:675
 msgid "Name of the new preset:"
 msgstr "Name der neuen Vorlage:"
 
-#: workbench_plugins.py:675
+#: workbench_plugins.py:677
 msgid "{name} (copy)"
 msgstr "{name} (Kopie)"
 
-#: workbench_plugins.py:697
+#: workbench_plugins.py:699
 msgid "Delete the preset \"{name}\" from the profile?"
 msgstr "Die Vorlage \"{name}\" aus dem Profil löschen?"
 
-#: workbench_plugins.py:711
+#: workbench_plugins.py:713
 msgid "Preset deleted from the profile."
 msgstr "Vorlage aus dem Profil gelöscht."
 
-#: workbench_plugins.py:729
+#: workbench_plugins.py:731
 msgid "Bookends preset \"{name}\" saved in the profile."
 msgstr "Bookends-Vorlage \"{name}\" im Profil gespeichert."
 
-#: workbench_plugins.py:735 workbench_plugins.py:1252
+#: workbench_plugins.py:737 workbench_plugins.py:1255 workbench_reader.py:260 workbench_reader.py:502
 msgid "Discard the unsaved changes?"
 msgstr "Die ungespeicherten Änderungen verwerfen?"
 
-#: workbench_plugins.py:752
+#: workbench_plugins.py:754
 msgid "Special characters"
 msgstr "Sonderzeichen"
 
-#: workbench_plugins.py:757
+#: workbench_plugins.py:759
 msgid "Group"
 msgstr "Gruppe"
 
-#: workbench_plugins.py:769
+#: workbench_plugins.py:771
 msgid ""
 "KOReader's symbol font (nerdfonts/symbols.ttf) was not found: symbols show "
 "as names. Take the profile from the e-reader to get its fonts."
@@ -9390,7 +9628,7 @@ msgstr ""
 "Symbole erscheinen als Namen. Das Profil vom E-Reader holen, dann kommen "
 "seine Schriften mit."
 
-#: workbench_plugins.py:809
+#: workbench_plugins.py:812
 msgid ""
 "Bookshelf has no way to reload its settings while running: after a change "
 "the workbench restarts on the start screen (about a second)."
@@ -9399,27 +9637,27 @@ msgstr ""
 "Nach einer Änderung startet die Werkbank auf dem Startbildschirm neu (etwa "
 "eine Sekunde)."
 
-#: workbench_plugins.py:814
+#: workbench_plugins.py:817
 msgid "Themes"
 msgstr "Themes"
 
-#: workbench_plugins.py:815
+#: workbench_plugins.py:818
 msgid "Wallpaper"
 msgstr "Hintergrundbild"
 
-#: workbench_plugins.py:817
+#: workbench_plugins.py:820
 msgid "Decoration (ornaments)"
 msgstr "Dekoration (Ornamente)"
 
-#: workbench_plugins.py:818
+#: workbench_plugins.py:821
 msgid "Colours"
 msgstr "Farben"
 
-#: workbench_plugins.py:849
+#: workbench_plugins.py:852
 msgid "All keys in the file"
 msgstr "Alle Schlüssel in der Datei"
 
-#: workbench_plugins.py:850
+#: workbench_plugins.py:853
 msgid ""
 "For everything not listed above. Double-click a simple value to change it; "
 "tables (shelves, modules) only in the sections above or in Bookshelf "
@@ -9429,47 +9667,47 @@ msgstr ""
 "Tabellen (Regale, Module) nur in den Abschnitten oben oder in Bookshelf "
 "selbst. \"Vorgabe\" entfernt den Schlüssel, dann gilt Bookshelfs Vorgabe."
 
-#: workbench_plugins.py:857
+#: workbench_plugins.py:860
 msgid "Key"
 msgstr "Schlüssel"
 
-#: workbench_plugins.py:858
+#: workbench_plugins.py:861
 msgid "Value"
 msgstr "Wert"
 
-#: workbench_plugins.py:868
+#: workbench_plugins.py:871
 msgid "Change …"
 msgstr "Ändern …"
 
-#: workbench_plugins.py:870
+#: workbench_plugins.py:873
 msgid "Default"
 msgstr "Vorgabe"
 
-#: workbench_plugins.py:924 workbench_plugins.py:934
+#: workbench_plugins.py:927 workbench_plugins.py:937
 msgid "Custom theme"
 msgstr "Eigenes Theme"
 
-#: workbench_plugins.py:924 workbench_plugins.py:934
+#: workbench_plugins.py:927 workbench_plugins.py:937
 msgid "Plain"
 msgstr "Schlicht"
 
-#: workbench_plugins.py:925
+#: workbench_plugins.py:928
 msgid "Default theme"
 msgstr "Standard-Theme"
 
-#: workbench_plugins.py:927
+#: workbench_plugins.py:930
 msgid "Light or dark"
 msgstr "Hell oder dunkel"
 
-#: workbench_plugins.py:931
+#: workbench_plugins.py:934
 msgid "Theme per shelf"
 msgstr "Theme je Regal"
 
-#: workbench_plugins.py:934
+#: workbench_plugins.py:937
 msgid "Like the default"
 msgstr "Wie Standard"
 
-#: workbench_plugins.py:940
+#: workbench_plugins.py:943
 msgid ""
 "Theme packs are folders in settings/bookshelf/ornaments with a "
 "theme/theme.json; new ones come from Bookshelf's theme library. Wallpaper, "
@@ -9481,43 +9719,43 @@ msgstr ""
 "Hintergrundbild, Brett und Farben unten gehören zum eigenen Theme; ein "
 "Theme-Paket legt seine eigenen Teile darüber."
 
-#: workbench_plugins.py:943
+#: workbench_plugins.py:946
 msgid "No theme pack in the profile."
 msgstr "Kein Theme-Paket im Profil."
 
-#: workbench_plugins.py:951
+#: workbench_plugins.py:954
 msgid "Picture"
 msgstr "Bild"
 
-#: workbench_plugins.py:953
+#: workbench_plugins.py:956
 msgid "Same as above"
 msgstr "Wie oben"
 
-#: workbench_plugins.py:955
+#: workbench_plugins.py:958
 msgid "Panel shading"
 msgstr "Tafeln abdunkeln"
 
-#: workbench_plugins.py:958
+#: workbench_plugins.py:961
 msgid "Transparent buttons"
 msgstr "Durchsichtige Knöpfe"
 
-#: workbench_plugins.py:959
+#: workbench_plugins.py:962
 msgid "Blur the picture under panels"
 msgstr "Bild unter Tafeln weichzeichnen"
 
-#: workbench_plugins.py:960
+#: workbench_plugins.py:963
 msgid "Invert the picture in night mode"
 msgstr "Bild im Nachtmodus umkehren"
 
-#: workbench_plugins.py:961
+#: workbench_plugins.py:964
 msgid "One panel over the whole covers shelf"
 msgstr "Eine Tafel über das ganze Cover-Regal"
 
-#: workbench_plugins.py:968
+#: workbench_plugins.py:971
 msgid "Add picture …"
 msgstr "Bild hinzufügen …"
 
-#: workbench_plugins.py:969
+#: workbench_plugins.py:972
 msgid ""
 "Pictures are in settings/bookshelf/wallpapers of the profile. \"Add "
 "picture\" copies one there at once (it still has to get to the e-reader)."
@@ -9525,31 +9763,31 @@ msgstr ""
 "Die Bilder liegen in settings/bookshelf/wallpapers im Profil. \"Bild "
 "hinzufügen\" kopiert sofort eins dorthin (auf den E-Reader muss es noch)."
 
-#: workbench_plugins.py:977
+#: workbench_plugins.py:980
 msgid "Default (oak, unless you chose a plank colour)"
 msgstr "Vorgabe (Eiche, außer du hast eine Brettfarbe gewählt)"
 
-#: workbench_plugins.py:978
+#: workbench_plugins.py:981
 msgid "Oak"
 msgstr "Eiche"
 
-#: workbench_plugins.py:978
+#: workbench_plugins.py:981
 msgid "Colour only"
 msgstr "Nur Farbe"
 
-#: workbench_plugins.py:980
+#: workbench_plugins.py:983
 msgid "The plank colour is under Colours (Plank)."
 msgstr "Die Brettfarbe steht unter Farben (Brett)."
 
-#: workbench_plugins.py:988
+#: workbench_plugins.py:991
 msgid "How often per shelf"
 msgstr "Wie oft je Regal"
 
-#: workbench_plugins.py:997
+#: workbench_plugins.py:1000
 msgid "Ornaments (double-click switches on/off)"
 msgstr "Ornamente (Doppelklick schaltet an/aus)"
 
-#: workbench_plugins.py:1009
+#: workbench_plugins.py:1012
 msgid ""
 "Ornaments stand in the gaps of spine shelves only. Their files are in "
 "settings/bookshelf/ornaments (one level of packs)."
@@ -9557,19 +9795,19 @@ msgstr ""
 "Ornamente stehen nur in den Lücken von Buchrücken-Regalen. Ihre Dateien "
 "liegen in settings/bookshelf/ornaments (eine Ebene Pakete)."
 
-#: workbench_plugins.py:1011
+#: workbench_plugins.py:1014
 msgid "No ornaments in the profile."
 msgstr "Keine Ornamente im Profil."
 
-#: workbench_plugins.py:1017
+#: workbench_plugins.py:1020
 msgid "Day"
 msgstr "Tag"
 
-#: workbench_plugins.py:1018
+#: workbench_plugins.py:1021
 msgid "Night"
 msgstr "Nacht"
 
-#: workbench_plugins.py:1030
+#: workbench_plugins.py:1033
 msgid ""
 "Click a field to choose a colour; \"-\" = the default. ✕ resets day and "
 "night. Colours belong to the custom theme."
@@ -9577,38 +9815,191 @@ msgstr ""
 "Klick auf ein Feld wählt eine Farbe; \"-\" = Vorgabe. ✕ setzt Tag und Nacht "
 "zurück. Die Farben gehören zum eigenen Theme."
 
-#: workbench_plugins.py:1082
+#: workbench_plugins.py:1085
 msgid "Colour"
 msgstr "Farbe"
 
-#: workbench_plugins.py:1089
+#: workbench_plugins.py:1092
 msgid "Wallpaper for Bookshelf"
 msgstr "Hintergrundbild für Bookshelf"
 
-#: workbench_plugins.py:1090
+#: workbench_plugins.py:1093
 msgid "Pictures"
 msgstr "Bilder"
 
-#: workbench_plugins.py:1124
+#: workbench_plugins.py:1127
 msgid "Bookshelf {version} in the profile ({datei})."
 msgstr "Bookshelf {version} im Profil ({datei})."
 
-#: workbench_plugins.py:1194
+#: workbench_plugins.py:1197
 msgid "{schluessel} is a table: change it in Bookshelf itself."
 msgstr "{schluessel} ist eine Tabelle: in Bookshelf selbst ändern."
 
-#: workbench_plugins.py:1196 workbench_plugins.py:1252
+#: workbench_plugins.py:1199 workbench_plugins.py:1255
 msgid "Bookshelf"
 msgstr "Bookshelf"
 
-#: workbench_plugins.py:1196
+#: workbench_plugins.py:1199
 msgid "New value for {schluessel}:"
 msgstr "Neuer Wert für {schluessel}:"
 
-#: workbench_plugins.py:1204
+#: workbench_plugins.py:1207
 msgid "\"{text}\" does not fit the value ({art})."
 msgstr "\"{text}\" passt nicht zum Wert ({art})."
 
-#: workbench_plugins.py:1245
+#: workbench_plugins.py:1248
 msgid "Bookshelf settings saved in the profile ({n} changed)."
 msgstr "Bookshelf-Einstellungen im Profil gespeichert ({n} geändert)."
+
+#: workbench_reader.py:67
+msgid ""
+"KOReader's general reading settings, as \"Set as default\" in KOReader's "
+"menu stores them. They show in the picture after a restart of the workbench "
+"(about a second)."
+msgstr ""
+"KOReaders allgemeine Leseeinstellungen, so wie \"Als Standard festlegen\" "
+"in KOReaders Menü sie speichert. Sie erscheinen im Bild nach einem Neustart "
+"der Werkbank (etwa eine Sekunde)."
+
+#: workbench_reader.py:71 workbench_reader.py:73
+msgid "Font"
+msgstr "Schrift"
+
+#: workbench_reader.py:82
+msgid "Margins"
+msgstr "Ränder"
+
+#: workbench_reader.py:85
+msgid ""
+"In KOReader's units (pixels at the device's density). Bookends' own margins "
+"are on the Bookends page."
+msgstr ""
+"In KOReaders Einheiten (Pixel bei der Dichte des Geräts). Die Ränder von "
+"Bookends stehen auf der Bookends-Seite."
+
+#: workbench_reader.py:91
+msgid "Values of the book shown"
+msgstr "Werte des gezeigten Buchs"
+
+#: workbench_reader.py:95
+msgid "Ignore the book's own values in the workbench"
+msgstr "Eigene Werte des Buchs in der Werkbank übergehen"
+
+#: workbench_reader.py:97
+msgid ""
+"KOReader stores font and margins in the book data (.sdr) of every book it "
+"has opened once; there they win over the general values. The general values "
+"therefore only apply to books never opened before. Ignoring them here only "
+"affects the workbench (the copy), never the book."
+msgstr ""
+"KOReader speichert Schrift und Ränder in den Buchdaten (.sdr) jedes Buchs, "
+"das einmal offen war; dort gewinnen sie gegen die allgemeinen Werte. Die "
+"allgemeinen Werte gelten deshalb nur für Bücher, die noch nie offen waren. "
+"Übergehen wirkt hier nur in der Werkbank (der Kopie), nie im Buch."
+
+#: workbench_reader.py:219
+msgid "The start screen shows no book."
+msgstr "Der Startbildschirm zeigt kein Buch."
+
+#: workbench_reader.py:221
+msgid "Sample text: it has no book data, so the general values apply."
+msgstr "Blindtext: Er hat keine Buchdaten, es gelten die allgemeinen Werte."
+
+#: workbench_reader.py:223
+msgid "The book has no values of its own: the general values apply."
+msgstr "Das Buch hat keine eigenen Werte: Es gelten die allgemeinen Werte."
+
+#: workbench_reader.py:226
+msgid "The book has its own values ({n}): {liste}."
+msgstr "Das Buch hat eigene Werte ({n}): {liste}."
+
+#: workbench_reader.py:227
+msgid "The workbench ignores them now."
+msgstr "Die Werkbank übergeht sie gerade."
+
+#: workbench_reader.py:228
+msgid ""
+"They win over the general values - changes above do not show for this book."
+msgstr ""
+"Sie gewinnen gegen die allgemeinen Werte - Änderungen oben sind bei diesem "
+"Buch nicht zu sehen."
+
+#: workbench_reader.py:253
+msgid "Font and margins saved in the profile ({n} changed)."
+msgstr "Schrift und Ränder im Profil gespeichert ({n} geändert)."
+
+#: workbench_reader.py:279
+msgid ""
+"User patches (koreader/patches) as in KOReader's patch management. They run "
+"when KOReader starts, so the workbench restarts after a change."
+msgstr ""
+"Userpatches (koreader/patches) wie in KOReaders Patch-Verwaltung. Sie "
+"laufen beim Start von KOReader, deshalb startet die Werkbank nach einer "
+"Änderung neu."
+
+#: workbench_reader.py:283
+msgid "Switch off all patches (like KOReader's switch)"
+msgstr "Alle Patches ausschalten (wie KOReaders Schalter)"
+
+#: workbench_reader.py:297
+msgid "On/off"
+msgstr "An/aus"
+
+#: workbench_reader.py:297
+msgid "Show …"
+msgstr "Anzeigen …"
+
+#: workbench_reader.py:298
+msgid "Add …"
+msgstr "Hinzufügen …"
+
+#: workbench_reader.py:303
+msgid ""
+"☑ on, ☐ off, ⚠ failed in the workbench (message below when selected). Some "
+"patches need the e-reader and never run on the computer. Adding and "
+"deleting change the profile at once; switching on/off is a draft until "
+"\"Save to profile\"."
+msgstr ""
+"☑ an, ☐ aus, ⚠ in der Werkbank fehlgeschlagen (Meldung unten, wenn "
+"ausgewählt). Manche Patches brauchen den E-Reader und laufen am Rechner "
+"nie. Hinzufügen und Löschen ändern das Profil sofort; An/aus ist ein "
+"Entwurf bis \"Ins Profil speichern\"."
+
+#: workbench_reader.py:351
+msgid "No patches in the profile."
+msgstr "Keine Patches im Profil."
+
+#: workbench_reader.py:371
+msgid "⚠ Failed in the workbench: {meldung}"
+msgstr "⚠ In der Werkbank fehlgeschlagen: {meldung}"
+
+#: workbench_reader.py:419
+msgid "Add a patch"
+msgstr "Patch hinzufügen"
+
+#: workbench_reader.py:420
+msgid "Lua patches"
+msgstr "Lua-Patches"
+
+#: workbench_reader.py:430
+msgid "Add it anyway?"
+msgstr "Trotzdem hinzufügen?"
+
+#: workbench_reader.py:438
+msgid "{name} is already in the profile. Replace it?"
+msgstr "{name} ist schon im Profil. Ersetzen?"
+
+#: workbench_reader.py:442
+msgid "Patch {name} added to the profile."
+msgstr "Patch {name} zum Profil hinzugefügt."
+
+#: workbench_reader.py:451
+msgid "Delete the patch {name} from the profile?"
+msgstr "Den Patch {name} aus dem Profil löschen?"
+
+#: workbench_reader.py:495
+msgid "Patches saved in the profile."
+msgstr "Patches im Profil gespeichert."
+
+#~ msgid "Word spacing (scaling, reduction in %)"
+#~ msgstr "Wortabstand (Skalierung, Verringerung in %)"

@@ -45,7 +45,8 @@ def _zahl_oder_leer(text):
 
 class _Seite:
     """Gemeinsames: Rahmen mit Scrollbalken, Kopf, Stand-Zeile, Entwurf."""
-    plugin = ""
+    plugin = ""                                   # Kennung der Unterseite (auch für werkbank_abschnitte)
+    titel = ""                                    # Name in Seitenleiste und Meldungen
 
     def __init__(self, bereich, eltern):
         self.bereich = bereich
@@ -118,9 +119,9 @@ class _Seite:
         if not self.ungespeichert():
             return True
         a = messagebox.askyesnocancel(
-            self.plugin.capitalize(),
+            self.titel,
             _("The {plugin} settings have unsaved changes. Save them in the profile first?").format(
-                plugin=self.plugin.capitalize()), parent=self.app)
+                plugin=self.titel), parent=self.app)
         if a is None:
             return False
         if a:
@@ -139,6 +140,7 @@ class _Seite:
 # ====================================================================== Bookends
 class BookendsSeite(_Seite):
     plugin = kpl.BOOKENDS
+    titel = "Bookends"
 
     def __init__(self, bereich, eltern):
         super().__init__(bereich, eltern)
@@ -797,6 +799,7 @@ class SymbolFenster(tk.Toplevel):
 # ====================================================================== Bookshelf
 class BookshelfSeite(_Seite):
     plugin = kpl.BOOKSHELF
+    titel = "Bookshelf"
 
     def __init__(self, bereich, eltern):
         super().__init__(bereich, eltern)

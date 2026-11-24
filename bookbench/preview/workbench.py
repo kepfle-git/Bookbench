@@ -209,6 +209,13 @@ def arbeitsprofil(profil, modus="lesen", plugins=PLUGINS, bibliothek=None):
     (ko / "patches").mkdir(parents=True, exist_ok=True)
     for alt in (ko / "patches").glob("*bookbench-probe*"):
         alt.unlink()
+    # "Alle Patches aus" (.patches_disabled) würde auch den Werkbank-Patch abschalten: stattdessen die
+    # Patches des Nutzers einzeln ausschalten (seit 1.4-beta4)
+    aus = ko / "patches" / ".patches_disabled"
+    if aus.exists():
+        aus.unlink()
+        for p in (ko / "patches").glob("*.lua"):
+            p.rename(p.with_name(p.name + ".disabled"))
     (ko / "patches" / PATCH).write_text(PATCH_TEXT, encoding="utf-8")
     kv.desktop_patch_schreiben(arbeit)
     for teil in ("befehle", "bilder", "buecher"):
@@ -260,8 +267,6 @@ class Werkbank:
             raise RuntimeError(_("The profile is empty: take it from the e-reader or from a backup first."))
         self.beenden()
         arbeit = arbeitsprofil(self.profil, modus, plugins, bibliothek)
-        if anpassen:
-            anpassen(arbeit / "koreader")
         if modus == "lesen":
             if buch:
                 kopie = arbeit / "buecher" / Path(buch).name
@@ -271,6 +276,8 @@ class Werkbank:
                 kopie = sample_book.blindtext_buch(arbeit / "buecher" / BLINDTEXT)
         else:
             kopie = None
+        if anpassen:                                  # nach dem Buch: Buchdaten können mit angepasst werden
+            anpassen(arbeit / "koreader")
         variablen = kv.umgebung(arbeit, w, h, dpi, sw)
         variablen.update({"XDG_DATA_HOME": str(self.profil / "share"), "BOOKBENCH_WB": str(arbeit / "befehle"),
                           "BOOKBENCH_WB_MODE": "library" if modus == "bibliothek" else "read",

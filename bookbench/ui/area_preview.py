@@ -14,8 +14,9 @@ preview/emulator.py und preview/workbench.py, hier nur die Oberfläche.
 Nur unter Linux und macOS gebaut (emulator.verfuegbar()).
 
 Seit 1.4-beta2 hat die linke Spalte Unterseiten (in der Seitenleiste unter Vorschau): Ansicht (das
-Obige) und je erkanntem Plugin im Profil eine Einstellungsseite (ui/workbench_plugins.py: Bookends,
-Bookshelf). Das Bild rechts bleibt dabei stehen. Ohne erkanntes Plugin gibt es keine Unterseiten.
+Obige), seit 1.4-beta4 Schrift und Ränder sowie Patches (ui/workbench_reader.py, sobald es ein Profil
+gibt) und je erkanntem Plugin im Profil eine Einstellungsseite (ui/workbench_plugins.py: Bookends,
+Bookshelf). Das Bild rechts bleibt dabei stehen. Ohne Profil gibt es keine Unterseiten.
 """
 import subprocess
 import sys
@@ -34,6 +35,7 @@ from bookbench.preview import sample_book
 from bookbench.preview import workbench as kwb
 from bookbench.preview import plugins as kpl
 from bookbench.ui import workbench_plugins as kwp
+from bookbench.ui import workbench_reader as kwr
 from bookbench.i18n import _
 
 ABSTAND = 1000                                   # ms, Nachschauen, ob KOReader (Fenster) noch läuft
@@ -161,12 +163,15 @@ class VorschauBereich:
         self.buch_wahl.configure(state="readonly" if self.modus_var.get() == "lesen" else "disabled")
         self._details_zeigen()
 
-        self.plugin_seiten = {kpl.BOOKENDS: kwp.BookendsSeite(self, self.unter),
+        # Unterseiten: KOReaders Schrift/Ränder und Patches (seit 1.4-beta4, sobald es ein Profil gibt),
+        # dann je erkanntem Plugin eine Seite (seit 1.4-beta2)
+        self.plugin_seiten = {"lesen": kwr.LesenSeite(self, self.unter), "patches": kwr.PatchSeite(self, self.unter),
+                              kpl.BOOKENDS: kwp.BookendsSeite(self, self.unter),
                               kpl.BOOKSHELF: kwp.BookshelfSeite(self, self.unter)}
         for name, seite in self.plugin_seiten.items():
-            self.unter.add(seite.rahmen, text=name.capitalize(), state="hidden")
+            self.unter.add(seite.rahmen, text=seite.titel, state="hidden")
         self.unter.bind("<<NotebookTabChanged>>", lambda e: self._unterseite_gewechselt())
-        self._plugins = {}
+        self._sichtbar = set()
 
         self.koreader_suchen(still=True)
         self.anzeigen()
@@ -175,12 +180,16 @@ class VorschauBereich:
     def plugins_pruefen(self):
         """Unterseiten nach den Plugins im Profil zeigen/verstecken. Ohne Plugin keine Unterseiten in
         der Seitenleiste (seite.nb fehlt dann)."""
-        gefunden = kpl.erkennen(self.profil)
-        neu = set(gefunden) != set(self._plugins)
-        self._plugins = gefunden
+        sichtbar = set(kpl.erkennen(self.profil))
+        if kv.profil_stand(self.profil)["vorhanden"]:
+            sichtbar |= {"lesen", "patches"}
+        neu = sichtbar != self._sichtbar
+        self._sichtbar = sichtbar
         for name, seite in self.plugin_seiten.items():
-            self.unter.tab(seite.rahmen, state="normal" if name in gefunden else "hidden")
-        if gefunden:
+            self.unter.tab(seite.rahmen, state="normal" if name in sichtbar else "hidden")
+        if self.unterseite() not in sichtbar | {"ansicht"}:
+            self.unter.select(self.ansicht)
+        if sichtbar:
             self.seite.nb = self.unter
         else:
             self.seite.nb = None
@@ -203,7 +212,7 @@ class VorschauBereich:
 
     def unterseite_waehlen(self, name):
         seite = self.plugin_seiten.get(name)
-        self.unter.select(seite.rahmen if seite and name in self._plugins else self.ansicht)
+        self.unter.select(seite.rahmen if seite and name in self._sichtbar else self.ansicht)
 
     def _unterseite_gewechselt(self):
         name = self.unterseite()
@@ -215,11 +224,12 @@ class VorschauBereich:
                 seite.beim_zeigen()
 
     def hilfe_thema(self):
-        return {"bookends": "vorschau_bookends", "bookshelf": "vorschau_bookshelf"}.get(self.unterseite(), "vorschau")
+        return {"bookends": "vorschau_bookends", "bookshelf": "vorschau_bookshelf", "lesen": "vorschau_lesen",
+                "patches": "vorschau_patches"}.get(self.unterseite(), "vorschau")
 
     def ungespeichert(self):
         """Namen der Plugin-Seiten mit ungespeichertem Entwurf."""
-        return [n.capitalize() for n, s in self.plugin_seiten.items() if s.ungespeichert()]
+        return [s.titel for s in self.plugin_seiten.values() if s.ungespeichert()]
 
     def entwuerfe_fragen(self):
         """Vor dem Neuaufbau des Profils: ungespeicherte Entwürfe speichern/verwerfen (False = abbrechen)."""
@@ -466,6 +476,8 @@ class VorschauBereich:
             return
         for e in wb.ereignisse():
             if e["art"] == "bereit":
+                for seite in self.plugin_seiten.values():
+                    seite.nach_start()
                 wb.bild()
                 if wb.modus == "bibliothek":           # Cover kommen evtl. erst nach und nach
                     self.app.after(1500, lambda: wb.laeuft() and wb.bild())
@@ -595,7 +607,8 @@ class VorschauBereich:
         if geaendert and not messagebox.askyesno(_("Preview"), _(
                 "Bookbench has changed {liste} in the profile, and these changes are not on the e-reader yet. Taking "
                 "the profile again replaces them. Continue?").format(
-                liste=", ".join(n.capitalize() for n in geaendert)), parent=self.app):
+                liste=", ".join(self.plugin_seiten[n].titel if n in self.plugin_seiten else n for n in geaendert)),
+                parent=self.app):
             return False
         return True
 
@@ -604,7 +617,7 @@ class VorschauBereich:
             seite.zuruecksetzen()
         self.anzeigen()
         for name, seite in self.plugin_seiten.items():
-            if name in self._plugins and (self.unterseite() == name):
+            if name in self._sichtbar and (self.unterseite() == name):
                 seite.neu_laden()
         self.werkbank_starten(still=True)
 

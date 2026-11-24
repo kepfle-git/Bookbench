@@ -302,6 +302,9 @@ class MarkenNavigation(knv.Navigation):
     def _bereich(self, b, tid, kid, seite, eltern=None):
         marken = self._marken(b)
         if not marken:
+            if any(n for __, n in getattr(b["widget"], "nav_marken", None) or []):
+                # Marken da, aber alle ausgeblendet: nicht auf den Reitertext-Zähler ("n ⚠") zurückfallen
+                b = dict(b, zaehler="")
             return super()._bereich(b, tid, kid, seite, eltern)
         b = dict(b, zaehler="")                       # Zähler-Text nicht doppelt zeigen
         super()._bereich(b, tid, kid, seite, eltern)

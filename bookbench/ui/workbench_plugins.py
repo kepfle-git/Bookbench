@@ -133,8 +133,8 @@ class _Seite:
             self.stand.configure(text=_("● Unsaved changes - so far only in the picture. \"Save to profile\" keeps "
                                         "them."), foreground=self.app._mark_farben()["rot"])
         else:
-            self.stand.configure(text=_("Same as in the profile. Back to the e-reader: comes with 1.4-beta4 (until "
-                                        "then on the e-reader itself)."), foreground="")
+            self.stand.configure(text=_("Same as in the profile. \"To the e-reader …\" in the toolbar writes it to "
+                                        "the e-reader."), foreground="")
 
 
 # ====================================================================== Bookends
@@ -815,10 +815,10 @@ class BookshelfSeite(_Seite):
         # dieselbe Einstellung wie unter Ansicht (seit 1.4-beta6): hier, weil sie vor allem Bookshelf betrifft
         sb = ttk.Frame(self.innen)
         sb.pack(anchor="w", fill="x", pady=(6, 0))
-        ttk.Label(sb, text=_("Start screen shows:")).pack(side="left")
+        ttk.Label(sb, text=_("Start screen shows:")).pack(anchor="w")
         for wert, text in (("beispiel", _("sample books")), ("bibliothek", _("the opened library"))):
             ttk.Radiobutton(sb, text=text, value=wert, variable=bereich.startbuecher_var,
-                            command=bereich._startbuecher_gewechselt).pack(side="left", padx=(6, 0))
+                            command=bereich._startbuecher_gewechselt).pack(anchor="w", padx=(12, 0))
 
         # -- Theme, Hintergrund, Brett, Dekoration, Farben (seit 1.4-beta3; Inhalt hängt vom Profil ab) ----
         self.f_theme = self._abschnitt("theme", _("Themes"))

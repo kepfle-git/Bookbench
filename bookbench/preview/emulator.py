@@ -343,6 +343,8 @@ def vom_geraet(wurzel, profil, info=None):
                                                                          "koreader")}, art=art),
                               "sicherung": "", "entfernt": entfernt, "plugins_von": "kobo",
                               "bookbench_geaendert": []})
+    from bookbench.preview import transfer          # Stand beim Holen merken (Rückweg, seit 1.4-beta6)
+    transfer.basis_anlegen(profil)
     return profil_stand(profil)
 
 
@@ -380,6 +382,8 @@ def aus_sicherung(zip_pfad, profil):
     _marke_schreiben(profil, {"quelle": "sicherung", "datum": datetime.now().isoformat(timespec="seconds"),
                               "sicherung": Path(zip_pfad).name, "entfernt": entfernt, "geraet": geraet,
                               "bookbench_geaendert": []})
+    from bookbench.preview import transfer          # Stand beim Holen merken (Rückweg, seit 1.4-beta6)
+    transfer.basis_anlegen(profil)
     return profil_stand(profil)
 
 

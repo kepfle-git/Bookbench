@@ -40,7 +40,8 @@ STAND_TEXT = {"aktuell": _("up to date"), "veraltet": _("outdated on the e-reade
               "fehlt": _("missing on the e-reader"), "nur auf dem Kobo": _("only on the e-reader"), "kein Kobo": "-"}
 BEREICH = N_("E-reader")
 # Anlass einer Sicherung (steht in der ZIP); "vor dem Zurückspielen" schrieben Versionen bis 0.16
-ANLASS = {"vor_zurueckspielen": _("before restoring"), "vor dem Zurückspielen": _("before restoring")}
+ANLASS = {"vor_zurueckspielen": _("before restoring"), "vor dem Zurückspielen": _("before restoring"),
+          "vor_rueckweg": _("before writing from the preview")}
 
 
 def _datum(iso):

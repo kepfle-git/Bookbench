@@ -545,6 +545,7 @@ It is searched in this order: own path ([[einst_vorschau]]), koreader in PATH, m
 - [[vorschau_bookends]]
 - [[vorschau_bookshelf]]
 - [[vorschau_profil]]
+- [[vorschau_rueckweg]]
 - [[vorschau_starten]]
 - [[vorschau_bildschirm]]
 """)),
@@ -562,7 +563,7 @@ It is searched in this order: own path ([[einst_vorschau]]), koreader in PATH, m
 
 **Book**
 - **Sample text** (default): three chapters of Lorem ipsum with title, author and series, enough for the Bookends placeholders.
-- A book of the opened library, or **Other file** (toolbar). Its book data (.sdr) is searched next to the book, on the connected e-reader and in the backup, so font size and margins are those of the e-reader. From the library: right-click on a book > **Open in Preview**.
+- A book of the opened library, or **Other file …** (button below the book selection). Its book data (.sdr) is searched next to the book, on the connected e-reader and in the backup, so font size and margins are those of the e-reader. From the library: right-click on a book > **Open in Preview**.
 
 **How it works**
 KOReader starts without a window (SDL offscreen) at the full resolution of the device ([[vorschau_bildschirm]]); the picture is fitted into the area. Starting takes about a second, every further picture a tenth of a second. Changing the view or the book restarts it; **Restart** does it by hand. Bookbench stops it when closing; if Bookbench crashes, it stops by itself after 30 seconds.
@@ -602,7 +603,7 @@ The page is divided into sections (Preset, Lines, Selected line, General); a cli
 **Draft and profile**
 - Changes are a draft at first: they only show in the picture. The red line says so.
 - **Save to profile** (toolbar) writes the preset and the switch into the preview profile; **Discard** goes back to what is in the profile.
-- The way back to the e-reader comes with 1.4-beta4. Until then: change it on the e-reader itself, or copy the file from the profile (folder vorschau/koreader/settings/bookends_presets) by hand.
+- **To the e-reader …** (toolbar) writes the saved changes to the e-reader: [[vorschau_rueckweg]].
 - **From the e-reader** and **From backup** replace the profile; if Bookbench has changed something in it, it asks first.
 
 **Presets**
@@ -659,6 +660,22 @@ The preview runs in its own profile in the settings folder (subfolder vorschau, 
 - **From backup** takes settings, settings folder, styletweaks and patches from the backup selected in the E-reader area, otherwise from the newest ([[kobo_sicherungen]]). Plugins and fonts are in no backup; they stay as they are. So you have to take the profile from the e-reader at least once.
 - When taking a profile and before every start, these are removed from the settings: **screen_dpi** (it would override the screen size of the preview), plugin paths and the last files/folders on the e-reader. In the profile, book data is always next to the book.
 """)),
+    ("vorschau", "vorschau_rueckweg", _("To the e-reader"), _("""
+**To the e-reader …** (toolbar) writes what you changed in the preview profile to the connected e-reader - the way back after Bookends, Bookshelf, font and margins, patches.
+
+**What is offered**
+- When the profile is taken from the e-reader (or from a backup), Bookbench notes the state of the files it compares (folder vorschau/basis). Offered is what changed in the profile since then: Bookends presets and bookends.lua, Bookshelf's settings, wallpapers and ornaments, patches (also switched off = renamed, added, deleted), style tweaks, and KOReader's settings (settings.reader.lua) key by key.
+- ⚠ **Conflict**: the same file or key was changed on the e-reader too since the profile was taken. Not preselected - transferring it replaces the e-reader's change.
+- What changed only on the e-reader (KOReader writes all the time: positions, statistics) is left alone. Databases (statistics, cover cache) are never transferred.
+- Device-specific settings are never offered: screen DPI, paths and last files, frontlight, Wi-Fi, migration notes and the like. **Never offer** hides further settings for good (it only applies to keys, not files).
+- A profile taken before 1.4-beta6 has no noted state: then profile and e-reader are compared directly, and only areas Bookbench has changed are preselected. Take the profile again to get the exact comparison.
+
+**Transferring**
+- Tick what should go (double-click, Space, **On/off**, **All**, **None**, **Suggestion**) and **Transfer**. Before writing, the KOReader settings of the e-reader are backed up (E-reader area, reason "before writing from the preview").
+- Settings are written key by key into the e-reader's settings.reader.lua; everything else in it stays.
+- Unsaved drafts on the workbench pages are asked about first.
+- Afterwards eject the e-reader; KOReader reads the changes at its next start. If KOReader is running on the e-reader while you transfer (rare over USB), it may overwrite settings.reader.lua when it closes.
+""")),
     ("vorschau", "vorschau_starten", _("Starting and output"), _("""
 **Open in KOReader** (toolbar, always the first button)
 - Starts the full desktop KOReader in a window, with menus and all plugins of the profile - for trying things out. The workbench keeps running beside it ([[vorschau_werkbank]]).
@@ -666,7 +683,7 @@ The preview runs in its own profile in the settings folder (subfolder vorschau, 
 - Since 1.4-beta6 it works on its own throw-away copy of the profile (vorschau/fenster), with the drafts of the workbench pages. What you change in KOReader's menus there is not kept - change it on the workbench pages and save it to the profile.
 - The selected book (the sample text too) is copied with its book data (.sdr) into that copy and opened there. KOReader writes to the book data while reading; that way the original stays untouched, on the e-reader too.
 - Book data is searched: next to the book, on the connected e-reader (same file name), in the backup. Without book data the general settings apply, so font size and margins may differ.
-- **Other file** shows a book that is not in the opened library.
+- **Other file …** (below the book selection) shows a book that is not in the opened library.
 
 **KOReader output**
 Under **Profile, device and output** (click to unfold) is what KOReader reports at start and while running: the workbench's output (vorschau/werkbank/koreader.log), after **Open in KOReader** that of the window (vorschau/fenster/koreader.log). After it closes, the status bar gives the number of warnings and errors, for example a patch that does not run on the computer because it needs something specific to the e-reader.

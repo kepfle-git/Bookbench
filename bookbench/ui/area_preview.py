@@ -35,6 +35,7 @@ from bookbench.preview import workbench as kwb
 from bookbench.preview import plugins as kpl
 from bookbench.ui import workbench_plugins as kwp
 from bookbench.ui import workbench_reader as kwr
+from bookbench.ui import transfer_window as ktw
 from bookbench.i18n import _
 
 ABSTAND = 1000                                   # ms, Nachschauen, ob KOReader (Fenster) noch läuft
@@ -117,6 +118,8 @@ class VorschauBereich:
         self.buch_wahl = ttk.Combobox(links, textvariable=self.buch_var, state="readonly", width=34)
         self.buch_wahl.pack(anchor="w", fill="x")
         self.buch_wahl.bind("<<ComboboxSelected>>", lambda e: self._buch_gewaehlt(neu_starten=True))
+        ttk.Button(links, text=_("Other file …"), style="Klein.TButton", command=self.datei_waehlen).pack(
+            anchor="w", pady=(2, 0))                    # bis 1.4-beta5 in der Werkzeugleiste
         self.buch_text = ttk.Label(links, text="", style="Hinweis.TLabel", wraplength=320, justify="left")
         self.buch_text.pack(anchor="w", pady=(2, 0), fill="x")
 
@@ -272,18 +275,38 @@ class VorschauBereich:
                         _("Keep the changes in the preview profile (until now they only show in the picture)"))
             a._wz_knopf(eltern, "rueckgaengig", _("Discard"), seite.verwerfen,
                         _("Back to what is in the profile"))
-            if seite.plugin == kpl.BOOKENDS:
-                ttk.Separator(eltern, orient="vertical").pack(side="left", fill="y", padx=6, pady=2)
-                a._wz_knopf(eltern, "neu", _("New preset"), seite.neu, _("Make a new, empty Bookends preset"))
+            ttk.Separator(eltern, orient="vertical").pack(side="left", fill="y", padx=6, pady=2)
+            self._wz_rueckweg(eltern)
             return                                      # Profil holen usw. auf der Unterseite Ansicht
         a._wz_knopf(eltern, "uebernehmen", _("From the e-reader"), self.vom_kobo,
                     _("Rebuild the profile from the connected e-reader: settings, Bookends, patches, plugins, fonts"))
         a._wz_knopf(eltern, "zurueckschreiben", _("From backup"), self.aus_sicherung,
                     _("Settings from the backup selected in the E-reader area (otherwise the newest); plugins and "
                       "fonts stay"))
-        ttk.Separator(eltern, orient="vertical").pack(side="left", fill="y", padx=6, pady=2)
-        a._wz_knopf(eltern, "oeffnen", _("Other file"), self.datei_waehlen,
-                    _("Show a book that is not in the opened library"))
+        self._wz_rueckweg(eltern)
+
+    def _wz_rueckweg(self, eltern):
+        self.app._wz_knopf(eltern, "sichern", _("To the e-reader …"), self.auf_den_reader,
+                           _("Write what is changed in the preview profile to the connected e-reader (with a backup "
+                             "before) - you choose what"))
+
+    def auf_den_reader(self):
+        """Rückweg Profil -> E-Reader (seit 1.4-beta6): Fenster mit den Unterschieden."""
+        a = self.app
+        if a._arbeit:
+            a.status.set(_("Still running: {arbeit}.").format(arbeit=a._arbeit))
+            return
+        if not a.kobo.wurzel or not a.kobo.wurzel.exists():
+            a.status.set(_("No e-reader connected."))
+            return
+        if not kv.profil_stand(self.profil)["vorhanden"]:
+            a.status.set(_("The profile is empty: first \"From the e-reader\" or \"From backup\"."))
+            return
+        if not self.entwuerfe_fragen():
+            return
+        if getattr(self, "_rueckweg", None) is not None and self._rueckweg.winfo_exists():
+            self._rueckweg.destroy()
+        self._rueckweg = ktw.TransferFenster(self)
 
     def koreader_suchen_menue(self):
         self.koreader_suchen()

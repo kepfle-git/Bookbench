@@ -812,6 +812,13 @@ class BookshelfSeite(_Seite):
         ttk.Label(self.innen, text=_("Bookshelf has no way to reload its settings while running: after a change the "
                                      "workbench restarts on the start screen (about a second)."),
                   style="Hinweis.TLabel", wraplength=BREITE, justify="left").pack(anchor="w", fill="x")
+        # dieselbe Einstellung wie unter Ansicht (seit 1.4-beta6): hier, weil sie vor allem Bookshelf betrifft
+        sb = ttk.Frame(self.innen)
+        sb.pack(anchor="w", fill="x", pady=(6, 0))
+        ttk.Label(sb, text=_("Start screen shows:")).pack(side="left")
+        for wert, text in (("beispiel", _("sample books")), ("bibliothek", _("the opened library"))):
+            ttk.Radiobutton(sb, text=text, value=wert, variable=bereich.startbuecher_var,
+                            command=bereich._startbuecher_gewechselt).pack(side="left", padx=(6, 0))
 
         # -- Theme, Hintergrund, Brett, Dekoration, Farben (seit 1.4-beta3; Inhalt hängt vom Profil ab) ----
         self.f_theme = self._abschnitt("theme", _("Themes"))

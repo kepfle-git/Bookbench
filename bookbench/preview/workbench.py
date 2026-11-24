@@ -234,21 +234,60 @@ def kopiename(buch):
     return name + ".epub" if name.lower().endswith(".kepub") else name
 
 
-def arbeitsordner(profil):
-    return Path(profil) / ORDNER
+FENSTER = "fenster"                              # Wegwerf-Kopie für "In KOReader öffnen" (seit 1.4-beta6)
+ZWISCHENSPEICHER = "werkbank-cache"              # Cover-Zwischenspeicher über Neustarts hinweg
+# KOReaders/CoverBrowsers Buchinfo-Datenbank (Cover, Metadaten; Bookshelf liest sie) und Bookshelfs eigener
+# Zwischenspeicher. Ohne sie musste jeder Start der Werkbank die Cover neu auslesen (Befund beta5).
+BEHALTEN = ("settings/bookinfo_cache.sqlite3", "cache")
 
 
-def arbeitsprofil(profil, modus="lesen", plugins=PLUGINS, bibliothek=None):
+def arbeitsordner(profil, ordner=ORDNER):
+    return Path(profil) / ordner
+
+
+def _zwischenspeicher_sichern(arbeit, ziel):
+    for rel in BEHALTEN:
+        q = Path(arbeit) / "koreader" / rel
+        if q.exists():
+            z = Path(ziel) / rel
+            kv._leeren(z)
+            z.parent.mkdir(parents=True, exist_ok=True)
+            (shutil.copytree if q.is_dir() else shutil.copy2)(q, z)
+
+
+def _zwischenspeicher_holen(quelle, ko):
+    for rel in BEHALTEN:
+        q = Path(quelle) / rel
+        if q.exists():
+            z = Path(ko) / rel
+            kv._leeren(z)
+            z.parent.mkdir(parents=True, exist_ok=True)
+            (shutil.copytree if q.is_dir() else shutil.copy2)(q, z)
+
+
+def arbeitsprofil(profil, modus="lesen", plugins=PLUGINS, bibliothek=None, ordner=ORDNER, patch=True):
     """Legt die Wegwerf-Kopie neu an. Gibt den Ordner zurück. bibliothek: Ordner mit Büchern für den
     Startbildschirm (sonst Blindtext-Bücher). Im Lesemodus liegt die .sdr neben dem Buch ("doc"),
-    beim Startbildschirm zentral im KO_HOME ("dir"), damit nichts neben die echten Bücher geschrieben wird."""
+    beim Startbildschirm zentral im KO_HOME ("dir"), damit nichts neben die echten Bücher geschrieben wird.
+    plugins=None: alle Plugins des Profils (Fenster). patch=False: ohne Werkbank-Patch (Fenster).
+    Der Cover-Zwischenspeicher der letzten Kopie wird aufgehoben und wieder eingesetzt."""
     profil = Path(profil)
-    arbeit = arbeitsordner(profil)
+    arbeit = arbeitsordner(profil, ordner)
+    speicher = profil / ZWISCHENSPEICHER
+    if arbeit.is_dir():
+        try:
+            _zwischenspeicher_sichern(arbeit, speicher)
+        except OSError:
+            pass
     kv._leeren(arbeit)
     ko = arbeit / "koreader"
     shutil.copytree(kv._ko(profil), ko, symlinks=True)
-    erlaubt = set(plugins)
-    if (ko / "plugins").is_dir():
+    try:
+        _zwischenspeicher_holen(speicher, ko)
+    except OSError:
+        pass
+    erlaubt = set(plugins) if plugins is not None else None
+    if erlaubt is not None and (ko / "plugins").is_dir():
         for p in (ko / "plugins").iterdir():
             if p.name.removesuffix(".koplugin") not in erlaubt:
                 kv._leeren(p)
@@ -258,11 +297,12 @@ def arbeitsprofil(profil, modus="lesen", plugins=PLUGINS, bibliothek=None):
     # "Alle Patches aus" (.patches_disabled) würde auch den Werkbank-Patch abschalten: stattdessen die
     # Patches des Nutzers einzeln ausschalten (seit 1.4-beta4)
     aus = ko / "patches" / ".patches_disabled"
-    if aus.exists():
+    if patch and aus.exists():
         aus.unlink()
         for p in (ko / "patches").glob("*.lua"):
             p.rename(p.with_name(p.name + ".disabled"))
-    (ko / "patches" / PATCH).write_text(PATCH_TEXT, encoding="utf-8")
+    if patch:
+        (ko / "patches" / PATCH).write_text(PATCH_TEXT, encoding="utf-8")
     kv.desktop_patch_schreiben(arbeit)
     for teil in ("befehle", "bilder", "buecher"):
         (arbeit / teil).mkdir(parents=True, exist_ok=True)
@@ -284,15 +324,19 @@ def arbeitsprofil(profil, modus="lesen", plugins=PLUGINS, bibliothek=None):
     return arbeit
 
 
-def bibliothek_vorbereiten(arbeit, buecher, hoechstens=50):
+def bibliothek_vorbereiten(arbeit, buecher, hoechstens=50, zuerst=None):
     """Startbildschirm mit der echten Bibliothek (seit 1.4-beta5): Buchdaten (.sdr neben den Büchern) in den
     zentralen Buchdaten-Ordner der Kopie spiegeln (document_metadata_folder "dir": KO_HOME/docsettings +
     voller Pfad ohne letzte Endung + .sdr), damit Fortschritt und Status zu sehen sind, und daraus einen
     Leseverlauf (history.lua) bauen, neueste zuerst - Bookshelf zeigt oben das zuletzt gelesene Buch.
-    In die Bibliothek selbst wird nichts geschrieben. Gibt die Zahl der Bücher im Verlauf zurück."""
+    In die Bibliothek selbst wird nichts geschrieben. Gibt die Zahl der Bücher im Verlauf zurück.
+    zuerst: dieses Buch steht als zuletzt gelesen ganz oben (Buchauswahl auf dem Startbildschirm, 1.4-beta6)."""
     ko = Path(arbeit) / "koreader"
     verlauf = []
-    for buch in buecher:
+    liste = list(buecher)
+    if zuerst and Path(zuerst) not in [Path(b) for b in liste]:
+        liste.append(zuerst)
+    for buch in liste:
         buch = Path(buch)
         sdr = buch.with_name(kv._sdr_name(buch))
         dateien = sorted(sdr.glob("metadata.*.lua")) if sdr.is_dir() else []
@@ -305,6 +349,10 @@ def bibliothek_vorbereiten(arbeit, buecher, hoechstens=50):
         except OSError:
             continue
         verlauf.append({"file": str(buch), "time": zeit})
+    if zuerst:
+        verlauf = [e for e in verlauf if e["file"] != str(zuerst)]
+        neueste = max([e["time"] for e in verlauf] + [int(time.time())])
+        verlauf.append({"file": str(zuerst), "time": neueste + 1})
     verlauf.sort(key=lambda e: -e["time"])
     from bookbench.core import lua_data
     (ko / "history.lua").write_text("return " + lua_data.schreiben(verlauf[:hoechstens]) + "\n", encoding="utf-8")
@@ -312,9 +360,13 @@ def bibliothek_vorbereiten(arbeit, buecher, hoechstens=50):
 
 
 class Werkbank:
-    def __init__(self, befund, profil):
+    def __init__(self, befund, profil, ordner=ORDNER, fenster=False):
+        """fenster=True: voller KOReader im Fenster (In KOReader öffnen) auf einer eigenen Wegwerf-Kopie,
+        mit allen Plugins, ohne Werkbank-Patch (keine Bilder, keine Befehle)."""
         self.befund = befund
         self.profil = Path(profil)
+        self.ordner = ordner
+        self.fenster = fenster
         self.prozess = None
         self.modus = None
         self.buch = None
@@ -328,13 +380,13 @@ class Werkbank:
 
     @property
     def arbeit(self):
-        return arbeitsordner(self.profil)
+        return arbeitsordner(self.profil, self.ordner)
 
     def laeuft(self):
         return self.prozess is not None and self.prozess.poll() is None
 
     def starten(self, modus, buch, w, h, dpi, sw=False, sdr=None, bibliothek=None, plugins=PLUGINS, anpassen=None,
-                buecher=None):
+                buecher=None, zuerst=None):
         """modus "lesen": buch (Pfad) oder None für das Blindtext-Buch; "bibliothek": Startbildschirm.
         anpassen(ko): Entwürfe in die Wegwerf-Kopie schreiben, bevor KOReader startet."""
         if not self.befund:
@@ -342,7 +394,9 @@ class Werkbank:
         if not (kv._ko(self.profil) / "settings.reader.lua").is_file():
             raise RuntimeError(_("The profile is empty: take it from the e-reader or from a backup first."))
         self.beenden()
-        arbeit = arbeitsprofil(self.profil, modus, plugins, bibliothek)
+        if self.fenster:
+            plugins = None
+        arbeit = arbeitsprofil(self.profil, modus, plugins, bibliothek, ordner=self.ordner, patch=not self.fenster)
         if modus == "lesen":
             if buch:
                 kopie = arbeit / "buecher" / kopiename(buch)
@@ -357,13 +411,16 @@ class Werkbank:
                 kopie = sample_book.blindtext_buch(arbeit / "buecher" / BLINDTEXT)
         else:
             kopie = None
-            self.verlauf = bibliothek_vorbereiten(arbeit, buecher) if bibliothek and buecher else 0
+            self.verlauf = (bibliothek_vorbereiten(arbeit, buecher if bibliothek else [], zuerst=zuerst)
+                            if (bibliothek and buecher) or zuerst else 0)
         if anpassen:                                  # nach dem Buch: Buchdaten können mit angepasst werden
             anpassen(arbeit / "koreader")
         variablen = kv.umgebung(arbeit, w, h, dpi, sw)
-        variablen.update({"XDG_DATA_HOME": str(self.profil / "share"), "BOOKBENCH_WB": str(arbeit / "befehle"),
-                          "BOOKBENCH_WB_MODE": "library" if modus == "bibliothek" else "read",
-                          "SDL_VIDEODRIVER": "offscreen", "SDL_VIDEO_DRIVER": "offscreen"})
+        variablen["XDG_DATA_HOME"] = str(self.profil / "share")
+        if not self.fenster:
+            variablen.update({"BOOKBENCH_WB": str(arbeit / "befehle"),
+                              "BOOKBENCH_WB_MODE": "library" if modus == "bibliothek" else "read",
+                              "SDL_VIDEODRIVER": "offscreen", "SDL_VIDEO_DRIVER": "offscreen"})
         befehl = self._befehl(variablen, kopie, bibliothek)
         if self.befund["art"] == "appimage":
             p = Path(self.befund["pfad"])
@@ -374,6 +431,18 @@ class Werkbank:
         self.bereit = self.haengt = False
         self.modus, self.buch = modus, buch
         self._start = time.monotonic()
+        if self.fenster:                              # eigenständig: Ausgabe in die Datei, läuft nach Bookbench weiter
+            log = open(arbeit / kv.LOG, "w", encoding="utf-8", errors="replace")
+            try:
+                self.prozess = subprocess.Popen(befehl, env=dict(os.environ, **variablen), cwd=arbeit, stdout=log,
+                                                stderr=subprocess.STDOUT, stdin=subprocess.DEVNULL,
+                                                start_new_session=True)
+            except OSError as e:
+                self.prozess = None
+                raise RuntimeError(_("KOReader could not be started: {fehler}").format(fehler=e))
+            finally:
+                log.close()
+            return self.prozess
         try:
             self.prozess = subprocess.Popen(befehl, env=dict(os.environ, **variablen), cwd=arbeit,
                                             stdout=subprocess.PIPE, stderr=subprocess.STDOUT,

@@ -19,7 +19,7 @@ import keller_theme as kth
 from bookbench.i18n import _
 
 PROGRAMM = "Bookbench"
-VERSION = "1.4-beta5"
+VERSION = "1.4-beta6"
 
 # (Elternthema, Kennung, Titel, Text). Übersetzt beim Import. Text: **fett**, Aufzählungen mit "-",
 # [[kennung]] = Verweis.
@@ -551,7 +551,8 @@ It is searched in this order: own path ([[einst_vorschau]]), koreader in PATH, m
     ("vorschau", "vorschau_werkbank", _("Workbench"), _("""
 **View**
 - **Reading page**: the chosen book, opened. ◀ and ▶ turn pages, so does a click into the picture (left third back, otherwise forward, as on the e-reader) and the arrow keys once the picture has the focus.
-- **Start screen**: KOReader without a book - the file browser or Bookshelf, whatever the profile starts with. **With sample books** shows eight sample books with covers; **with the opened library** shows the books of the library opened in Bookbench, with their reading progress (from the book data next to the books) and the most recently read ones first - Bookshelf's top area then shows your current book. Nothing is written into the library. Covers can appear a moment later; the picture is taken again after 1.5 s.
+- **Start screen**: KOReader without a book - the file browser or Bookshelf, whatever the profile starts with. **With sample books** shows eight sample books with covers; **with the opened library** shows the books of the library opened in Bookbench, with their reading progress (from the book data next to the books) and the most recently read ones first - Bookshelf's top area then shows your current book. The book selected under **Book** counts as the one read last. Nothing is written into the library. The same choice is on the Bookshelf page.
+- Covers: KOReader reads them from the books in the background, the first time for every book. Bookbench keeps KOReader's cover cache between restarts (vorschau/werkbank-cache) and takes new pictures after 1.5, 4, 8 and 15 seconds; **New picture** takes one at any time.
 
 **Tapping in KOReader**
 - On the start screen a click into the picture is a tap at that spot - Bookshelf's shelf buttons (Home, Recent, Series …), its menus, a book. A right-click is a long press.
@@ -659,14 +660,16 @@ The preview runs in its own profile in the settings folder (subfolder vorschau, 
 - When taking a profile and before every start, these are removed from the settings: **screen_dpi** (it would override the screen size of the preview), plugin paths and the last files/folders on the e-reader. In the profile, book data is always next to the book.
 """)),
     ("vorschau", "vorschau_starten", _("Starting and output"), _("""
-**Open in KOReader** (toolbar)
-- Starts the full desktop KOReader in a window, with menus - for trying things out. The workbench keeps running beside it ([[vorschau_werkbank]]).
-- The selected book (the sample text too) is copied with its book data (.sdr) to vorschau/buecher and opened there. KOReader writes to the book data while reading; that way the original stays untouched, on the e-reader too.
+**Open in KOReader** (toolbar, always the first button)
+- Starts the full desktop KOReader in a window, with menus and all plugins of the profile - for trying things out. The workbench keeps running beside it ([[vorschau_werkbank]]).
+- It shows what the workbench shows: the reading page with the selected book, or the start screen (with sample books or the opened library, the selected book as the one read last).
+- Since 1.4-beta6 it works on its own throw-away copy of the profile (vorschau/fenster), with the drafts of the workbench pages. What you change in KOReader's menus there is not kept - change it on the workbench pages and save it to the profile.
+- The selected book (the sample text too) is copied with its book data (.sdr) into that copy and opened there. KOReader writes to the book data while reading; that way the original stays untouched, on the e-reader too.
 - Book data is searched: next to the book, on the connected e-reader (same file name), in the backup. Without book data the general settings apply, so font size and margins may differ.
 - **Other file** shows a book that is not in the opened library.
 
 **KOReader output**
-Under **Profile, device and output** (click to unfold) is what the KOReader in the window reports at start and while running; the workbench writes its own output to vorschau/werkbank/koreader.log. After it closes, the status bar gives the number of warnings and errors, for example a patch that does not run on the computer because it needs something specific to the e-reader.
+Under **Profile, device and output** (click to unfold) is what KOReader reports at start and while running: the workbench's output (vorschau/werkbank/koreader.log), after **Open in KOReader** that of the window (vorschau/fenster/koreader.log). After it closes, the status bar gives the number of warnings and errors, for example a patch that does not run on the computer because it needs something specific to the e-reader.
 """)),
     ("vorschau", "vorschau_bildschirm", _("Screen and device"), _("""
 The workbench and the window copy the screen of a device: size in pixels, pixel density, colour or black and white (black and white switches off the colours in KOReader, as on the device). The workbench always uses the full size. Which device it is stands under **Profile, device and output**:

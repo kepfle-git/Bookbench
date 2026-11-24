@@ -10,7 +10,7 @@ KOReader.
 - **Metadata** and **cover**: title, authors with sort names, series, publisher, language, ISBN, tags and your own Calibre columns, compared with Calibre and KOReader; a one-time import from a Calibre library (metadata.db) if you want to stop using Calibre
 - **Dictionary**: StarDict dictionaries for KOReader, also built from a MediaWiki
 - **E-reader**: Kobo, Kindle and PocketBook with KOReader over USB: backups of the KOReader settings, copying dictionaries
-- **Preview** (Linux): open a book in the desktop KOReader with the settings of your e-reader
+- **Preview** (Linux): the KOReader workbench - the desktop KOReader runs in the background with the settings of your e-reader and shows the page or start screen; settings pages for the plugins Bookends and Bookshelf with a live picture
 
 English and German interface.
 

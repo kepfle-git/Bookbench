@@ -1822,6 +1822,8 @@ class App(tk.Tk):
 
     def hilfe(self):
         thema = khi.thema(self._bereich())
+        if thema == "vorschau" and getattr(self, "vorschau", None):
+            thema = khi.thema(self.vorschau.hilfe_thema())          # Unterseiten Bookends/Bookshelf (1.4-beta2)
         if self._hilfe is not None and self._hilfe.winfo_exists():
             self._hilfe.zeige(thema)
         else:
@@ -1933,6 +1935,11 @@ class App(tk.Tk):
                 _("Quit"), ngettext("{n} dictionary entry is changed in the form but not applied. Quit anyway?",
                                     "{n} dictionary entries are changed in the form but not applied. Quit anyway?", n)
                 .format(n=n), parent=self):
+            return False
+        offen = self.vorschau.ungespeichert() if getattr(self, "vorschau", None) else []
+        if offen and not messagebox.askyesno(
+                _("Quit"), _("The workbench has unsaved changes ({liste}) that are not in the profile. Quit anyway?")
+                .format(liste=", ".join(offen)), parent=self):
             return False
         return self.kobo.beenden_ok()
 

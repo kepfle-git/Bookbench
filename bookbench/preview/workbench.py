@@ -26,6 +26,9 @@ Buch bzw. der Startbildschirm da ist ("ready"), und liest dann alle 50 ms den Or
 
   shot <pfad>   neu zeichnen, Bild schreiben (erst <pfad>.tmp, dann umbenennen)
   next / prev   eine Seite weiter/zurück (Buch: GotoViewRel, Startbildschirm: NextPage/PrevPage)
+  bookends <datei>       Bookends-Vorlage aus settings/bookends_presets übernehmen (seit 1.4-beta2,
+                         Bookends:applyPresetFile, wie Bookends' eigene Vorschau); nur auf der Leseseite
+  bookends_enabled 0|1   Bookends ein-/ausschalten (Bookends:onSetBookends)
   quit          beenden
 Wachhund: Bookbench berührt befehle/alive alle 5 s; ist die Datei älter als 30 s (Bookbench abgestürzt),
 beendet sich KOReader selbst.
@@ -33,7 +36,8 @@ beendet sich KOReader selbst.
 Antworten auf stdout: "BOOKBENCH-WB ready <modus>", "BOOKBENCH-WB done <nummer> ok|error …".
 
   Werkbank(befund, profil)
-    .starten(modus, buch, w, h, dpi, sw, sdr, bibliothek)   modus "lesen" oder "bibliothek"
+    .starten(modus, buch, w, h, dpi, sw, sdr, bibliothek, anpassen)   modus "lesen" oder "bibliothek";
+                           anpassen(ko_ordner) ändert die Wegwerf-Kopie vor dem Start (Entwürfe, seit 1.4-beta2)
     .bild() / .blaettern(+1|-1)   Befehl schicken, gibt die Nummer zurück
     .ereignisse()          neue Ereignisse (dicts, art: bereit, bild, erledigt, fehler, ende)
     .beenden()             KOReader beenden (erst freundlich, dann hart)
@@ -87,6 +91,12 @@ local function filemanager()
     local F = package.loaded["apps/filemanager/filemanager"]
     return F and F.instance
 end
+local function bookends(r)
+    if type(r.bookends) == "table" and r.bookends.applyPresetFile then return r.bookends end
+    for _, m in ipairs(r) do
+        if type(m) == "table" and type(m.applyPresetFile) == "function" then return m end
+    end
+end
 
 local function run(cmd)
     local verb, arg = cmd:match("^(%S+)%s*(.*)$")
@@ -104,6 +114,22 @@ local function run(cmd)
         else
             UIManager:sendEvent(Event:new(d > 0 and "NextPage" or "PrevPage"))
         end
+        return "ok"
+    elseif verb == "bookends" or verb == "bookends_enabled" then
+        local r = reader()
+        if not (r and r.document) then return "error no-reader" end
+        local be = bookends(r)
+        if not be then return "error no-bookends" end
+        if verb == "bookends" then
+            local okp, err = be:applyPresetFile(arg)
+            if not okp then return "error " .. tostring(err) end
+        else
+            be:onSetBookends(arg == "1")
+        end
+        -- Bookends repaints on the next tick; "shot" may come before that, so mark it now
+        be.dirty = true
+        be._tick_cache = nil
+        UIManager:setDirty(r, "ui")
         return "ok"
     elseif verb == "quit" then
         UIManager:quit()
@@ -225,14 +251,17 @@ class Werkbank:
     def laeuft(self):
         return self.prozess is not None and self.prozess.poll() is None
 
-    def starten(self, modus, buch, w, h, dpi, sw=False, sdr=None, bibliothek=None, plugins=PLUGINS):
-        """modus "lesen": buch (Pfad) oder None für das Blindtext-Buch; "bibliothek": Startbildschirm."""
+    def starten(self, modus, buch, w, h, dpi, sw=False, sdr=None, bibliothek=None, plugins=PLUGINS, anpassen=None):
+        """modus "lesen": buch (Pfad) oder None für das Blindtext-Buch; "bibliothek": Startbildschirm.
+        anpassen(ko): Entwürfe in die Wegwerf-Kopie schreiben, bevor KOReader startet."""
         if not self.befund:
             raise RuntimeError(_("Desktop KOReader not found."))
         if not (kv._ko(self.profil) / "settings.reader.lua").is_file():
             raise RuntimeError(_("The profile is empty: take it from the e-reader or from a backup first."))
         self.beenden()
         arbeit = arbeitsprofil(self.profil, modus, plugins, bibliothek)
+        if anpassen:
+            anpassen(arbeit / "koreader")
         if modus == "lesen":
             if buch:
                 kopie = arbeit / "buecher" / Path(buch).name
@@ -329,6 +358,18 @@ class Werkbank:
 
     def blaettern(self, richtung):
         return self.senden("next" if richtung > 0 else "prev")
+
+    @property
+    def ko(self):
+        """KO_HOME der Wegwerf-Kopie (dorthin schreiben Entwürfe, bevor sie per Befehl gelten)."""
+        return self.arbeit / "koreader"
+
+    def bookends(self, datei):
+        """Bookends-Vorlage (Datei in ko/settings/bookends_presets) im laufenden KOReader übernehmen."""
+        return self.senden(f"bookends {datei}")
+
+    def bookends_an(self, an):
+        return self.senden(f"bookends_enabled {1 if an else 0}")
 
     def ereignisse(self):
         neu = []

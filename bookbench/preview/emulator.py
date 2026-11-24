@@ -341,7 +341,8 @@ def vom_geraet(wurzel, profil, info=None):
     _marke_schreiben(profil, {"quelle": "kobo", "datum": datetime.now().isoformat(timespec="seconds"),
                               "geraet": dict({k: g.get(k, "") for k in ("modell", "modellnummer", "seriennummer",
                                                                          "koreader")}, art=art),
-                              "sicherung": "", "entfernt": entfernt, "plugins_von": "kobo"})
+                              "sicherung": "", "entfernt": entfernt, "plugins_von": "kobo",
+                              "bookbench_geaendert": []})
     return profil_stand(profil)
 
 
@@ -377,7 +378,8 @@ def aus_sicherung(zip_pfad, profil):
                 shutil.copyfileobj(q, f)
     entfernt = _bereinigen(profil)
     _marke_schreiben(profil, {"quelle": "sicherung", "datum": datetime.now().isoformat(timespec="seconds"),
-                              "sicherung": Path(zip_pfad).name, "entfernt": entfernt, "geraet": geraet})
+                              "sicherung": Path(zip_pfad).name, "entfernt": entfernt, "geraet": geraet,
+                              "bookbench_geaendert": []})
     return profil_stand(profil)
 
 

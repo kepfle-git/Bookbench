@@ -12,6 +12,10 @@ preview/emulator.py und preview/workbench.py, hier nur die Oberfläche.
 
 "In KOReader öffnen" startet wie bis 1.3 den vollen KOReader im Fenster (zum Ausprobieren von Menüs).
 Nur unter Linux und macOS gebaut (emulator.verfuegbar()).
+
+Seit 1.4-beta2 hat die linke Spalte Unterseiten (in der Seitenleiste unter Vorschau): Ansicht (das
+Obige) und je erkanntem Plugin im Profil eine Einstellungsseite (ui/workbench_plugins.py: Bookends,
+Bookshelf). Das Bild rechts bleibt dabei stehen. Ohne erkanntes Plugin gibt es keine Unterseiten.
 """
 import subprocess
 import sys
@@ -28,6 +32,8 @@ from bookbench.device import device as kg
 from bookbench.preview import emulator as kv
 from bookbench.preview import sample_book
 from bookbench.preview import workbench as kwb
+from bookbench.preview import plugins as kpl
+from bookbench.ui import workbench_plugins as kwp
 from bookbench.i18n import _
 
 ABSTAND = 1000                                   # ms, Nachschauen, ob KOReader (Fenster) noch läuft
@@ -77,9 +83,13 @@ class VorschauBereich:
         # -- Mitte --------------------------------------------------------------
         self.mitte = ttk.Frame(s)
         self.mitte.pack(fill="both", expand=True, pady=(8, 0))
-        links, rechts_teil = kpn.teilen(app, self.mitte, "vorschau", 340)
-        links = ttk.Frame(links, padding=(0, 0, 12, 0))
-        links.pack(fill="both", expand=True)
+        links_teil, rechts_teil = kpn.teilen(app, self.mitte, "vorschau", 400)
+        # Unterseiten der linken Spalte (seit 1.4-beta2): Reiter unsichtbar, gewählt wird in der Seitenleiste
+        self.unter = ttk.Notebook(links_teil, style="Navi.TNotebook")
+        self.unter.pack(fill="both", expand=True)
+        links = self.ansicht = ttk.Frame(self.unter, padding=(0, 0, 12, 0))
+        self.unter.add(links, text=_("View"))
+        self.plugin_seiten = {}
 
         ttk.Label(links, text=_("View"), style="Ueberschrift.TLabel").pack(anchor="w")
         self.modus_var = tk.StringVar(value=app.e.get("werkbank_modus") or "lesen")
@@ -151,12 +161,96 @@ class VorschauBereich:
         self.buch_wahl.configure(state="readonly" if self.modus_var.get() == "lesen" else "disabled")
         self._details_zeigen()
 
+        self.plugin_seiten = {kpl.BOOKENDS: kwp.BookendsSeite(self, self.unter),
+                              kpl.BOOKSHELF: kwp.BookshelfSeite(self, self.unter)}
+        for name, seite in self.plugin_seiten.items():
+            self.unter.add(seite.rahmen, text=name.capitalize(), state="hidden")
+        self.unter.bind("<<NotebookTabChanged>>", lambda e: self._unterseite_gewechselt())
+        self._plugins = {}
+
         self.koreader_suchen(still=True)
         self.anzeigen()
+
+    # ================================================================ Unterseiten (seit 1.4-beta2)
+    def plugins_pruefen(self):
+        """Unterseiten nach den Plugins im Profil zeigen/verstecken. Ohne Plugin keine Unterseiten in
+        der Seitenleiste (seite.nb fehlt dann)."""
+        gefunden = kpl.erkennen(self.profil)
+        neu = set(gefunden) != set(self._plugins)
+        self._plugins = gefunden
+        for name, seite in self.plugin_seiten.items():
+            self.unter.tab(seite.rahmen, state="normal" if name in gefunden else "hidden")
+        if gefunden:
+            self.seite.nb = self.unter
+        else:
+            self.seite.nb = None
+            self.unter.select(self.ansicht)
+        if neu:
+            nav = getattr(self.app, "navi", None)
+            if nav:
+                nav.aktualisieren()
+
+    def unterseite(self):
+        """Kennung der gezeigten Unterseite: "ansicht", "bookends" oder "bookshelf"."""
+        try:
+            w = self.unter.nametowidget(self.unter.select())
+        except (KeyError, tk.TclError):
+            return "ansicht"
+        return next((n for n, s in self.plugin_seiten.items() if s.rahmen is w), "ansicht")
+
+    def plugin_seite(self):
+        return self.plugin_seiten.get(self.unterseite())
+
+    def unterseite_waehlen(self, name):
+        seite = self.plugin_seiten.get(name)
+        self.unter.select(seite.rahmen if seite and name in self._plugins else self.ansicht)
+
+    def _unterseite_gewechselt(self):
+        name = self.unterseite()
+        self.app.e["werkbank_unterseite"] = name
+        if self.app._bereich() == "vorschau":
+            self.app._wz_bereich_bauen("vorschau")
+            seite = self.plugin_seite()
+            if seite:
+                seite.beim_zeigen()
+
+    def hilfe_thema(self):
+        return {"bookends": "vorschau_bookends", "bookshelf": "vorschau_bookshelf"}.get(self.unterseite(), "vorschau")
+
+    def ungespeichert(self):
+        """Namen der Plugin-Seiten mit ungespeichertem Entwurf."""
+        return [n.capitalize() for n, s in self.plugin_seiten.items() if s.ungespeichert()]
+
+    def entwuerfe_fragen(self):
+        """Vor dem Neuaufbau des Profils: ungespeicherte Entwürfe speichern/verwerfen (False = abbrechen)."""
+        return all(s.fragen_ob_verwerfen() for s in self.plugin_seiten.values())
+
+    def _entwuerfe_in_kopie(self, ko):
+        for s in self.plugin_seiten.values():
+            s.in_kopie(ko)
+
+    def modus_setzen(self, modus):
+        """Ansicht umschalten (Leseseite/Startbildschirm) und die Werkbank neu starten."""
+        self.modus_var.set(modus)
+        self._modus_gewechselt()
 
     # ================================================================ Werkzeugleiste, Menü
     def werkzeug(self, eltern):
         a = self.app
+        seite = self.plugin_seite()
+        if seite:
+            a._wz_knopf(eltern, "uebernehmen", _("Save to profile"), seite.speichern,
+                        _("Keep the changes in the preview profile (until now they only show in the picture)"))
+            a._wz_knopf(eltern, "rueckgaengig", _("Discard"), seite.verwerfen,
+                        _("Back to what is in the profile"))
+            if seite.plugin == kpl.BOOKENDS:
+                ttk.Separator(eltern, orient="vertical").pack(side="left", fill="y", padx=6, pady=2)
+                a._wz_knopf(eltern, "neu", _("New preset"), seite.neu, _("Make a new, empty Bookends preset"))
+            ttk.Separator(eltern, orient="vertical").pack(side="left", fill="y", padx=6, pady=2)
+            a._wz_knopf(eltern, "starten", _("Open in KOReader"), self.starten,
+                        _("Open the selected book in the full desktop KOReader (window), with the settings from the "
+                          "e-reader - for trying out menus"))
+            return                                      # Profil holen usw. auf der Unterseite Ansicht
         a._wz_knopf(eltern, "starten", _("Open in KOReader"), self.starten,
                     _("Open the selected book in the full desktop KOReader (window), with the settings from the "
                       "e-reader - for trying out menus"))
@@ -185,6 +279,9 @@ class VorschauBereich:
             self.koreader_suchen(still=True)
         self.liste_fuellen()
         self.anzeigen()
+        seite = self.plugin_seite()
+        if seite:
+            seite.beim_zeigen()                         # startet ggf. in der passenden Ansicht neu
         if not (self.werkbank and self.werkbank.laeuft()):
             self.werkbank_starten(still=True)
 
@@ -221,6 +318,7 @@ class VorschauBereich:
         return None if p == BLINDTEXT else p
 
     def anzeigen(self):
+        self.plugins_pruefen()
         da = self.befund is not None
         self.zeile.configure(text=f"KOReader: {kv.beschreibung(self.befund)}" if da else
                              _("Desktop KOReader not found."))
@@ -307,6 +405,9 @@ class VorschauBereich:
         return n
 
     def farben(self):
+        for seite in self.plugin_seiten.values():
+            seite.farben()
+            seite.stand_zeigen()
         p = kth.PALETTE["dunkel" if self.app.dark_mode.get() else "hell"]
         self.log.configure(bg=p["feld"], fg=p["feld_fg"], insertbackground=p["feld_fg"])
         self.flaeche.configure(bg=p["bg"])
@@ -340,7 +441,7 @@ class VorschauBereich:
             kobo = a.kobo.wurzel if a.kobo.wurzel and a.kobo.wurzel.exists() else None
             sdr = kv.sdr_finden(buch, kobo, self._sicherung())
         try:
-            self.werkbank.starten(modus, buch, w, h, dpi, sw, sdr)
+            self.werkbank.starten(modus, buch, w, h, dpi, sw, sdr, anpassen=self._entwuerfe_in_kopie)
         except (RuntimeError, OSError) as e:
             self._werk_meldung(str(e))
             if not still:
@@ -476,6 +577,8 @@ class VorschauBereich:
         if not k.wurzel or not k.wurzel.exists():
             self.app.status.set(_("No e-reader connected."))
             return
+        if not self._profil_ersetzen_ok():
+            return
         wurzel, info, profil = k.wurzel, dict(k.info), self.profil
 
         def arbeit():
@@ -484,8 +587,25 @@ class VorschauBereich:
                 plugins=len(st["plugins"]), schriften=st["schriften"], vorlagen=st["bookends_vorlagen"])
         self.app.hintergrund(_("Taking profile"), arbeit, nachher=self._profil_neu)
 
+    def _profil_ersetzen_ok(self):
+        """Vor "Vom E-Reader"/"Aus Sicherung": Entwürfe und im Profil gespeicherte Änderungen gehen verloren."""
+        if not self.entwuerfe_fragen():
+            return False
+        geaendert = kpl.profil_geaendert(self.profil)
+        if geaendert and not messagebox.askyesno(_("Preview"), _(
+                "Bookbench has changed {liste} in the profile, and these changes are not on the e-reader yet. Taking "
+                "the profile again replaces them. Continue?").format(
+                liste=", ".join(n.capitalize() for n in geaendert)), parent=self.app):
+            return False
+        return True
+
     def _profil_neu(self):
+        for seite in self.plugin_seiten.values():   # Entwürfe gehören zum alten Profil
+            seite.zuruecksetzen()
         self.anzeigen()
+        for name, seite in self.plugin_seiten.items():
+            if name in self._plugins and (self.unterseite() == name):
+                seite.neu_laden()
         self.werkbank_starten(still=True)
 
     def aus_sicherung(self):
@@ -495,6 +615,8 @@ class VorschauBereich:
         zip_pfad = self._sicherung()
         if not zip_pfad:
             self.app.status.set(_("No backup available (E-reader area: Back up)."))
+            return
+        if not self._profil_ersetzen_ok():
             return
         profil = self.profil
 

@@ -19,7 +19,7 @@ import keller_theme as kth
 from bookbench.i18n import _
 
 PROGRAMM = "Bookbench"
-VERSION = "1.4-beta1"
+VERSION = "1.4-beta2"
 
 # (Elternthema, Kennung, Titel, Text). Übersetzt beim Import. Text: **fett**, Aufzählungen mit "-",
 # [[kennung]] = Verweis.
@@ -540,6 +540,8 @@ It is searched in this order: own path ([[einst_vorschau]]), koreader in PATH, m
 
 **More**
 - [[vorschau_werkbank]]
+- [[vorschau_bookends]]
+- [[vorschau_bookshelf]]
 - [[vorschau_profil]]
 - [[vorschau_starten]]
 - [[vorschau_bildschirm]]
@@ -559,6 +561,43 @@ KOReader starts without a window (SDL offscreen) at the full resolution of the d
 It works on a throw-away copy of the profile (folder vorschau/werkbank), new at every start: reading position, history and settings of the profile stay untouched. Only the plugins Bookends and Bookshelf are loaded - other plugins can lay a full screen over everything. The built-in plugins of KOReader are there as always.
 
 **Open in KOReader** (toolbar) starts the full KOReader in a window as before, for trying out menus: [[vorschau_starten]].
+""")),
+    ("vorschau", "vorschau_bookends", _("Bookends settings"), _("""
+If the profile contains the plugin **Bookends**, the sidebar shows **Bookends** below Preview. Its settings page sits in the left column; the picture stays on the right and shows every change after a short pause (a tenth of a second, KOReader keeps running). The workbench switches to the reading page for this.
+
+**Draft and profile**
+- Changes are a draft at first: they only show in the picture. The red line says so.
+- **Save to profile** (toolbar) writes the preset and the switch into the preview profile; **Discard** goes back to what is in the profile.
+- The way back to the e-reader comes with 1.4-beta4. Until then: change it on the e-reader itself, or copy the file from the profile (folder vorschau/koreader/settings/bookends_presets) by hand.
+- **From the e-reader** and **From backup** replace the profile; if Bookbench has changed something in it, it asks first.
+
+**Presets**
+- Bookends keeps everything you see in presets (one file each). The **active** preset is the one Bookends uses on the e-reader; another one can be shown and edited, the picture then shows that one. **Make active** marks it, saving makes it active in the profile.
+- **New**, **Duplicate**, **Delete**. Name and description are what Bookends shows in its preset manager.
+
+**Lines**
+- Six positions (top and bottom, each left, centre, right), one line per row. Tokens such as %title, %chap_title or %page_num are filled in by Bookends; **Insert token** lists those of the installed Bookends version, sorted like in Bookends.
+- Click into a line to set its **style** (bold, italic), **size** (empty = the general size) and **capitals**. Inserting or deleting lines keeps the settings with their line.
+- Settings Bookbench does not offer yet (font per line, nudging, bars inside a line, colours, progress bars) are kept unchanged when saving.
+
+**General**
+Font size and scale, the four margins, the gap before texts overlap and what is shortened first. Empty fields use Bookends' defaults.
+
+Bookends is a plugin by AndyHazz (github.com/AndyHazz/bookends.koplugin); Bookbench only reads and writes its files. Newer Bookends versions can change the format; unknown parts stay as they are.
+""")),
+    ("vorschau", "vorschau_bookshelf", _("Bookshelf settings"), _("""
+If the profile contains the plugin **Bookshelf**, the sidebar shows **Bookshelf** below Preview. The workbench switches to the start screen for this.
+
+Bookshelf cannot reload its settings while KOReader runs. After a change, the workbench therefore restarts after a short pause (about a second) and then shows the new start screen.
+
+**Draft and profile** work as for Bookends ([[vorschau_bookends]]): first only in the picture, **Save to profile** keeps them, **Discard** goes back.
+
+**Settings**
+- Above: a selection of settings that change the look (layout, font sizes, covers and spines, display), with Bookshelf's defaults where the file has no value.
+- **All keys in the file**: everything in settings/bookshelf/settings.lua, also what is not listed above. Double-click (or **Change …**) changes a simple value (number, text, on/off) in its type. Tables - shelves, modules, colours, the start menu - can only be changed in Bookshelf itself. **Default** removes the key, then Bookshelf's default applies. Changed keys have a ●.
+- Values Bookshelf writes by itself while running (current shelf and page, version notes) are not listed.
+
+Bookshelf is a plugin by AndyHazz (github.com/AndyHazz/bookshelf.koplugin); Bookbench only reads and writes its settings file.
 """)),
     ("vorschau", "vorschau_profil", _("Profile"), _("""
 The preview runs in its own profile in the settings folder (subfolder vorschau, [[dateien]]). A normal KOReader installation on the computer stays untouched.

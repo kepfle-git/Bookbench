@@ -8,6 +8,8 @@ panes.py - Bücherlisten in der Breite verstellbar und mit Tooltip für zu lange
                     die gemerkte Breite (Cover-Tafel im Bereich Metadaten).
   ListenTipp(listbox, text_fn)   zeigt den ganzen Eintrag unter der Maus, wenn er abgeschnitten ist
                     (text_fn(index) liefert den Text, Standard: der Listeneintrag selbst)
+  RollFlaeche(eltern)   Rahmen mit senkrechtem Scrollbalken (nur bei Bedarf) und Mausrad; Inhalt in
+                    .innen packen (seit 1.4-beta2, Plugin-Seiten der Werkbank)
 """
 import tkinter as tk
 import tkinter.font as tkfont
@@ -119,3 +121,60 @@ class ListenTipp:
             except tk.TclError:
                 pass
             self._tipp = None
+
+
+class RollFlaeche(ttk.Frame):
+    """Senkrecht scrollbarer Rahmen: Inhalt in self.innen. Das Mausrad scrollt, solange die Maus
+    darüber ist; der Scrollbalken erscheint nur, wenn der Inhalt nicht passt."""
+
+    def __init__(self, eltern, **k):
+        super().__init__(eltern, **k)
+        self.flaeche = tk.Canvas(self, highlightthickness=0, borderwidth=0, height=1, width=1)
+        self.sb = ttk.Scrollbar(self, orient="vertical", command=self.flaeche.yview)
+        self.flaeche.configure(yscrollcommand=self._scroll)
+        self.flaeche.pack(side="left", fill="both", expand=True)
+        self.innen = ttk.Frame(self.flaeche)
+        self._fenster = self.flaeche.create_window(0, 0, window=self.innen, anchor="nw")
+        self.innen.bind("<Configure>", lambda e: self._groesse())
+        self.flaeche.bind("<Configure>", lambda e: self._groesse())
+        for w in (self.flaeche, self.innen):
+            w.bind("<Enter>", lambda e: self._rad(True), add="+")
+            w.bind("<Leave>", lambda e: self._rad(False), add="+")
+
+    def farbe(self, bg):
+        self.flaeche.configure(bg=bg)
+
+    def _groesse(self):
+        f = self.flaeche
+        f.itemconfigure(self._fenster, width=f.winfo_width())
+        f.configure(scrollregion=(0, 0, f.winfo_width(), self.innen.winfo_reqheight()))
+
+    def _scroll(self, a, b):
+        self.sb.set(a, b)
+        if float(a) <= 0.0 and float(b) >= 1.0:
+            self.sb.pack_forget()
+        elif not self.sb.winfo_ismapped():
+            self.sb.pack(side="right", fill="y", before=self.flaeche)
+
+    def nach_oben(self):
+        self.flaeche.yview_moveto(0)
+
+    def _rad(self, an):
+        f = self.flaeche
+        if not an:
+            try:
+                w = f.winfo_containing(*f.winfo_pointerxy())
+            except (tk.TclError, KeyError):
+                w = None
+            if w is not None and str(w).startswith(str(f)):
+                return
+            for ev in ("<MouseWheel>", "<Button-4>", "<Button-5>"):
+                f.unbind_all(ev)
+            return
+
+        def rollen(schritte):
+            if self.sb.winfo_ismapped():
+                f.yview_scroll(schritte, "units")
+        f.bind_all("<MouseWheel>", lambda e: rollen(-1 if e.delta > 0 else 1))
+        f.bind_all("<Button-4>", lambda e: rollen(-1))
+        f.bind_all("<Button-5>", lambda e: rollen(1))

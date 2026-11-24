@@ -39,8 +39,9 @@ class KlappentextTafel:
         self.text.configure(yscrollcommand=sb.set)
         sb.pack(side="right", fill="y")
         self.text.pack(side="left", fill="both", expand=True)
-        self.quelle = ttk.Label(eltern, text="", style="Hinweis.TLabel")
-        self.quelle.pack(anchor="w", pady=(3, 0))
+        self.quelle = ttk.Label(eltern, text="", style="Hinweis.TLabel", justify="left")
+        self.quelle.pack(anchor="w", pady=(3, 0), fill="x")
+        self.quelle.bind("<Configure>", lambda e: self.quelle.configure(wraplength=max(200, e.width - 4)))
         self.text.bind("<<Modified>>", lambda e: self._getippt())
         self.text.bind("<Control-Return>", lambda e: (app.uebernehmen(), "break")[1])
         app.kt_text, app.kt_quelle = self.text, self.quelle          # Zugang wie vor 1.3-beta3 (Tests)
@@ -83,8 +84,12 @@ class KlappentextTafel:
         self.text.delete("1.0", "end")
         if b:
             self.text.insert("1.0", self.aktueller_text(b))
-            self.quelle.configure(text=_("Source: {quelle}").format(quelle=self.quelle_text(b)) if b.klappentext_quelle
-                                  else ("" if b.klappentext else _("No blurb in the file.")))
+            text = _("Source: {quelle}").format(quelle=self.quelle_text(b)) if b.klappentext_quelle \
+                else ("" if b.klappentext else _("No blurb in the file."))
+            if getattr(b, "kt_nachschlag", "") and not self.aktueller_text(b).strip():
+                # Ergebnis des letzten Nachschlagens je kostenloser Quelle (seit 1.3-beta5)
+                text += ("\n" if text else "") + _("Last look-up: {ergebnis}").format(ergebnis=b.kt_nachschlag)
+            self.quelle.configure(text=text)
             self.text.configure(state="normal" if not b.fehler else "disabled")
         else:
             self.quelle.configure(text="")

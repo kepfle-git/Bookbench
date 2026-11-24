@@ -121,6 +121,7 @@ class App(tk.Tk):
         self._start_bereich, self._start_buch = bereich, buch
         self._popen = subprocess.Popen           # Tests ersetzen das, um den Neustart abzufangen
         self.e = kei.laden()
+        blurbs.GOOGLE_KEY = self.e.get("google_key", "") or ""     # auch fürs Cover-Nachschlagen
         zuletzt = self.e.get("bereich_zuletzt")      # wird beim ersten Bereichswechsel überschrieben
         self.darstellung = tk.StringVar(value=self.e["darstellung"])
         self.dark_mode = tk.BooleanVar(value=kth.ist_dunkel(self.e["darstellung"]))
@@ -620,6 +621,7 @@ class App(tk.Tk):
         self.tabellen_spalten.anwenden()
         t.bind("<Double-1>", lambda e: self._buch_oeffnen() if t.identify_region(e.x, e.y) == "cell" else None)
         t.bind("<Return>", lambda e: self._buch_oeffnen())
+        t.bind("<Button-3>", self._tabelle_menue, add="+")
         t.bind("<<TreeviewSelect>>", lambda e: self._tabelle_auswahl(), add="+")
 
     def _filter_passt(self, b):
@@ -707,11 +709,56 @@ class App(tk.Tk):
                 zusatz.append(_("Series from the {quelle} data, not in the EPUB").format(quelle=b.reihe_quelle))
             self.status.set(" - ".join([b.pfad.name] + zusatz))
 
-    def _buch_oeffnen(self):
+    # Ziele beim Öffnen eines Buchs aus der Bibliothek (Doppelklick: Einstellung buch_oeffnen, seit 1.3-beta5)
+    OEFFNEN_ZIELE = (("kapitel", N_("Chapters")), ("metadaten", N_("Metadata")), ("vorschau", N_("Preview")),
+                     ("koreader", N_("KOReader (start the preview)")))
+
+    def oeffnen_ziele(self):
+        """[(Kennung, Text)] der möglichen Ziele; Vorschau und KOReader nur, wo es die Vorschau gibt."""
+        return [(k, t) for k, t in self.OEFFNEN_ZIELE if k in ("kapitel", "metadaten") or self.vorschau]
+
+    def _buch_oeffnen(self, ziel=None):
+        """Gewähltes Buch der Bibliothek öffnen: in Kapitel, Metadaten, der Vorschau oder gleich in KOReader."""
         sel = self.tabelle.selection()
-        if sel:
-            self._auswaehlen(self.kap_liste, self.nach_schluessel[sel[0]])
+        if not sel:
+            return
+        b = self.nach_schluessel[sel[0]]
+        ziel = ziel or self.e.get("buch_oeffnen") or "kapitel"
+        if ziel in ("vorschau", "koreader") and not self.vorschau:
+            ziel = "kapitel"                             # z. B. Einstellung von Linux, jetzt unter Windows
+        if ziel == "metadaten":
+            self.metadaten.auswaehlen(b)
+            self.nb.select(self.metadaten.seite)
+        elif ziel in ("vorschau", "koreader"):
+            self.nb.select(self.vorschau.seite)
+            self.vorschau.buch_waehlen(b)
+            if ziel == "koreader":
+                self.vorschau.starten()
+        else:
+            self._auswaehlen(self.kap_liste, b)
             self.nb.select(self.seite_kapitel)
+
+    def _tabelle_menue(self, e):
+        """Rechtsklick auf ein Buch der Bibliothek: Öffnen in … (der Kopf hat sein eigenes Menü)."""
+        t = self.tabelle
+        if t.identify_region(e.x, e.y) not in ("cell", "tree"):
+            return
+        iid = t.identify_row(e.y)
+        if not iid:
+            return
+        t.selection_set(iid)
+        t.focus(iid)
+        standard = self.e.get("buch_oeffnen") or "kapitel"
+        m = tk.Menu(t, tearoff=False)
+        for k, text in self.oeffnen_ziele():
+            m.add_command(label=_("Open in {ziel}").format(ziel=_(text)) if k != "koreader" else _("Start in KOReader"),
+                          command=lambda k=k: self._buch_oeffnen(k),
+                          accelerator=_("Double-click") if k == standard else "")
+        self._tabelle_menue_offen = m                     # für Tests
+        try:
+            m.tk_popup(e.x_root, e.y_root)
+        finally:
+            m.grab_release()
 
     def _suche_fokus(self):
         if self._bereich() == "woerterbuch" and self.woerterbuch.wb:
@@ -793,6 +840,8 @@ class App(tk.Tk):
         return cover, kopf, info
 
     def _cover_zeigen(self, label, b):
+        if getattr(label, "buch", None) is not b and getattr(self, "cover", None):
+            self.cover.gross_schliessen(ausser=b)          # Buchwechsel in Kapitel: großes Cover schließen
         label.buch = b
         bild = self._cover_bild(b) if b and self.cover_an.get() else None
         if bild is None:
@@ -1274,7 +1323,9 @@ class App(tk.Tk):
         args = SimpleNamespace(model=self.e["modell"])
         blurbs.MIN_LAENGE = int(self.e.get("kt_min", 80))
         blurbs.MAX_LAENGE = int(self.e.get("kt_max", 4000))
+        blurbs.GOOGLE_KEY = self.e.get("google_key", "") or ""
         self._arbeit = _("Looking up blurbs")
+        zaehler = {}                                    # (Quelle, Kennung, Fehlertext) -> Anzahl Bücher
 
         def arbeit():
             gefunden = 0
@@ -1284,10 +1335,14 @@ class App(tk.Tk):
                 for schritt in schritte:
                     self._q.put(("status", _("Looking up ({i}/{n}): {name} …").format(i=i, n=len(plan), name=b.name)))
                     if schritt == "frei":
-                        treffer, fehler = blurbs.free_look_up(b.titel, b.autor, b.isbn, b.sprache)
-                        if fehler:                      # Netzfehler: nicht als versucht merken
-                            self._q.put(("status", f"{b.name}: " + "; ".join(fehler)))
-                        elif not treffer:
+                        bericht = []
+                        treffer, fehler = blurbs.free_look_up(b.titel, b.autor, b.isbn, b.sprache, bericht=bericht)
+                        for eintrag in bericht:
+                            if eintrag[1] != blurbs.TREFFER:
+                                zaehler[eintrag] = zaehler.get(eintrag, 0) + 1
+                        # Ergebnis je Quelle am Buch merken (Tafel Klappentext zeigt es), nur ohne Treffer
+                        b.kt_nachschlag = "" if treffer else "; ".join(self._kt_quelle_text(*x) for x in bericht)
+                        if not fehler and not treffer:  # Netzfehler (auch 429): nicht als versucht merken
                             versucht.add("frei")
                     else:
                         try:
@@ -1309,10 +1364,33 @@ class App(tk.Tk):
                 .format(n=len(plan))
             if len(plan) > 1:
                 text += " " + ngettext("{n} blurb found.", "{n} blurbs found.", gefunden).format(n=gefunden)
+            quellen = self._kt_zusammenfassung(zaehler, len(plan) > 1)
+            if quellen:
+                text += " " + quellen
             if ohne_schluessel:
                 text += " " + _("Claude was not asked (no API key).")
             self._q.put(("fertig", text))
         threading.Thread(target=arbeit, daemon=True).start()
+
+    @staticmethod
+    def _kt_quelle_text(quelle, art, fehler="", n=None):
+        """Ergebnis einer kostenlosen Quelle als Text (n: Anzahl Bücher für die Zusammenfassung)."""
+        if art == blurbs.FEHLER:
+            return f"{quelle}: {fehler}" + (f" ({n}×)" if n and n > 1 else "")
+        if art == blurbs.KEIN_TEXT:
+            if n is None:
+                return _("{quelle}: book found, but no blurb stored").format(quelle=quelle)
+            return ngettext("{quelle}: no blurb stored for {n} book", "{quelle}: no blurb stored for {n} books",
+                            n).format(quelle=quelle, n=n)
+        if n is None:
+            return _("{quelle}: book not found").format(quelle=quelle)
+        return ngettext("{quelle}: {n} book not found", "{quelle}: {n} books not found", n).format(quelle=quelle, n=n)
+
+    def _kt_zusammenfassung(self, zaehler, mehrere):
+        """Abschlussmeldung je Quelle: Fehler (z. B. Kontingent erschöpft), kein Text, nicht gefunden."""
+        teile = [self._kt_quelle_text(q, art, fehler, n if mehrere else None)
+                 for (q, art, fehler), n in sorted(zaehler.items(), key=lambda x: (x[0][1] != blurbs.FEHLER, x[0]))]
+        return ("; ".join(teile) + ".") if teile else ""
 
     def _klappentext_ergebnis(self, schluessel):
         b = self.nach_schluessel.get(schluessel)
@@ -1325,7 +1403,8 @@ class App(tk.Tk):
             self.status.set(f"{b.name}: " + _("blurb found ({quelle}), not yet applied.")
                             .format(quelle=blurbs.source_name(b.klappentext_quelle) or "?"))
         else:
-            self.status.set(f"{b.name}: " + _("no blurb found."))
+            self.status.set(f"{b.name}: " + _("no blurb found.")
+                            + (f" ({b.kt_nachschlag})" if getattr(b, "kt_nachschlag", "") else ""))
         self._geaendert(b)
         if b is self._kt_buch:
             self._klappentext_anzeigen()
@@ -1684,6 +1763,7 @@ class App(tk.Tk):
 
     # ================================================================ Sonstiges
     def einstellungen_geaendert(self):
+        blurbs.GOOGLE_KEY = self.e.get("google_key", "") or ""
         self.darstellung.set(self.e["darstellung"])
         self.tooltips_an.set(self.e["tooltips"])
         if self.status_liste.get() != self.e["status_liste"]:
@@ -1699,6 +1779,10 @@ class App(tk.Tk):
         if self.navi.ausgeklappt != bool(self.e.get("navi_ausgeklappt", True)):
             self.navi.umschalten()
         self._darstellung()
+        self.tabellen_streifen.vergessen()               # Status-Piktogramme an/aus (Einstellung marken_aus)
+        for st in self._streifen:
+            st.zeichnen()
+        self._zaehler()
         if self.vorschau:
             self.vorschau.koreader_suchen(still=True)
             self.vorschau.anzeigen()

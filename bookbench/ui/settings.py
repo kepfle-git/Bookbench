@@ -19,6 +19,7 @@ from tkinter import filedialog, messagebox, ttk
 
 from bookbench.core import blurbs
 import keller_theme as kth
+from bookbench.ui import markers as kmk
 from bookbench.device import models as km
 from bookbench import i18n as ks
 from bookbench.i18n import N_, _, ngettext
@@ -31,6 +32,7 @@ STANDARD = {
     "max_sub": 1, "caps": False,
     "api_key": "", "modell": "claude-haiku-5-5", "websuche": True,   # websuche: alt, steckt jetzt im Profil
     "kostenlos": True, "klappentext_profile": None,                  # None: mitgelieferte Profile
+    "google_key": "",                                                # eigener Google-Books-Schlüssel (1.3-beta5)
     "cover_max_hoehe": 0, "cover_qualitaet": 90, "cover_klein": 800, "cover_openlibrary": True, "cover_google": True,
     "spalten": {}, "spalten_reihe": None, "sortierung": ["reihe", False],   # Bibliothek (ui/table_columns.py)
     "kobo_sicherungen_anzahl": 10, "kobo_teile": ["einstellungen", "settings", "buchdaten", "anpassungen"],
@@ -43,6 +45,8 @@ STANDARD = {
     "cover_min_hoehe": 300, "cover_anzahl": 8, "kobo_suche_sekunden": 3,
     # Bereich Metadaten (seit 1.3): eigene Felder [[Suchname in Calibre, Bezeichnung]], Calibre-Abgleich
     "meta_spalten": [], "calibre_an": True, "calibre_bibliothek": "",
+    # seit 1.3-beta5: abgeschaltete Status-Piktogramme je Ort (ui/markers.ORTE), Ziel des Doppelklicks
+    "marken_aus": {}, "buch_oeffnen": "kapitel",
     # Updates (ui/updates.py): pruefen aus/start/taeglich/woechentlich, zuletzt/ausgelassen ohne Seite
     "update_pruefen": "taeglich", "update_vorab": False,     # Repo fest in core/updater.py (REPO)
     "update_zuletzt": "", "update_ausgelassen": "",
@@ -110,6 +114,7 @@ class EinstellungsDialog(tk.Toplevel):
         ("allgemein", "", N_("General"), N_("Language, look, start, updates")),
         ("darstellung", "allgemein", N_("Language and theme"), N_("Language of the interface, light or dark")),
         ("oberflaeche", "allgemein", N_("Interface"), N_("Status strip, tooltips, covers in the headers, sidebar")),
+        ("marken", "oberflaeche", N_("Status symbols"), N_("Which symbols are shown where")),
         ("start", "allgemein", N_("Startup"), N_("What opens when the program starts")),
         ("updates", "allgemein", N_("Updates"), N_("Checking for new versions")),
         ("speichern", "", N_("Saving and backups"), N_("Backup folder and how many backups are kept")),
@@ -132,11 +137,11 @@ class EinstellungsDialog(tk.Toplevel):
     # Einstellungen mit einfachem Wert; die Variable richtet sich nach dem Typ in STANDARD
     EINFACH = ("darstellung", "tooltips", "status_liste", "cover", "cover_kopf_hoehe", "tooltip_verzoegerung",
                "navi_ausgeklappt", "start_ordner", "start_bereich", "sicherungsordner", "sicherungen_anzahl",
-               "max_sub", "caps", "api_key", "modell", "kt_kosten", "kostenlos", "kt_min", "kt_max",
+               "max_sub", "caps", "api_key", "modell", "kt_kosten", "kostenlos", "google_key", "kt_min", "kt_max",
                "cover_max_hoehe", "cover_qualitaet", "cover_klein", "cover_openlibrary", "cover_google",
                "cover_min_hoehe", "cover_anzahl", "kobo_sicherungen_anzahl", "woerterbuch_quelle",
                "auswerfen_erinnern", "kobo_suche_sekunden", "kobo_oeffnen", "koreader_pfad", "update_pruefen", "update_vorab",
-               "calibre_an")
+               "calibre_an", "buch_oeffnen")
 
     def __init__(self, app, seite=None):
         super().__init__(app)
@@ -155,6 +160,9 @@ class EinstellungsDialog(tk.Toplevel):
             self.v[k] = var(value=wert)
         self.profile = klappentext_profile(e)
         self.meta_spalten = [list(x) for x in e.get("meta_spalten") or [] if isinstance(x, (list, tuple)) and x]
+        aus = e.get("marken_aus") or {}
+        self.marken = {(ort, k): tk.BooleanVar(value=k not in (aus.get(ort) or []))
+                       for ort, __ in kmk.ORTE for k in kmk.ORDNUNG}
         self.sprache = tk.StringVar(value=self._sprachname(e.get("sprache") or "auto"))
         unten = ttk.Frame(self, padding=8)
         unten.pack(side="bottom", fill="x")
@@ -336,9 +344,47 @@ class EinstellungsDialog(tk.Toplevel):
                        _("Small cover next to the book title; a click shows it large. JPEG images need Pillow "
                          "(pip install pillow)."))
         self._zahl(s, "cover_kopf_hoehe", _("Height (px):"), _("Default 96."), 40, 300, 8)
+        self._abschnitt(s, _("Library"))
+        ttk.Label(s, text=_("Double-click on a book opens it in:")).pack(anchor="w")
+        self._auswahl(s, "buch_oeffnen", [(k, _(t)) for k, t in self.app.oeffnen_ziele()],
+                      _("Right-click on a book offers all of them. KOReader: selects the book in the Preview and "
+                        "starts the desktop KOReader with it."))
         self._abschnitt(s, _("Sidebar"))
         self._schalter(s, "navi_ausgeklappt", _("Sidebar expanded"),
                        _("With names and counters; collapsed only the symbols. Ctrl+B switches at any time."))
+
+    def _seite_marken(self, s):
+        self._ueberschrift(s, _("Status symbols"))
+        self._hinweis(s, _("The small symbols next to the books and in the sidebar (no cover, no blurb, questionable "
+                           "chapter names …). Switched off, a symbol is only hidden: filters and sorting by status "
+                           "still count it."))
+        g = ttk.Frame(s)
+        g.pack(anchor="w", padx=(22, 0), pady=(0, 6))
+        # Haken links, Piktogramm und Name rechts davon: lange Namen brauchen keinen Platz vor den Spalten
+        for spalte, (__, titel) in enumerate(kmk.ORTE):
+            ttk.Label(g, text=_(titel), font=kth.schrift(9, fett=True), wraplength=90, justify="center").grid(
+                row=0, column=spalte, padx=4, sticky="s")
+        n = len(kmk.ORTE)
+        dunkel = self.app.dark_mode.get()
+        for zeile, k in enumerate(kmk.ORDNUNG, 1):
+            for spalte, (ort, __) in enumerate(kmk.ORTE):
+                if ort != "seitenleiste" and k in kmk.NUR_SEITENLEISTE:
+                    continue
+                ttk.Checkbutton(g, variable=self.marken[(ort, k)]).grid(row=zeile, column=spalte)
+            ttk.Label(g, image=kmk.bild(k, kmk.farbe(kmk.ARTEN[k][0], dunkel, self.app), g)).grid(
+                row=zeile, column=n, padx=(10, 6), pady=1)
+            ttk.Label(g, text=_(kmk.NAMEN[k]), wraplength=260, justify="left").grid(row=zeile, column=n + 1, sticky="w")
+        z = ttk.Frame(s)
+        z.pack(anchor="w", padx=(22, 0), pady=(0, 6))
+        ttk.Button(z, text=_("All on"), command=lambda: self._marken_alle(True)).pack(side="left")
+        ttk.Button(z, text=_("All off"), command=lambda: self._marken_alle(False)).pack(side="left", padx=6)
+        self._hinweis(s, _("Book lists: the narrow lists in Chapters and Metadata. Library: the Status column of the "
+                           "library. The coloured dot for changed, applied and saved stays; the whole strip can be "
+                           "switched off under Interface."))
+
+    def _marken_alle(self, an):
+        for var in self.marken.values():
+            var.set(an)
 
     def _seite_start(self, s):
         self._ueberschrift(s, _("Startup"))
@@ -424,6 +470,11 @@ class EinstellungsDialog(tk.Toplevel):
         self._schalter(s, "kostenlos", _("Ask Google Books and Open Library first"),
                        _("No key, no cost. Claude is only asked if they have nothing. Switched off, every look-up "
                          "goes to Claude."))
+        self._feld(s, "google_key", _("Own Google Books API key (optional)"),
+                   _("Without a key, Google Books often answers \"quota exceeded\": everyone without a key shares "
+                     "one daily quota. With your own key (free, Google Cloud Console: enable the Books API, then "
+                     "create an API key) you get your own quota. Also used for looking up covers. Stored in plain "
+                     "text in the settings file."), 46, zeigen="•")
         self._abschnitt(s, _("Checks"))
         self._zahl(s, "kt_min", _("Shortest blurb (characters):"),
                    _("Shorter texts from a source are not taken (often only a teaser line)."), 0, 2000, 10)
@@ -581,7 +632,8 @@ class EinstellungsDialog(tk.Toplevel):
         self._abschnitt(s, _("Sources"))
         self._schalter(s, "cover_openlibrary", _("Open Library"), _("Free, no key. Often large scans of the "
                                                                     "cover, sometimes of another edition."))
-        self._schalter(s, "cover_google", _("Google Books"), _("Free, no key. Usually smaller images."))
+        self._schalter(s, "cover_google", _("Google Books"), _("Free. Usually smaller images. Uses your own Google Books key "
+                                                            "if there is one (Blurbs)."))
         self._abschnitt(s, _("Which images count"))
         self._zahl(s, "cover_min_hoehe", _("Smallest height (px):"),
                    _("Smaller images are left out (preview thumbnails)."), 50, 2000, 10)
@@ -799,12 +851,12 @@ class EinstellungsDialog(tk.Toplevel):
         z.pack(anchor="w", padx=(22, 0))
         ttk.Button(z, text=_("Export settings …"), command=self._exportieren).pack(side="left")
         ttk.Button(z, text=_("Import settings …"), command=self._importieren).pack(side="left", padx=6)
-        self._hinweis(s, _("A JSON file, e.g. to take the settings to another computer. It contains the API key. "
+        self._hinweis(s, _("A JSON file, e.g. to take the settings to another computer. It contains the API keys. "
                            "Importing replaces the current settings; the language applies at the next start."))
         self._abschnitt(s, _("Reset"))
         ttk.Button(s, text=_("Reset all settings …"), command=self._zuruecksetzen).pack(anchor="w", padx=(22, 0))
         self._hinweis(s, _("Everything back to the defaults. Kept: opened folders, the list of dictionaries, window "
-                           "size, language and the API key."))
+                           "size, language and the API keys."))
 
     def _cache_zeigen(self):
         n = len(getattr(self.app, "cache", {}) or {})
@@ -849,7 +901,8 @@ class EinstellungsDialog(tk.Toplevel):
         self.destroy()
         self.app.status.set(_("Settings imported from {datei}.").format(datei=p))
 
-    BEHALTEN = ("ordner", "letzte_ordner", "woerterbuecher", "woerterbuch_aktiv", "fenster", "api_key", "sprache")
+    BEHALTEN = ("ordner", "letzte_ordner", "woerterbuecher", "woerterbuch_aktiv", "fenster", "api_key", "google_key",
+                "sprache")
 
     def _zuruecksetzen(self):
         if not messagebox.askyesno(_("Reset"), _("Reset all settings to the defaults?"), parent=self):
@@ -889,6 +942,8 @@ class EinstellungsDialog(tk.Toplevel):
                 pass
         self.app.e["klappentext_profile"] = self.profile
         self.app.e["meta_spalten"] = [list(x) for x in self.meta_spalten]
+        self.app.e["marken_aus"] = {ort: [k for k in kmk.ORDNUNG if not self.marken[(ort, k)].get()]
+                                    for ort, __ in kmk.ORTE}
         if hasattr(self, "geraet_var"):
             self.app.e["vorschau_geraet"] = self._geraet_code()
             try:

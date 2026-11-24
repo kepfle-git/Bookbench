@@ -32,7 +32,7 @@ from bookbench.ui import panes as kpn
 
 REIHE = ("reihe", "nummer")
 FELDBREITE = 24            # Zeichen (Mindestbreite); alle Felder gleich breit, sie füllen den Platz neben dem Cover
-COVER_BREITE = 240         # px, Tafel mit dem Cover rechts
+COVER_BREITE = 250         # px, Standardbreite der Tafel mit dem Cover rechts
 
 
 class MetadatenBereich:
@@ -55,12 +55,14 @@ class MetadatenBereich:
         self.kopf = self.info
         koerper = ttk.Frame(rechts)
         koerper.pack(fill="both", expand=True)
-        # Cover zuerst einpacken: es behält seine Breite, das Formular nimmt den Rest
-        tafel = ttk.Frame(koerper, width=COVER_BREITE)
-        tafel.pack(side="right", fill="y", padx=(16, 0))
-        tafel.pack_propagate(False)
-        mitte = ttk.Frame(koerper)
-        mitte.pack(side="left", fill="both", expand=True, anchor="n")
+        # Cover-Tafel rechts, in der Breite verstellbar (seit 1.3-beta5, gemerkt als listenbreiten["cover"],
+        # Doppelklick auf den Teiler = Standard); das Formular nimmt den Rest
+        mitte_teil, tafel_teil = kpn.teilen(app, koerper, "cover", COVER_BREITE, fest="rechts", minimum=150)
+        self.cover_teiler = tafel_teil.teiler
+        tafel = ttk.Frame(tafel_teil)
+        tafel.pack(fill="both", expand=True, padx=(10, 0))
+        mitte = ttk.Frame(mitte_teil)
+        mitte.pack(side="left", fill="both", expand=True, anchor="n", padx=(0, 6))
         self.hinweis = ttk.Label(mitte, text="", style="Hinweis.TLabel", justify="left")
         self.hinweis.pack(side="bottom", anchor="w", pady=(6, 0), fill="x")
         self.hinweis.bind("<Configure>", lambda e: self.hinweis.configure(wraplength=max(300, e.width - 4)))

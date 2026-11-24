@@ -156,6 +156,22 @@ class VorschauBereich:
             self.liste.see(i)
         self._buch_gewaehlt()
 
+    def buch_waehlen(self, b):
+        """Buch in der Liste wählen (Bibliothek: Öffnen in der Vorschau); ist es weggesucht, Suche zurücksetzen."""
+        lf = self.liste.filter
+        if not lf.passt(b) and lf.aktiv():
+            lf.zuruecksetzen()
+        self.liste.selection_clear(0, "end")
+        name = self.app._anzeigename(b)
+        self.liste_fuellen()
+        namen = list(self._namen)
+        if name in namen:
+            i = namen.index(name)
+            self.liste.selection_clear(0, "end")
+            self.liste.selection_set(i)
+            self.liste.see(i)
+        self._buch_gewaehlt()
+
     def _gewaehlter_name(self):
         sel = self.liste.curselection()
         return self.liste.get(sel[0]) if sel else None

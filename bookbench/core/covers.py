@@ -18,6 +18,8 @@ import struct
 import urllib.parse
 import urllib.request
 
+from bookbench.core import blurbs
+
 OL_COVERS = "https://covers.openlibrary.org"
 OL = "https://openlibrary.org"
 GOOGLE = "https://www.googleapis.com/books/v1/volumes"
@@ -159,7 +161,8 @@ def _google_urls(titel, autor, isbn, basis):
     q = f"isbn:{isbn}" if isbn else f'intitle:"{titel}"' + (f' inauthor:"{autor.split(",")[0]}"' if autor else "")
     urls = []
     try:
-        for item in _json(f"{basis}?" + urllib.parse.urlencode({"q": q, "maxResults": 5})).get("items") or []:
+        for item in _json(f"{basis}?" + urllib.parse.urlencode(blurbs.google_parameter(
+                {"q": q, "maxResults": 5}))).get("items") or []:
             links = (item.get("volumeInfo") or {}).get("imageLinks") or {}
             for k in ("extraLarge", "large", "medium"):
                 if links.get(k):

@@ -16,6 +16,9 @@ keller_navigation und keller_streifen bleiben unverändert, hier stehen nur Unte
   status_bild(w, stand, kennungen, app)   ein Bild aus Punkt und Piktogrammen (Statusspalte der Bibliothek)
   TabellenStatus   Statusspalte einer ttk.Treeview (Spalte #0 mit diesen Bildern) statt Streifen daneben:
                    ein-/ausblendbar, in der Breite ziehbar, sortierbar (seit 1.3-beta4)
+  sichtbar(e, ort, kennung)   Einstellung "marken_aus" {ort: [kennungen]}: je Ort (ORTE) abschaltbar
+                   (seit 1.3-beta5). Abgeschaltete Marken fehlen nur in der Anzeige; Filter und Sortieren
+                   nach Status zählen sie weiter.
 """
 import tkinter as tk
 import tkinter.font as tkfont
@@ -47,7 +50,29 @@ ARTEN = {
     "ungespeichert": ("offen", (N_("{n} book with unsaved changes"), N_("{n} books with unsaved changes"))),
     "verbunden": ("info", (N_("connected"), N_("connected"))),
 }
+# Orte, an denen Marken stehen (Einstellungen > Oberfläche > Status-Piktogramme)
+ORTE = (("seitenleiste", N_("Sidebar")), ("listen", N_("Book lists")), ("tabelle", N_("Library")))
+NUR_SEITENLEISTE = {"woerterbuch", "ereader", "verbunden"}      # gibt es nur in der Seitenleiste
+NAMEN = {
+    "unlesbar": N_("Book cannot be read"), "kapitel": N_("Questionable chapter names"),
+    "vorschlag": N_("Chapter suggestions"), "klappentext": N_("No blurb"), "cover": N_("No cover"),
+    "cover_klein": N_("Small cover"), "calibre": N_("Differs from Calibre"),
+    "angaben": N_("Language or ISBN missing/invalid"), "woerterbuch": N_("Words without result"),
+    "ereader": N_("Dictionaries on the e-reader"), "ungespeichert": N_("Unsaved changes"),
+    "verbunden": N_("E-reader connected"),
+}
 _BILDER = {}
+
+
+def sichtbar(e, ort, kennung):
+    """False, wenn die Marke an diesem Ort abgeschaltet ist (Einstellung marken_aus)."""
+    aus = (e or {}).get("marken_aus") or {}
+    return kennung not in (aus.get(ort) or [])
+
+
+def gefiltert(e, ort, marken):
+    """[(kennung, text)] ohne die an diesem Ort abgeschalteten Marken."""
+    return [m for m in marken if sichtbar(e, ort, m[0])]
 
 
 def farbe(stufe, dunkel, app=None):
@@ -109,9 +134,12 @@ class MarkenStreifen(kst.StatusStreifen):
         """alle_fn() = alle Schlüssel (nicht nur die sichtbaren Zeilen): die Breite richtet sich danach und
         springt beim Blättern nicht; bei_breite() wird nach einer Änderung der Breite aufgerufen."""
         super().__init__(app, liste, eltern, status_fn, name_fn)
-        self.marken_fn = marken_fn
+        self._marken_fn = marken_fn
         self.alle_fn = alle_fn
         self.bei_breite = bei_breite
+
+    def marken_fn(self, schluessel):
+        return gefiltert(self.app.e, "listen", self._marken_fn(schluessel))
 
     def einpacken(self):
         """Vor der Liste einpacken (rechts, links vom Scrollbalken): so bekommt der Streifen seine Breite
@@ -172,9 +200,12 @@ class TabellenStatus:
     def __init__(self, app, tabelle, status_fn, marken_fn, name_fn):
         self.app, self.t = app, tabelle
         self.liste = tabelle                       # wie bei den Streifen (Tests, app._streifen)
-        self.status_fn, self.marken_fn, self.name_fn = status_fn, marken_fn, name_fn
+        self.status_fn, self._marken_fn, self.name_fn = status_fn, marken_fn, name_fn
         self._stand = {}
         tabelle.bind("<Motion>", self._hover, add="+")
+
+    def marken_fn(self, iid):
+        return gefiltert(self.app.e, "tabelle", self._marken_fn(iid))
 
     def marken(self, iid):
         return [k for k, __ in sortiert(self.marken_fn(iid)) if k in ksy.MARKEN]
@@ -234,7 +265,9 @@ class MarkenNavigation(knv.Navigation):
         return tkfont.Font(root=self, font=schrift).measure(text)
 
     def _marken(self, b):
-        return sortiert([(k, n) for k, n in getattr(b["widget"], "nav_marken", None) or [] if n and k in ARTEN])
+        e = getattr(self.master, "e", None)
+        return sortiert([(k, n) for k, n in getattr(b["widget"], "nav_marken", None) or []
+                         if n and k in ARTEN and sichtbar(e, "seitenleiste", k)])
 
     def _markenbreite(self, marken):
         return sum(14 + 2 + self._mass(self.schrift_klein, str(n) if k != "verbunden" else "") + 7 for k, n in marken)

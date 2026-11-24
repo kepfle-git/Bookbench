@@ -19,7 +19,7 @@ import keller_theme as kth
 from bookbench.i18n import _
 
 PROGRAMM = "Bookbench"
-VERSION = "1.3-beta4"
+VERSION = "1.3-beta5"
 
 # (Elternthema, Kennung, Titel, Text). Übersetzt beim Import. Text: **fett**, Aufzählungen mit "-",
 # [[kennung]] = Verweis.
@@ -69,7 +69,7 @@ In the **library** dot and pictograms are in a column of their own, **Status**, 
 **Backgrounds**
 - In the chapter table questionable rows are **red**; a click shows the reason in the status bar. **Yellowish**: only a number, no name found.
 
-The strip can be switched off: Settings > General > Interface ([[einst_oberflaeche]]).
+The strip can be switched off: Settings > General > Interface ([[einst_oberflaeche]]). Single pictograms can be hidden per place (sidebar, book lists, status column of the library): [[einst_marken]].
 """)),
     ("ueberblick", "tasten", _("Keyboard shortcuts"), _("""
 **Everywhere**
@@ -109,7 +109,7 @@ Until version 0.23 the two JSON files were next to the program; until 0.24 the f
 """)),
     ("ueberblick", "kosten", _("Costs and privacy"), _("""
 **Free, without a key**
-- Google Books and Open Library: blurbs ([[klappentexte_nachschlagen]]) and covers ([[cover_aendern]]). Sent: ISBN, title and author of the book.
+- Google Books and Open Library: blurbs ([[klappentexte_nachschlagen]]) and covers ([[cover_aendern]]). Sent: ISBN, title and author of the book. Google Books without a key shares one daily quota with everyone else; an own key (also free) gives you your own ([[einst_klappentexte]]).
 - Everything else in the program runs on the computer only.
 
 **Costs money: Claude (Anthropic API)**
@@ -158,7 +158,8 @@ All books of the opened folder (with all subfolders) with series, number, author
 
 - A click on a column header sorts (▲ ascending, ▼ descending), a second click reverses. Moving, hiding and widths of the columns: [[bibliothek_spalten]].
 - **Search** filters by title, series and author; the **filter** shows only changed books, unreadable files or books whose series is not in the EPUB. Filters by chapters, blurbs and covers are above the lists of those areas ([[suche_filter]]).
-- **Double-click** opens the book in the Chapters area.
+- **Double-click** opens the book in the Chapters area; under Settings > General > Interface it can be Metadata, the Preview or KOReader instead ([[einst_oberflaeche]]).
+- **Right-click** on a book: open it in Chapters, Metadata, the Preview or start it in KOReader (Preview and KOReader not on Windows). The entry marked "Double-click" is the one the double-click uses.
 
 **Columns**
 - **Chapters**: **suggestions** (the book text has chapter names the table of contents lacks), **without names** (only numbers, nothing in the text either), **no names found** (only a few matches - probably coincidence, so nothing is suggested), **ok**, **ok (2 without names)** (almost all have names, single ones only a number, e.g. a prologue).
@@ -257,6 +258,8 @@ The books on the left, in the middle a form with the metadata stored in the book
 - Below the form Bookbench warns about an invalid ISBN, a missing language or title, a number without series and values that do not fit an own field (e.g. letters in a number column).
 - If Calibre or KOReader have a different value, it is shown below the field: **← Calibre: …**. A click on ← puts it into the field ([[metadaten_calibre]]).
 
+The cover panel on the right can be made wider or narrower with the divider between form and cover; the width is remembered, a double-click on the divider restores the default.
+
 The file name is never changed: KOReader keeps reading positions and highlights in a folder named after the file (.sdr), they would be lost.
 
 After saving, KOReader only shows the new values after re-reading the book information (Cover browser > Extract and cache book information).
@@ -324,7 +327,7 @@ After saving, re-read the book information in KOReader (Cover browser > Extract 
 """)),
     ("klappentexte", "klappentexte_nachschlagen", _("Looking up blurbs"), _("""
 **Look up** (one book, above the blurb) and **Complete ▾ > Look up all missing blurbs** (all without a blurb, in the background) go through these steps until one has a text:
-- **Google Books**, then **Open Library**: by ISBN, otherwise by title and author; the edition in the book's language is preferred. Free, no key ([[kosten]]).
+- **Google Books**, then **Open Library**: by ISBN, otherwise by title and author; the edition in the book's language is preferred. Free; for Google Books an own key is optional ([[kosten]]).
 - **Claude** with the first source profile that fits the book ([[klappentexte_profile]]): fetches the pages of the profile and copies the publisher blurb word for word. About 1 to 2 cents.
 
 A text that is too short or too long is not taken (limits: [[einst_klappentexte]]). What was found is not applied at once: it is in the text field (red) until you apply it.
@@ -333,6 +336,13 @@ A text that is too short or too long is not taken (limits: [[einst_klappentexte]
 - Skips books for which Calibre has a description - **From Calibre** is there for those, and it costs nothing.
 - Asks before starting if Claude could be needed, with the maximum cost.
 - Without an API key only the free sources are asked, without an error message.
+
+**When nothing is found**
+The message at the end says per source why, and below the blurb the result of the last look-up stays as long as the book has no text:
+- **daily quota used up (429)**: Google Books without a key shares one daily quota with everyone else and often answers like this. An own key ([[einst_klappentexte]]) gives you your own quota.
+- **book found, but no blurb stored**: the source knows the book but has no description (Open Library often).
+- **book not found**: no matching title and author (or ISBN).
+A quota or network error is not remembered as tried; the next look-up asks that source again.
 
 **Cache**
 What was found and what was already tried is in **blurbs_cache.json** ([[dateien]]). Looking up again costs nothing. If a profile is changed, Claude tries again for the books it covers; the free sources are asked again only after a network error. The cache can be emptied: [[einst_erweitert]].
@@ -361,7 +371,7 @@ Both can be changed, switched off or deleted; **Defaults** brings them back.
 - Put specific profiles above general ones; the web search profile belongs at the bottom.
 """)),
     ("metadaten", "cover", _("Cover"), _("""
-The cover is shown right of the form, as large as there is room. **Click on the cover** (also the small one in Chapters) shows it as large as the screen allows; click or Esc closes it. A right-click opens a menu with all cover actions.
+The cover is shown right of the form, as large as there is room. **Click on the cover** (also the small one in Chapters) shows it as large as the screen allows; a second click on the cover, a click into the window or Esc closes it. Choosing another book closes it too. A right-click opens a menu with all cover actions.
 
 - Below the cover: size in pixels, format, file size and where it is in the EPUB.
 - **From file …**, **Look up**, **Export …** (saves the cover shown as an image file) and **Discard new** are below the cover; **Complete ▾ > Look up all missing covers** is in the toolbar.
@@ -603,7 +613,20 @@ All settings are in **einstellungen.json** in the settings folder ([[dateien]]).
 - **Status strip next to the lists** (default: on): coloured dots and pictograms ([[status]]). Also under View.
 - **Show tooltips** (default: on) and **Delay** (default: 600 ms): explanations when the mouse stays over a button.
 - **Show cover in Chapters** (default: on) and **Height** (default: 96 px): the small cover next to the book title; a click shows it large. Also under View > Cover.
+- **Double-click on a book opens it in** (default: Chapters): Chapters, Metadata, the Preview (the book is selected there) or KOReader (selects it in the Preview and starts the desktop KOReader). Preview and KOReader only where the Preview exists (not on Windows). A right-click on a book in the library offers all of them.
 - **Sidebar expanded** (default: on): with names and counters, or only symbols. Ctrl+B switches at any time; the last state is remembered.
+
+Which pictograms are shown where: [[einst_marken]].
+""")),
+    ("einst_oberflaeche", "einst_marken", _("Status symbols"), _("""
+One row per pictogram ([[status]]), one column per place:
+- **Sidebar**: the pictograms with numbers next to the areas.
+- **Book lists**: the narrow lists in Chapters and Metadata.
+- **Library**: the column Status in the library.
+
+Default: everything on. A switched-off pictogram is only hidden; the filters (e.g. No cover) and sorting by status still count it. The coloured dot for changed, applied and saved is not affected; the whole strip next to the lists can be switched off under [[einst_oberflaeche]]. **All on** and **All off** set every box.
+
+Dictionary, e-reader and "connected" only exist in the sidebar.
 """)),
     ("einstellungen", "einst_start", _("Startup"), _("""
 - **Open the last folder** (default: on): the books folder that was open when the program was last closed, if it still exists - for the e-reader only when it is connected. Off: the program starts empty; File > Recently opened still has the folders.
@@ -636,6 +659,7 @@ Both apply after reloading (F5), because the suggestions are made when reading t
 The page shows the order of the sources ([[klappentexte_nachschlagen]]).
 
 - **Ask Google Books and Open Library first** (default: on): free, no key. Off: every look-up goes to Claude straight away.
+- **Own Google Books API key** (default: empty): without a key Google Books often answers "quota exceeded", because everyone without a key shares one daily quota. An own key is free: in the Google Cloud Console create a project, enable the **Books API** and create an **API key** under Credentials. It is also used for looking up covers and is stored in plain text in the settings file. If Google rejects it, the look-up says so.
 - **Shortest blurb** (default: 80 characters): shorter texts from a source are not taken - often only a teaser line or "A novel".
 - **Longest blurb** (default: 4000 characters): longer texts are not taken - usually a plot summary or a whole article.
 The limits apply to all sources (free ones and Claude), not to text you enter yourself.
@@ -666,7 +690,7 @@ Also needed: the package **anthropic** (pip install anthropic). What is sent: [[
 - **Mark covers below this height** (default: 800 px, 0 = never): ⚠ in the Metadata area and its filter "Small cover".
 """)),
     ("einst_cover", "einst_cover_nachschlagen", _("Looking up covers"), _("""
-**Sources** (both free, no key; [[kosten]])
+**Sources** (both free, no key needed; Google Books uses your own key if there is one, [[einst_klappentexte]]; [[kosten]])
 - **Open Library** (default: on): often large scans, sometimes of another edition.
 - **Google Books** (default: on): the publisher's image, usually smaller.
 

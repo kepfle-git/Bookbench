@@ -3,7 +3,8 @@
 blurbs.py - Klappentexte nachschlagen und ins EPUB schreiben (Teil von Bookbench).
 
 Reihenfolge beim Nachschlagen (die Oberfläche ruft die Schritte einzeln auf):
-  free_look_up(titel, autor, isbn, sprache)      Google Books, dann Open Library - ohne Schlüssel, kostenlos
+  free_look_up(titel, autor, isbn, sprache)      Google Books, dann Open Library - kostenlos; für Google Books
+                                                 geht ein eigener Schlüssel (GOOGLE_KEY, seit 1.3-beta5)
   profile_for(profile, verlag, reihe, autor)     passendes Quellprofil (erstes aktives, dessen Filter passt)
   look_up(client, args, titel, autor, reihe, profil, sprache)
                                                  Claude ruft die Seiten des Profils ab (Web-Fetch) bzw.
@@ -27,6 +28,7 @@ Ein Quellprofil beschreibt, wo Claude sucht:
 Dazu read_opf, book_info, book_extra, with_description: Metadaten (content.opf) lesen und schreiben.
 """
 import html
+import inspect
 import json
 import re
 import urllib.parse
@@ -34,11 +36,13 @@ import urllib.request
 from urllib.parse import quote, urlparse
 
 from bookbench.core.toc_report import clean  # noqa: E402
+from bookbench.i18n import _
 
 MODEL = "claude-haiku-5-5"
 MIN_LAENGE, MAX_LAENGE = 80, 4000          # kürzer/länger: vermutlich kein Klappentext
 GOOGLE = "https://www.googleapis.com/books/v1/volumes"
 OPENLIBRARY = "https://openlibrary.org"
+GOOGLE_KEY = ""                            # eigener Google-Books-API-Schlüssel (Einstellung google_key), "" = ohne
 QUELLE_META = "bookbench:blurb-source"        # Herkunft des Klappentexts im content.opf
 QUELLE_META_ALT = "kobo-werkstatt:blurb-source"   # Name bis 0.24, wird weiter gelesen
 
@@ -203,7 +207,24 @@ def _json(url, timeout=15):
         return json.loads(r.read().decode("utf-8"))
 
 
-def google_books(titel, autor, isbn="", sprache="", basis=None):
+def google_parameter(p):
+    """Anfrage-Parameter für Google Books, mit eigenem Schlüssel, wenn einer eingetragen ist."""
+    return {**p, "key": GOOGLE_KEY.strip()} if GOOGLE_KEY.strip() else p
+
+
+def fehler_text(e):
+    """Lesbarer Grund für einen Fehler einer kostenlosen Quelle (HTTP 429/403 erklärt)."""
+    code = getattr(e, "code", None)
+    if code == 429:
+        return (_("daily quota of your Google key used up (429)") if GOOGLE_KEY.strip() else
+                _("daily quota used up (429) - shared by everyone without an own key"))
+    if code in (400, 403) and GOOGLE_KEY.strip():
+        return _("key rejected ({code}) - check it in Settings > Books > Blurbs").format(code=code)
+    return str(e)
+
+
+def google_books(titel, autor, isbn="", sprache="", basis=None, bericht=None):
+    """bericht (dict, optional): "gefunden" = True, wenn das Buch da ist, aber ohne brauchbaren Text."""
     basis = basis or GOOGLE
     anfragen = []
     if isbn:
@@ -211,12 +232,15 @@ def google_books(titel, autor, isbn="", sprache="", basis=None):
     q = f'intitle:"{titel}"' + (f' inauthor:"{autor.split(",")[0]}"' if autor else "")
     anfragen.append(q)
     for a in anfragen:
-        daten = _json(f"{basis}?" + urllib.parse.urlencode({"q": a, "maxResults": 10, "printType": "books"}))
+        daten = _json(f"{basis}?" + urllib.parse.urlencode(google_parameter(
+            {"q": a, "maxResults": 10, "printType": "books"})))
         treffer = []
         for nr, item in enumerate(daten.get("items") or []):
             v = item.get("volumeInfo") or {}
             if not (_titel_passt(titel, v.get("title", "")) and _autor_passt(autor, v.get("authors") or [])):
                 continue                                # auch bei der ISBN: Begleitbücher u. Ä. aussortieren
+            if bericht is not None:
+                bericht["gefunden"] = True
             t = _brauchbar(_text(v.get("description", "")))
             if t:
                 treffer.append((v.get("language") != sprache if sprache else False, nr, t,
@@ -228,13 +252,15 @@ def google_books(titel, autor, isbn="", sprache="", basis=None):
     return None
 
 
-def open_library(titel, autor, isbn="", sprache="", basis=None):
+def open_library(titel, autor, isbn="", sprache="", basis=None, bericht=None):
     basis = basis or OPENLIBRARY
     werke = []
     if isbn:
         try:
             ed = _json(f"{basis}/isbn/{isbn}.json")
             werke += [w["key"] for w in ed.get("works") or [] if w.get("key")]
+            if bericht is not None:
+                bericht["gefunden"] = True
             if ed.get("description"):
                 t = _brauchbar(_text(ed["description"] if isinstance(ed["description"], str)
                                      else ed["description"].get("value", "")))
@@ -250,6 +276,8 @@ def open_library(titel, autor, isbn="", sprache="", basis=None):
         for d in daten.get("docs") or []:
             if _titel_passt(titel, d.get("title", "")) and _autor_passt(autor, d.get("author_name") or []):
                 werke.append(d["key"])
+    if werke and bericht is not None:
+        bericht["gefunden"] = True
     for key in werke[:3]:
         w = _json(f"{basis}{key}.json")
         d = w.get("description")
@@ -259,16 +287,29 @@ def open_library(titel, autor, isbn="", sprache="", basis=None):
     return None
 
 
-def free_look_up(titel, autor, isbn="", sprache="", quellen=None):
+# Ergebnis je Quelle (bericht in free_look_up): Kennung -> Bedeutung
+TREFFER, KEIN_TEXT, NICHT_GEFUNDEN, FEHLER = "treffer", "kein_text", "nicht_gefunden", "fehler"
+
+
+def free_look_up(titel, autor, isbn="", sprache="", quellen=None, bericht=None):
     """Erst Google Books, dann Open Library. Netzfehler einer Quelle -> nächste Quelle.
-    Gibt (Treffer oder None, [Fehlertexte]) zurück."""
+    Gibt (Treffer oder None, [Fehlertexte]) zurück. bericht (Liste, optional) bekommt je gefragter Quelle
+    (Name, Kennung, Fehlertext): TREFFER, KEIN_TEXT (Buch da, aber ohne Klappentext), NICHT_GEFUNDEN, FEHLER."""
     fehler = []
     for name, f in quellen or (("Google Books", google_books), ("Open Library", open_library)):
+        info = {}
         try:
-            r = f(titel, autor, isbn, sprache)
+            if "bericht" in inspect.signature(f).parameters:
+                r = f(titel, autor, isbn, sprache, bericht=info)
+            else:                                       # Quelle ohne bericht-Parameter (Tests, eigene)
+                r = f(titel, autor, isbn, sprache)
         except Exception as e:
-            fehler.append(f"{name}: {e}")
+            fehler.append(f"{name}: {fehler_text(e)}")
+            if bericht is not None:
+                bericht.append((name, FEHLER, fehler_text(e)))
             continue
+        if bericht is not None:
+            bericht.append((name, TREFFER if r else KEIN_TEXT if info.get("gefunden") else NICHT_GEFUNDEN, ""))
         if r:
             return r, fehler
     return None, fehler

@@ -4,7 +4,8 @@ panes.py - Bücherlisten in der Breite verstellbar und mit Tooltip für zu lange
 
   teilen(app, eltern, name, standard)   (links, rechts): waagrechter ttk.Panedwindow in eltern; die
                     gezogene Breite der linken Seite steht in der Einstellung "listenbreiten" {name: px}.
-                    Doppelklick auf den Teiler = Standardbreite.
+                    Doppelklick auf den Teiler = Standardbreite. fest="rechts": die rechte Seite hat
+                    die gemerkte Breite (Cover-Tafel im Bereich Metadaten).
   ListenTipp(listbox, text_fn)   zeigt den ganzen Eintrag unter der Maus, wenn er abgeschnitten ist
                     (text_fn(index) liefert den Text, Standard: der Listeneintrag selbst)
 """
@@ -15,13 +16,15 @@ from tkinter import ttk
 import keller_theme as kth
 
 
-def teilen(app, eltern, name, standard):
+def teilen(app, eltern, name, standard, fest="links", minimum=140):
+    """fest="rechts": die rechte Seite hat die gemerkte Breite (z. B. die Cover-Tafel, seit 1.3-beta5),
+    die linke bekommt den Rest; die feste Seite wird nie schmaler als minimum."""
     p = ttk.Panedwindow(eltern, orient="horizontal")
     p.pack(fill="both", expand=True)
     links = ttk.Frame(p)
     rechts = ttk.Frame(p)
-    p.add(links, weight=0)
-    p.add(rechts, weight=1)
+    p.add(links, weight=0 if fest == "links" else 1)
+    p.add(rechts, weight=1 if fest == "links" else 0)
     p._gesetzt = False
 
     def gemerkt():
@@ -35,16 +38,18 @@ def teilen(app, eltern, name, standard):
             return
         try:
             breite = p.winfo_width()
-            if breite < 300:
+            if breite < 300 + minimum:
                 return
-            p.sashpos(0, max(140, min(gemerkt(), breite - 300)))
+            w = max(minimum, min(gemerkt(), breite - 300))
+            p.sashpos(0, w if fest == "links" else breite - w)
             p._gesetzt = True
         except tk.TclError:
             pass
 
     def merken(e=None):
         try:
-            app.e.setdefault("listenbreiten", {})[name] = int(p.sashpos(0))
+            pos = int(p.sashpos(0))
+            app.e.setdefault("listenbreiten", {})[name] = pos if fest == "links" else p.winfo_width() - pos
         except tk.TclError:
             pass
 
@@ -56,7 +61,7 @@ def teilen(app, eltern, name, standard):
     p.bind("<Configure>", setzen, add="+")
     p.bind("<ButtonRelease-1>", merken, add="+")
     p.bind("<Double-Button-1>", zurueck, add="+")
-    links.teiler = p
+    links.teiler = rechts.teiler = p
     return links, rechts
 
 

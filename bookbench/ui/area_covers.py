@@ -68,6 +68,7 @@ class CoverBereich:
         self.buch = None
         self._fotos = []                         # Verweise halten, sonst räumt Tk die Bilder weg
         self._job = None
+        self.fenster = None                      # offenes großes Cover (GrossFenster), nur eins
         r = app._listenrahmen(eltern)
         r.pack(fill="both", expand=True)
         self.flaeche = tk.Canvas(r, highlightthickness=0, borderwidth=0, cursor="hand2", width=200, height=280)
@@ -145,6 +146,7 @@ class CoverBereich:
     # ================================================================ Anzeige
     def anzeigen(self):
         self.buch = b = self.metadaten.buch
+        self.gross_schliessen(ausser=b)               # Buchwechsel: großes Cover des alten Buchs schließen
         if not b:
             for lab in (self.zeile_datei, self.zeile_neu, self.hinweis):
                 lab.configure(text="")
@@ -376,14 +378,37 @@ class CoverBereich:
         self.app.status.set(_("Cover saved: {datei}").format(datei=p))
 
     def gross(self, b=None):
+        """Großes Cover als Umschalter (seit 1.3-beta5): ist es für dieses Buch schon offen, schließt ein
+        zweiter Klick es; für ein anderes Buch ersetzt das neue Fenster das alte (es gibt nur eins)."""
         b = b or self.buch
         if not b:
             return
+        offen = self.gross_offen()
+        if offen is not None:
+            self.gross_schliessen()
+            if offen.buch is b:
+                return
         daten = self.aktuelle_bytes(b)
         if not daten:
             self.app.status.set(f"{b.name}: " + _("no cover."))
             return
-        GrossFenster(self.app, b, daten)
+        self.fenster = GrossFenster(self.app, b, daten)
+
+    def gross_offen(self):
+        """Das offene große Cover-Fenster oder None."""
+        f = getattr(self, "fenster", None)
+        try:
+            return f if f is not None and f.winfo_exists() else None
+        except tk.TclError:
+            return None
+
+    def gross_schliessen(self, ausser=None):
+        """Großes Cover schließen (ausser: Buch, dessen Fenster offen bleiben darf - beim Buchwechsel)."""
+        f = self.gross_offen()
+        if f is not None and f.buch is not ausser:
+            f.destroy()
+        if self.gross_offen() is None:
+            self.fenster = None
 
     def farben(self):
         self.zeichnen()
@@ -394,6 +419,7 @@ class GrossFenster(tk.Toplevel):
 
     def __init__(self, app, b, daten):
         super().__init__(app)
+        self.buch = b
         self.title(b.name)
         self.transient(app)
         p = kth.PALETTE["dunkel" if app.dark_mode.get() else "hell"]

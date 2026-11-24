@@ -356,6 +356,10 @@ def bibliothek_vorbereiten(arbeit, buecher, hoechstens=50, zuerst=None):
     verlauf.sort(key=lambda e: -e["time"])
     from bookbench.core import lua_data
     (ko / "history.lua").write_text("return " + lua_data.schreiben(verlauf[:hoechstens]) + "\n", encoding="utf-8")
+    # Bookshelfs Hero-Karte nimmt das aktuelle Buch aus G_reader_settings "lastfile" (Repo.getCurrent), nicht
+    # aus dem Verlauf; arbeitsprofil() hat lastfile wie beim Holen entfernt (Befund beta6)
+    if verlauf:
+        kv.einstellungen_anpassen(ko / "settings.reader.lua", raus=(), setzen={"lastfile": verlauf[0]["file"]})
     return min(len(verlauf), hoechstens)
 
 

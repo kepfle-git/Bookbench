@@ -6,8 +6,9 @@
 # Ergebnis: Release-Entwurf "Bookbench <Version>" zum Tag mit Bookbench_Setup_<Version>.exe und SHA256SUMS;
 # Text aus .github/release-notes/<Version>.md (englisch, wird mit dem Release erstellt), sonst ein Platzhalter.
 # Beginnt der Text mit "**Titel**" (fertige Versionen, seit 1.3), heißt der Release "Bookbench <Version> – Titel".
-# Gibt es zum Tag schon eine Veröffentlichung (auch veröffentlicht), werden die Dateien dort
-# angehängt bzw. ersetzt. Text schreiben, ggf. "Vorabversion" anhaken und veröffentlichen macht
+# Gibt es zum Tag schon eine Veröffentlichung (auch veröffentlicht, z. B. von Hand über "Draft a new
+# release" mit Tag und Titel angelegt), werden die Dateien dort angehängt bzw. ersetzt; ist ihr Text
+# leer, kommt der Release-Text hinein, ein schlichter Titel ("Bookbench 1.3") bekommt den Versionstitel. Text schreiben, ggf. "Vorabversion" anhaken und veröffentlichen macht
 # der Nutzer selbst; Entwürfe sieht der Updater nicht.
 #
 # Später: Signieren über SignPath als Schritt zwischen "Setup bauen" und "Prüfsummen".
@@ -133,22 +134,32 @@ jobs:
         shell: pwsh
         run: |
           $setup = "Bookbench_Setup_$env:VERSION.exe"
+          $notizen = "$env:GITHUB_WORKSPACE/.github/release-notes/$env:VERSION.md"
+          $titel = "Bookbench $env:VERSION"
+          $hat_text = Test-Path $notizen
+          if ($hat_text) {
+            # Titel fertiger Versionen: Release-Text beginnt mit "**Titel**" -> "Bookbench 1.3 – Titel"
+            $erste = Get-Content -Path $notizen -Encoding utf8 -TotalCount 1
+            if ($erste -match '^\*\*(.+?)\*\*') { $titel = "Bookbench $env:VERSION $([char]0x2013) $($Matches[1])" }
+          } else {
+            $notizen = "$env:RUNNER_TEMP/notes.md"
+            "Windows-Setup und SHA256SUMS automatisch gebaut. Text ergänzen, ggf. *Vorabversion* anhaken, dann veröffentlichen." |
+              Out-File -FilePath $notizen -Encoding utf8
+          }
           gh release view $env:TAG --repo $env:GITHUB_REPOSITORY *> $null
           if ($LASTEXITCODE -eq 0) {
             gh release upload $env:TAG $setup SHA256SUMS --clobber --repo $env:GITHUB_REPOSITORY
+            if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+            # Release schon von Hand angelegt (z. B. über "Draft a new release" mit Tag und Titel):
+            # leeren Text durch den Release-Text ersetzen, schlichten Titel durch den mit Versionstitel.
+            # Selbst geschriebener Text und eigene Titel bleiben.
+            $info = gh release view $env:TAG --repo $env:GITHUB_REPOSITORY --json body,name | ConvertFrom-Json
+            $schlicht = @("", $env:TAG, $env:VERSION, "Bookbench $env:VERSION", "Bookbench $env:TAG")
+            $aendern = @()
+            if ($hat_text -and -not "$($info.body)".Trim()) { $aendern += @("--notes-file", $notizen) }
+            if ($schlicht -contains "$($info.name)".Trim()) { $aendern += @("--title", $titel) }
+            if ($aendern.Count) { gh release edit $env:TAG @aendern --repo $env:GITHUB_REPOSITORY }
           } else {
-            $notizen = "$env:GITHUB_WORKSPACE/.github/release-notes/$env:VERSION.md"
-            $titel = "Bookbench $env:VERSION"
-            if (Test-Path $notizen) {
-              # Titel fertiger Versionen: Release-Text beginnt mit "**Titel**" -> "Bookbench 1.3 – Titel"
-              $erste = Get-Content -Path $notizen -Encoding utf8 -TotalCount 1
-              if ($erste -match '^\*\*(.+?)\*\*') { $titel = "Bookbench $env:VERSION $([char]0x2013) $($Matches[1])" }
-            }
-            if (-not (Test-Path $notizen)) {
-              $notizen = "$env:RUNNER_TEMP/notes.md"
-              "Windows-Setup und SHA256SUMS automatisch gebaut. Text ergänzen, ggf. *Vorabversion* anhaken, dann veröffentlichen." |
-                Out-File -FilePath $notizen -Encoding utf8
-            }
             gh release create $env:TAG $setup SHA256SUMS --draft --verify-tag --title $titel --notes-file $notizen --repo $env:GITHUB_REPOSITORY
           }
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }

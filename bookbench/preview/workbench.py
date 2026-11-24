@@ -46,6 +46,7 @@ Antworten auf stdout: "BOOKBENCH-WB ready <modus>", "BOOKBENCH-WB done <nummer> 
     .bild() / .blaettern(+1|-1)   Befehl schicken, gibt die Nummer zurück
     .ereignisse()          neue Ereignisse (dicts, art: bereit, haengt, bild, erledigt, fehler, ende)
     .tippen(x, y, halten)  Fingertipp in Bildschirmpixeln
+    .wischen(x, y, richtung, weite)  Wischgeste (seit 1.4-beta7)
     .beenden()             KOReader beenden (erst freundlich, dann hart)
 """
 import os
@@ -159,6 +160,16 @@ local function run(cmd)
         if verb == "hold" then
             UIManager:sendEvent(Event:new("Gesture", { ges = "hold_release", pos = pos, time = now }))
         end
+        return "ok"
+    elseif verb == "swipe" then
+        local x, y, dir, dist = arg:match("^(%-?%d+)%s+(%-?%d+)%s+(%a+)%s+(%d+)$")
+        if not x then return "error bad-arguments" end
+        local Geom = require("ui/geometry")
+        local okt, T = pcall(require, "ui/time")
+        local now = okt and T.now() or os.time()
+        local pos = Geom:new{ x = tonumber(x), y = tonumber(y), w = 0, h = 0 }
+        UIManager:sendEvent(Event:new("Gesture", { ges = "swipe", direction = dir, distance = tonumber(dist),
+                                                   pos = pos, time = now }))
         return "ok"
     elseif verb == "quit" then
         UIManager:quit()
@@ -525,6 +536,14 @@ class Werkbank:
 
     def blaettern(self, richtung):
         return self.senden("next" if richtung > 0 else "prev")
+
+    RICHTUNGEN = ("north", "south", "east", "west")
+
+    def wischen(self, x, y, richtung, weite=300):
+        """Wischgeste ab (x, y) in Bildschirmpixeln; richtung wie in KOReader (north = Finger nach oben)."""
+        if richtung not in self.RICHTUNGEN:
+            raise ValueError(richtung)
+        return self.senden(f"swipe {int(x)} {int(y)} {richtung} {max(1, int(weite))}")
 
     @property
     def ko(self):

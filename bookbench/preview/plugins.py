@@ -272,6 +272,122 @@ def zeilen_setzen(daten, pos, neue):
     p["lines"] = neue
 
 
+# ---- Seitenfilter und Balken in einer Zeile (seit 1.4-beta7; Bookends bookends_line_editor.lua)
+SEITEN = ((None, N_("All pages")), ("odd", N_("Odd pages only")), ("even", N_("Even pages only")))
+BALKEN_ARTEN = (("chapter", N_("Chapter")), ("book", N_("Book")))
+BALKEN_STRICHE = (("off", N_("No chapter ticks")), ("level1", N_("Ticks: top level")),
+                  ("level2", N_("Ticks: top 2 levels")), ("all", N_("Ticks: all levels")))
+BALKEN_STILE = (("bordered", N_("Bordered")), ("solid", N_("Solid")), ("rounded", N_("Rounded")),
+                ("metro", N_("Metro")), ("wavy", N_("Wave")), ("radial", N_("Radial")),
+                ("radial_hollow", N_("Radial hollow")), ("pacman", N_("Pacman")))
+RICHTUNGEN = (("ltr", N_("Left to right")), ("rtl", N_("Right to left")), ("ttb", N_("Top to bottom")),
+              ("btt", N_("Bottom to top")))
+ALTE_BALKENARTEN = {"book_ticks": "level1", "book_ticks2": "level2", "book_ticks_all": "all"}
+
+
+def hat_balken(zeile):
+    return "%bar" in (zeile or "")
+
+
+def zeilenbalken(daten, pos, nr):
+    """Balken einer Zeile als {art, striche, stil, richtung, dicke, ungelesen} mit Bookends' Vorgaben
+    (Kapitel, ohne Striche, umrandet, links nach rechts, Dicke None = wie die Schrift). Alte Arten
+    ("book_ticks" …) werden wie in Bookends gelesen."""
+    art = zeilenwert(daten, pos, "line_bar_type", nr) or "chapter"
+    striche = zeilenwert(daten, pos, "line_bar_chapter_ticks", nr) or "off"
+    if art in ALTE_BALKENARTEN:
+        art, striche = "book", ALTE_BALKENARTEN[art]
+    if art != "book":
+        art, striche = "chapter", "off"
+    return {"art": art, "striche": striche,
+            "stil": zeilenwert(daten, pos, "line_bar_style", nr) or "bordered",
+            "richtung": zeilenwert(daten, pos, "line_bar_direction", nr) or "ltr",
+            "dicke": zeilenwert(daten, pos, "line_bar_height", nr),
+            "ungelesen": zeilenwert(daten, pos, "line_bar_unread_height", nr)}
+
+
+def zeilenbalken_setzen(daten, pos, nr, werte):
+    """Gegenstück zu zeilenbalken(); Vorgaben werden nicht gespeichert (wie Bookends)."""
+    art = werte.get("art") or "chapter"
+    striche = werte.get("striche") or "off"
+    dicke, ungelesen = werte.get("dicke"), werte.get("ungelesen")
+    for feld, wert in (("line_bar_type", None if art == "chapter" else art),
+                       ("line_bar_chapter_ticks", None if art == "chapter" or striche == "off" else striche),
+                       ("line_bar_style", None if werte.get("stil") in (None, "bordered") else werte["stil"]),
+                       ("line_bar_direction", None if werte.get("richtung") in (None, "ltr") else werte["richtung"]),
+                       ("line_bar_height", dicke),
+                       ("line_bar_unread_height", None if ungelesen is None or ungelesen == dicke else ungelesen)):
+        zeilenwert_setzen(daten, pos, feld, nr, wert)
+
+
+# ---- Fortschrittsbalken über die ganze Breite (seit 1.4-beta7; Bookends menu/progress_bar_menu.lua)
+BALKEN_ANZAHL = 8                                 # Config.MAX_BARS
+BALKEN_VORGABE = {"enabled": False, "type": "book", "style": "solid", "height": 20, "v_anchor": "bottom",
+                  "margin_v": 0, "margin_left": 0, "margin_right": 0, "chapter_ticks": "off"}
+ANKER = (("top", N_("Top")), ("bottom", N_("Bottom")), ("left", N_("Left")), ("right", N_("Right")))
+
+
+def balken_liste(daten):
+    b = daten.get("progress_bars") or []
+    if isinstance(b, dict):
+        b = [b[k] for k in sorted(k for k in b if isinstance(k, int))]
+    return [x if isinstance(x, dict) else {} for x in b]
+
+
+def balken(daten, nr):
+    """Werte von Balken nr (ab 1), fehlende mit Bookends' Vorgaben aufgefüllt (Kopie)."""
+    liste = balken_liste(daten)
+    roh = liste[nr - 1] if 0 < nr <= len(liste) else {}
+    return {**BALKEN_VORGABE, **roh}
+
+
+def balken_aendern(daten, nr, **werte):
+    """Felder von Balken nr setzen (None = Feld entfernen). Fehlende Balken davor legt Bookends beim
+    Laden selbst mit den Vorgaben an; hier werden sie ebenso aufgefüllt, damit die Liste lückenlos bleibt."""
+    liste = balken_liste(daten)
+    while len(liste) < nr:
+        liste.append(dict(BALKEN_VORGABE))
+    b = liste[nr - 1]
+    for feld, wert in werte.items():
+        if wert is None:
+            b.pop(feld, None)
+        else:
+            b[feld] = wert
+    daten["progress_bars"] = liste
+
+
+def balken_senkrecht(b):
+    return b.get("v_anchor") in ("left", "right")
+
+
+def balken_richtungen(b):
+    """Füllrichtungen, die Bookends für diesen Balken anbietet (Metro/Welle nur entlang der Achse,
+    rund: keine)."""
+    stil = b.get("style") or "solid"
+    if stil in ("radial", "radial_hollow"):
+        return ()
+    if stil in ("metro", "wavy"):
+        return ("ttb", "btt") if balken_senkrecht(b) else ("ltr", "rtl")
+    return ("ltr", "rtl", "ttb", "btt")
+
+
+def balken_richtung(b):
+    return b.get("direction") or ("ttb" if balken_senkrecht(b) else "ltr")
+
+
+def balken_anker_setzen(daten, nr, anker):
+    """Anker wechseln wie in Bookends: Abstand zum Zeilentext gilt nicht mehr, Richtung passend zur Achse."""
+    b = balken(daten, nr)
+    senkrecht = anker in ("left", "right")
+    richtung = b.get("direction") or ("ttb" if balken_senkrecht(b) else "ltr")
+    neu_richtung = b.get("direction")
+    if senkrecht and richtung not in ("ttb", "btt"):
+        neu_richtung = "btt"
+    elif not senkrecht and richtung in ("ttb", "btt"):
+        neu_richtung = None
+    balken_aendern(daten, nr, v_anchor=anker, band_offset=None, direction=neu_richtung)
+
+
 def allgemein(daten, schluessel):
     return (daten.get("defaults") or {}).get(schluessel)
 

@@ -174,8 +174,13 @@ class VorschauBereich:
         self.flaeche = tk.Canvas(rechts_teil, highlightthickness=0, borderwidth=0, cursor="hand2", takefocus=1)
         self.flaeche.pack(fill="both", expand=True)
         self.flaeche.bind("<Configure>", lambda e: self._bild_zeichnen())
-        self.flaeche.bind("<Button-1>", self._klick)
+        # Klick erst beim Loslassen auswerten: mit gedrückter Maustaste gezogen ist es eine Wischgeste
+        self.flaeche.bind("<ButtonPress-1>", self._druecken)
+        self.flaeche.bind("<ButtonRelease-1>", self._loslassen)
         self.flaeche.bind("<Control-Button-1>", lambda e: self._tippen(e))
+        for ereignis in ("<MouseWheel>", "<Shift-MouseWheel>", "<Button-4>", "<Button-5>",
+                         "<Shift-Button-4>", "<Shift-Button-5>"):
+            self.flaeche.bind(ereignis, self._rad)
         self.flaeche.bind("<Button-3>", lambda e: self._tippen(e, halten=True))
         for taste, r in (("<Left>", -1), ("<Prior>", -1), ("<Right>", 1), ("<Next>", 1), ("<space>", 1)):
             self.flaeche.bind(taste, lambda e, r=r: self.blaettern(r))
@@ -594,6 +599,55 @@ class VorschauBereich:
             return
         wb.blaettern(richtung)
         wb.bild()
+        self._takt_planen()
+
+    WISCHEN_AB = 24                                 # so viele Pixel gezogen gilt als Wischen statt Klick
+
+    def _druecken(self, e):
+        self.flaeche.focus_set()
+        self._druck = (e.x, e.y)
+
+    def _loslassen(self, e):
+        start, self._druck = getattr(self, "_druck", None), None
+        if start is None or e.state & 0x4:            # Strg+Klick tippt schon beim Drücken
+            return
+        dx, dy = e.x - start[0], e.y - start[1]
+        if max(abs(dx), abs(dy)) < self.WISCHEN_AB:
+            self._klick(e)
+            return
+        if abs(dx) > abs(dy):
+            richtung = "east" if dx > 0 else "west"
+        else:
+            richtung = "south" if dy > 0 else "north"
+        f = (getattr(self, "_bild_geo", None) or (0, 0, 1))[2]
+        self._wischen(start[0], start[1], richtung, max(abs(dx), abs(dy)) / f)
+
+    def _rad(self, e):
+        """Mausrad: auf der Leseseite blättern, auf dem Startbildschirm wischen (nach unten drehen = Finger
+        nach oben), mit Umschalt waagerecht. Höchstens ein Schritt je 250 ms, sonst stauen sich Befehle."""
+        jetzt = time.monotonic()
+        if jetzt - getattr(self, "_rad_zuletzt", 0) < 0.25:
+            return "break"
+        self._rad_zuletzt = jetzt
+        vor = e.num == 5 or (e.num not in (4, 5) and e.delta < 0)
+        wb = self.werkbank
+        if wb and wb.modus != "bibliothek" and not wb.haengt:
+            self.blaettern(1 if vor else -1)
+        elif e.state & 0x1:
+            self._wischen(e.x, e.y, "west" if vor else "east")
+        else:
+            self._wischen(e.x, e.y, "north" if vor else "south")
+        return "break"
+
+    def _wischen(self, x, y, richtung, weite=300):
+        wb = self.werkbank
+        punkt = self._bildpunkt(x, y)
+        if not (wb and wb.laeuft() and (wb.bereit or wb.haengt)) or punkt is None:
+            return
+        wb.wischen(*punkt, richtung, weite)
+        wb.bild()
+        for ms in (400, 1500):
+            self.app.after(ms, lambda: wb.laeuft() and wb.bild())
         self._takt_planen()
 
     def _klick(self, e):

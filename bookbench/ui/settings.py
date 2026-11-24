@@ -281,10 +281,12 @@ class EinstellungsDialog(tk.Toplevel):
         ttk.Label(eltern, text=text).pack(anchor="w")
         z = ttk.Frame(eltern)
         z.pack(anchor="w", fill="x", padx=(22, 0))
-        f = ttk.Entry(z, textvariable=self.v[var], width=breite, show=zeigen or "")
-        f.pack(side="left")
+        # Knopf zuerst packen: pack kürzt bei Platzmangel die zuletzt gepackten Teile, also das Feld,
+        # statt „Choose …“ abzuschneiden
         if knopf:
-            ttk.Button(z, text=knopf[0], command=knopf[1]).pack(side="left", padx=6)
+            ttk.Button(z, text=knopf[0], command=knopf[1]).pack(side="right", padx=(6, 0))
+        f = ttk.Entry(z, textvariable=self.v[var], width=breite, show=zeigen or "")
+        f.pack(side="left", fill="x", expand=bool(knopf))
         self._hinweis(eltern, hinweis)
         return f
 

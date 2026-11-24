@@ -32,6 +32,7 @@ import keller_theme as kth
 from bookbench.device import device as kg
 from bookbench.device import models as km
 from bookbench.i18n import N_, _, ngettext
+from bookbench.ui import panes as kpn
 
 KURZ = {"einstellungen": _("Settings"), "settings": _("Statistics/plugins"), "buchdaten": _("Book data"),
         "anpassungen": _("Tweaks"), "kobo": _("Kobo settings")}
@@ -107,6 +108,10 @@ class KoboBereich:
         self.ordner_label.pack(anchor="w", pady=(0, 4))
         mitte = ttk.Frame(s)
         mitte.pack(fill="both", expand=True)
+        # Spalte „Teile“ zuerst (rechts) packen: pack kürzt sonst sie statt der dehnbaren Liste;
+        # scrollbar, weil englisch und mit großer Schrift die Höhe unten nicht reichte (seit 1.4-beta7)
+        self.teile_roll = kpn.RollFlaeche(mitte, padding=(14, 0, 0, 0))
+        self.teile_roll.pack(side="right", fill="y")
         links = ttk.Frame(mitte)
         links.pack(side="left", fill="both", expand=True)
         r = app._listenrahmen(links)
@@ -127,8 +132,7 @@ class KoboBereich:
         b.bind("<<TreeviewSelect>>", lambda e: self._sicherung_gewaehlt())
         b.bind("<Double-1>", lambda e: self.zurueckspielen())
 
-        rechts = ttk.Frame(mitte, padding=(14, 0, 0, 0))
-        rechts.pack(side="left", fill="y")
+        rechts = self.teile_roll.innen
         ttk.Label(rechts, text=_("Parts (for backing up and restoring)")).pack(anchor="w", pady=(0, 4))
         self.teil_var, self.teil_info, self.teil_knopf = {}, {}, {}
         gewaehlt = set(app.e.get("kobo_teile") or [])
@@ -141,6 +145,11 @@ class KoboBereich:
             self.teil_info[k] = ttk.Label(rechts, text="", style="Hinweis.TLabel")
             self.teil_info[k].pack(anchor="w", padx=(22, 0), pady=(0, 6))
 
+        rechts.update_idletasks()
+        # ganze Breite des Inhalts; der Scrollbalken kommt bei Bedarf daneben dazu
+        self.teile_roll.flaeche.configure(width=rechts.winfo_reqwidth())
+        self.teile_roll.innen.bind("<Configure>", lambda e: self.teile_roll.flaeche.configure(
+            width=max(int(self.teile_roll.flaeche.cget("width")), rechts.winfo_reqwidth())), add="+")
         self.anzeigen()
         app.after(200, self._regelmaessig)
 
@@ -370,6 +379,7 @@ class KoboBereich:
 
     def farben(self, modus, warnfarbe):
         self.dict_baum.tag_configure("warn", background=warnfarbe[modus])
+        self.teile_roll.farbe(kth.PALETTE[modus]["bg"])
 
     def _sicherung_gewaehlt(self):
         sel = self.baum.selection()

@@ -19,7 +19,7 @@ import keller_theme as kth
 from bookbench.i18n import _
 
 PROGRAMM = "Bookbench"
-VERSION = "1.4-beta6"
+VERSION = "1.4-beta7"
 
 # (Elternthema, Kennung, Titel, Text). Übersetzt beim Import. Text: **fett**, Aufzählungen mit "-",
 # [[kennung]] = Verweis.
@@ -558,6 +558,7 @@ It is searched in this order: own path ([[einst_vorschau]]), koreader in PATH, m
 **Tapping in KOReader**
 - On the start screen a click into the picture is a tap at that spot - Bookshelf's shelf buttons (Home, Recent, Series …), its menus, a book. A right-click is a long press.
 - On the reading page a click turns pages; Ctrl+click taps (for example to open KOReader's menus), right-click is a long press.
+- **Swiping**: drag with the left mouse button held down; KOReader gets a swipe in that direction. The **mouse wheel** turns pages on the reading page; on the start screen it swipes up or down (with Shift sideways), for example to scroll Bookshelf's lists.
 - If KOReader does not get to the book within 5 seconds (a question, an unsupported file …), Bookbench says what is on top and shows KOReader's screen; a click taps there, so a dialog can be answered.
 - Books named .kepub (without .epub) are opened as .kepub.epub; KOReader does not know the shorter ending.
 
@@ -598,7 +599,7 @@ Switching on and off is a draft until **Save to profile**. Patches run when KORe
     ("vorschau", "vorschau_bookends", _("Bookends settings"), _("""
 If the profile contains the plugin **Bookends**, the sidebar shows **Bookends** below Preview. Its settings page sits in the left column; the picture stays on the right and shows every change after a short pause (a tenth of a second, KOReader keeps running). The workbench switches to the reading page for this.
 
-The page is divided into sections (Preset, Lines, Selected line, General); a click on the heading folds a section away or opens it. Bookbench remembers which are open.
+The page is divided into sections (Preset, Lines, Selected line, Progress bars, General); a click on the heading folds a section away or opens it. Bookbench remembers which are open.
 
 **Draft and profile**
 - Changes are a draft at first: they only show in the picture. The red line says so.
@@ -614,8 +615,13 @@ The page is divided into sections (Preset, Lines, Selected line, General); a cli
 - Six positions (top and bottom, each left, centre, right), one line per row. Tokens such as %title, %chap_title or %page_num are filled in by Bookends; **Insert token** lists those of the installed Bookends version, sorted like in Bookends.
 - **Special characters …** opens Bookends' list of symbols (battery, book, arrows, blocks, separators …), sorted in groups as in Bookends. A click inserts at the cursor of the line you used last; "dynamic" symbols insert their token (%batt_icon changes with the battery). The symbols come from KOReader's symbol font (nerdfonts/symbols.ttf); Bookbench shows them in the lines as small pictures and takes the font from the profile (fonts of the e-reader) or from the desktop KOReader.
 - **Extra margin** next to each position moves the whole position away from the edge (↕ top or bottom, ↔ left or right for the corners), in pixels.
-- Click into a line (section **Selected line**) to set its **style** (bold, italic), **size** (empty = the general size), **capitals** and **offset**: ← → and ↑ ↓ in pixels, negative = left or up, **Reset** sets both to 0. Inserting or deleting lines keeps the settings with their line.
-- Settings Bookbench does not offer yet (font per line, bars inside a line, colours, progress bars, conditions) are kept unchanged when saving.
+- Click into a line (section **Selected line**) to set its **style** (bold, italic), **size** (empty = the general size), **capitals** and **offset**: ← → and ↑ ↓ in pixels, negative = left or up, **Back to 0** sets both to 0. Inserting or deleting lines keeps the settings with their line.
+- **Show on**: all pages, or only odd or even pages (for example page numbers on the outer side).
+- **Bar in this line**: the token %bar draws a progress bar inside the line. **Insert bar** adds it, **Remove bar** takes it out again. For a line with a bar: chapter or book, chapter ticks (book only), style, fill direction, thickness and unread thickness in pixels (empty thickness = as high as the text).
+- Settings Bookbench does not offer yet (font per line, colours and markers of bars, conditions in the text) are kept unchanged when saving.
+
+**Progress bars**
+Up to eight bars across the page, independent of the lines. Choose a bar in the list (✓ = switched on, with its edge), then: **Switched on**, chapter or book, chapter ticks, style, fill direction, **Edge** (top, bottom, left, right), thickness (diameter for round bars) and unread thickness, distance from the edge and the margins at both ends. A bar set to "Position relative to line text" on the e-reader shows its distance from the line text instead; switching that on or off stays on the e-reader, as do colours and markers.
 
 **General**
 Font size and scale, the four margins, the gap before texts overlap and what is shortened first. Empty fields use Bookends' defaults.

@@ -195,6 +195,23 @@ class App(tk.Tk):
         self.after(4000, self.updates.automatisch)     # nach dem Start, damit das Fenster schon steht
 
     # ================================================================ Rahmen
+    @staticmethod
+    def _kuerzel_verteilen(leiste):
+        """Alt-Kürzel der Menüleiste ohne Doppelte: jedes Menü bekommt den ersten noch freien Buchstaben
+        seiner (übersetzten) Beschriftung (englisch kollidieren sonst „Edit“ und „E-reader“)."""
+        vergeben = set()
+        for i in range(int(leiste.index("end") or 0) + 1):
+            if leiste.type(i) != "cascade":
+                continue
+            text = leiste.entrycget(i, "label")
+            for pos, zeichen in enumerate(text):
+                if zeichen.isalnum() and zeichen.lower() not in vergeben:
+                    vergeben.add(zeichen.lower())
+                    leiste.entryconfigure(i, underline=pos)
+                    break
+            else:
+                leiste.entryconfigure(i, underline=-1)
+
     def _menue(self):
         leiste = tk.Menu(self)
         m = tk.Menu(leiste, tearoff=False)
@@ -306,6 +323,7 @@ class App(tk.Tk):
             _("About"), f"{PROGRAMM} {VERSION}\n\n" + _("Chapter names, blurbs and settings for KOReader "
                                                            "on the e-reader."), parent=self))
         leiste.add_cascade(label=_("Help"), menu=h, underline=0)
+        self._kuerzel_verteilen(leiste)
         self.config(menu=leiste)
 
     def _woerterbuch(self, aktion):

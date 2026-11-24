@@ -14,6 +14,7 @@ das Profil neu. Bei jedem Neustart der Werkbank schreibt in_kopie() die Entwürf
               Einstellungen im laufenden KOReader nicht neu laden)
 """
 import copy
+import re
 import tkinter as tk
 from pathlib import Path
 from tkinter import messagebox, simpledialog, ttk
@@ -137,6 +138,33 @@ class _Seite:
                                         "the e-reader."), foreground="")
 
 
+class _Wahl:
+    """Klappliste mit festen Werten [(wert, Text)] (Text übersetzt); wert() / setzen(wert)."""
+
+    def __init__(self, eltern, optionen, befehl, breite=14):
+        self.var = tk.StringVar()
+        self.box = ttk.Combobox(eltern, textvariable=self.var, state="readonly", width=breite)
+        self.box.bind("<<ComboboxSelected>>", lambda e: befehl())
+        self.optionen(optionen)
+
+    def optionen(self, optionen):
+        self._optionen = list(optionen)
+        self.box.configure(values=[_(t) for __, t in self._optionen])
+
+    def wert(self):
+        return next((w for w, t in self._optionen if _(t) == self.var.get()),
+                    self._optionen[0][0] if self._optionen else None)
+
+    def setzen(self, wert, aktiv=None):
+        t = next((t for w, t in self._optionen if w == wert), self._optionen[0][1] if self._optionen else "")
+        self.var.set(_(t) if wert is not None or self._optionen else "")
+        if aktiv is not None:
+            self.aktiv(aktiv)
+
+    def aktiv(self, an):
+        self.box.configure(state="readonly" if an else "disabled")
+
+
 # ====================================================================== Bookends
 class BookendsSeite(_Seite):
     plugin = kpl.BOOKENDS
@@ -240,27 +268,100 @@ class BookendsSeite(_Seite):
                                    command=self._zeilenwerte_uebernehmen)
         self.groesse.pack(side="left", padx=(4, 10))
         self.groesse.bind("<KeyRelease>", lambda e: self._zeilenwerte_uebernehmen())
+        # zweite Reihe: Großbuchstaben und Seitenfilter (in einer Reihe passte es englisch nicht)
+        sr = ttk.Frame(i)
+        sr.pack(anchor="w", fill="x", pady=(4, 0))
         self.gross_var = tk.BooleanVar()
-        self.gross = ttk.Checkbutton(zr, text=_("Capitals"), variable=self.gross_var, state="disabled",
+        self.gross = ttk.Checkbutton(sr, text=_("Capitals"), variable=self.gross_var, state="disabled",
                                      command=self._zeilenwerte_uebernehmen)
-        self.gross.pack(side="left")
+        self.gross.pack(side="left", padx=(0, 10))
+        ttk.Label(sr, text=_("Show on")).pack(side="left")
+        self.seiten = _Wahl(sr, kpl.SEITEN, self._zeilenwerte_uebernehmen, breite=12)
+        self.seiten.box.pack(side="left", padx=(4, 0))
         vr = ttk.Frame(i)
         vr.pack(anchor="w", fill="x", pady=(4, 0))
         ttk.Label(vr, text=_("Offset")).pack(side="left")
         self.versatz_var, self.versatz = {}, {}
         for feld, text in (("line_h_nudge", _("← →")), ("line_v_nudge", _("↑ ↓"))):
-            ttk.Label(vr, text=text).pack(side="left", padx=(8, 2))
+            ttk.Label(vr, text=text).pack(side="left", padx=(6, 2))
             v = self.versatz_var[feld] = tk.StringVar()
-            sp = self.versatz[feld] = ttk.Spinbox(vr, from_=-999, to=999, width=5, textvariable=v, state="disabled",
+            sp = self.versatz[feld] = ttk.Spinbox(vr, from_=-999, to=999, width=4, textvariable=v, state="disabled",
                                                   command=self._zeilenwerte_uebernehmen)
             sp.pack(side="left")
             sp.bind("<KeyRelease>", lambda e: self._zeilenwerte_uebernehmen())
-        ttk.Button(vr, text=_("Reset"), style="Klein.TButton",
-                   command=self._versatz_zurueck).pack(side="left", padx=(8, 0))
-        ttk.Label(i, text=_("Empty size = the general font size. Offset in pixels: negative = left or up. Font "
-                            "per line, bars in a line and conditions stay as they are; change them on the "
-                            "e-reader."),
-                  style="Hinweis.TLabel", wraplength=BREITE, justify="left").pack(anchor="w", fill="x")
+        ttk.Button(vr, text=_("Back to 0"), style="Klein.TButton", width=-1,
+                   command=self._versatz_zurueck).pack(side="left", padx=(6, 0))
+        # Balken in der Zeile (Token %bar)
+        self.zbalken_rahmen = ttk.Frame(i)
+        self.zbalken_rahmen.pack(anchor="w", fill="x", pady=(6, 0))
+        self.zbalken_kopf = ttk.Label(self.zbalken_rahmen, text="")
+        self.zbalken_kopf.grid(row=0, column=0, columnspan=4, sticky="w")
+        self.zbalken_knopf = ttk.Button(self.zbalken_rahmen, text="", style="Klein.TButton",
+                                        command=self._zeilenbalken_umschalten)
+        self.zbalken_knopf.grid(row=4, column=0, columnspan=4, sticky="w", pady=(2, 0))
+        self.zb = {"art": _Wahl(self.zbalken_rahmen, kpl.BALKEN_ARTEN, self._zeilenbalken_uebernehmen, 10),
+                   "striche": _Wahl(self.zbalken_rahmen, kpl.BALKEN_STRICHE, self._zeilenbalken_uebernehmen, 18),
+                   "stil": _Wahl(self.zbalken_rahmen, kpl.BALKEN_STILE, self._zeilenbalken_uebernehmen, 12),
+                   "richtung": _Wahl(self.zbalken_rahmen, kpl.RICHTUNGEN[:2], self._zeilenbalken_uebernehmen, 14)}
+        self.zb["art"].box.grid(row=1, column=0, columnspan=2, sticky="w", pady=1)
+        self.zb["striche"].box.grid(row=1, column=2, columnspan=3, sticky="w", padx=(6, 0), pady=1)
+        self.zb["stil"].box.grid(row=2, column=0, columnspan=2, sticky="w", pady=1)
+        self.zb["richtung"].box.grid(row=2, column=2, columnspan=3, sticky="w", padx=(6, 0), pady=1)
+        dz = ttk.Frame(self.zbalken_rahmen)
+        dz.grid(row=3, column=0, columnspan=5, sticky="w", pady=1)
+        self.zb_dicke_var, self.zb_dicke = {}, {}
+        for feld, text in (("dicke", _("Thickness")), ("ungelesen", _("unread"))):
+            ttk.Label(dz, text=text).pack(side="left", padx=(0 if feld == "dicke" else 8, 4))
+            v = self.zb_dicke_var[feld] = tk.StringVar()
+            sp = self.zb_dicke[feld] = ttk.Spinbox(dz, from_=1, to=200, width=5, textvariable=v,
+                                                   command=self._zeilenbalken_uebernehmen)
+            sp.pack(side="left")
+            sp.bind("<KeyRelease>", lambda e: self._zeilenbalken_uebernehmen())
+        ttk.Label(dz, text="px", style="Hinweis.TLabel").pack(side="left", padx=(4, 0))
+        ttk.Label(i, text=_("Empty size = the general font size. Offset in pixels: negative = left or up. Empty "
+                            "thickness = as high as the text; empty unread = like read. Font per line, colours "
+                            "and markers of a bar and conditions in the text stay as they are."),
+                  style="Hinweis.TLabel", wraplength=BREITE, justify="left").pack(anchor="w", fill="x", pady=(4, 0))
+
+        # -- Fortschrittsbalken über die ganze Breite -------------------------------------
+        i = self._abschnitt("balken", _("Progress bars"), offen=False)
+        bk = ttk.Frame(i)
+        bk.pack(anchor="w", fill="x")
+        self.balken_nr = tk.IntVar(value=1)
+        self.balken_wahl = ttk.Combobox(bk, state="readonly", width=22)
+        self.balken_wahl.pack(side="left")
+        self.balken_wahl.bind("<<ComboboxSelected>>", lambda e: self._balken_gewaehlt())
+        self.balken_an = tk.BooleanVar()
+        ttk.Checkbutton(bk, text=_("Switched on"), variable=self.balken_an,
+                        command=self._balken_uebernehmen).pack(side="left", padx=(8, 0))
+        bg = self.balken_gitter = ttk.Frame(i)
+        bg.pack(anchor="w", fill="x", pady=(4, 0))
+        self.bb = {"type": _Wahl(bg, kpl.BALKEN_ARTEN, self._balken_uebernehmen, 10),
+                   "chapter_ticks": _Wahl(bg, kpl.BALKEN_STRICHE, self._balken_uebernehmen, 18),
+                   "style": _Wahl(bg, kpl.BALKEN_STILE, self._balken_uebernehmen, 12),
+                   "direction": _Wahl(bg, kpl.RICHTUNGEN, self._balken_uebernehmen, 14),
+                   "v_anchor": _Wahl(bg, kpl.ANKER, self._balken_anker, 10)}
+        for r, (links, rechts) in enumerate((("type", "chapter_ticks"), ("style", "direction"))):
+            self.bb[links].box.grid(row=r, column=0, columnspan=2, sticky="w", pady=1)
+            self.bb[rechts].box.grid(row=r, column=2, columnspan=2, sticky="w", padx=(6, 0), pady=1)
+        ttk.Label(bg, text=_("Edge")).grid(row=2, column=0, sticky="w", pady=1)
+        self.bb["v_anchor"].box.grid(row=2, column=1, sticky="w", padx=(4, 0), pady=1)
+        self.bb_zahl_var, self.bb_zahl_text = {}, {}
+        zahlen = ttk.Frame(i)
+        zahlen.pack(anchor="w", fill="x", pady=(2, 0))
+        for r, felder in enumerate(((("height", _("Thickness")), ("unread_height", _("unread"))),
+                                    (("margin_v", _("Distance from the edge")),),
+                                    (("margin_left", _("Margin left")), ("margin_right", _("right"))))):
+            for c, (feld, text) in enumerate(felder):
+                lb = self.bb_zahl_text[feld] = ttk.Label(zahlen, text=text)
+                lb.grid(row=r, column=c * 2, sticky="w", padx=(0 if c == 0 else 10, 4), pady=1)
+                v = self.bb_zahl_var[feld] = tk.StringVar()
+                sp = ttk.Spinbox(zahlen, from_=-999 if feld == "margin_v" else 0, to=999, width=5, textvariable=v,
+                                 command=self._balken_uebernehmen)
+                sp.grid(row=r, column=c * 2 + 1, sticky="w", pady=1)
+                sp.bind("<KeyRelease>", lambda e: self._balken_uebernehmen())
+        self.balken_text = ttk.Label(i, text="", style="Hinweis.TLabel", wraplength=BREITE, justify="left")
+        self.balken_text.pack(anchor="w", fill="x", pady=(4, 0))
 
         # -- allgemein -------------------------------------------------------------------
         i = self._abschnitt("allgemein", _("General"), offen=False)
@@ -280,8 +381,6 @@ class BookendsSeite(_Seite):
         for wert, text in kpl.KUERZEN:
             ttk.Radiobutton(i, text=_(text), value=wert, variable=self.kuerzen_var,
                             command=self._allgemein_geaendert).pack(anchor="w")
-        self.balken_text = ttk.Label(i, text="", style="Hinweis.TLabel", wraplength=BREITE, justify="left")
-        self.balken_text.pack(anchor="w", fill="x", pady=(8, 0))
 
     def zuruecksetzen(self):
         self.datei = self.daten = self.gespeichert = None
@@ -368,11 +467,7 @@ class BookendsSeite(_Seite):
             self.kuerzen_var.set(kpl.allgemein(d, "truncation_priority") or "center")
             self._zeile = None
             self._zeile_zeigen()
-            balken = d.get("progress_bars") or []
-            balken = balken if isinstance(balken, list) else list(balken.values())
-            an = sum(1 for b in balken if isinstance(b, dict) and b.get("enabled"))
-            self.balken_text.configure(text=_("Progress bars in this preset: {n} switched on. They are kept as they "
-                                              "are; edit them on the e-reader for now.").format(n=an))
+            self._balken_zeigen()
         finally:
             self._laden_laeuft = False
         self._aktiv_zeigen()
@@ -500,6 +595,7 @@ class BookendsSeite(_Seite):
             kpl.zeilen_setzen(self.daten, pos, z)
             t.configure(height=max(2, min(6, len(z) + 1)))
             self._zeile_gewaehlt(pos)
+            self._zeilenbalken_zeigen()                # %bar von Hand eingetippt oder gelöscht
             self._geaendert()
 
     def _zeile_gewaehlt(self, pos):
@@ -523,6 +619,8 @@ class BookendsSeite(_Seite):
                 self.gross_var.set(False)
                 for v in self.versatz_var.values():
                     v.set("")
+                self.seiten.setzen(None, aktiv=False)
+                self._zeilenbalken_zeigen()
                 return
             pos, nr = self._zeile
             name = dict(kpl.POSITIONEN)[pos]
@@ -538,8 +636,175 @@ class BookendsSeite(_Seite):
             g = kpl.zeilenwert(self.daten, pos, "line_font_size", nr)
             self.groesse_var.set("" if g is None else str(g))
             self.gross_var.set(bool(kpl.zeilenwert(self.daten, pos, "line_uppercase", nr)))
+            self.seiten.setzen(kpl.zeilenwert(self.daten, pos, "line_page_filter", nr), aktiv=True)
+            self._zeilenbalken_zeigen()
         finally:
             self._laden_laeuft = False
+
+    def _zeilentext(self):
+        if not self._zeile or self.daten is None:
+            return ""
+        pos, nr = self._zeile
+        z = kpl.zeilen(self.daten, pos)
+        return z[nr - 1] if nr <= len(z) else ""
+
+    def _zeilenbalken_zeigen(self):
+        """Balken-Felder der gewählten Zeile; nur bedienbar, wenn die Zeile %bar enthält."""
+        alt, self._laden_laeuft = self._laden_laeuft, True
+        try:
+            mit = kpl.hat_balken(self._zeilentext())
+            self.zbalken_kopf.configure(text=_("Bar in this line") if mit else
+                                        _("No bar in this line (token %bar)."))
+            self.zbalken_knopf.configure(text=_("Remove bar") if mit else _("Insert bar"),
+                                         state="normal" if self._zeile else "disabled")
+            werte = kpl.zeilenbalken(self.daten, *self._zeile) if mit else {}
+            for k, w in self.zb.items():
+                w.setzen(werte.get(k), aktiv=mit)
+            if mit:
+                self.zb["striche"].aktiv(werte["art"] == "book" and werte["stil"] != "pacman")
+                self.zb["richtung"].aktiv(werte["stil"] not in ("radial", "radial_hollow"))
+            for k, v in self.zb_dicke_var.items():
+                w = werte.get(k)
+                if k == "ungelesen" and w is None:
+                    w = werte.get("dicke")
+                v.set("" if w is None else str(w))
+                self.zb_dicke[k].configure(state="normal" if mit else "disabled")
+        finally:
+            self._laden_laeuft = alt
+
+    def _zeilenbalken_umschalten(self):
+        """%bar in die gewählte Zeile setzen bzw. herausnehmen (Leerzeichen wie Bookends' Knopf „Bar“)."""
+        if not self._zeile or self.daten is None:
+            return
+        pos, nr = self._zeile
+        z = kpl.zeilen(self.daten, pos)
+        t = z[nr - 1]
+        if kpl.hat_balken(t):
+            t = re.sub(r"\s*%bar\s*", " ", t).strip()
+        else:
+            t = (t + " %bar").strip()
+        z[nr - 1] = t
+        kpl.zeilen_setzen(self.daten, pos, z)
+        tw = self.texte[pos]
+        self._laden_laeuft = True
+        try:
+            tw.delete(f"{nr}.0", f"{nr}.end")
+            self._text_einsetzen(tw, f"{nr}.0", t)
+            tw.edit_modified(False)
+        finally:
+            self._laden_laeuft = False
+        self._zeilenbalken_zeigen()
+        self._geaendert()
+
+    def _zeilenbalken_uebernehmen(self):
+        if self._laden_laeuft or not self._zeile or self.daten is None or not kpl.hat_balken(self._zeilentext()):
+            return
+        werte = {k: w.wert() for k, w in self.zb.items()}
+        try:
+            for k, v in self.zb_dicke_var.items():
+                g = _zahl_oder_leer(v.get())
+                werte[k] = None if g is None else int(g)
+        except ValueError:
+            return
+        kpl.zeilenbalken_setzen(self.daten, *self._zeile, werte)
+        self.zb["striche"].aktiv(werte["art"] == "book" and werte["stil"] != "pacman")
+        self.zb["richtung"].aktiv(werte["stil"] not in ("radial", "radial_hollow"))
+        self._geaendert()
+
+    # ------------------------------------------------------------------ Balken über die ganze Breite
+    def _balken_zeigen(self):
+        alt, self._laden_laeuft = self._laden_laeuft, True
+        try:
+            d = self.daten or {}
+            namen = []
+            for n in range(1, kpl.BALKEN_ANZAHL + 1):
+                b = kpl.balken(d, n)
+                namen.append(_("Bar {nr}").format(nr=n) + (" ✓ " + _(dict(kpl.ANKER)[b.get("v_anchor", "bottom")])
+                                                           if b.get("enabled") else ""))
+            self.balken_wahl.configure(values=namen)
+            nr = self.balken_nr.get()
+            self.balken_wahl.current(nr - 1)
+            b = kpl.balken(d, nr)
+            an = bool(b.get("enabled")) and self.daten is not None
+            self.balken_an.set(bool(b.get("enabled")))
+            rund = b.get("style") in ("radial", "radial_hollow")
+            for feld, w in self.bb.items():
+                if feld == "direction":
+                    w.optionen([o for o in kpl.RICHTUNGEN if o[0] in kpl.balken_richtungen(b)])
+                    w.setzen(kpl.balken_richtung(b), aktiv=an and not rund)
+                else:
+                    w.setzen(b.get(feld), aktiv=an)
+            self.bb["chapter_ticks"].aktiv(an and b.get("type") == "book" and b.get("style") != "pacman")
+            relativ = b.get("band_offset") is not None and not kpl.balken_senkrecht(b)
+            senkrecht = kpl.balken_senkrecht(b)
+            self.bb_zahl_text["height"].configure(text=_("Diameter") if rund else _("Thickness"))
+            self.bb_zahl_text["margin_v"].configure(text=_("Distance from the line text") if relativ else
+                                                    _("Distance from the edge"))
+            self.bb_zahl_text["margin_left"].configure(text=_("Margin top") if senkrecht else _("Margin left"))
+            self.bb_zahl_text["margin_right"].configure(text=_("bottom") if senkrecht else _("right"))
+            for feld, v in self.bb_zahl_var.items():
+                if feld == "margin_v" and relativ:
+                    w = b.get("band_offset")
+                elif feld == "unread_height":
+                    w = b.get("unread_height", b.get("height"))
+                else:
+                    w = b.get(feld)
+                v.set("" if w is None else str(w))
+            self.balken_text.configure(text=_("Up to {n} bars across the page. Colours, markers and \"Position "
+                                              "relative to line text\" stay as they are; switch those on the "
+                                              "e-reader.").format(n=kpl.BALKEN_ANZAHL))
+            for kind in self.balken_gitter.winfo_children():
+                if isinstance(kind, ttk.Label):
+                    kind.configure(state="normal" if an else "disabled")
+        finally:
+            self._laden_laeuft = alt
+
+    def _balken_gewaehlt(self):
+        self.balken_nr.set(self.balken_wahl.current() + 1)
+        self._balken_zeigen()
+
+    def _balken_uebernehmen(self):
+        if self._laden_laeuft or self.daten is None:
+            return
+        nr = self.balken_nr.get()
+        b = kpl.balken(self.daten, nr)
+        werte = {"enabled": True if self.balken_an.get() else False}
+        for feld in ("type", "chapter_ticks", "style"):
+            werte[feld] = self.bb[feld].wert()
+        stil = werte["style"]
+        richtung = self.bb["direction"].wert()
+        probe = {**b, **werte}
+        moeglich = kpl.balken_richtungen(probe)
+        if richtung not in moeglich:
+            richtung = moeglich[0] if moeglich else None
+        vorgabe = "ttb" if kpl.balken_senkrecht(probe) else "ltr"
+        werte["direction"] = None if richtung in (None, vorgabe) else richtung
+        relativ = b.get("band_offset") is not None and not kpl.balken_senkrecht(b)
+        try:
+            for feld, v in self.bb_zahl_var.items():
+                g = _zahl_oder_leer(v.get())
+                g = None if g is None else int(g)
+                if feld == "margin_v" and relativ:
+                    werte["band_offset"] = g or 0
+                elif feld == "unread_height":
+                    dicke = werte.get("height", b.get("height"))
+                    werte[feld] = None if g is None or g == dicke else g
+                elif feld == "height":
+                    werte[feld] = g if g is not None else (60 if stil in ("radial", "radial_hollow") else 20)
+                else:
+                    werte[feld] = g or 0
+        except ValueError:
+            return
+        kpl.balken_aendern(self.daten, nr, **werte)
+        self._balken_zeigen()
+        self._geaendert()
+
+    def _balken_anker(self):
+        if self._laden_laeuft or self.daten is None:
+            return
+        kpl.balken_anker_setzen(self.daten, self.balken_nr.get(), self.bb["v_anchor"].wert())
+        self._balken_zeigen()
+        self._geaendert()
 
     def _zeilenwerte_uebernehmen(self):
         if self._laden_laeuft or not self._zeile or self.daten is None:
@@ -559,6 +824,7 @@ class BookendsSeite(_Seite):
             except ValueError:
                 return
             kpl.zeilenwert_setzen(self.daten, pos, feld, nr, w or None)    # 0 = kein Eintrag, wie Bookends
+        kpl.zeilenwert_setzen(self.daten, pos, "line_page_filter", nr, self.seiten.wert())
         self._geaendert()
 
     def _versatz_zurueck(self):

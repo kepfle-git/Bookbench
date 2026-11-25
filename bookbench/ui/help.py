@@ -19,7 +19,7 @@ import keller_theme as kth
 from bookbench.i18n import _
 
 PROGRAMM = "Bookbench"
-VERSION = "1.4-beta7"
+VERSION = "1.4-beta8"
 
 # (Elternthema, Kennung, Titel, Text). Übersetzt beim Import. Text: **fett**, Aufzählungen mit "-",
 # [[kennung]] = Verweis.
@@ -584,6 +584,22 @@ Empty fields use KOReader's defaults. Changes are a draft until **Save to profil
 **Values of the book shown**
 KOReader stores font and margins in the book data (.sdr) of every book it has opened once - all of them, when the book is closed. There they win over the general values, which therefore only apply to books never opened before. The section shows which values the book in the workbench brings along.
 **Ignore the book's own values in the workbench** removes them from the copy of the book data in the workbench, so the general values show. The book data of the book itself stays untouched. The sample text never has book data.
+""")),
+    ("vorschau", "vorschau_sperrbildschirm", _("Sleep screen"), _("""
+Below Preview, **Sleep screen** holds KOReader's sleep screen options (Screen > Sleep screen in KOReader's menu, stored in settings.reader.lua). The page appears as soon as there is a profile ([[vorschau_profil]]).
+
+While the page is open, the workbench shows the sleep screen as the e-reader would when it goes to sleep, without putting KOReader to sleep. **Show again** brings it back (a click into the picture can close it, like a tap on the e-reader); **Back to the page** closes it. Leaving the page closes it as well. KOReader reads these values when it starts, so the workbench restarts after a change (about a second).
+
+**Wallpaper**: cover of the book, a chosen image or book cover, a random image from a folder, reading progress, book status or leave the screen as it is - and for images: border fill, stretch (optionally up to a limit), crop, rotate for best fit, images in order instead of random.
+Paths are the ones on the e-reader (on a Kobo /mnt/onboard/…). **Choose …** takes a file or folder on the connected e-reader. Anything from elsewhere is copied into the profile (folder koreader/screensaver; for a folder only the images directly in it) and goes to the e-reader with **To the e-reader …** ([[vorschau_rueckweg]]). Images elsewhere on the e-reader (outside the KOReader folder) only show in the workbench while it is connected.
+
+**Ignore the book cover**: no cover for books on hold, for finished books, or when the e-reader is locked in the file browser (only with the wallpaper "cover of the book").
+
+**Message**: show a message, its text (empty = KOReader's "Sleeping"), the shape (box or banner across the screen), its height (0 bottom, 50 middle, 100 top), opacity, and the background fill when the screen is left as it is. **Insert** adds placeholders such as %T title, %A author, %S series, %p percent read, %C chapter title, %P chapter percent, %b battery. The placeholders and the shape/height/opacity exist since KOReader 2025.10.
+
+**After waking up**: whether the sleep screen stays after waking (seconds, until a tap, until the "Exit sleep screen" gesture), the message for the gesture, and whether reboot/power-off messages are hidden.
+
+Fields that do nothing with the current choice are greyed out, like in KOReader's menu. Changes are a draft until **Save to profile**.
 """)),
     ("vorschau", "vorschau_patches", _("Patches"), _("""
 Below Preview, **Patches** lists the user patches of the profile (folder koreader/patches) as KOReader's patch management does (Tools > More tools > Patch management on the e-reader).

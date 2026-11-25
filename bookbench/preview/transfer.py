@@ -15,7 +15,8 @@ vorausgewählt. Ohne Basis wird nur Profil gegen E-Reader verglichen, dann ist n
 außer Bereichen, die Bookbench als geändert vermerkt hat.
 
 Was verglichen wird (BEREICHE): Bookends (settings/bookends.lua, settings/bookends_presets/),
-Bookshelf (settings/bookshelf/), Patches (patches/), Stil-Anpassungen (styletweaks/), KOReaders
+Bookshelf (settings/bookshelf/), Patches (patches/), Stil-Anpassungen (styletweaks/), Bilder des
+Sperrbildschirms (screensaver/, seit 1.4-beta8), KOReaders
 Einstellungen (settings.reader.lua) Schlüssel für Schlüssel. Datenbanken (*.sqlite3), Sicherungen
 (*.old) und Bookbenchs eigene Patches nie. Bei settings.reader.lua nie die gerätebezogenen Schlüssel
 (NIE: Bildschirm-DPI, Pfade, Frontlicht, WLAN, letzte Dateien …) und keine, die Bookbench beim Holen
@@ -37,16 +38,18 @@ BEREICHE = (("bookends", N_("Bookends"), ("settings/bookends.lua", "settings/boo
             ("bookshelf", N_("Bookshelf"), ("settings/bookshelf/",)),
             ("patches", N_("Patches"), ("patches/",)),
             ("styletweaks", N_("Style tweaks"), ("styletweaks/",)),
+            ("sperrbildschirm", N_("Sleep screen images"), ("screensaver/",)),
             ("lesen", N_("KOReader settings"), ("settings.reader.lua",)))
 # Profil-Marke bookbench_geaendert -> Bereich
-MARKE_BEREICH = {"bookends": "bookends", "bookshelf": "bookshelf", "patches": "patches", "lesen": "lesen"}
+MARKE_BEREICH = {"bookends": "bookends", "bookshelf": "bookshelf", "patches": "patches", "lesen": "lesen",
+                 "sperrbildschirm": "lesen", "sperrbildschirm_bilder": "sperrbildschirm"}
 NIE_DATEIEN = ("*.sqlite3", "*.sqlite3-*", "*.old", "*.tmp", "*bookbench-desktop*", "*bookbench-workbench*",
                "*bookbench-probe*")
 NIE = ("screen_dpi", "extra_plugin_paths", "lastfile", "lastdir", "home_dir", "last_*", "frontlight*", "fl_*",
        "is_frontlight_on", "*wifi*", "*wlan*", "auto_restore_wifi", "device_*", "dev_*", "quickstart*",
        "*migration*", "battery*", "usbms*", "kobo_*", "kindle_*", "pocketbook_*", "document_metadata_folder",
        "start_with", "fm_rotation_mode", "folder_shortcuts", "collate*", "reverse_collate", "history*",
-       "plugins_disabled", "ota_*", "lastfile_*", "time_*")
+       "plugins_disabled", "ota_*", "lastfile_*", "time_*", "screensaver_cycle_index")
 BASIS_GROESSE = 20 * 1024 * 1024                  # größere Dateien (Bilder …) nicht in die Basis
 
 

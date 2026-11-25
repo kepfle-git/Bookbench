@@ -35,6 +35,7 @@ from bookbench.preview import workbench as kwb
 from bookbench.preview import plugins as kpl
 from bookbench.ui import workbench_plugins as kwp
 from bookbench.ui import workbench_reader as kwr
+from bookbench.ui import workbench_sleep as kws
 from bookbench.ui import transfer_window as ktw
 from bookbench.i18n import _
 
@@ -188,7 +189,9 @@ class VorschauBereich:
 
         # Unterseiten: KOReaders Schrift/Ränder und Patches (seit 1.4-beta4, sobald es ein Profil gibt),
         # dann je erkanntem Plugin eine Seite (seit 1.4-beta2)
-        self.plugin_seiten = {"lesen": kwr.LesenSeite(self, self.unter), "patches": kwr.PatchSeite(self, self.unter),
+        self.plugin_seiten = {"lesen": kwr.LesenSeite(self, self.unter),
+                              "sperrbildschirm": kws.SperrSeite(self, self.unter),
+                              "patches": kwr.PatchSeite(self, self.unter),
                               kpl.BOOKENDS: kwp.BookendsSeite(self, self.unter),
                               kpl.BOOKSHELF: kwp.BookshelfSeite(self, self.unter)}
         for name, seite in self.plugin_seiten.items():
@@ -205,7 +208,7 @@ class VorschauBereich:
         der Seitenleiste (seite.nb fehlt dann)."""
         sichtbar = set(kpl.erkennen(self.profil))
         if kv.profil_stand(self.profil)["vorhanden"]:
-            sichtbar |= {"lesen", "patches"}
+            sichtbar |= {"lesen", "sperrbildschirm", "patches"}
         neu = sichtbar != self._sichtbar
         self._sichtbar = sichtbar
         for name, seite in self.plugin_seiten.items():
@@ -239,6 +242,10 @@ class VorschauBereich:
 
     def _unterseite_gewechselt(self):
         name = self.unterseite()
+        vorher = self.plugin_seiten.get(getattr(self, "_vorige_unterseite", None))
+        self._vorige_unterseite = name
+        if vorher is not None and vorher is not self.plugin_seiten.get(name) and hasattr(vorher, "beim_verlassen"):
+            vorher.beim_verlassen()
         self.app.e["werkbank_unterseite"] = name
         if self.app._bereich() == "vorschau":
             self.app._wz_bereich_bauen("vorschau")
@@ -248,7 +255,7 @@ class VorschauBereich:
 
     def hilfe_thema(self):
         return {"bookends": "vorschau_bookends", "bookshelf": "vorschau_bookshelf", "lesen": "vorschau_lesen",
-                "patches": "vorschau_patches"}.get(self.unterseite(), "vorschau")
+                "patches": "vorschau_patches", "sperrbildschirm": "vorschau_sperrbildschirm"}.get(self.unterseite(), "vorschau")
 
     def ungespeichert(self):
         """Namen der Plugin-Seiten mit ungespeichertem Entwurf."""
@@ -569,6 +576,10 @@ class VorschauBereich:
                         s=time.monotonic() - self._startzeit))
                 else:
                     self._werk_meldung(_("Running in the background. Last picture in {s:.2f} s.").format(s=e["dauer"]))
+            elif e["art"] == "erledigt" and e["befehl"].startswith("sleep"):
+                seite = self.plugin_seiten.get("sperrbildschirm")
+                if seite:
+                    seite.befehl_erledigt(e)
             elif e["art"] == "erledigt" and not e["ok"]:
                 self._werk_meldung(_("KOReader reports: {text}").format(text=e["text"]))
             elif e["art"] == "fehler":

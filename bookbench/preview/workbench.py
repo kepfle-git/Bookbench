@@ -29,6 +29,8 @@ Buch bzw. der Startbildschirm da ist ("ready"), und liest dann alle 50 ms den Or
   bookends <datei>       Bookends-Vorlage aus settings/bookends_presets übernehmen (seit 1.4-beta2,
                          Bookends:applyPresetFile, wie Bookends' eigene Vorschau); nur auf der Leseseite
   bookends_enabled 0|1   Bookends ein-/ausschalten (Bookends:onSetBookends)
+  sleep 1|0     KOReaders Sperrbildschirm zeigen/schließen, ohne Ruhezustand (seit 1.4-beta8):
+                         Screensaver:setup()+show() wie beim Einschlafen, Schließen über die Fenster + cleanup()
   tap <x> <y> / hold <x> <y>   Fingertipp bzw. langes Drücken auf den Bildschirm (seit 1.4-beta5): ein
                          "Gesture"-Ereignis wie von Input, geht an das oberste Fenster - so lassen sich z. B.
                          Bookshelfs Regal-Knöpfe bedienen
@@ -47,6 +49,7 @@ Antworten auf stdout: "BOOKBENCH-WB ready <modus>", "BOOKBENCH-WB done <nummer> 
     .ereignisse()          neue Ereignisse (dicts, art: bereit, haengt, bild, erledigt, fehler, ende)
     .tippen(x, y, halten)  Fingertipp in Bildschirmpixeln
     .wischen(x, y, richtung, weite)  Wischgeste (seit 1.4-beta7)
+    .schlafen(an)          Sperrbildschirm zeigen/schließen (seit 1.4-beta8)
     .beenden()             KOReader beenden (erst freundlich, dann hart)
 """
 import os
@@ -170,6 +173,35 @@ local function run(cmd)
         local pos = Geom:new{ x = tonumber(x), y = tonumber(y), w = 0, h = 0 }
         UIManager:sendEvent(Event:new("Gesture", { ges = "swipe", direction = dir, distance = tonumber(dist),
                                                    pos = pos, time = now }))
+        return "ok"
+    elseif verb == "sleep" then
+        -- show or close KOReader's sleep screen without suspending (since 1.4-beta8)
+        local okS, S = pcall(require, "ui/screensaver")
+        if not okS then return "error no-screensaver" end
+        if arg == "0" then
+            for _, k in ipairs({ "screensaver_lock_widget", "screensaver_widget" }) do
+                if S[k] then UIManager:close(S[k]) end
+            end
+            if Device.screen_saver_mode then S:cleanup() end
+            if Device.orig_rotation_mode then
+                Device.screen:setRotationMode(Device.orig_rotation_mode)
+                Device.orig_rotation_mode = nil
+            end
+            UIManager:setDirty("all", "full")
+            return "ok"
+        end
+        if Device.screen_saver_mode then return "ok" end
+        -- the emulator adds "(Press F2 to resume)" to the default message; not on the e-reader
+        if type(S.default_screensaver_message) == "string" then
+            S.default_screensaver_message = S.default_screensaver_message:gsub("\n[^\n]*F2[^\n]*$", "")
+        end
+        S:setup()
+        if not S.ui then return "error no-ui" end
+        S:show()
+        if not Device.screen_saver_mode or (not S.screensaver_widget and not S.screensaver_lock_widget) then
+            Device.screen_saver_mode = false
+            return "ok nothing"
+        end
         return "ok"
     elseif verb == "quit" then
         UIManager:quit()
@@ -506,7 +538,7 @@ class Werkbank:
                     befehl, gesendet = self._gesendet.pop(teile[1], ("", jetzt))
                     ergebnis = teile[2]
                     e = {"art": "erledigt", "nr": teile[1], "befehl": befehl, "dauer": jetzt - gesendet,
-                         "ok": ergebnis == "ok", "text": ergebnis}
+                         "ok": ergebnis.split(" ")[0] == "ok", "text": ergebnis}
                     if befehl.startswith("shot ") and ergebnis == "ok":
                         e["art"], e["pfad"] = "bild", Path(befehl[5:])
                     self._q.put(e)
@@ -544,6 +576,9 @@ class Werkbank:
         if richtung not in self.RICHTUNGEN:
             raise ValueError(richtung)
         return self.senden(f"swipe {int(x)} {int(y)} {richtung} {max(1, int(weite))}")
+
+    def schlafen(self, an=True):
+        return self.senden("sleep 1" if an else "sleep 0")
 
     @property
     def ko(self):

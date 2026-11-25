@@ -321,7 +321,7 @@ def vom_geraet(wurzel, profil, info=None):
     for name in ("settings.reader.lua", "defaults.custom.lua"):
         if (quelle / name).is_file():
             shutil.copy2(quelle / name, ko / name)
-    for name in ("settings", "styletweaks", "patches"):
+    for name in ("settings", "styletweaks", "patches", "screensaver"):   # screensaver: Bilder (seit 1.4-beta8)
         if (quelle / name).is_dir():
             shutil.copytree(quelle / name, ko / name)
     for p in eigene_plugins(quelle / "plugins"):

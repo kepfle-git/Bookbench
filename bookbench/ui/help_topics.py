@@ -129,12 +129,12 @@ The sidebar on the left switches between the areas (Ctrl+1 … 6):
 
 The toolbar has the buttons of the current area on the left; on the right, separated, are the ones that always apply: Open, Reload, Save and Help. [[speichern]] applies to all book areas together.
 
-The **book lists** on the left of Chapters and Metadata (and the list of the dictionary; in the Preview the left column) can be made wider or narrower by dragging the divider to their right; the width is remembered, a double-click on the divider restores the default. A name that does not fit is shown completely below it when the mouse is over it.
+The **book lists** on the left of Chapters and Metadata (and the list of the dictionary; in the Preview the left column) can be made wider or narrower by dragging the divider to their right; the width is remembered, a double-click on the divider restores the default. A name that does not fit is shown completely in a tooltip when the mouse is over it, together with what its pictograms mean.
 """)),
     ("bereiche", "suche_filter", N_("Search and filters in the lists"), N_("""
 Above the book lists of **Chapters** and **Metadata** there is a search field and a filter (the Preview has a book selection instead of a list since 1.4). Each list has its own; they do not affect each other or the library.
 
-- **Search** finds parts of the title, series or author, case does not matter. **✕** or **Esc** in the field empties search and filter.
+- **Search** finds parts of the title, series or author, case does not matter. **×** in the field empties the search, **Esc** search and filter.
 - When a filter is active, the line above says how many books are shown: "Books: 3 of 12".
 - The book you are working on stays selected as long as it fits. If it no longer fits, the next fitting book below is selected (otherwise the one above).
 - **Apply** alone does not refill the list, so the book does not vanish while you work on it. Only changing search or filter, **Reload** or **Apply all** takes it out.
@@ -172,7 +172,7 @@ All books of the opened folder (with all subfolders) with series, number, author
 - Right-click on a header: **Sort ascending** / **Sort descending** for this column.
 
 **Moving columns**
-- Drag a header sideways (hold the mouse button or touchpad, move at least a few pixels): a blue line shows where it goes. Releasing there does not sort.
+- Drag a header sideways (hold the mouse button or touchpad): the column moves along and stays where you release it.
 - Without dragging: right-click on the header > **Move "…" left** / **right**.
 
 **Showing and hiding**
@@ -204,7 +204,7 @@ In the Metadata area, **From Calibre** next to the blurb puts Calibre's descript
     ("bereiche", "kapitel", N_("Chapters"), N_("""
 The books on the left, the table of contents on the right: **Entry** (as in the book), **New** (suggestion or own name), **Note**. Below are the first lines of book text at the selected entry.
 
-The lines in front of the entries show the levels: **├** an entry followed by more on the same level, **└** the last one below its parent, **│** the parent level continues.
+The table of contents is a tree: sub-entries are indented below their parent, the small arrow in front folds them in and out.
 
 **Names**
 - **Double-click** on a row (or F2) edits the new name. Leave it empty or press **Del** = original.

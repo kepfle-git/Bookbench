@@ -37,6 +37,8 @@ from bookbench.core import markers as km
 from bookbench.core import settings as kei
 from bookbench.preview import emulator as kv
 from bookbench.ui import area as kar
+from bookbench.ui import area_chapters as kch
+from bookbench.ui import area_library as kbi
 from bookbench.ui import dialogs
 from bookbench.ui import help_topics
 from bookbench.ui import markers as kmk
@@ -112,8 +114,11 @@ class App(QMainWindow):
         self.updates = kup.Updates(self)     # Suche nach neuen Versionen (ui/updates.py)
 
         # Bereiche: leben so lange wie das Fenster; bis sie umgezogen sind, Platzhalter
-        self.bereiche = [kar.Platzhalter(self, k, t, s, beta) for k, t, s, beta in kar.BEREICHE
-                         if k != "vorschau" or kv.verfuegbar()]
+        fertig = {"bibliothek": kbi.BibliothekBereich, "kapitel": kch.KapitelBereich}
+        self.bereiche = [fertig[k](self) if k in fertig else kar.Platzhalter(self, k, t, s, beta)
+                         for k, t, s, beta in kar.BEREICHE if k != "vorschau" or kv.verfuegbar()]
+        self.bibliothek = self.bereich_obj("bibliothek")
+        self.kapitel = self.bereich_obj("kapitel")
         self.vorschau = None                 # wie im Tk-Programm: None, wo es keine Vorschau gibt
         self._aktuell = "bibliothek"
 
@@ -125,6 +130,9 @@ class App(QMainWindow):
         self._tooltips_anwenden()
         self.oberflaeche_bauen()
         QShortcut(QKeySequence("Ctrl+B"), self, activated=lambda: self.leiste.umschalten())
+        QShortcut(QKeySequence("Ctrl+F"), self, activated=self.suche_fokus)
+        for taste in ("Ctrl+Return", "Ctrl+Enter"):
+            QShortcut(QKeySequence(taste), self, activated=self.uebernehmen)
         for i in range(9):
             QShortcut(QKeySequence(f"Ctrl+{i + 1}"), self, activated=lambda i=i: self.leiste.nummer(i))
 
@@ -217,6 +225,18 @@ class App(QMainWindow):
         m.addAction(_("Settings …"), lambda: self.einstellungen())
         m.addSeparator()
         m.addAction(_("Quit"), self.close)
+        b = leiste.addMenu(_("Edit"))
+        act = b.addAction(_("Apply"), self.uebernehmen)
+        act.setShortcut(QKeySequence("Ctrl+Return"))
+        act.setShortcutContext(Qt.WidgetShortcut)           # die Taste fängt der QShortcut im Fenster
+        b.addAction(_("Apply all chapter suggestions"), lambda: self.kapitel.alle_uebernehmen())
+        b.addSeparator()
+        b.addAction(_("Chapters: restore suggestions"), lambda: self._kapitel_aktion("vorschlaege"))
+        b.addAction(_("Chapters: restore original"), lambda: self._kapitel_aktion("original"))
+        b.addAction(_("Chapters: level up") + "\t" + _("Shift+Tab"), lambda: self._kapitel_aktion("ebene", -1))
+        b.addAction(_("Chapters: level down") + "\tTab", lambda: self._kapitel_aktion("ebene", 1))
+        b.addSeparator()
+        b.addAction(_("Take series and blurbs from Calibre"), self.calibre_uebernehmen)
         for b in self.bereiche:
             b.menue(leiste)
         a = leiste.addMenu(_("View"))
@@ -233,6 +253,8 @@ class App(QMainWindow):
         act.setShortcut(QKeySequence("Ctrl+B"))
         act.setShortcutContext(Qt.WidgetShortcut)           # die Taste fängt der QShortcut im Fenster
         self._schalter_aktion(a, _("Status in the lists"), "status_liste")
+        sp = a.addMenu(_("Library columns"))
+        sp.aboutToShow.connect(lambda: self.bibliothek.menue_fuellen(sp))
         self._schalter_aktion(a, "Cover", "cover")
         self._schalter_aktion(a, "Tooltips", "tooltips", self._tooltips_anwenden)
         h = leiste.addMenu(_("Help"))
@@ -386,6 +408,8 @@ class App(QMainWindow):
         kennung = alias.get(kennung, kennung)
         b = self.bereich_obj(kennung) or self.bereiche[0]
         wechsel = b.kennung != self._aktuell
+        if wechsel and getattr(self, "kapitel", None) is not None and self.kapitel.seite is not None:
+            self.kapitel._bearbeitung_beenden()
         self._aktuell = b.kennung
         self.e["bereich_zuletzt"] = b.kennung
         if b.seite is not None:
@@ -455,7 +479,12 @@ class App(QMainWindow):
         self._arbeit = None
         self._alles_neu_zeichnen()
         self.ordner_pruefen()
-        self._start_buch = None              # Buch wieder wählen: kommt mit den Bereichen (2.0-beta2)
+        if self._start_buch:                 # nach einem Neustart (Update): Buch wieder wählen
+            b = next((x for x in buecher if str(x.pfad) == str(self._start_buch)), None)
+            if b:
+                self.bibliothek.auswaehlen(b)
+                self.kapitel.auswaehlen(b)
+            self._start_buch = None
         fehler = sum(1 for b in buecher if b.fehler)
         sicherung = Path(self.e["sicherungsordner"]).resolve()
         hinweis = " " + _("The backup folder is inside the books folder - better put it elsewhere (Settings).") \
@@ -499,6 +528,7 @@ class App(QMainWindow):
                                   "again and save, or discard them with Reload.")
 
     def speichern(self):
+        self.kapitel._bearbeitung_beenden()
         faellig = [b for b in self.buecher if b.neu or b.klappentext_neu is not None or b.reihe_neu is not None
                    or b.tiefen_neu is not None or b.cover_neu is not None or b.meta_neu is not None]
         rot = sum(1 for b in self.buecher if b.stand() == "rot")
@@ -541,11 +571,11 @@ class App(QMainWindow):
                         .format(n=ok, ordner=self.e["sicherungsordner"]) +
                         (" " + _("{n} with changes not yet applied.").format(n=rot) if rot else ""))
 
-    def _offen(self):
+    def offen(self):
         return sum(1 for b in self.buecher if b.stand() in ("rot", "gelb"))
 
     def _aenderungen_verwerfen_ok(self):
-        offen = self._offen()
+        offen = self.offen()
         return not offen or dialogs.frage(
             self, _("Changes"), ngettext("{n} book has unsaved changes. Discard them?",
                                          "{n} books have unsaved changes. Discard them?", offen).format(n=offen),
@@ -582,23 +612,101 @@ class App(QMainWindow):
             b.neu_zeichnen()
         self._zaehler()
 
+    alles_neu_zeichnen = _alles_neu_zeichnen
+
+    def buch_geaendert(self, b, baum=False):
+        """Ein Buch hat sich geändert: Zeile der Bibliothek, Streifen, Baum (baum=True), Zähler, Titel."""
+        for x in self.bereiche:
+            if hasattr(x, "buch_geaendert"):
+                x.buch_geaendert(b, baum) if x is self.kapitel else x.buch_geaendert(b)
+        self._zaehler()
+
+    # -- Aktionen über Bereiche hinweg --------------------------------------------------------
+    def uebernehmen(self):
+        """Strg+Enter: Übernehmen im aktuellen Bereich."""
+        b = self.bereich_obj(self._aktuell)
+        if hasattr(b, "uebernehmen"):
+            b.uebernehmen()
+        else:
+            self.status.set(_("Apply: choose a book in the Chapters or Blurbs area."))
+
+    def suche_fokus(self):
+        """Strg+F: Suchfeld des aktuellen Bereichs, sonst das der Bibliothek."""
+        b = self.bereich_obj(self._aktuell)
+        if not hasattr(b, "suche_fokus"):
+            self.bereich_zeigen("bibliothek")
+            b = self.bibliothek
+        b.suche_fokus()
+
+    def _kapitel_aktion(self, name, *args):
+        """Menü Bearbeiten: in den Bereich Kapitel wechseln (mit dem gewählten Buch) und ausführen."""
+        if self._aktuell != "kapitel":
+            b = self.gewaehltes_buch()
+            self.bereich_zeigen("kapitel")
+            if b:
+                self.kapitel.auswaehlen(b)
+        getattr(self.kapitel, name)(*args)
+
+    def gewaehltes_buch(self):
+        b = self.bereich_obj(self._aktuell)
+        return getattr(b, "buch", None) or self.bibliothek.buch
+
+    def buch_oeffnen(self, b, ziel=None):
+        """Buch aus der Bibliothek öffnen: Kapitel, Metadaten, Vorschau oder gleich in KOReader
+        (Einstellung buch_oeffnen). Noch nicht umgezogene Bereiche: Kapitel mit Hinweis."""
+        ziel = ziel or self.e.get("buch_oeffnen") or "kapitel"
+        bereich = "vorschau" if ziel == "koreader" else ziel
+        obj = hinweis = self.bereich_obj(bereich)
+        if obj is None or isinstance(obj, kar.Platzhalter):
+            obj = self.kapitel
+        self.bereich_zeigen(obj.kennung)
+        obj.auswaehlen(b)
+        if isinstance(hinweis, kar.Platzhalter):
+            self.status.set(_("{bereich} moves to the new interface in {version}; opened in Chapters.")
+                            .format(bereich=hinweis.name(), version=hinweis.kommt_in))
+
+    def _calibre_aus(self):
+        """True (mit Hinweis), wenn der Calibre-Abgleich abgeschaltet ist (Einstellungen > Bücher > Calibre)."""
+        if self.e.get("calibre_an", True):
+            return False
+        self.status.set(_("The Calibre comparison is switched off (Settings > Books > Calibre)."))
+        return True
+
+    def calibre_uebernehmen(self):
+        """Reihe/Nummer und Klappentext aus metadata.calibre übernehmen - nur, wo das EPUB nichts hat."""
+        if self._calibre_aus():
+            return
+        if not self.calibre_eintraege:
+            self.status.set(_("No metadata.calibre found (it is in the root folder of the e-reader when Calibre "
+                              "transfers the books). Open the folder on the e-reader or copy the file into the books folder."))
+            return
+        reihen = texte = 0
+        for b in self.buecher:
+            reihe, text = kd.calibre_vorschlag(b)
+            if reihe:
+                b.reihe_neu = reihe
+                b.reihe, b.nummer = reihe
+                reihen += 1
+            if text:
+                b.klappentext_neu = text
+                b.klappentext_quelle = "Calibre"
+                texte += 1
+        self._alles_neu_zeichnen()
+        self.status.set(_("Taken from Calibre: {reihen} series, {texte} blurbs - not yet saved (Ctrl+S).")
+                        .format(reihen=reihen, texte=texte)
+                        if reihen or texte else _("Nothing to take from Calibre; the EPUBs already have everything."))
+
     def bibliothek_marken(self, b):
         """Marken in der Bibliothek: alles, was die Bereiche melden (Kapitel und Metadaten)."""
-        if b.fehler:
-            return [("unlesbar", b.fehler)]
-        meta = self.bereich_obj("metadaten")
-        return [m for m in km.kapitel(b) if m[0] != "vorschlag"] + (meta.marken_buch(b) if hasattr(meta, "marken_buch")
-                                                                    else [])
+        return km.bibliothek(b, self.e)
 
     def _seitenleiste_marken(self, b):
         """[(kennung, anzahl)] eines Bereichs: die Bereiche liefern sie selbst; Bibliothek und Kapitel
         hier, solange es sie nur als Platzhalter gibt."""
         if not isinstance(b, kar.Platzhalter):
             return b.marken()
-        if b.kennung == "bibliothek":
-            return [("unlesbar", sum(1 for x in self.buecher if x.fehler)), ("ungespeichert", self._offen())]
-        if b.kennung == "kapitel":
-            return [m for m in km.zaehlen(self.buecher, km.kapitel) if m[0] != "unlesbar"]
+        if b.kennung == "metadaten":                    # bis der Bereich umzieht (2.0-beta3)
+            return [m for m in km.zaehlen(self.buecher, lambda x: km.metadaten(x, self.e)) if m[0] != "unlesbar"]
         return []
 
     def _zaehler(self):
@@ -611,7 +719,7 @@ class App(QMainWindow):
             eintraege.append({"id": b.kennung, "name": b.name(), "symbol": b.symbol, "marken": marken,
                               "zaehler": b.zaehler(), "kinder": b.kinder()})
         self.leiste.setzen(eintraege)
-        self.setWindowTitle(f"{PROGRAMM} {VERSION}" + (" *" if self._offen() else ""))
+        self.setWindowTitle(f"{PROGRAMM} {VERSION}" + (" *" if self.offen() else ""))
 
     # -- Darstellung ----------------------------------------------------------------------
     def darstellung_setzen(self, wert):
@@ -636,6 +744,7 @@ class App(QMainWindow):
     def sprache_setzen(self, code):
         """Neue Sprache sofort: Übersetzung umstellen, Oberfläche neu aufbauen. Bücher, offene Änderungen,
         Bereich und Auswahl bleiben (Zustand liegt außerhalb der Widgets)."""
+        self.kapitel._bearbeitung_beenden()
         i18n.einstellen(code)
         qt_uebersetzung(QApplication.instance())
         hilfe_offen = self._hilfe.aktuelles_thema() if self._hilfe is not None and self._hilfe.isVisible() else None
@@ -696,6 +805,9 @@ class App(QMainWindow):
         if self.ordner:
             befehl.append(self.ordner)
         befehl += ["--bereich", self._aktuell, "--geometrie", self.geometrie(mit_ort=True)]
+        b = self.gewaehltes_buch()
+        if b:
+            befehl += ["--buch", str(b.pfad)]
         self._einstellungen_sichern()
         self._popen(befehl)
         self._ohne_rueckfrage = True
@@ -712,7 +824,7 @@ class App(QMainWindow):
     def schliessen_ok(self):
         """Darf Bookbench jetzt zugehen? Fragt nach ungespeicherten Büchern und dem, was die Bereiche
         offen haben (Beenden, Update)."""
-        offen = self._offen()
+        offen = self.offen()
         if offen and not dialogs.frage(
                 self, _("Quit"), ngettext("{n} book has unsaved changes. Quit anyway?",
                                           "{n} books have unsaved changes. Quit anyway?", offen).format(n=offen),

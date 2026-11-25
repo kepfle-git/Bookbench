@@ -216,14 +216,19 @@ class BookendsSeite(_SymbolSeite):
                    "striche": Wahl(kpl.BALKEN_STRICHE, self._zeilenbalken_uebernehmen),
                    "stil": Wahl(kpl.BALKEN_STILE, self._zeilenbalken_uebernehmen),
                    "richtung": Wahl(kpl.RICHTUNGEN[:2], self._zeilenbalken_uebernehmen)}
-        lay.addWidget(zeile(self.zb["art"], self.zb["striche"]))
-        lay.addWidget(zeile(self.zb["stil"], self.zb["richtung"]))
+        self.zb_rahmen = QWidget()                     # nur sichtbar, wenn die Zeile einen Balken hat
+        zl = QVBoxLayout(self.zb_rahmen)
+        zl.setContentsMargins(0, 0, 0, 0)
+        zl.setSpacing(lay.spacing())
+        zl.addWidget(zeile(self.zb["art"], self.zb["striche"]))
+        zl.addWidget(zeile(self.zb["stil"], self.zb["richtung"]))
         self.zb_dicke = {}
         teile = []
         for feld, text in (("dicke", _("Thickness")), ("ungelesen", _("unread"))):
             self.zb_dicke[feld] = zahlfeld(self._zeilenbalken_uebernehmen)
             teile += [text, self.zb_dicke[feld]]
-        lay.addWidget(zeile(*teile, hinweis("px")))
+        zl.addWidget(zeile(*teile, hinweis("px")))
+        lay.addWidget(self.zb_rahmen)
         self.zbalken_knopf = QPushButton("")
         self.zbalken_knopf.clicked.connect(self._zeilenbalken_umschalten)
         lay.addWidget(self.zbalken_knopf, 0, Qt.AlignLeft)
@@ -246,9 +251,13 @@ class BookendsSeite(_SymbolSeite):
                    "direction": Wahl(kpl.RICHTUNGEN, self._balken_uebernehmen),
                    "v_anchor": Wahl(kpl.ANKER, self._balken_anker)}
         self.bb_kante = QLabel(_("Edge"))
-        lay.addWidget(zeile(self.bb["type"], self.bb["chapter_ticks"]))
-        lay.addWidget(zeile(self.bb["style"], self.bb["direction"]))
-        lay.addWidget(zeile(self.bb_kante, self.bb["v_anchor"]))
+        self.bb_rahmen = QWidget()                     # nur sichtbar, wenn der gewählte Balken eingeschaltet ist
+        bl = QVBoxLayout(self.bb_rahmen)
+        bl.setContentsMargins(0, 0, 0, 0)
+        bl.setSpacing(lay.spacing())
+        bl.addWidget(zeile(self.bb["type"], self.bb["chapter_ticks"]))
+        bl.addWidget(zeile(self.bb["style"], self.bb["direction"]))
+        bl.addWidget(zeile(self.bb_kante, self.bb["v_anchor"]))
         self.bb_zahl, self.bb_zahl_text = {}, {}
         g = QGridLayout()
         for r, felder in enumerate(((("height", _("Thickness")), ("unread_height", _("unread"))),
@@ -260,7 +269,8 @@ class BookendsSeite(_SymbolSeite):
                 self.bb_zahl[feld] = zahlfeld(self._balken_uebernehmen, negativ=feld == "margin_v")
                 g.addWidget(self.bb_zahl[feld], r, c * 2 + 1)
         g.setColumnStretch(4, 1)
-        lay.addLayout(g)
+        bl.addLayout(g)
+        lay.addWidget(self.bb_rahmen)
         self.balken_text = hinweis("", BREITE)
         lay.addWidget(self.balken_text)
 
@@ -527,6 +537,7 @@ class BookendsSeite(_SymbolSeite):
             self.zbalken_kopf.setText(_("Bar in this line") if mit else _("No bar in this line (token %bar)."))
             self.zbalken_knopf.setText(_("Remove bar") if mit else _("Insert bar"))
             self.zbalken_knopf.setEnabled(bool(self._zeile))
+            self.zb_rahmen.setVisible(mit)
             werte = kpl.zeilenbalken(self.daten, *self._zeile) if mit else {}
             for k, w in self.zb.items():
                 w.setzen(werte.get(k), aktiv=mit)
@@ -594,6 +605,7 @@ class BookendsSeite(_SymbolSeite):
             an = bool(b.get("enabled")) and self.daten is not None
             self.balken_an.setChecked(bool(b.get("enabled")))
             self.balken_an.setEnabled(self.daten is not None)
+            self.bb_rahmen.setVisible(an)
             rund = b.get("style") in ("radial", "radial_hollow")
             for feld, w in self.bb.items():
                 if feld == "direction":

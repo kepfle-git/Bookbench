@@ -7,197 +7,197 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: app.py:53 plugins.py:812 settings.py:209
+#: app.py:53 plugins.py:812 settings.py:212
 msgid "Light"
 msgstr "Hell"
 
-#: app.py:53 plugins.py:812 settings.py:209
+#: app.py:53 plugins.py:812 settings.py:212
 msgid "Dark"
 msgstr "Dunkel"
 
-#: app.py:53 settings.py:209
+#: app.py:53 settings.py:212
 msgid "Like the system"
 msgstr "Wie das System"
 
-#: app.py:104
+#: app.py:105
 msgid "Open a folder (Ctrl+O)."
 msgstr "Ordner öffnen (Strg+O)."
 
-#: app.py:222 calibre_import.py:109
+#: app.py:223 calibre_import.py:109
 msgid "File"
 msgstr "Datei"
 
-#: app.py:223
+#: app.py:224
 msgid "Open folder …"
 msgstr "Ordner öffnen …"
 
-#: app.py:224
+#: app.py:225
 msgid "Recently opened"
 msgstr "Zuletzt geöffnet"
 
-#: app.py:226 app.py:339
+#: app.py:227 app.py:363
 msgid "Reload"
 msgstr "Neu einlesen"
 
-#: app.py:227 app.py:401
+#: app.py:228 app.py:430
 msgid "Close library"
 msgstr "Bibliothek schließen"
 
-#: app.py:229 app.py:340 app.py:576 app.py:603
+#: app.py:230 app.py:364 app.py:606 app.py:633
 msgid "Save"
 msgstr "Speichern"
 
-#: app.py:231 area_metadata.py:380
+#: app.py:232 area_metadata.py:380
 msgid "Import from Calibre library …"
 msgstr "Aus Calibre-Bibliothek importieren …"
 
-#: app.py:233
+#: app.py:234
 msgid "Settings …"
 msgstr "Einstellungen …"
 
-#: app.py:235 app.py:969 area_preview.py:876
+#: app.py:236 app.py:999 area_preview.py:876
 msgid "Quit"
 msgstr "Beenden"
 
-#: app.py:236
+#: app.py:238
 msgid "Edit"
 msgstr "Bearbeiten"
 
-#: app.py:237 area_chapters.py:151 area_dictionary.py:462 area_dictionary.py:491 area_dictionary.py:914 area_metadata.py:370
+#: app.py:246 area_chapters.py:151 area_dictionary.py:462 area_dictionary.py:491 area_dictionary.py:914 area_metadata.py:370
 msgid "Apply"
 msgstr "Übernehmen"
 
-#: app.py:240
+#: app.py:249
 msgid "Apply all chapter suggestions"
 msgstr "Alle Kapitelvorschläge übernehmen"
 
-#: app.py:242
+#: app.py:251
 msgid "Chapters: restore suggestions"
 msgstr "Kapitel: Vorschläge herstellen"
 
-#: app.py:243
+#: app.py:252
 msgid "Chapters: restore original"
 msgstr "Kapitel: Original herstellen"
 
-#: app.py:244
+#: app.py:253
 msgid "Shift+Tab"
 msgstr "Umschalt+Tab"
 
-#: app.py:244
+#: app.py:253
 msgid "Chapters: level up"
 msgstr "Kapitel: Ebene höher"
 
-#: app.py:245
+#: app.py:254
 msgid "Chapters: level down"
 msgstr "Kapitel: Ebene tiefer"
 
-#: app.py:247
+#: app.py:256
 msgid "Look up blurb"
 msgstr "Klappentext nachschlagen"
 
-#: app.py:248 area_metadata.py:377
+#: app.py:257 area_metadata.py:377
 msgid "Look up all missing blurbs"
 msgstr "Alle fehlenden Klappentexte nachschlagen"
 
-#: app.py:250
+#: app.py:259
 msgid "Cover from file …"
 msgstr "Cover aus Datei …"
 
-#: app.py:251
+#: app.py:260
 msgid "Look up cover"
 msgstr "Cover nachschlagen"
 
-#: app.py:252 area_metadata.py:378
+#: app.py:261 area_metadata.py:378
 msgid "Look up all missing covers"
 msgstr "Alle fehlenden Cover nachschlagen"
 
-#: app.py:253
+#: app.py:262
 msgid "Show cover large"
 msgstr "Cover groß zeigen"
 
-#: app.py:255
-msgid "Take series and blurbs from Calibre"
-msgstr "Reihen und Klappentexte aus Calibre übernehmen"
+#: app.py:264 area_library.py:206
+msgid "Series and blurbs from Calibre"
+msgstr "Reihen und Klappentexte aus Calibre"
 
-#: app.py:256
+#: app.py:265
 msgid "Metadata from Calibre (this book)"
 msgstr "Metadaten aus Calibre (dieses Buch)"
 
-#: app.py:257
+#: app.py:267 area_metadata.py:382
 msgid "Fill metadata gaps from Calibre"
 msgstr "Lücken in den Metadaten aus Calibre füllen"
 
-#: app.py:260 area_preview.py:251 area_preview.py:379
+#: app.py:270 area_preview.py:251 area_preview.py:379
 msgid "View"
 msgstr "Ansicht"
 
-#: app.py:270
+#: app.py:280
 msgid "Sidebar on/off"
 msgstr "Seitenleiste ein/aus"
 
-#: app.py:273
+#: app.py:283
 msgid "Status in the lists"
 msgstr "Status in den Listen"
 
-#: app.py:274
+#: app.py:284
 msgid "Library columns"
 msgstr "Spalten der Bibliothek"
 
-#: app.py:278 app.py:279 app.py:342 help.py:32 settings.py:98
+#: app.py:288 app.py:289 app.py:366 help.py:32 settings.py:101
 msgid "Help"
 msgstr "Hilfe"
 
-#: app.py:280
+#: app.py:290
 msgid "Check for updates …"
 msgstr "Nach Updates suchen …"
 
-#: app.py:282 app.py:310
+#: app.py:292 app.py:333
 msgid "About"
 msgstr "Über"
 
-#: app.py:303
+#: app.py:326
 msgid "(empty)"
 msgstr "(leer)"
 
-#: app.py:310
+#: app.py:333
 msgid "Chapter names, blurbs and settings for KOReader on the e-reader."
 msgstr ""
 "Kapitelnamen, Klappentexte und Einstellungen für KOReader auf dem E-Reader."
 
-#: app.py:312
+#: app.py:335
 msgid "Interface: Qt {qt} (PySide6), style {stil}."
 msgstr "Oberfläche: Qt {qt} (PySide6), Stil {stil}."
 
-#: app.py:323
+#: app.py:347
 msgid "Toolbar"
 msgstr "Werkzeugleiste"
 
-#: app.py:338 area_dictionary.py:1250
+#: app.py:362 area_dictionary.py:1250
 msgid "Open"
 msgstr "Öffnen"
 
-#: app.py:338
+#: app.py:362
 msgid "Open books folder (Ctrl+O)"
 msgstr "Bücherordner öffnen (Strg+O)"
 
-#: app.py:339
+#: app.py:363
 msgid "Reload folder (F5)"
 msgstr "Ordner neu einlesen (F5)"
 
-#: app.py:340
+#: app.py:364
 msgid "Write applied changes to the files, with backup (Ctrl+S)"
 msgstr ""
 "Übernommene Änderungen in die Dateien schreiben, mit Sicherung (Strg+S)"
 
-#: app.py:342
+#: app.py:366
 msgid "Help for the current area (F1)"
 msgstr "Hilfe zum aktuellen Bereich (F1)"
 
-#: app.py:425
+#: app.py:454
 msgid "The folder {ordner} is reachable again."
 msgstr "Der Ordner {ordner} ist wieder erreichbar."
 
-#: app.py:429
+#: app.py:458
 msgid ""
 "The folder {ordner} is no longer reachable (e-reader unplugged?). The "
 "library stays visible, but saving only works again once the folder is back."
@@ -206,39 +206,39 @@ msgstr ""
 "Bibliothek bleibt sichtbar, Speichern geht aber erst wieder, wenn der "
 "Ordner wieder da ist."
 
-#: app.py:459 area_chapters.py:80 help_topics.py:204 help_topics.py:822 listing.py:63 settings.py:48
+#: app.py:489 area_chapters.py:80 help_topics.py:204 help_topics.py:826 listing.py:63 settings.py:52
 msgid "Chapters"
 msgstr "Kapitel"
 
-#: app.py:459 area_metadata.py:226 help_topics.py:243 help_topics.py:871 plugins.py:471 settings.py:55
+#: app.py:489 area_metadata.py:226 help_topics.py:243 plugins.py:471
 msgid "Metadata"
 msgstr "Metadaten"
 
-#: app.py:459 area_preview.py:160 area_preview.py:476 help_topics.py:528 help_topics.py:897 settings.py:59
+#: app.py:489 area_preview.py:160 area_preview.py:476 help_topics.py:528 help_topics.py:906 settings.py:61
 msgid "Preview"
 msgstr "Vorschau"
 
-#: app.py:460
+#: app.py:490
 msgid "KOReader (start the preview)"
 msgstr "KOReader (Vorschau starten)"
 
-#: app.py:467
+#: app.py:497
 msgid "Open books folder"
 msgstr "Bücherordner öffnen"
 
-#: app.py:477 app.py:623 app.py:745 area_device.py:496 area_dictionary.py:890 area_preview.py:496
+#: app.py:507 app.py:653 app.py:775 area_device.py:496 area_dictionary.py:890 area_preview.py:496
 msgid "Still running: {arbeit}."
 msgstr "Läuft noch: {arbeit}."
 
-#: app.py:484
+#: app.py:514
 msgid "Reading"
 msgstr "Einlesen"
 
-#: app.py:495
+#: app.py:525
 msgid "Reading books … {i}/{n}"
 msgstr "Lese Bücher … {i}/{n}"
 
-#: app.py:524
+#: app.py:554
 msgid ""
 "The backup folder is inside the books folder - better put it elsewhere "
 "(Settings)."
@@ -246,31 +246,31 @@ msgstr ""
 "Sicherungsordner liegt im Bücherordner - besser woanders hin "
 "(Einstellungen)."
 
-#: app.py:527
+#: app.py:557
 msgid "Calibre data for {n} book ({ordner})."
 msgid_plural "Calibre data for {n} books ({ordner})."
 msgstr[0] "Calibre-Daten für {n} Buch ({ordner})."
 msgstr[1] "Calibre-Daten für {n} Bücher ({ordner})."
 
-#: app.py:529
+#: app.py:559
 msgid "metadata.calibre found, but it matches no book."
 msgstr "metadata.calibre gefunden, aber keinem Buch zuzuordnen."
 
-#: app.py:530
+#: app.py:560
 msgid "{n} book read."
 msgid_plural "{n} books read."
 msgstr[0] "{n} Buch eingelesen."
 msgstr[1] "{n} Bücher eingelesen."
 
-#: app.py:531
+#: app.py:561
 msgid "{n} not readable."
 msgstr "{n} nicht lesbar."
 
-#: app.py:547
+#: app.py:577
 msgid "Library closed."
 msgstr "Bibliothek geschlossen."
 
-#: app.py:556
+#: app.py:586
 msgid ""
 "The folder {ordner} is no longer reachable (e-reader ejected or "
 "unplugged?). Nothing was saved."
@@ -278,13 +278,13 @@ msgstr ""
 "Der Ordner {ordner} ist nicht mehr erreichbar (E-Reader ausgeworfen oder "
 "abgezogen?). Es wurde nichts gespeichert."
 
-#: app.py:558
+#: app.py:588
 msgid "{n} book file is missing, e.g. {datei}. Nothing was saved."
 msgid_plural "{n} book files are missing, e.g. {datei}. Nothing was saved."
 msgstr[0] "{n} Buchdatei fehlt, z. B. {datei}. Es wurde nichts gespeichert."
 msgstr[1] "{n} Buchdateien fehlen, z. B. {datei}. Es wurde nichts gespeichert."
 
-#: app.py:561
+#: app.py:591
 msgid ""
 "The changes are kept as long as Bookbench is open. Connect the e-reader "
 "again and save, or discard them with Reload."
@@ -292,113 +292,113 @@ msgstr ""
 "Die Änderungen bleiben erhalten, solange Bookbench offen ist. E-Reader "
 "wieder anschließen und speichern, oder mit Neu einlesen verwerfen."
 
-#: app.py:570
+#: app.py:600
 msgid "Nothing to save."
 msgstr "Nichts zu speichern."
 
-#: app.py:570
+#: app.py:600
 msgid "{n} book with changes not yet applied."
 msgid_plural "{n} books with changes not yet applied."
 msgstr[0] "{n} Buch mit nicht übernommenen Änderungen."
 msgstr[1] "{n} Bücher mit nicht übernommenen Änderungen."
 
-#: app.py:577
+#: app.py:607
 msgid "Not saved: the books are not reachable."
 msgstr "Nicht gespeichert: die Bücher sind nicht erreichbar."
 
-#: app.py:603
+#: app.py:633
 msgid "Not saved:"
 msgstr "Nicht gespeichert:"
 
-#: app.py:604
+#: app.py:634
 msgid "{n} book saved, backups in {ordner}."
 msgid_plural "{n} books saved, backups in {ordner}."
 msgstr[0] "{n} Buch gespeichert, Sicherungen in {ordner}."
 msgstr[1] "{n} Bücher gespeichert, Sicherungen in {ordner}."
 
-#: app.py:606
+#: app.py:636
 msgid "{n} with changes not yet applied."
 msgstr "{n} mit nicht übernommenen Änderungen."
 
-#: app.py:614 calibre_import.py:107 updates.py:133
+#: app.py:644 calibre_import.py:107 updates.py:133
 msgid "Changes"
 msgstr "Änderungen"
 
-#: app.py:614
+#: app.py:644
 msgid "{n} book has unsaved changes. Discard them?"
 msgid_plural "{n} books have unsaved changes. Discard them?"
 msgstr[0] "{n} Buch hat nicht gespeicherte Änderungen. Verwerfen?"
 msgstr[1] "{n} Bücher haben nicht gespeicherte Änderungen. Verwerfen?"
 
-#: app.py:632
+#: app.py:662
 msgid "error ({fehler})"
 msgstr "Fehler ({fehler})"
 
-#: app.py:665 area_chapters.py:365
+#: app.py:695 area_chapters.py:365
 msgid "Apply: choose a book in the Chapters or Blurbs area."
 msgstr "Übernehmen: im Bereich Kapitel oder Klappentexte ein Buch auswählen."
 
-#: app.py:729
+#: app.py:759
 msgid "Look up: choose a book in the Metadata area."
 msgstr "Nachschlagen: im Bereich Metadaten ein Buch wählen."
 
-#: app.py:738
+#: app.py:768
 msgid "All books have a blurb."
 msgstr "Alle Bücher haben einen Klappentext."
 
-#: app.py:754 blurb_panel.py:39 cover_panel.py:129 cover_panel.py:194
+#: app.py:784 blurb_panel.py:39 cover_panel.py:129 cover_panel.py:194
 msgid "Look up"
 msgstr "Nachschlagen"
 
-#: app.py:758
+#: app.py:788
 msgid "Look up all"
 msgstr "Alle nachschlagen"
 
-#: app.py:759
+#: app.py:789
 msgid "{n} book without a blurb."
 msgid_plural "{n} books without a blurb."
 msgstr[0] "{n} Buch ohne Klappentext."
 msgstr[1] "{n} Bücher ohne Klappentext."
 
-#: app.py:760
+#: app.py:790
 msgid ""
 "The free sources are asked first; Claude only for what they do not have."
 msgstr ""
 "Zuerst werden die kostenlosen Quellen gefragt, Claude nur für das, was dort "
 "fehlt."
 
-#: app.py:762
+#: app.py:792
 msgid "At most {n} book goes to Claude: up to about {kosten} $."
 msgid_plural "At most {n} books go to Claude: up to about {kosten} $."
 msgstr[0] "Höchstens {n} Buch geht an Claude: bis zu etwa {kosten} $."
 msgstr[1] "Höchstens {n} Bücher gehen an Claude: bis zu etwa {kosten} $."
 
-#: app.py:765
+#: app.py:795
 msgid "Start?"
 msgstr "Starten?"
 
-#: app.py:781 help_topics.py:323
+#: app.py:811 help_topics.py:323
 msgid "Looking up blurbs"
 msgstr "Klappentexte nachschlagen"
 
-#: app.py:793
+#: app.py:823
 msgid "blurb found ({quelle}), not yet applied."
 msgstr "Klappentext gefunden ({quelle}), noch nicht übernommen."
 
-#: app.py:796
+#: app.py:826
 msgid "no blurb found."
 msgstr "kein Klappentext gefunden."
 
-#: app.py:806
+#: app.py:836
 msgid "Open a folder with books first, then import from Calibre."
 msgstr "Erst einen Ordner mit Büchern öffnen, dann aus Calibre importieren."
 
-#: app.py:817 area_metadata.py:572
+#: app.py:847 area_metadata.py:572
 msgid "The Calibre comparison is switched off (Settings > Books > Calibre)."
 msgstr ""
 "Der Calibre-Abgleich ist ausgeschaltet (Einstellungen > Bücher > Calibre)."
 
-#: app.py:825
+#: app.py:855
 msgid ""
 "No metadata.calibre found (it is in the root folder of the e-reader when "
 "Calibre transfers the books). Open the folder on the e-reader or copy the "
@@ -408,7 +408,7 @@ msgstr ""
 "wenn Calibre die Bücher überträgt). Ordner auf dem E-Reader öffnen oder die "
 "Datei in den Bücherordner kopieren."
 
-#: app.py:840
+#: app.py:870
 msgid ""
 "Taken from Calibre: {reihen} series, {texte} blurbs - not yet saved "
 "(Ctrl+S)."
@@ -416,27 +416,27 @@ msgstr ""
 "Aus Calibre übernommen: {reihen} Reihen, {texte} Klappentexte - noch nicht "
 "gespeichert (Strg+S)."
 
-#: app.py:842
+#: app.py:872
 msgid "Nothing to take from Calibre; the EPUBs already have everything."
 msgstr "Aus Calibre gibt es nichts zu übernehmen; die EPUBs haben schon alles."
 
-#: app.py:897
+#: app.py:927
 msgid "Language: {sprache}"
 msgstr "Sprache: {sprache}"
 
-#: app.py:920
+#: app.py:950
 msgid "Settings saved. Chapter settings apply after reloading (F5)."
 msgstr ""
 "Einstellungen gespeichert. Kapitel-Einstellungen gelten nach dem "
 "Neu-Einlesen (F5)."
 
-#: app.py:969
+#: app.py:999
 msgid "{n} book has unsaved changes. Quit anyway?"
 msgid_plural "{n} books have unsaved changes. Quit anyway?"
 msgstr[0] "{n} Buch hat nicht gespeicherte Änderungen. Trotzdem beenden?"
 msgstr[1] "{n} Bücher haben nicht gespeicherte Änderungen. Trotzdem beenden?"
 
-#: app.py:1019
+#: app.py:1049
 msgid "books folder to open"
 msgstr "Bücherordner, der geöffnet wird"
 
@@ -472,7 +472,7 @@ msgstr "Alle übernehmen"
 msgid "Apply the suggestions of all books without questionable entries"
 msgstr "Vorschläge aller Bücher ohne fragwürdige Einträge übernehmen"
 
-#: area_chapters.py:155 settings.py:385 settings.py:541 workbench_plugins.py:1316 workbench_plugins.py:1433 workbench_plugins.py:1569
+#: area_chapters.py:155 settings.py:388 settings.py:563 workbench_plugins.py:1328 workbench_plugins.py:1445 workbench_plugins.py:1581
 msgid "Up"
 msgstr "Höher"
 
@@ -481,7 +481,7 @@ msgid ""
 "Move the selected entries with their sub-entries one level up (Shift+Tab)"
 msgstr "Markierte Einträge samt Untereinträgen eine Ebene höher (Umschalt+Tab)"
 
-#: area_chapters.py:157 settings.py:386 settings.py:542 workbench_plugins.py:1317 workbench_plugins.py:1434 workbench_plugins.py:1570
+#: area_chapters.py:157 settings.py:389 settings.py:564 workbench_plugins.py:1329 workbench_plugins.py:1446 workbench_plugins.py:1582
 msgid "Down"
 msgstr "Tiefer"
 
@@ -517,7 +517,7 @@ msgstr "nur Nummer, kein Name gefunden"
 msgid "Level {alt} → {neu}"
 msgstr "Ebene {alt} → {neu}"
 
-#: area_chapters.py:273 settings.py:755
+#: area_chapters.py:273 settings.py:766
 msgid "{n} entry"
 msgid_plural "{n} entries"
 msgstr[0] "{n} Eintrag"
@@ -598,7 +598,7 @@ msgstr "auf die Vorschläge zurückgesetzt."
 msgid "original restored, not yet applied."
 msgstr "Original hergestellt, noch nicht übernommen."
 
-#: area_device.py:35 device.py:87 help_topics.py:759 settings.py:77 settings.py:625 settings.py:720
+#: area_device.py:35 device.py:87 help_topics.py:759 settings.py:80 settings.py:647 settings.py:731
 msgid "Settings"
 msgstr "Einstellungen"
 
@@ -642,7 +642,7 @@ msgstr "vor dem Zurückspielen"
 msgid "before writing from the preview"
 msgstr "vor dem Schreiben aus der Vorschau"
 
-#: area_device.py:58 area_device.py:208 help_topics.py:457 help_topics.py:883 settings.py:58 settings.py:637
+#: area_device.py:58 area_device.py:208 help_topics.py:457 help_topics.py:893 settings.py:60 settings.py:651
 msgid "E-reader"
 msgstr "E-Reader"
 
@@ -654,7 +654,7 @@ msgstr "Sicherungen der KOReader-Einstellungen"
 msgid "Date"
 msgstr "Datum"
 
-#: area_device.py:117 area_preview.py:325 settings.py:57
+#: area_device.py:117 area_preview.py:325 settings.py:59
 msgid "Device"
 msgstr "Gerät"
 
@@ -666,7 +666,7 @@ msgstr "Anlass"
 msgid "Contents"
 msgstr "Inhalt"
 
-#: area_device.py:117 workbench_plugins.py:197 workbench_plugins.py:1114
+#: area_device.py:117 workbench_plugins.py:197 workbench_plugins.py:1126
 msgid "Size"
 msgstr "Größe"
 
@@ -694,7 +694,7 @@ msgstr "Auf dem E-Reader"
 msgid "Folder in the source"
 msgstr "Ordner in der Quelle"
 
-#: area_device.py:193 settings.py:47
+#: area_device.py:193 settings.py:51
 msgid "Books"
 msgstr "Bücher"
 
@@ -1143,7 +1143,7 @@ msgstr ""
 msgid "Dictionary:"
 msgstr "Wörterbuch:"
 
-#: area_dictionary.py:216 settings.py:384
+#: area_dictionary.py:216 settings.py:387
 msgid "New …"
 msgstr "Neu …"
 
@@ -1185,7 +1185,7 @@ msgstr "Anzeigen:"
 msgid "Search:"
 msgstr "Suchen:"
 
-#: area_dictionary.py:306 settings.py:854
+#: area_dictionary.py:306 settings.py:865
 msgid "Name:"
 msgstr "Name:"
 
@@ -1223,11 +1223,11 @@ msgstr "Starten"
 msgid "Output:"
 msgstr "Ausgabe:"
 
-#: area_dictionary.py:407 area_dictionary.py:1254 area_dictionary.py:1354 cover_panel.py:443 settings.py:106 settings.py:903
+#: area_dictionary.py:407 area_dictionary.py:1254 area_dictionary.py:1354 cover_panel.py:443 settings.py:109 settings.py:914
 msgid "Cancel"
 msgstr "Abbrechen"
 
-#: area_dictionary.py:432 area_dictionary.py:1369 settings.py:342 settings.py:655 settings.py:666 workbench_sleep.py:114
+#: area_dictionary.py:432 area_dictionary.py:1369 settings.py:345 settings.py:666 settings.py:677 workbench_sleep.py:114
 msgid "Choose …"
 msgstr "Wählen …"
 
@@ -1291,7 +1291,7 @@ msgstr "Aus einer Seite zusammenfassen …"
 msgid "From own knowledge (unverified)"
 msgstr "Aus eigenem Wissen (ungeprüft)"
 
-#: area_dictionary.py:471 workbench_plugins.py:1317 workbench_plugins.py:1435 workbench_plugins.py:1571
+#: area_dictionary.py:471 workbench_plugins.py:1329 workbench_plugins.py:1447 workbench_plugins.py:1583
 msgid "Remove"
 msgstr "Entfernen"
 
@@ -1602,7 +1602,7 @@ msgstr "Gegencheck: {seite}"
 msgid "last built: {wann}"
 msgstr "zuletzt erzeugt: {wann}"
 
-#: area_dictionary.py:1117 settings.py:303
+#: area_dictionary.py:1117 settings.py:306
 msgid "never"
 msgstr "noch nie"
 
@@ -1703,7 +1703,7 @@ msgstr "Dateiname:"
 msgid "Name of the dictionary files (without extension), e.g. sw-legends."
 msgstr "Name der Wörterbuchdateien (ohne Endung), z. B. sw-legends."
 
-#: area_dictionary.py:1318 settings.py:884
+#: area_dictionary.py:1318 settings.py:895
 msgid "Topic:"
 msgstr "Thema:"
 
@@ -1790,7 +1790,7 @@ msgstr "Eigenschaften gespeichert."
 msgid "Status"
 msgstr "Status"
 
-#: area_library.py:115 help_topics.py:150 markers.py:38 settings.py:230 settings.py:287
+#: area_library.py:115 help_topics.py:150 markers.py:38 settings.py:233 settings.py:290
 msgid "Library"
 msgstr "Bibliothek"
 
@@ -1801,10 +1801,6 @@ msgstr "Titel, Reihe, Autor …"
 #: area_library.py:143
 msgid "Filter:"
 msgstr "Filter:"
-
-#: area_library.py:206 area_metadata.py:375 blurb_panel.py:41 calibre_import.py:100 settings.py:543
-msgid "From Calibre"
-msgstr "Aus Calibre"
 
 #: area_library.py:207
 msgid ""
@@ -1891,16 +1887,16 @@ msgstr ""
 "Metadaten, Klappentext und Cover aus der Datei wiederherstellen (verwirft "
 "auch eine aus Calibre übernommene Reihe)"
 
+#: area_metadata.py:375 blurb_panel.py:41 calibre_import.py:100 settings.py:565
+msgid "From Calibre"
+msgstr "Aus Calibre"
+
 #: area_metadata.py:376
 msgid ""
 "Put every value from metadata.calibre that differs into the form (this book)"
 msgstr ""
 "Alle abweichenden Werte aus metadata.calibre ins Formular setzen (dieses "
 "Buch)"
-
-#: area_metadata.py:382
-msgid "Fill gaps from Calibre"
-msgstr "Lücken aus Calibre füllen"
 
 #: area_metadata.py:383
 msgid "Complete"
@@ -2374,7 +2370,7 @@ msgstr "Läuft im Hintergrund. Gestartet in {s:.1f} s."
 msgid "Running in the background. Last picture in {s:.2f} s."
 msgstr "Läuft im Hintergrund. Letztes Bild in {s:.2f} s."
 
-#: area_preview.py:780 area_preview.py:782 workbench_sleep.py:382
+#: area_preview.py:780 area_preview.py:782 workbench_sleep.py:385
 msgid "KOReader reports: {text}"
 msgstr "KOReader meldet: {text}"
 
@@ -2439,11 +2435,11 @@ msgstr "Plugins und Schriften fehlen noch (einmal vom E-Reader übernehmen)."
 msgid "Book for the preview"
 msgstr "Buch für die Vorschau"
 
-#: area_preview.py:960 dialogs.py:73 workbench_plugins.py:1903 workbench_reader.py:519 workbench_sleep.py:295
+#: area_preview.py:960 dialogs.py:73 workbench_plugins.py:1915 workbench_reader.py:519 workbench_sleep.py:298
 msgid "All files"
 msgstr "Alle Dateien"
 
-#: area_preview.py:973 settings.py:813
+#: area_preview.py:973 settings.py:824
 msgid "Choose the KOReader program or AppImage"
 msgstr "KOReader-Programm oder AppImage wählen"
 
@@ -2768,7 +2764,7 @@ msgstr "Bild nicht lesbar ({fehler})."
 msgid "Choose the new cover"
 msgstr "Neues Cover wählen"
 
-#: cover_panel.py:239 workbench_sleep.py:294
+#: cover_panel.py:239 workbench_sleep.py:297
 msgid "Images"
 msgstr "Bilder"
 
@@ -2798,7 +2794,7 @@ msgstr "Cover von {quelle} übernommen, noch nicht gespeichert (Strg+S)."
 msgid "looking for covers …"
 msgstr "suche Cover …"
 
-#: cover_panel.py:283 cover_panel.py:323 help_topics.py:862 settings.py:54 settings.py:519
+#: cover_panel.py:283 cover_panel.py:323 help_topics.py:872 settings.py:57 settings.py:535
 msgid "Looking up covers"
 msgstr "Cover nachschlagen"
 
@@ -2938,7 +2934,7 @@ msgstr "Konsole (Terminal)"
 msgid "Baloo (KDE file search)"
 msgstr "Baloo (KDE-Dateisuche)"
 
-#: device.py:608 device.py:608 help_topics.py:877 settings.py:56
+#: device.py:608 device.py:608
 msgid "Calibre"
 msgstr "Calibre"
 
@@ -3091,7 +3087,7 @@ msgstr "KOReader ist auf dem {geraet} nicht installiert ({ordner} fehlt)."
 msgid "The backup contains no KOReader settings."
 msgstr "Die Sicherung enthält keine KOReader-Einstellungen."
 
-#: emulator.py:473 settings.py:669
+#: emulator.py:473 settings.py:680
 msgid "Own size"
 msgstr "Eigene Größe"
 
@@ -3417,7 +3413,7 @@ msgid ""
 "- Google Books and Open Library: blurbs ([[klappentexte_nachschlagen]]) and "
 "covers ([[cover_aendern]]). Sent: ISBN, title and author of the book. "
 "Google Books without a key shares one daily quota with everyone else; an "
-"own key (also free) gives you your own ([[einst_klappentexte]]).\n"
+"own key (also free) gives you your own ([[einst_online]]).\n"
 "- Everything else in the program runs on the computer only.\n"
 "\n"
 "**Costs money: Claude (Anthropic API)**\n"
@@ -3442,32 +3438,19 @@ msgid ""
 msgstr ""
 "\n"
 "**Kostenlos, ohne Schlüssel**\n"
-"- Google Books und Open Library: Klappentexte "
-"([[klappentexte_nachschlagen]]) und Cover ([[cover_aendern]]). Gesendet "
-"werden ISBN, Titel und Autor des Buchs. Google Books ohne Schlüssel teilt "
-"sich ein Tageskontingent mit allen anderen; ein eigener Schlüssel "
-"(ebenfalls kostenlos) gibt dir ein eigenes ([[einst_klappentexte]]).\n"
+"- Google Books und Open Library: Klappentexte ([[klappentexte_nachschlagen]]) und Cover ([[cover_aendern]]). Gesendet werden ISBN, Titel und Autor des Buchs. Google Books ohne Schlüssel teilt sich ein Tageskontingent mit allen anderen; ein eigener Schlüssel (ebenfalls kostenlos) gibt dir ein eigenes ([[einst_online]]).\n"
 "- Alles andere im Programm läuft nur auf dem Rechner.\n"
 "\n"
 "**Kostet Geld: Claude (Anthropic-API)**\n"
-"- Klappentexte, die die kostenlosen Quellen nicht haben: etwa 1 bis 2 Cent "
-"je Buch, mit Websuche etwa 1 Cent mehr.\n"
-"- Wörterbuch: Wiki-Artikel zusammenfassen, gegenchecken, Lücken mit Claude "
-"füllen: ab einigen Cent je Eintrag; vor größeren Aufträgen kommen die "
-"geschätzten Kosten als Rückfrage.\n"
-"- Nötig ist ein eigener API-Schlüssel (console.anthropic.com), abgerechnet "
-"von Anthropic. Ohne Schlüssel geht nichts an Claude.\n"
-"- Gesendet werden Titel, Autor, Reihe und Sprache des Buchs und die "
-"Anweisungen des Profils; beim Wörterbuch Begriff, Thema und Artikeltext. "
-"**Der Buchtext verlässt den Rechner nie** - das Durchsuchen der Bücher nach "
-"Namen läuft lokal.\n"
+"- Klappentexte, die die kostenlosen Quellen nicht haben: etwa 1 bis 2 Cent je Buch, mit Websuche etwa 1 Cent mehr.\n"
+"- Wörterbuch: Wiki-Artikel zusammenfassen, gegenchecken, Lücken mit Claude füllen: ab einigen Cent je Eintrag; vor größeren Aufträgen kommen die geschätzten Kosten als Rückfrage.\n"
+"- Nötig ist ein eigener API-Schlüssel (console.anthropic.com), abgerechnet von Anthropic. Ohne Schlüssel geht nichts an Claude.\n"
+"- Gesendet werden Titel, Autor, Reihe und Sprache des Buchs und die Anweisungen des Profils; beim Wörterbuch Begriff, Thema und Artikeltext. **Der Buchtext verlässt den Rechner nie** - das Durchsuchen der Bücher nach Namen läuft lokal.\n"
 "\n"
 "**Kosten vermeiden**\n"
-"- Ergebnisse bleiben im Zwischenspeicher; erneutes Nachschlagen kostet "
-"nichts ([[dateien]]).\n"
+"- Ergebnisse bleiben im Zwischenspeicher; erneutes Nachschlagen kostet nichts ([[dateien]]).\n"
 "- Aus Calibre kostet nichts und kommt zuerst.\n"
-"- Alle nachschlagen fragt Claude nur für Bücher, die die kostenlosen "
-"Quellen nicht kennen, und fragt vor dem Start nach.\n"
+"- Alle nachschlagen fragt Claude nur für Bücher, die die kostenlosen Quellen nicht kennen, und fragt vor dem Start nach.\n"
 
 #: help_topics.py:121
 msgid "Areas"
@@ -3486,8 +3469,10 @@ msgid ""
 "- [[vorschau]] - a book in the desktop KOReader (Linux/macOS)\n"
 "\n"
 "The toolbar has the buttons of the current area on the left; on the right, "
-"separated, are the ones that always apply: Open, Reload, Save and Help. "
-"[[speichern]] applies to all book areas together.\n"
+"separated, Open, Reload and Save (only in Library, Chapters and Metadata - "
+"the areas with the books of the folder) and Help. [[speichern]] applies to "
+"all book areas together. The **Edit** menu only holds the commands of the "
+"area shown; Dictionary, E-reader and Preview have menus of their own.\n"
 "\n"
 "The **book lists** on the left of Chapters and Metadata (and the list of "
 "the dictionary; in the Preview the left column) can be made wider or "
@@ -3500,23 +3485,14 @@ msgstr ""
 "Die Seitenleiste links wechselt zwischen den Bereichen (Strg+1 … 6):\n"
 "- [[bibliothek]] - alle Bücher in einer Tabelle\n"
 "- [[kapitel]] - Kapitelnamen und Ebenen\n"
-"- [[metadaten]] - Titel, Autoren, Reihe, Verlag, Sprache, ISBN, "
-"Schlagwörter, eigene Felder, Klappentext und Cover\n"
+"- [[metadaten]] - Titel, Autoren, Reihe, Verlag, Sprache, ISBN, Schlagwörter, eigene Felder, Klappentext und Cover\n"
 "- [[woerterbuch]] - eigene Wörterbücher\n"
-"- [[kobo]] - der angeschlossene E-Reader: Sicherungen, Wörterbücher, "
-"Auswerfen\n"
+"- [[kobo]] - der angeschlossene E-Reader: Sicherungen, Wörterbücher, Auswerfen\n"
 "- [[vorschau]] - ein Buch im Desktop-KOReader (Linux/macOS)\n"
 "\n"
-"Die Werkzeugleiste hat links die Knöpfe des aktuellen Bereichs; rechts, "
-"abgetrennt, stehen die, die immer gelten: Öffnen, Neu einlesen, Speichern "
-"und Hilfe. [[speichern]] gilt für alle Buch-Bereiche gemeinsam.\n"
+"Die Werkzeugleiste hat links die Knöpfe des aktuellen Bereichs; rechts, abgetrennt, Öffnen, Neu einlesen und Speichern (nur in Bibliothek, Kapitel und Metadaten - den Bereichen mit den Büchern des Ordners) und Hilfe. [[speichern]] gilt für alle Buch-Bereiche gemeinsam. Das Menü **Bearbeiten** enthält nur die Befehle des gezeigten Bereichs; Wörterbuch, E-Reader und Vorschau haben eigene Menüs.\n"
 "\n"
-"Die **Bücherlisten** links in Kapitel und Metadaten (und die Liste des "
-"Wörterbuchs; in der Vorschau die linke Spalte) lassen sich am Teiler rechts "
-"daneben breiter oder schmaler ziehen; die Breite wird gemerkt, ein "
-"Doppelklick auf den Teiler stellt die Standardbreite her. Ein Name, der "
-"nicht hineinpasst, steht ganz in einem Tooltip, wenn die Maus darüber ist, "
-"zusammen mit der Bedeutung seiner Piktogramme.\n"
+"Die **Bücherlisten** links in Kapitel und Metadaten (und die Liste des Wörterbuchs; in der Vorschau die linke Spalte) lassen sich am Teiler rechts daneben breiter oder schmaler ziehen; die Breite wird gemerkt, ein Doppelklick auf den Teiler stellt die Standardbreite her. Ein Name, der nicht hineinpasst, steht ganz in einem Tooltip, wenn die Maus darüber ist, zusammen mit der Bedeutung seiner Piktogramme.\n"
 
 #: help_topics.py:134
 msgid "Search and filters in the lists"
@@ -3759,11 +3735,12 @@ msgstr "Calibre und Reihen"
 #: help_topics.py:191
 msgid ""
 "\n"
-"**From Calibre** (toolbar of the library) takes series, number and blurb "
-"from Calibre's **metadata.calibre**, but only where the EPUB has nothing - "
-"existing data is never overwritten. Then save as usual (Ctrl+S); after that "
-"the data is in the book itself, and KOReader, Bookshelf and the reading "
-"software of the e-reader see it without Calibre too.\n"
+"**Series and blurbs from Calibre** (toolbar of the library) takes series, "
+"number and blurb from Calibre's **metadata.calibre**, but only where the "
+"EPUB has nothing - existing data is never overwritten. Then save as usual "
+"(Ctrl+S); after that the data is in the book itself, and KOReader, "
+"Bookshelf and the reading software of the e-reader see it without Calibre "
+"too.\n"
 "\n"
 "**Where the file is**\n"
 "Calibre writes metadata.calibre into the root folder of the e-reader when "
@@ -3784,30 +3761,17 @@ msgid ""
 "description of a single book into the text field.\n"
 msgstr ""
 "\n"
-"**Aus Calibre** (Werkzeugleiste der Bibliothek) übernimmt Reihe, Nummer und "
-"Klappentext aus Calibres **metadata.calibre**, aber nur dort, wo im EPUB "
-"nichts steht - Vorhandenes wird nie überschrieben. Danach wie immer "
-"speichern (Strg+S); dann stehen die Angaben fest im Buch und KOReader, "
-"Bookshelf und der E-Reader-Reader sehen sie auch ohne Calibre.\n"
+"**Reihen und Klappentexte aus Calibre** (Werkzeugleiste der Bibliothek) übernimmt Reihe, Nummer und Klappentext aus Calibres **metadata.calibre**, aber nur dort, wo im EPUB nichts steht - Vorhandenes wird nie überschrieben. Danach wie immer speichern (Strg+S); dann stehen die Angaben fest im Buch und KOReader, Bookshelf und der E-Reader-Reader sehen sie auch ohne Calibre.\n"
 "\n"
 "**Wo die Datei liegt**\n"
-"Die metadata.calibre schreibt Calibre beim Übertragen ins Hauptverzeichnis "
-"des E-Readers. Gesucht wird sie im geöffneten Ordner und in allen Ordnern "
-"darüber; für eine Kopie auf dem Rechner die Datei einfach mit in den "
-"Bücherordner kopieren. Zugeordnet wird über den Pfad, den Dateinamen, die "
-"Calibre-UUID oder Titel und Autor.\n"
+"Die metadata.calibre schreibt Calibre beim Übertragen ins Hauptverzeichnis des E-Readers. Gesucht wird sie im geöffneten Ordner und in allen Ordnern darüber; für eine Kopie auf dem Rechner die Datei einfach mit in den Bücherordner kopieren. Zugeordnet wird über den Pfad, den Dateinamen, die Calibre-UUID oder Titel und Autor.\n"
 "\n"
 "**Woher eine Reihe kommt**\n"
 "- Aus dem EPUB (Calibre- oder EPUB3-Schreibweise).\n"
-"- Nur in der metadata.calibre: wird angezeigt, die Statuszeile sagt es, der "
-"Filter **Ohne Reihe im EPUB** listet diese Bücher.\n"
-"- Nur in KOReaders eigenen Buchdaten (in KOReader bearbeitete Metadaten, "
-"Ordner .sdr neben dem Buch): wird ebenfalls angezeigt - das klappt nur, "
-"wenn der Ordner mit den .sdr-Ordnern geöffnet ist, z. B. direkt der "
-"E-Reader.\n"
+"- Nur in der metadata.calibre: wird angezeigt, die Statuszeile sagt es, der Filter **Ohne Reihe im EPUB** listet diese Bücher.\n"
+"- Nur in KOReaders eigenen Buchdaten (in KOReader bearbeitete Metadaten, Ordner .sdr neben dem Buch): wird ebenfalls angezeigt - das klappt nur, wenn der Ordner mit den .sdr-Ordnern geöffnet ist, z. B. direkt der E-Reader.\n"
 "\n"
-"Im Bereich Metadaten holt **Aus Calibre** über dem Klappentext die "
-"Beschreibung eines einzelnen Buchs ins Textfeld.\n"
+"Im Bereich Metadaten holt **Aus Calibre** über dem Klappentext die Beschreibung eines einzelnen Buchs ins Textfeld.\n"
 
 #: help_topics.py:204
 msgid ""
@@ -3957,7 +3921,8 @@ msgid ""
 "(Ctrl+Enter or Enter in a field) applies form and blurb and makes the book "
 "yellow, **Save** (Ctrl+S) writes it into the file, with backup.\n"
 "- **Discard** restores values, blurb and cover from the file. This also "
-"drops a series taken over with **From Calibre** in the library.\n"
+"drops a series taken over with **Series and blurbs from Calibre** in the "
+"library.\n"
 "- Several authors are separated with **&**, as in Calibre: \"Dan Abnett & "
 "Graham McNeill\". The **author sort** works the same way (\"Abnett, Dan & "
 "McNeill, Graham\"); with as many names as authors each author gets his own, "
@@ -3996,7 +3961,7 @@ msgid ""
 "**Toolbar**: Apply, Discard, From Calibre (only with the Calibre comparison "
 "on) and **Complete ▾** for all books: look up all missing blurbs, look up "
 "all missing covers, import from a Calibre library ([[calibre_import]]), "
-"fill gaps from Calibre.\n"
+"fill metadata gaps from Calibre.\n"
 "\n"
 "**Markers** in the list show what a book lacks: speech bubble (blurb), "
 "picture (cover), not-equal sign (Calibre), label (language/ISBN) - see "
@@ -4011,66 +3976,27 @@ msgid ""
 "- [[suche_filter]]\n"
 msgstr ""
 "\n"
-"Links die Bücher, in der Mitte ein Formular mit den Metadaten, die im Buch "
-"stehen: **Titel**, **Autoren**, **Autor-Sortierung**, **Reihe** und "
-"**Nummer**, **Verlag**, **Sprache**, **ISBN** und **Schlagwörter**, danach "
-"deine **eigenen Felder** aus Calibre-Spalten ([[metadaten_felder]]). Unter "
-"dem Formular der **Klappentext** ([[klappentexte]]), rechts das **Cover** "
-"([[cover]]).\n"
+"Links die Bücher, in der Mitte ein Formular mit den Metadaten, die im Buch stehen: **Titel**, **Autoren**, **Autor-Sortierung**, **Reihe** und **Nummer**, **Verlag**, **Sprache**, **ISBN** und **Schlagwörter**, danach deine **eigenen Felder** aus Calibre-Spalten ([[metadaten_felder]]). Unter dem Formular der **Klappentext** ([[klappentexte]]), rechts das **Cover** ([[cover]]).\n"
 "\n"
-"- In die Felder tippen; das Buch wird rot (geändert, nicht übernommen). "
-"**Übernehmen** (Strg+Enter oder Enter in einem Feld) übernimmt Formular und "
-"Klappentext und macht das Buch gelb, **Speichern** (Strg+S) schreibt es mit "
-"Sicherung in die Datei.\n"
-"- **Verwerfen** stellt Werte, Klappentext und Cover aus der Datei wieder "
-"her. Das verwirft auch eine Reihe, die in der Bibliothek mit **Aus "
-"Calibre** übernommen wurde.\n"
-"- Mehrere Autoren werden wie in Calibre mit **&** getrennt: \"Dan Abnett & "
-"Graham McNeill\". Die **Autor-Sortierung** genauso (\"Abnett, Dan & "
-"McNeill, Graham\"); bei so vielen Namen wie Autoren bekommt jeder Autor "
-"seinen eigenen, sonst der erste den ganzen Text.\n"
-"- **Nummer** steht hinter der Reihe und nimmt nur Zahlen; die Pfeile (oder "
-"Pfeil hoch/runter, Mausrad) zählen hoch und runter. Sie darf "
-"Nachkommastellen haben, z. B. 1.5 oder 0.9 für eine Geschichte zwischen "
-"zwei Büchern; ein Komma wird wie in Calibre zum Punkt.\n"
+"- In die Felder tippen; das Buch wird rot (geändert, nicht übernommen). **Übernehmen** (Strg+Enter oder Enter in einem Feld) übernimmt Formular und Klappentext und macht das Buch gelb, **Speichern** (Strg+S) schreibt es mit Sicherung in die Datei.\n"
+"- **Verwerfen** stellt Werte, Klappentext und Cover aus der Datei wieder her. Das verwirft auch eine Reihe, die in der Bibliothek mit **Reihen und Klappentexte aus Calibre** übernommen wurde.\n"
+"- Mehrere Autoren werden wie in Calibre mit **&** getrennt: \"Dan Abnett & Graham McNeill\". Die **Autor-Sortierung** genauso (\"Abnett, Dan & McNeill, Graham\"); bei so vielen Namen wie Autoren bekommt jeder Autor seinen eigenen, sonst der erste den ganzen Text.\n"
+"- **Nummer** steht hinter der Reihe und nimmt nur Zahlen; die Pfeile (oder Pfeil hoch/runter, Mausrad) zählen hoch und runter. Sie darf Nachkommastellen haben, z. B. 1.5 oder 0.9 für eine Geschichte zwischen zwei Büchern; ein Komma wird wie in Calibre zum Punkt.\n"
 "- **Schlagwörter** werden mit Kommas getrennt.\n"
-"- **Vorschläge:** Autoren, Reihe, Verlag, Sprache, Schlagwörter und eigene "
-"Textfelder schlagen beim Tippen Werte aus den anderen Büchern vor; **Pfeil "
-"runter** in einem leeren Feld zeigt alle. Bei mehreren Autoren oder "
-"Schlagwörtern gilt der Vorschlag für den Teil nach dem letzten & bzw. "
-"Komma.\n"
-"- **Sprache** als Kürzel, z. B. en, de oder en-GB. KOReader braucht sie für "
-"die Silbentrennung.\n"
-"- Unter dem Formular warnt Bookbench bei ungültiger ISBN, fehlender Sprache "
-"oder fehlendem Titel, einer Nummer ohne Reihe und bei Werten, die nicht zu "
-"einem eigenen Feld passen (z. B. Buchstaben in einer Zahlenspalte).\n"
-"- Haben Calibre oder KOReader einen anderen Wert, steht er hinter dem Feld "
-"(darunter, wenn der Platz nicht reicht): **← Calibre: …**. Ein Klick auf ← "
-"setzt ihn ins Feld ([[metadaten_calibre]]). Dafür braucht es Calibres "
-"metadata.calibre neben den Büchern; ohne sie gibt es nichts zu vergleichen, "
-"Calibres Werte holt dann der einmalige Import ([[calibre_import]]).\n"
+"- **Vorschläge:** Autoren, Reihe, Verlag, Sprache, Schlagwörter und eigene Textfelder schlagen beim Tippen Werte aus den anderen Büchern vor; **Pfeil runter** in einem leeren Feld zeigt alle. Bei mehreren Autoren oder Schlagwörtern gilt der Vorschlag für den Teil nach dem letzten & bzw. Komma.\n"
+"- **Sprache** als Kürzel, z. B. en, de oder en-GB. KOReader braucht sie für die Silbentrennung.\n"
+"- Unter dem Formular warnt Bookbench bei ungültiger ISBN, fehlender Sprache oder fehlendem Titel, einer Nummer ohne Reihe und bei Werten, die nicht zu einem eigenen Feld passen (z. B. Buchstaben in einer Zahlenspalte).\n"
+"- Haben Calibre oder KOReader einen anderen Wert, steht er hinter dem Feld (darunter, wenn der Platz nicht reicht): **← Calibre: …**. Ein Klick auf ← setzt ihn ins Feld ([[metadaten_calibre]]). Dafür braucht es Calibres metadata.calibre neben den Büchern; ohne sie gibt es nichts zu vergleichen, Calibres Werte holt dann der einmalige Import ([[calibre_import]]).\n"
 "\n"
-"Die Cover-Tafel rechts lässt sich mit dem Teiler zwischen Formular und "
-"Cover breiter oder schmaler ziehen; die Breite wird gemerkt, ein "
-"Doppelklick auf den Teiler stellt den Standard wieder her.\n"
+"Die Cover-Tafel rechts lässt sich mit dem Teiler zwischen Formular und Cover breiter oder schmaler ziehen; die Breite wird gemerkt, ein Doppelklick auf den Teiler stellt den Standard wieder her.\n"
 "\n"
-"Der Dateiname wird nie geändert: KOReader hält Lesepositionen und "
-"Markierungen in einem Ordner, der nach der Datei heißt (.sdr); sie wären "
-"sonst weg.\n"
+"Der Dateiname wird nie geändert: KOReader hält Lesepositionen und Markierungen in einem Ordner, der nach der Datei heißt (.sdr); sie wären sonst weg.\n"
 "\n"
-"Nach dem Speichern zeigt KOReader die neuen Werte erst, wenn die "
-"Buchinformationen neu eingelesen sind (Cover-Browser > Buchinformationen "
-"extrahieren und zwischenspeichern).\n"
+"Nach dem Speichern zeigt KOReader die neuen Werte erst, wenn die Buchinformationen neu eingelesen sind (Cover-Browser > Buchinformationen extrahieren und zwischenspeichern).\n"
 "\n"
-"**Werkzeugleiste**: Übernehmen, Verwerfen, Aus Calibre (nur mit "
-"Calibre-Abgleich) und **Ergänzen ▾** für alle Bücher: alle fehlenden "
-"Klappentexte nachschlagen, alle fehlenden Cover nachschlagen, aus einer "
-"Calibre-Bibliothek importieren ([[calibre_import]]), Lücken aus Calibre "
-"füllen.\n"
+"**Werkzeugleiste**: Übernehmen, Verwerfen, Aus Calibre (nur mit Calibre-Abgleich) und **Ergänzen ▾** für alle Bücher: alle fehlenden Klappentexte nachschlagen, alle fehlenden Cover nachschlagen, aus einer Calibre-Bibliothek importieren ([[calibre_import]]), Metadaten-Lücken aus Calibre füllen.\n"
 "\n"
-"**Marken** in der Liste zeigen, was einem Buch fehlt: Sprechblase "
-"(Klappentext), Bild (Cover), Ungleich-Zeichen (Calibre), Etikett "
-"(Sprache/ISBN) - siehe [[status]].\n"
+"**Marken** in der Liste zeigen, was einem Buch fehlt: Sprechblase (Klappentext), Bild (Cover), Ungleich-Zeichen (Calibre), Etikett (Sprache/ISBN) - siehe [[status]].\n"
 "\n"
 "**Mehr**\n"
 "- [[metadaten_calibre]] - Vergleich mit Calibre und KOReader\n"
@@ -4089,15 +4015,15 @@ msgid ""
 "\n"
 "**Calibre**\n"
 "If Calibre's **metadata.calibre** is found ([[bibliothek_calibre]]) and the "
-"comparison is on ([[einst_calibre]]), Calibre's value is shown next to (or "
-"below) every field where it differs: **← Calibre: …**. A click on **←** "
+"comparison is on ([[einst_metadaten]]), Calibre's value is shown next to "
+"(or below) every field where it differs: **← Calibre: …**. A click on **←** "
 "puts the value into the field. Matching values are not shown.\n"
 "\n"
 "- **From Calibre** (toolbar) puts all differing values of this book into "
 "the form - check them, then apply.\n"
-"- **Complete ▾ > Fill gaps from Calibre** works on all books, but only on "
-"fields that are empty in the book. It applies directly (yellow); save "
-"afterwards.\n"
+"- **Complete ▾ > Fill metadata gaps from Calibre** (also in the Edit menu "
+"of the library) works on all books, but only on fields that are empty in "
+"the book. It applies directly (yellow); save afterwards.\n"
 "- A **not-equal sign** in the list means title, authors, series or number "
 "differ from Calibre. The filter **Differs from Calibre** also counts the "
 "other fields.\n"
@@ -4107,7 +4033,7 @@ msgid ""
 "**Important:** When Calibre sends a book to the e-reader again, it writes "
 "its own values into the file. Change the metadata in Calibre as well, "
 "otherwise your changes in Bookbench are overwritten. If you no longer use "
-"Calibre, switch the comparison off: [[einst_calibre]].\n"
+"Calibre, switch the comparison off: [[einst_metadaten]].\n"
 "\n"
 "**KOReader**\n"
 "If you edited the book information in KOReader itself (Book information > "
@@ -4121,41 +4047,19 @@ msgid ""
 msgstr ""
 "\n"
 "**Calibre**\n"
-"Wird Calibres **metadata.calibre** gefunden ([[bibliothek_calibre]]) und "
-"ist der Abgleich an ([[einst_calibre]]), steht neben (oder unter) jedem "
-"Feld, in dem Calibre abweicht, dessen Wert: **← Calibre: …**. Ein Klick auf "
-"**←** setzt den Wert ins Feld. Übereinstimmende Werte werden nicht "
-"angezeigt.\n"
+"Wird Calibres **metadata.calibre** gefunden ([[bibliothek_calibre]]) und ist der Abgleich an ([[einst_metadaten]]), steht neben (oder unter) jedem Feld, in dem Calibre abweicht, dessen Wert: **← Calibre: …**. Ein Klick auf **←** setzt den Wert ins Feld. Übereinstimmende Werte werden nicht angezeigt.\n"
 "\n"
-"- **Aus Calibre** (Werkzeugleiste) setzt alle abweichenden Werte dieses "
-"Buchs ins Formular - prüfen, dann übernehmen.\n"
-"- **Ergänzen ▾ > Lücken aus Calibre füllen** wirkt auf alle Bücher, aber "
-"nur auf Felder, die im Buch leer sind. Es übernimmt direkt (gelb); danach "
-"speichern.\n"
-"- Ein **Ungleich-Zeichen** in der Liste heißt: Titel, Autoren, Reihe oder "
-"Nummer weichen von Calibre ab. Der Filter **Weicht von Calibre ab** zählt "
-"auch die übrigen Felder.\n"
-"- Calibre speichert Sprachen mit drei Buchstaben (eng); Bookbench "
-"vergleicht sie mit den zweibuchstabigen Kürzeln im Buch (en) und übernimmt "
-"die kurze Form.\n"
+"- **Aus Calibre** (Werkzeugleiste) setzt alle abweichenden Werte dieses Buchs ins Formular - prüfen, dann übernehmen.\n"
+"- **Ergänzen ▾ > Metadaten-Lücken aus Calibre füllen** (auch im Menü Bearbeiten der Bibliothek) wirkt auf alle Bücher, aber nur auf Felder, die im Buch leer sind. Es übernimmt direkt (gelb); danach speichern.\n"
+"- Ein **Ungleich-Zeichen** in der Liste heißt: Titel, Autoren, Reihe oder Nummer weichen von Calibre ab. Der Filter **Weicht von Calibre ab** zählt auch die übrigen Felder.\n"
+"- Calibre speichert Sprachen mit drei Buchstaben (eng); Bookbench vergleicht sie mit den zweibuchstabigen Kürzeln im Buch (en) und übernimmt die kurze Form.\n"
 "\n"
-"**Wichtig:** Überträgt Calibre ein Buch erneut auf den E-Reader, schreibt "
-"es seine eigenen Werte in die Datei. Ändere die Metadaten auch in Calibre, "
-"sonst werden deine Änderungen aus Bookbench überschrieben. Benutzt du "
-"Calibre nicht mehr, schalte den Abgleich aus: [[einst_calibre]].\n"
+"**Wichtig:** Überträgt Calibre ein Buch erneut auf den E-Reader, schreibt es seine eigenen Werte in die Datei. Ändere die Metadaten auch in Calibre, sonst werden deine Änderungen aus Bookbench überschrieben. Benutzt du Calibre nicht mehr, schalte den Abgleich aus: [[einst_metadaten]].\n"
 "\n"
 "**KOReader**\n"
-"Hast du die Buchinformationen in KOReader selbst bearbeitet "
-"(Buchinformationen > Feld lange drücken), hält KOReader sie in "
-"**custom_metadata.lua** im .sdr-Ordner neben dem Buch und zeigt sie "
-"**statt** der Werte aus der Datei. Bookbench zeigt diese Werte neben den "
-"Feldern als **← KOReader: …** (nur, wenn der Ordner mit den .sdr-Ordnern "
-"geöffnet ist, z. B. direkt der E-Reader) und weist unter dem Formular "
-"darauf hin. Der Filter **In KOReader bearbeitet** listet diese Bücher. "
-"Damit KOReader wieder die Datei zeigt, die Felder in KOReader "
-"zurücksetzen.\n"
+"Hast du die Buchinformationen in KOReader selbst bearbeitet (Buchinformationen > Feld lange drücken), hält KOReader sie in **custom_metadata.lua** im .sdr-Ordner neben dem Buch und zeigt sie **statt** der Werte aus der Datei. Bookbench zeigt diese Werte neben den Feldern als **← KOReader: …** (nur, wenn der Ordner mit den .sdr-Ordnern geöffnet ist, z. B. direkt der E-Reader) und weist unter dem Formular darauf hin. Der Filter **In KOReader bearbeitet** listet diese Bücher. Damit KOReader wieder die Datei zeigt, die Felder in KOReader zurücksetzen.\n"
 
-#: help_topics.py:288 settings.py:534
+#: help_topics.py:288 settings.py:556
 msgid "Own fields"
 msgstr "Eigene Felder"
 
@@ -4239,38 +4143,20 @@ msgid ""
 "appear in the table too.\n"
 "5. **Apply ticked** applies the values (yellow), then save with Ctrl+S.\n"
 "\n"
-"Afterwards switch the Calibre comparison off ([[einst_calibre]]) if Calibre "
-"does not manage the books anymore. Calibre's own fields like date added, "
-"rating stars or read status only come along as own columns.\n"
+"Afterwards switch the Calibre comparison off ([[einst_metadaten]]) if "
+"Calibre does not manage the books anymore. Calibre's own fields like date "
+"added, rating stars or read status only come along as own columns.\n"
 msgstr ""
 "\n"
-"Wenn du Calibre nicht mehr nutzen willst, übernimm seine Metadaten einmal "
-"in die Bücher: **Datei > Aus Calibre-Bibliothek importieren …** (auch unter "
-"**Ergänzen ▾** im Bereich Metadaten).\n"
+"Wenn du Calibre nicht mehr nutzen willst, übernimm seine Metadaten einmal in die Bücher: **Datei > Aus Calibre-Bibliothek importieren …** (auch unter **Ergänzen ▾** im Bereich Metadaten).\n"
 "\n"
-"1. Den Ordner deiner Calibre-Bibliothek wählen, den mit **metadata.db** (in "
-"Calibre: Rechtsklick auf den Bibliotheksknopf > Ordner anzeigen). Bookbench "
-"merkt ihn sich. Die Datenbank wird nur gelesen, Calibre darf also offen "
-"bleiben.\n"
-"2. Bookbench ordnet die Bücher des geöffneten Ordners Calibre zu: über die "
-"Calibre-Kennung im Buch (UUID), die ISBN oder Titel und ersten Autor. Es "
-"zählen nur eindeutige Treffer; Bücher ohne Treffer stehen im Reiter **Nicht "
-"zugeordnet**.\n"
-"3. Die Tabelle zeigt jedes Feld, in dem Calibre einen anderen Wert hat: "
-"Buch, Feld, Wert im Buch, Wert aus Calibre. Zeilen, die du nicht willst, "
-"abhaken (Klick auf das Kästchen oder Leertaste). **Nur leere Felder** zeigt "
-"nur Felder, die im Buch leer sind. **Klappentexte** nimmt Calibres "
-"Beschreibungen dazu.\n"
-"4. Hat Calibre eigene Spalten (z. B. #subtitle), die noch keine Felder "
-"sind, nimmt **Als eigene Felder übernehmen** sie dazu "
-"([[metadaten_felder]]); danach stehen auch ihre Werte in der Tabelle.\n"
-"5. **Angehakte übernehmen** übernimmt die Werte (gelb), dann mit Strg+S "
-"speichern.\n"
+"1. Den Ordner deiner Calibre-Bibliothek wählen, den mit **metadata.db** (in Calibre: Rechtsklick auf den Bibliotheksknopf > Ordner anzeigen). Bookbench merkt ihn sich. Die Datenbank wird nur gelesen, Calibre darf also offen bleiben.\n"
+"2. Bookbench ordnet die Bücher des geöffneten Ordners Calibre zu: über die Calibre-Kennung im Buch (UUID), die ISBN oder Titel und ersten Autor. Es zählen nur eindeutige Treffer; Bücher ohne Treffer stehen im Reiter **Nicht zugeordnet**.\n"
+"3. Die Tabelle zeigt jedes Feld, in dem Calibre einen anderen Wert hat: Buch, Feld, Wert im Buch, Wert aus Calibre. Zeilen, die du nicht willst, abhaken (Klick auf das Kästchen oder Leertaste). **Nur leere Felder** zeigt nur Felder, die im Buch leer sind. **Klappentexte** nimmt Calibres Beschreibungen dazu.\n"
+"4. Hat Calibre eigene Spalten (z. B. #subtitle), die noch keine Felder sind, nimmt **Als eigene Felder übernehmen** sie dazu ([[metadaten_felder]]); danach stehen auch ihre Werte in der Tabelle.\n"
+"5. **Angehakte übernehmen** übernimmt die Werte (gelb), dann mit Strg+S speichern.\n"
 "\n"
-"Danach den Calibre-Abgleich ausschalten ([[einst_calibre]]), wenn Calibre "
-"die Bücher nicht mehr verwaltet. Calibres eigene Felder wie "
-"Hinzugefügt-Datum, Sterne-Bewertung oder Gelesen-Status kommen nur als "
-"eigene Spalten mit.\n"
+"Danach den Calibre-Abgleich ausschalten ([[einst_metadaten]]), wenn Calibre die Bücher nicht mehr verwaltet. Calibres eigene Felder wie Hinzugefügt-Datum, Sterne-Bewertung oder Gelesen-Status kommen nur als eigene Spalten mit.\n"
 
 #: help_topics.py:308
 msgid ""
@@ -4359,7 +4245,7 @@ msgid ""
 "of the last look-up stays as long as the book has no text:\n"
 "- **daily quota used up (429)**: Google Books without a key shares one "
 "daily quota with everyone else and often answers like this. An own key "
-"([[einst_klappentexte]]) gives you your own quota.\n"
+"([[einst_online]]) gives you your own quota.\n"
 "- **book found, but no blurb stored**: the source knows the book but has no "
 "description (Open Library often).\n"
 "- **book not found**: no matching title and author (or ISBN).\n"
@@ -4374,56 +4260,33 @@ msgid ""
 "[[einst_erweitert]].\n"
 "\n"
 "Claude needs an API key and the package **anthropic** (pip install "
-"anthropic): [[einst_klappentexte_claude]].\n"
+"anthropic): [[einst_online]].\n"
 msgstr ""
 "\n"
-"**Nachschlagen** (ein Buch, über dem Klappentext) und **Ergänzen ▾ > Alle "
-"fehlenden Klappentexte nachschlagen** (alle ohne Klappentext, im "
-"Hintergrund) gehen diese Schritte durch, bis einer einen Text hat:\n"
-"- **Google Books**, dann **Open Library**: über die ISBN, sonst über Titel "
-"und Autor; die Ausgabe in der Sprache des Buchs wird bevorzugt. Kostenlos; "
-"für Google Books ist ein eigener Schlüssel möglich ([[kosten]]).\n"
-"- **Claude** mit dem ersten Quellprofil, das zum Buch passt "
-"([[klappentexte_profile]]): ruft die Seiten des Profils ab und kopiert den "
-"Verlagstext wörtlich heraus. Etwa 1 bis 2 Cent.\n"
+"**Nachschlagen** (ein Buch, über dem Klappentext) und **Ergänzen ▾ > Alle fehlenden Klappentexte nachschlagen** (alle ohne Klappentext, im Hintergrund) gehen diese Schritte durch, bis einer einen Text hat:\n"
+"- **Google Books**, dann **Open Library**: über die ISBN, sonst über Titel und Autor; die Ausgabe in der Sprache des Buchs wird bevorzugt. Kostenlos; für Google Books ist ein eigener Schlüssel möglich ([[kosten]]).\n"
+"- **Claude** mit dem ersten Quellprofil, das zum Buch passt ([[klappentexte_profile]]): ruft die Seiten des Profils ab und kopiert den Verlagstext wörtlich heraus. Etwa 1 bis 2 Cent.\n"
 "\n"
-"Ein zu kurzer oder zu langer Text wird nicht genommen (Grenzen: "
-"[[einst_klappentexte]]). Was gefunden wurde, ist nicht gleich übernommen: "
-"es steht im Textfeld (rot), bis man übernimmt.\n"
+"Ein zu kurzer oder zu langer Text wird nicht genommen (Grenzen: [[einst_klappentexte]]). Was gefunden wurde, ist nicht gleich übernommen: es steht im Textfeld (rot), bis man übernimmt.\n"
 "\n"
 "**Alle nachschlagen**\n"
-"- Lässt Bücher aus, für die Calibre eine Beschreibung hat - dafür gibt es "
-"**Aus Calibre**, das kostet nichts.\n"
-"- Fragt vor dem Start nach, wenn Claude gebraucht werden könnte, mit den "
-"höchstens anfallenden Kosten.\n"
-"- Ohne API-Schlüssel werden nur die kostenlosen Quellen gefragt, ohne "
-"Fehlermeldung.\n"
+"- Lässt Bücher aus, für die Calibre eine Beschreibung hat - dafür gibt es **Aus Calibre**, das kostet nichts.\n"
+"- Fragt vor dem Start nach, wenn Claude gebraucht werden könnte, mit den höchstens anfallenden Kosten.\n"
+"- Ohne API-Schlüssel werden nur die kostenlosen Quellen gefragt, ohne Fehlermeldung.\n"
 "\n"
 "**Wenn nichts gefunden wird**\n"
-"Die Meldung am Ende sagt je Quelle, warum, und unter dem Klappentext bleibt "
-"das Ergebnis des letzten Nachschlagens stehen, solange das Buch keinen Text "
-"hat:\n"
-"- **Tageskontingent erschöpft (429)**: Google Books ohne Schlüssel teilt "
-"sich ein Tageskontingent mit allen anderen und antwortet oft so. Ein "
-"eigener Schlüssel ([[einst_klappentexte]]) gibt dir ein eigenes "
-"Kontingent.\n"
-"- **Buch gefunden, aber kein Klappentext hinterlegt**: die Quelle kennt das "
-"Buch, hat aber keine Beschreibung (bei Open Library häufig).\n"
+"Die Meldung am Ende sagt je Quelle, warum, und unter dem Klappentext bleibt das Ergebnis des letzten Nachschlagens stehen, solange das Buch keinen Text hat:\n"
+"- **Tageskontingent erschöpft (429)**: Google Books ohne Schlüssel teilt sich ein Tageskontingent mit allen anderen und antwortet oft so. Ein eigener Schlüssel ([[einst_online]]) gibt dir ein eigenes Kontingent.\n"
+"- **Buch gefunden, aber kein Klappentext hinterlegt**: die Quelle kennt das Buch, hat aber keine Beschreibung (bei Open Library häufig).\n"
 "- **Buch nicht gefunden**: kein passender Titel und Autor (bzw. ISBN).\n"
-"Ein Kontingent- oder Netzfehler wird nicht als versucht gemerkt; beim "
-"nächsten Nachschlagen wird die Quelle wieder gefragt.\n"
+"Ein Kontingent- oder Netzfehler wird nicht als versucht gemerkt; beim nächsten Nachschlagen wird die Quelle wieder gefragt.\n"
 "\n"
 "**Zwischenspeicher**\n"
-"Was gefunden und was schon versucht wurde, steht in **blurbs_cache.json** "
-"([[dateien]]). Erneutes Nachschlagen kostet nichts. Wird ein Profil "
-"geändert, versucht Claude es für dessen Bücher noch einmal; die kostenlosen "
-"Quellen werden nur nach einem Netzfehler neu gefragt. Leeren lässt er sich "
-"unter [[einst_erweitert]].\n"
+"Was gefunden und was schon versucht wurde, steht in **blurbs_cache.json** ([[dateien]]). Erneutes Nachschlagen kostet nichts. Wird ein Profil geändert, versucht Claude es für dessen Bücher noch einmal; die kostenlosen Quellen werden nur nach einem Netzfehler neu gefragt. Leeren lässt er sich unter [[einst_erweitert]].\n"
 "\n"
-"Claude braucht einen API-Schlüssel und das Paket **anthropic** (pip install "
-"anthropic): [[einst_klappentexte_claude]].\n"
+"Claude braucht einen API-Schlüssel und das Paket **anthropic** (pip install anthropic): [[einst_online]].\n"
 
-#: help_topics.py:347 help_topics.py:837 settings.py:50 settings.py:377
+#: help_topics.py:347 help_topics.py:841 settings.py:54 settings.py:380
 msgid "Source profiles"
 msgstr "Quellprofile"
 
@@ -4589,29 +4452,20 @@ msgid ""
 "**Tips**\n"
 "- Open Library often has large scans, sometimes of another edition (another "
 "cover). Google Books has the publisher's image, usually smaller.\n"
-"- In the Edit menu the same actions work from Chapters; the program "
-"switches to Metadata with the same book.\n"
+"- The Edit menu has the same actions while Metadata is shown; **Look up all "
+"missing covers** also in the library.\n"
 msgstr ""
 "\n"
 "- **Aus Datei** nimmt eine Bilddatei (JPEG, PNG, GIF, WebP).\n"
-"- **Nachschlagen** sucht bei Open Library und Google Books (kostenlos, ohne "
-"Schlüssel) über ISBN, Titel und Autor und zeigt das Gefundene "
-"nebeneinander, mit Größe; Klick wählt, OK übernimmt, Doppelklick übernimmt "
-"sofort. Winzige Vorschaubilder fallen weg.\n"
-"- **Ergänzen ▾ > Alle fehlenden Cover nachschlagen** macht das im "
-"Hintergrund für alle Bücher ohne Cover und nimmt jeweils das größte "
-"gefundene Bild. Danach durchsehen.\n"
-"- **Verwerfen** wirft das neue Cover weg. **Strg+S** speichert, wie immer "
-"mit Sicherung.\n"
+"- **Nachschlagen** sucht bei Open Library und Google Books (kostenlos, ohne Schlüssel) über ISBN, Titel und Autor und zeigt das Gefundene nebeneinander, mit Größe; Klick wählt, OK übernimmt, Doppelklick übernimmt sofort. Winzige Vorschaubilder fallen weg.\n"
+"- **Ergänzen ▾ > Alle fehlenden Cover nachschlagen** macht das im Hintergrund für alle Bücher ohne Cover und nimmt jeweils das größte gefundene Bild. Danach durchsehen.\n"
+"- **Verwerfen** wirft das neue Cover weg. **Strg+S** speichert, wie immer mit Sicherung.\n"
 "\n"
-"Die Quellen, die kleinste Höhe, die zählt, und wie viele zur Auswahl "
-"stehen: [[einst_cover_nachschlagen]].\n"
+"Die Quellen, die kleinste Höhe, die zählt, und wie viele zur Auswahl stehen: [[einst_cover_nachschlagen]].\n"
 "\n"
 "**Tipps**\n"
-"- Open Library hat oft große Scans, manchmal von einer anderen Ausgabe "
-"(anderes Cover). Google Books hat das Bild des Verlags, meist kleiner.\n"
-"- Im Menü Bearbeiten gehen dieselben Aktionen auch aus Kapitel; das "
-"Programm wechselt dann mit demselben Buch zu Metadaten.\n"
+"- Open Library hat oft große Scans, manchmal von einer anderen Ausgabe (anderes Cover). Google Books hat das Bild des Verlags, meist kleiner.\n"
+"- Im Menü Bearbeiten stehen dieselben Aktionen, solange Metadaten gezeigt wird; **Alle fehlenden Cover nachschlagen** auch in der Bibliothek.\n"
 
 #: help_topics.py:394
 msgid "What happens to the image"
@@ -5018,7 +4872,7 @@ msgid ""
 "\n"
 "- **Back up** packs the parts ticked on the right into a ZIP file in the "
 "subfolder **KOReader** of the backup folder (KOReader_YYYYMMDD_HHMMSS.zip). "
-"The newest backups are kept ([[einst_kobo]]).\n"
+"The newest backups are kept ([[einst_speichern]]).\n"
 "- **Restore** (or double-click) writes the ticked parts from the selected "
 "backup back. Files with the same name are overwritten, others stay. The "
 "current state is backed up first (reason \"before restoring\").\n"
@@ -5049,42 +4903,24 @@ msgid ""
 "The preview can take its profile from a backup too ([[vorschau_profil]]).\n"
 msgstr ""
 "\n"
-"- **Sichern** packt die rechts angehakten Teile in eine ZIP-Datei im "
-"Unterordner **KOReader** des Sicherungsordners "
-"(KOReader_JJJJMMTT_HHMMSS.zip). Die neuesten Sicherungen bleiben "
-"([[einst_kobo]]).\n"
-"- **Zurückspielen** (oder Doppelklick) schreibt die angehakten Teile aus "
-"der markierten Sicherung zurück. Gleichnamige Dateien werden überschrieben, "
-"andere bleiben. Vorher wird der jetzige Stand gesichert (Anlass \"vor dem "
-"Zurückspielen\").\n"
-"- Beim Markieren einer Sicherung zeigt die Statuszeile Inhalt, Gerät und "
-"KOReader-Version; Sicherungen eines anderen Geräts werden genannt.\n"
+"- **Sichern** packt die rechts angehakten Teile in eine ZIP-Datei im Unterordner **KOReader** des Sicherungsordners (KOReader_JJJJMMTT_HHMMSS.zip). Die neuesten Sicherungen bleiben ([[einst_speichern]]).\n"
+"- **Zurückspielen** (oder Doppelklick) schreibt die angehakten Teile aus der markierten Sicherung zurück. Gleichnamige Dateien werden überschrieben, andere bleiben. Vorher wird der jetzige Stand gesichert (Anlass \"vor dem Zurückspielen\").\n"
+"- Beim Markieren einer Sicherung zeigt die Statuszeile Inhalt, Gerät und KOReader-Version; Sicherungen eines anderen Geräts werden genannt.\n"
 "\n"
 "**Teile**\n"
 "- **Einstellungen**: settings.reader.lua, defaults.custom.lua.\n"
-"- **Statistik und Plugin-Daten**: Ordner settings - Lesestatistik, Verlauf, "
-"Bookends-Vorlagen (settings/bookends_presets), Silverfish.\n"
-"- **Buchdaten**: die .sdr-Ordner neben den Büchern - Leseposition, "
-"Markierungen, Notizen.\n"
+"- **Statistik und Plugin-Daten**: Ordner settings - Lesestatistik, Verlauf, Bookends-Vorlagen (settings/bookends_presets), Silverfish.\n"
+"- **Buchdaten**: die .sdr-Ordner neben den Büchern - Leseposition, Markierungen, Notizen.\n"
 "- **Stil-Anpassungen und Patches**.\n"
-"- **Kobo-Einstellungen**: Kobo eReader.conf der Kobo-Software "
-"(standardmäßig aus, nur beim Kobo).\n"
+"- **Kobo-Einstellungen**: Kobo eReader.conf der Kobo-Software (standardmäßig aus, nur beim Kobo).\n"
 "\n"
-"Eine Sicherung vermerkt die Geräteart. Sie lässt sich auch auf eine andere "
-"Art zurückspielen (z. B. vom Kobo auf einen Kindle): der KOReader-Ordner "
-"landet dann dort, wo KOReader auf dem angeschlossenen Gerät liegt. In den "
-"Einstellungen gespeicherte Ordner (Startordner, letztes Buch) zeigen weiter "
-"aufs alte Gerät; KOReader fragt bei Bedarf neu.\n"
+"Eine Sicherung vermerkt die Geräteart. Sie lässt sich auch auf eine andere Art zurückspielen (z. B. vom Kobo auf einen Kindle): der KOReader-Ordner landet dann dort, wo KOReader auf dem angeschlossenen Gerät liegt. In den Einstellungen gespeicherte Ordner (Startordner, letztes Buch) zeigen weiter aufs alte Gerät; KOReader fragt bei Bedarf neu.\n"
 "\n"
-"Nach dem Zurückspielen übernimmt KOReader die Dateien beim nächsten Start, "
-"also nach dem Auswerfen. KOReader schreibt seine Einstellungen beim "
-"Beenden; wer am E-Reader noch etwas ändert, ohne KOReader zu beenden, "
-"überschreibt den zurückgespielten Stand.\n"
+"Nach dem Zurückspielen übernimmt KOReader die Dateien beim nächsten Start, also nach dem Auswerfen. KOReader schreibt seine Einstellungen beim Beenden; wer am E-Reader noch etwas ändert, ohne KOReader zu beenden, überschreibt den zurückgespielten Stand.\n"
 "\n"
-"Die Vorschau kann ihr Profil auch aus einer Sicherung nehmen "
-"([[vorschau_profil]]).\n"
+"Die Vorschau kann ihr Profil auch aus einer Sicherung nehmen ([[vorschau_profil]]).\n"
 
-#: help_topics.py:506
+#: help_topics.py:506 settings.py:662
 msgid "Copying dictionaries"
 msgstr "Wörterbücher kopieren"
 
@@ -5132,7 +4968,7 @@ msgstr ""
 "Rückfrage dort geöffnet; Änderungen werden dann auf dem E-Reader "
 "gespeichert.\n"
 
-#: help_topics.py:512 settings.py:656
+#: help_topics.py:512 settings.py:667
 msgid "Ejecting"
 msgstr "Auswerfen"
 
@@ -5508,55 +5344,25 @@ msgid ""
 "until a tap, until the \"Exit sleep screen\" gesture), the message for the "
 "gesture, and whether reboot/power-off messages are hidden.\n"
 "\n"
-"Fields that do nothing with the current choice are greyed out, like in "
-"KOReader's menu. Changes are a draft until **Save to profile**.\n"
+"Fields that do nothing with the current choice are hidden (KOReader's menu "
+"greys them out); **Ignore the book cover** only appears with the book cover "
+"as wallpaper. Changes are a draft until **Save to profile**.\n"
 msgstr ""
 "\n"
-"Unter Vorschau stehen auf der Seite **Sperrbildschirm** KOReaders Optionen "
-"für den Sperrbildschirm (im KOReader-Menü unter Bildschirm, gespeichert in "
-"settings.reader.lua). Die Seite gibt es, sobald ein Profil da ist "
-"([[vorschau_profil]]).\n"
+"Unter Vorschau stehen auf der Seite **Sperrbildschirm** KOReaders Optionen für den Sperrbildschirm (im KOReader-Menü unter Bildschirm, gespeichert in settings.reader.lua). Die Seite gibt es, sobald ein Profil da ist ([[vorschau_profil]]).\n"
 "\n"
-"Solange die Seite offen ist, zeigt die Werkbank den Sperrbildschirm so, wie "
-"ihn der E-Reader beim Einschlafen zeigt, ohne KOReader schlafen zu legen. "
-"**Nochmal zeigen** holt ihn zurück (ein Klick ins Bild kann ihn schließen, "
-"wie Tippen auf dem E-Reader); **Zurück zur Seite** schließt ihn. Beim "
-"Verlassen der Seite geht er ebenfalls zu. KOReader liest die Werte beim "
-"Start, darum startet die Werkbank nach einer Änderung neu (etwa eine "
-"Sekunde).\n"
+"Solange die Seite offen ist, zeigt die Werkbank den Sperrbildschirm so, wie ihn der E-Reader beim Einschlafen zeigt, ohne KOReader schlafen zu legen. **Nochmal zeigen** holt ihn zurück (ein Klick ins Bild kann ihn schließen, wie Tippen auf dem E-Reader); **Zurück zur Seite** schließt ihn. Beim Verlassen der Seite geht er ebenfalls zu. KOReader liest die Werte beim Start, darum startet die Werkbank nach einer Änderung neu (etwa eine Sekunde).\n"
 "\n"
-"**Bild**: Cover des Buchs, ein gewähltes Bild oder Buchcover, ein "
-"zufälliges Bild aus einem Ordner, Lesefortschritt, Buchstatus oder den "
-"Bildschirm lassen, wie er ist - und für Bilder: Randfüllung, strecken "
-"(wahlweise bis zu einer Grenze), zuschneiden, für beste Passform drehen, "
-"Bilder der Reihe nach statt zufällig.\n"
-"Die Pfade gelten auf dem E-Reader (beim Kobo /mnt/onboard/…). **Wählen …** "
-"nimmt eine Datei oder einen Ordner auf dem angeschlossenen E-Reader. Alles "
-"von anderswo wird ins Profil kopiert (Ordner koreader/screensaver; bei "
-"einem Ordner nur die Bilder direkt darin) und kommt mit **Zum E-Reader …** "
-"aufs Gerät ([[vorschau_rueckweg]]). Bilder an anderen Stellen des E-Readers "
-"(außerhalb des KOReader-Ordners) zeigt die Werkbank nur, solange er "
-"angeschlossen ist.\n"
+"**Bild**: Cover des Buchs, ein gewähltes Bild oder Buchcover, ein zufälliges Bild aus einem Ordner, Lesefortschritt, Buchstatus oder den Bildschirm lassen, wie er ist - und für Bilder: Randfüllung, strecken (wahlweise bis zu einer Grenze), zuschneiden, für beste Passform drehen, Bilder der Reihe nach statt zufällig.\n"
+"Die Pfade gelten auf dem E-Reader (beim Kobo /mnt/onboard/…). **Wählen …** nimmt eine Datei oder einen Ordner auf dem angeschlossenen E-Reader. Alles von anderswo wird ins Profil kopiert (Ordner koreader/screensaver; bei einem Ordner nur die Bilder direkt darin) und kommt mit **Zum E-Reader …** aufs Gerät ([[vorschau_rueckweg]]). Bilder an anderen Stellen des E-Readers (außerhalb des KOReader-Ordners) zeigt die Werkbank nur, solange er angeschlossen ist.\n"
 "\n"
-"**Buchcover auslassen**: kein Cover bei pausierten Büchern, bei fertig "
-"gelesenen oder wenn der E-Reader im Dateibrowser gesperrt wird (nur beim "
-"Bild „Cover des Buchs“).\n"
+"**Buchcover auslassen**: kein Cover bei pausierten Büchern, bei fertig gelesenen oder wenn der E-Reader im Dateibrowser gesperrt wird (nur beim Bild „Cover des Buchs“).\n"
 "\n"
-"**Meldung**: Meldung zeigen, ihr Text (leer = KOReaders „Sleeping“), die "
-"Form (Kasten oder Banner über die ganze Breite), ihre Höhe (0 unten, 50 "
-"Mitte, 100 oben), Deckkraft und die Hintergrundfüllung, wenn der Bildschirm "
-"bleibt, wie er ist. **Einfügen** setzt Platzhalter ein, etwa %T Titel, %A "
-"Autor, %S Reihe, %p Prozent gelesen, %C Kapiteltitel, %P Kapitel in "
-"Prozent, %b Akku. Die Platzhalter und Form/Höhe/Deckkraft gibt es seit "
-"KOReader 2025.10.\n"
+"**Meldung**: Meldung zeigen, ihr Text (leer = KOReaders „Sleeping“), die Form (Kasten oder Banner über die ganze Breite), ihre Höhe (0 unten, 50 Mitte, 100 oben), Deckkraft und die Hintergrundfüllung, wenn der Bildschirm bleibt, wie er ist. **Einfügen** setzt Platzhalter ein, etwa %T Titel, %A Autor, %S Reihe, %p Prozent gelesen, %C Kapiteltitel, %P Kapitel in Prozent, %b Akku. Die Platzhalter und Form/Höhe/Deckkraft gibt es seit KOReader 2025.10.\n"
 "\n"
-"**Nach dem Aufwachen**: ob der Sperrbildschirm nach dem Aufwachen stehen "
-"bleibt (Sekunden, bis zum Tippen, bis zur Geste „Sperrbildschirm "
-"verlassen“), die Meldung für die Geste und ob Meldungen beim "
-"Neustarten/Ausschalten wegfallen.\n"
+"**Nach dem Aufwachen**: ob der Sperrbildschirm nach dem Aufwachen stehen bleibt (Sekunden, bis zum Tippen, bis zur Geste „Sperrbildschirm verlassen“), die Meldung für die Geste und ob Meldungen beim Neustarten/Ausschalten wegfallen.\n"
 "\n"
-"Felder, die bei der aktuellen Wahl nichts bewirken, sind ausgegraut, wie in "
-"KOReaders Menü. Änderungen sind ein Entwurf bis **Ins Profil**.\n"
+"Felder, die bei der aktuellen Wahl nichts bewirken, werden ausgeblendet (KOReaders Menü graut sie aus); **Buchcover auslassen** erscheint nur mit dem Buchcover als Hintergrund. Änderungen sind ein Entwurf bis **Ins Profil**.\n"
 
 #: help_topics.py:600 transfer.py:39 workbench_reader.py:292 workbench_reader.py:308
 msgid "Patches"
@@ -5710,22 +5516,22 @@ msgid ""
 "- **Show on**: all pages, or only odd or even pages (for example page "
 "numbers on the outer side).\n"
 "- **Bar in this line**: the token %bar draws a progress bar inside the "
-"line. **Insert bar** adds it, **Remove bar** takes it out again. For a line "
-"with a bar: chapter or book, chapter ticks (book only), style, fill "
-"direction, thickness and unread thickness in pixels (empty thickness = as "
-"high as the text).\n"
+"line. **Insert bar** adds it, **Remove bar** takes it out again. Only for a "
+"line with a bar the bar fields appear: chapter or book, chapter ticks (book "
+"only), style, fill direction, thickness and unread thickness in pixels "
+"(empty thickness = as high as the text).\n"
 "- Settings Bookbench does not offer yet (font per line, colours and markers "
 "of bars, conditions in the text) are kept unchanged when saving.\n"
 "\n"
 "**Progress bars**\n"
 "Up to eight bars across the page, independent of the lines. Choose a bar in "
-"the list (✓ = switched on, with its edge), then: **Switched on**, chapter "
-"or book, chapter ticks, style, fill direction, **Edge** (top, bottom, left, "
-"right), thickness (diameter for round bars) and unread thickness, distance "
-"from the edge and the margins at both ends. A bar set to \"Position "
-"relative to line text\" on the e-reader shows its distance from the line "
-"text instead; switching that on or off stays on the e-reader, as do colours "
-"and markers.\n"
+"the list (✓ = switched on, with its edge), then **Switched on**; only a "
+"switched-on bar shows its fields: chapter or book, chapter ticks, style, "
+"fill direction, **Edge** (top, bottom, left, right), thickness (diameter "
+"for round bars) and unread thickness, distance from the edge and the "
+"margins at both ends. A bar set to \"Position relative to line text\" on "
+"the e-reader shows its distance from the line text instead; switching that "
+"on or off stays on the e-reader, as do colours and markers.\n"
 "\n"
 "**General**\n"
 "Font size and scale, the four margins, the gap before texts overlap and "
@@ -5736,83 +5542,36 @@ msgid ""
 "change the format; unknown parts stay as they are.\n"
 msgstr ""
 "\n"
-"Ist im Profil das Plugin **Bookends**, steht in der Seitenleiste unter "
-"Vorschau der Punkt **Bookends**. Seine Einstellungsseite sitzt in der "
-"linken Spalte; das Bild bleibt rechts und zeigt jede Änderung nach einer "
-"kurzen Pause (eine Zehntelsekunde, KOReader läuft weiter). Die Werkbank "
-"wechselt dafür auf die Leseseite.\n"
+"Ist im Profil das Plugin **Bookends**, steht in der Seitenleiste unter Vorschau der Punkt **Bookends**. Seine Einstellungsseite sitzt in der linken Spalte; das Bild bleibt rechts und zeigt jede Änderung nach einer kurzen Pause (eine Zehntelsekunde, KOReader läuft weiter). Die Werkbank wechselt dafür auf die Leseseite.\n"
 "\n"
-"Die Seite ist in Abschnitte gegliedert (Vorlage, Zeilen, Gewählte Zeile, "
-"Fortschrittsbalken, Allgemein); ein Klick auf die Überschrift klappt einen "
-"Abschnitt zu oder auf. Bookbench merkt sich, welche offen sind.\n"
+"Die Seite ist in Abschnitte gegliedert (Vorlage, Zeilen, Gewählte Zeile, Fortschrittsbalken, Allgemein); ein Klick auf die Überschrift klappt einen Abschnitt zu oder auf. Bookbench merkt sich, welche offen sind.\n"
 "\n"
 "**Entwurf und Profil**\n"
-"- Änderungen sind zuerst ein Entwurf: Sie sind nur im Bild zu sehen. Die "
-"rote Zeile sagt das.\n"
-"- **Ins Profil** (Werkzeugleiste) schreibt Vorlage und Schalter ins "
-"Vorschau-Profil; **Verwerfen** kehrt zum Stand im Profil zurück.\n"
-"- **Zum E-Reader …** (Werkzeugleiste) schreibt die gespeicherten Änderungen "
-"auf den E-Reader: [[vorschau_rueckweg]].\n"
-"- **Vom E-Reader** und **Aus Sicherung** ersetzen das Profil; hat Bookbench "
-"darin etwas geändert, fragt es vorher.\n"
+"- Änderungen sind zuerst ein Entwurf: Sie sind nur im Bild zu sehen. Die rote Zeile sagt das.\n"
+"- **Ins Profil** (Werkzeugleiste) schreibt Vorlage und Schalter ins Vorschau-Profil; **Verwerfen** kehrt zum Stand im Profil zurück.\n"
+"- **Zum E-Reader …** (Werkzeugleiste) schreibt die gespeicherten Änderungen auf den E-Reader: [[vorschau_rueckweg]].\n"
+"- **Vom E-Reader** und **Aus Sicherung** ersetzen das Profil; hat Bookbench darin etwas geändert, fragt es vorher.\n"
 "\n"
 "**Vorlagen**\n"
-"- Bookends hält alles, was du siehst, in Vorlagen (je eine Datei). Die "
-"**aktive** Vorlage ist die, die Bookends auf dem E-Reader nimmt; eine "
-"andere lässt sich zeigen und bearbeiten, das Bild zeigt dann diese. **Aktiv "
-"machen** merkt sie vor, Speichern macht sie im Profil aktiv.\n"
-"- **Neu**, **Duplizieren**, **Löschen**. Name und Beschreibung zeigt "
-"Bookends in seiner Vorlagenverwaltung.\n"
+"- Bookends hält alles, was du siehst, in Vorlagen (je eine Datei). Die **aktive** Vorlage ist die, die Bookends auf dem E-Reader nimmt; eine andere lässt sich zeigen und bearbeiten, das Bild zeigt dann diese. **Aktiv machen** merkt sie vor, Speichern macht sie im Profil aktiv.\n"
+"- **Neu**, **Duplizieren**, **Löschen**. Name und Beschreibung zeigt Bookends in seiner Vorlagenverwaltung.\n"
 "\n"
 "**Zeilen**\n"
-"- Sechs Positionen (oben und unten, jeweils links, Mitte, rechts), eine "
-"Zeile je Reihe. Tokens wie %title, %chap_title oder %page_num füllt "
-"Bookends aus; **Token einfügen** listet die der installierten "
-"Bookends-Version, sortiert wie in Bookends.\n"
-"- **Sonderzeichen …** öffnet Bookends' Liste der Symbole (Akku, Buch, "
-"Pfeile, Blöcke, Trenner …), in Gruppen wie in Bookends. Ein Klick fügt an "
-"der Schreibmarke der zuletzt benutzten Zeile ein; \"dynamische\" Symbole "
-"fügen ihr Token ein (%batt_icon ändert sich mit dem Akku). Die Symbole "
-"stammen aus KOReaders Symbolschrift (nerdfonts/symbols.ttf); Bookbench "
-"zeigt sie in den Zeilen als kleine Bilder und nimmt die Schrift aus dem "
-"Profil (Schriften vom E-Reader) oder vom Desktop-KOReader.\n"
-"- **Zusatzrand** neben jeder Position rückt die ganze Position vom Rand weg "
-"(↕ oben bzw. unten, ↔ links bzw. rechts bei den Ecken), in Pixeln.\n"
-"- Klick in eine Zeile (Abschnitt **Gewählte Zeile**), um **Stil** (fett, "
-"kursiv), **Größe** (leer = die allgemeine Größe), **Großbuchstaben** und "
-"**Versatz** zu setzen: ← → und ↑ ↓ in Pixeln, negativ = nach links bzw. "
-"oben, **Auf 0** stellt beide auf 0. Beim Einfügen oder Löschen von Zeilen "
-"bleiben die Einstellungen bei ihrer Zeile.\n"
-"- **Zeigen auf**: allen Seiten oder nur ungeraden bzw. geraden Seiten (etwa "
-"Seitenzahlen außen).\n"
-"- **Balken in dieser Zeile**: der Token %bar zeichnet einen "
-"Fortschrittsbalken in die Zeile. **Balken einfügen** setzt ihn ein, "
-"**Balken entfernen** nimmt ihn wieder heraus. Für eine Zeile mit Balken: "
-"Kapitel oder Buch, Kapitelstriche (nur Buch), Stil, Füllrichtung, Dicke und "
-"Dicke für Ungelesenes in Pixeln (leere Dicke = so hoch wie der Text).\n"
-"- Was Bookbench noch nicht anbietet (Schrift je Zeile, Farben und "
-"Markierungen von Balken, Bedingungen im Text), bleibt beim Speichern "
-"unverändert.\n"
+"- Sechs Positionen (oben und unten, jeweils links, Mitte, rechts), eine Zeile je Reihe. Tokens wie %title, %chap_title oder %page_num füllt Bookends aus; **Token einfügen** listet die der installierten Bookends-Version, sortiert wie in Bookends.\n"
+"- **Sonderzeichen …** öffnet Bookends' Liste der Symbole (Akku, Buch, Pfeile, Blöcke, Trenner …), in Gruppen wie in Bookends. Ein Klick fügt an der Schreibmarke der zuletzt benutzten Zeile ein; \"dynamische\" Symbole fügen ihr Token ein (%batt_icon ändert sich mit dem Akku). Die Symbole stammen aus KOReaders Symbolschrift (nerdfonts/symbols.ttf); Bookbench zeigt sie in den Zeilen als kleine Bilder und nimmt die Schrift aus dem Profil (Schriften vom E-Reader) oder vom Desktop-KOReader.\n"
+"- **Zusatzrand** neben jeder Position rückt die ganze Position vom Rand weg (↕ oben bzw. unten, ↔ links bzw. rechts bei den Ecken), in Pixeln.\n"
+"- Klick in eine Zeile (Abschnitt **Gewählte Zeile**), um **Stil** (fett, kursiv), **Größe** (leer = die allgemeine Größe), **Großbuchstaben** und **Versatz** zu setzen: ← → und ↑ ↓ in Pixeln, negativ = nach links bzw. oben, **Auf 0** stellt beide auf 0. Beim Einfügen oder Löschen von Zeilen bleiben die Einstellungen bei ihrer Zeile.\n"
+"- **Zeigen auf**: allen Seiten oder nur ungeraden bzw. geraden Seiten (etwa Seitenzahlen außen).\n"
+"- **Balken in dieser Zeile**: der Token %bar zeichnet einen Fortschrittsbalken in die Zeile. **Balken einfügen** setzt ihn ein, **Balken entfernen** nimmt ihn wieder heraus. Nur bei einer Zeile mit Balken erscheinen die Balkenfelder: Kapitel oder Buch, Kapitelstriche (nur Buch), Stil, Füllrichtung, Dicke und Dicke für Ungelesenes in Pixeln (leere Dicke = so hoch wie der Text).\n"
+"- Was Bookbench noch nicht anbietet (Schrift je Zeile, Farben und Markierungen von Balken, Bedingungen im Text), bleibt beim Speichern unverändert.\n"
 "\n"
 "**Fortschrittsbalken**\n"
-"Bis zu acht Balken über die Seite, unabhängig von den Zeilen. Einen Balken "
-"in der Liste wählen (✓ = eingeschaltet, mit seinem Rand), dann: "
-"**Eingeschaltet**, Kapitel oder Buch, Kapitelstriche, Stil, Füllrichtung, "
-"**Rand** (oben, unten, links, rechts), Dicke (Durchmesser bei runden "
-"Balken) und Dicke für Ungelesenes, Abstand vom Rand und die Ränder an "
-"beiden Enden. Steht ein Balken am E-Reader auf „Position relativ zum "
-"Zeilentext“, zeigt das Feld stattdessen den Abstand zum Zeilentext; das an- "
-"und ausschalten bleibt am E-Reader, ebenso Farben und Markierungen.\n"
+"Bis zu acht Balken über die Seite, unabhängig von den Zeilen. Einen Balken in der Liste wählen (✓ = eingeschaltet, mit seinem Rand), dann **Eingeschaltet**; nur ein eingeschalteter Balken zeigt seine Felder: Kapitel oder Buch, Kapitelstriche, Stil, Füllrichtung, **Rand** (oben, unten, links, rechts), Dicke (Durchmesser bei runden Balken) und Dicke für Ungelesenes, Abstand vom Rand und die Ränder an beiden Enden. Steht ein Balken am E-Reader auf „Position relativ zum Zeilentext“, zeigt das Feld stattdessen den Abstand zum Zeilentext; das an- und ausschalten bleibt am E-Reader, ebenso Farben und Markierungen.\n"
 "\n"
 "**Allgemein**\n"
-"Schriftgröße und -skalierung, die vier Ränder, der Abstand, bevor sich "
-"Texte überlappen, und was zuerst gekürzt wird. Leere Felder nehmen "
-"Bookends' Vorgaben.\n"
+"Schriftgröße und -skalierung, die vier Ränder, der Abstand, bevor sich Texte überlappen, und was zuerst gekürzt wird. Leere Felder nehmen Bookends' Vorgaben.\n"
 "\n"
-"Bookends ist ein Plugin von AndyHazz "
-"(github.com/AndyHazz/bookends.koplugin); Bookbench liest und schreibt nur "
-"seine Dateien. Neuere Bookends-Versionen können das Format ändern; "
-"Unbekanntes bleibt, wie es ist.\n"
+"Bookends ist ein Plugin von AndyHazz (github.com/AndyHazz/bookends.koplugin); Bookbench liest und schreibt nur seine Dateien. Neuere Bookends-Versionen können das Format ändern; Unbekanntes bleibt, wie es ist.\n"
 
 #: help_topics.py:647
 msgid "Bookshelf settings"
@@ -6050,7 +5809,7 @@ msgstr ""
 "(github.com/AndyHazz/bookshelf.koplugin); Bookbench liest und schreibt nur "
 "seine Einstellungsdatei.\n"
 
-#: help_topics.py:698 settings.py:381 settings.py:915 transfer_window.py:36
+#: help_topics.py:698 settings.py:384 settings.py:926 transfer_window.py:36
 msgid "Profile"
 msgstr "Profil"
 
@@ -6301,7 +6060,7 @@ msgstr ""
 "Ein Bildschirmfoto aus KOReader (Menü oder Geste) hat immer die volle "
 "Auflösung des Fensters.\n"
 
-#: help_topics.py:745 help_topics.py:818 settings.py:46 settings.py:336
+#: help_topics.py:745 help_topics.py:821 settings.py:50 settings.py:339
 msgid "Saving and backups"
 msgstr "Speichern und Sicherungen"
 
@@ -6375,41 +6134,37 @@ msgid ""
 "- General: [[einst_darstellung]], [[einst_oberflaeche]], [[einst_start]]\n"
 "- [[einst_speichern]]\n"
 "- Books: [[einst_kapitel]], [[einst_klappentexte]] "
-"([[einst_klappentexte_profile]], [[einst_klappentexte_claude]]), "
-"[[einst_cover]] ([[einst_cover_nachschlagen]]), [[einst_metadaten]], "
-"[[einst_calibre]]\n"
+"([[einst_klappentexte_profile]]), [[einst_cover]] "
+"([[einst_cover_nachschlagen]]), [[einst_metadaten]]\n"
 "- Device: [[einst_kobo]], [[einst_vorschau]]\n"
+"- [[einst_online]]\n"
 "- [[einst_erweitert]]\n"
+"\n"
+"Options that only matter with another setting (e.g. the tooltip delay, the "
+"Claude model) only appear when that setting is on.\n"
 msgstr ""
 "\n"
-"Datei > **Einstellungen …** öffnet die Einstellungen. Der Baum links hat "
-"Gruppen mit Seiten darunter; eine Gruppenseite zeigt, wofür ihre Seiten da "
-"sind. **Hilfe** (oder F1) im Dialog öffnet das Kapitel zur gerade gezeigten "
-"Seite hier.\n"
+"Datei > **Einstellungen …** öffnet die Einstellungen. Der Baum links hat Gruppen mit Seiten darunter; eine Gruppenseite zeigt, wofür ihre Seiten da sind. **Hilfe** (oder F1) im Dialog öffnet das Kapitel zur gerade gezeigten Seite hier.\n"
 "\n"
-"**OK** speichert, **Abbrechen** vergisst die Änderungen. Die meisten "
-"Einstellungen gelten sofort, auch die Sprache (ohne Neustart); "
-"Kapitel-Einstellungen nach dem Neu-Einlesen (F5).\n"
+"**OK** speichert, **Abbrechen** vergisst die Änderungen. Die meisten Einstellungen gelten sofort, auch die Sprache (ohne Neustart); Kapitel-Einstellungen nach dem Neu-Einlesen (F5).\n"
 "\n"
-"Alle Einstellungen stehen in **einstellungen.json** im Einstellungsordner "
-"([[dateien]]). Exportieren, Importieren und Zurücksetzen: "
-"[[einst_erweitert]].\n"
+"Alle Einstellungen stehen in **einstellungen.json** im Einstellungsordner ([[dateien]]). Exportieren, Importieren und Zurücksetzen: [[einst_erweitert]].\n"
 "\n"
 "**Seiten**\n"
 "- Allgemein: [[einst_darstellung]], [[einst_oberflaeche]], [[einst_start]]\n"
 "- [[einst_speichern]]\n"
-"- Bücher: [[einst_kapitel]], [[einst_klappentexte]] "
-"([[einst_klappentexte_profile]], [[einst_klappentexte_claude]]), "
-"[[einst_cover]] ([[einst_cover_nachschlagen]]), [[einst_metadaten]], "
-"[[einst_calibre]]\n"
+"- Bücher: [[einst_kapitel]], [[einst_klappentexte]] ([[einst_klappentexte_profile]]), [[einst_cover]] ([[einst_cover_nachschlagen]]), [[einst_metadaten]]\n"
 "- Gerät: [[einst_kobo]], [[einst_vorschau]]\n"
+"- [[einst_online]]\n"
 "- [[einst_erweitert]]\n"
+"\n"
+"Optionen, die nur zusammen mit einer anderen Einstellung etwas bewirken (z. B. die Tooltip-Verzögerung, das Claude-Modell), erscheinen erst, wenn diese an ist.\n"
 
-#: help_topics.py:773 settings.py:41 settings.py:196
+#: help_topics.py:776 settings.py:45 settings.py:199
 msgid "Language and theme"
 msgstr "Sprache und Farben"
 
-#: help_topics.py:773
+#: help_topics.py:776
 msgid ""
 "\n"
 "**Language** (default: automatic)\n"
@@ -6443,11 +6198,11 @@ msgstr ""
 "anderen KDE-Programmen; mit PySide6 aus pip Fusion mit den Farben des "
 "Systems.\n"
 
-#: help_topics.py:782 settings.py:42 settings.py:215
+#: help_topics.py:785 settings.py:46 settings.py:218
 msgid "Interface"
 msgstr "Oberfläche"
 
-#: help_topics.py:782
+#: help_topics.py:785
 msgid ""
 "\n"
 "- **Status strip next to the lists** (default: on): coloured dots and "
@@ -6485,11 +6240,11 @@ msgstr ""
 "\n"
 "Welche Piktogramme wo erscheinen: [[einst_marken]].\n"
 
-#: help_topics.py:791 settings.py:43 settings.py:241
+#: help_topics.py:794 settings.py:47 settings.py:244
 msgid "Status symbols"
 msgstr "Status-Piktogramme"
 
-#: help_topics.py:791
+#: help_topics.py:794
 msgid ""
 "\n"
 "One row per pictogram ([[status]]), one column per place:\n"
@@ -6520,11 +6275,11 @@ msgstr ""
 "Wörterbuch, E-Reader und \"angeschlossen\" gibt es nur in der "
 "Seitenleiste.\n"
 
-#: help_topics.py:801 settings.py:44 settings.py:282
+#: help_topics.py:804 settings.py:48 settings.py:285
 msgid "Startup"
 msgstr "Start"
 
-#: help_topics.py:801
+#: help_topics.py:804
 msgid ""
 "\n"
 "- **Open the last folder** (default: on): the books folder that was open "
@@ -6546,11 +6301,11 @@ msgstr ""
 "\n"
 "Ein Ordner auf der Kommandozeile (start.py <Ordner>) wird immer geöffnet.\n"
 
-#: help_topics.py:807 settings.py:45 settings.py:292 updates.py:82 updates.py:90 updates.py:270
+#: help_topics.py:810 settings.py:49 settings.py:295 updates.py:82 updates.py:90 updates.py:270
 msgid "Updates"
 msgstr "Updates"
 
-#: help_topics.py:807
+#: help_topics.py:810
 msgid ""
 "\n"
 "**This copy** says how Bookbench was installed: with the Windows setup, "
@@ -6598,7 +6353,7 @@ msgstr ""
 "steht fest im Programm. Ohne Anmeldung erlaubt GitHub 60 Anfragen pro "
 "Stunde, weit mehr, als die Suche braucht.\n"
 
-#: help_topics.py:818
+#: help_topics.py:821
 msgid ""
 "\n"
 "- **Backup folder** (default: Bookbench Backups in the user folder): books "
@@ -6607,16 +6362,16 @@ msgid ""
 "the e-reader.\n"
 "- **Backups per book** (default: 5): the newest ones are kept, older ones "
 "are deleted when saving.\n"
+"- **Backups of the KOReader settings** (default: 10): backups made in the "
+"E-reader area; this many stay in the subfolder KOReader, including the "
+"backup before each restore ([[kobo_sicherungen]]).\n"
 msgstr ""
 "\n"
-"- **Sicherungsordner** (Standard: Bookbench Backups im Benutzerordner): "
-"hierhin werden Bücher vor jedem Speichern kopiert ([[speichern]]). Der "
-"Bereich E-Reader nutzt den Unterordner KOReader, das Wörterbuch den "
-"Unterordner Wörterbücher. Nicht auf den E-Reader.\n"
-"- **Sicherungen je Buch** (Standard: 5): die neuesten bleiben, ältere "
-"werden beim Speichern gelöscht.\n"
+"- **Sicherungsordner** (Standard: Bookbench Backups im Benutzerordner): hierhin werden Bücher vor jedem Speichern kopiert ([[speichern]]). Der Bereich E-Reader nutzt den Unterordner KOReader, das Wörterbuch den Unterordner Wörterbücher. Nicht auf den E-Reader.\n"
+"- **Sicherungen je Buch** (Standard: 5): die neuesten bleiben, ältere werden beim Speichern gelöscht.\n"
+"- **Sicherungen der KOReader-Einstellungen** (Standard: 10): Sicherungen aus dem Bereich E-Reader; so viele bleiben im Unterordner KOReader, einschließlich der Sicherung vor jedem Zurückspielen ([[kobo_sicherungen]]).\n"
 
-#: help_topics.py:822
+#: help_topics.py:826
 msgid ""
 "\n"
 "- **Subtitle lines per chapter** (default: 1): how many lines below a "
@@ -6640,23 +6395,18 @@ msgstr ""
 "Beides gilt nach dem Neu-Einlesen (F5), weil die Vorschläge beim Einlesen "
 "entstehen. Siehe auch [[kapitel]].\n"
 
-#: help_topics.py:828 settings.py:49 settings.py:357
+#: help_topics.py:832 settings.py:53 settings.py:364
 msgid "Blurbs"
 msgstr "Klappentexte"
 
-#: help_topics.py:828
+#: help_topics.py:832
 msgid ""
 "\n"
 "The page shows the order of the sources ([[klappentexte_nachschlagen]]).\n"
 "\n"
 "- **Ask Google Books and Open Library first** (default: on): free, no key. "
 "Off: every look-up goes to Claude straight away.\n"
-"- **Own Google Books API key** (default: empty): without a key Google Books "
-"often answers \"quota exceeded\", because everyone without a key shares one "
-"daily quota. An own key is free: in the Google Cloud Console create a "
-"project, enable the **Books API** and create an **API key** under "
-"Credentials. It is also used for looking up covers and is stored in plain "
-"text in the settings file. If Google rejects it, the look-up says so.\n"
+"- The own Google Books key is under [[einst_online]].\n"
 "- **Shortest blurb** (default: 80 characters): shorter texts from a source "
 "are not taken - often only a teaser line or \"A novel\".\n"
 "- **Longest blurb** (default: 4000 characters): longer texts are not taken "
@@ -6665,26 +6415,15 @@ msgid ""
 "enter yourself.\n"
 msgstr ""
 "\n"
-"Die Seite zeigt die Reihenfolge der Quellen "
-"([[klappentexte_nachschlagen]]).\n"
+"Die Seite zeigt die Reihenfolge der Quellen ([[klappentexte_nachschlagen]]).\n"
 "\n"
-"- **Zuerst Google Books und Open Library fragen** (Standard: an): "
-"kostenlos, ohne Schlüssel. Aus: jedes Nachschlagen geht gleich an Claude.\n"
-"- **Eigener Google-Books-API-Schlüssel** (Standard: leer): ohne Schlüssel "
-"antwortet Google Books oft mit \"Kontingent überschritten\", weil alle ohne "
-"Schlüssel sich ein Tageskontingent teilen. Ein eigener Schlüssel ist "
-"kostenlos: in der Google Cloud Console ein Projekt anlegen, die **Books "
-"API** aktivieren und unter Anmeldedaten einen **API-Schlüssel** erstellen. "
-"Er gilt auch fürs Nachschlagen von Covern und steht im Klartext in der "
-"Einstellungsdatei. Lehnt Google ihn ab, sagt das Nachschlagen das.\n"
-"- **Kürzester Klappentext** (Standard: 80 Zeichen): kürzere Texte einer "
-"Quelle werden nicht genommen - oft nur ein Anreißer oder \"A novel\".\n"
-"- **Längster Klappentext** (Standard: 4000 Zeichen): längere Texte werden "
-"nicht genommen - meist eine Inhaltsangabe oder ein ganzer Artikel.\n"
-"Die Grenzen gelten für alle Quellen (kostenlose und Claude), nicht für "
-"selbst eingetragenen Text.\n"
+"- **Zuerst Google Books und Open Library fragen** (Standard: an): kostenlos, ohne Schlüssel. Aus: jedes Nachschlagen geht gleich an Claude.\n"
+"- Der eigene Google-Books-Schlüssel steht unter [[einst_online]].\n"
+"- **Kürzester Klappentext** (Standard: 80 Zeichen): kürzere Texte einer Quelle werden nicht genommen - oft nur ein Anreißer oder \"A novel\".\n"
+"- **Längster Klappentext** (Standard: 4000 Zeichen): längere Texte werden nicht genommen - meist eine Inhaltsangabe oder ein ganzer Artikel.\n"
+"Die Grenzen gelten für alle Quellen (kostenlose und Claude), nicht für selbst eingetragenen Text.\n"
 
-#: help_topics.py:837
+#: help_topics.py:841
 msgid ""
 "\n"
 "The list of profiles in the order in which they are checked. The first "
@@ -6718,17 +6457,29 @@ msgstr ""
 "Änderungen gelten nach OK. Ändert sich ein Profil, schlägt Claude für "
 "dessen Bücher neu nach; schon gefundene bleiben, wie sie sind.\n"
 
-#: help_topics.py:847 settings.py:52 settings.py:393
-msgid "Claude API"
-msgstr "Claude-API"
+#: help_topics.py:851 settings.py:62 settings.py:396
+msgid "Online services"
+msgstr "Online-Dienste"
 
-#: help_topics.py:847
+#: help_topics.py:851
 msgid ""
 "\n"
+"Keys for the services Bookbench asks on the internet; both are stored in "
+"plain text in einstellungen.json ([[dateien]]) - keep that in mind when "
+"exporting the settings. What is sent where: [[kosten]].\n"
+"\n"
+"**Google Books**\n"
+"- **Own Google Books API key** (default: empty): for looking up blurbs and "
+"covers. Without a key Google Books often answers \"quota exceeded\", "
+"because everyone without a key shares one daily quota. An own key is free: "
+"in the Google Cloud Console create a project, enable the **Books API** and "
+"create an **API key** under Credentials. If Google rejects it, the look-up "
+"says so.\n"
+"\n"
+"**Claude API** (blurbs from source profiles, dictionary entries)\n"
 "- **API key**: from console.anthropic.com (account with credit). Empty: the "
-"environment variable ANTHROPIC_API_KEY is used. Stored in plain text in "
-"einstellungen.json ([[dateien]]) - keep that in mind when exporting the "
-"settings.\n"
+"environment variable ANTHROPIC_API_KEY is used. Model and cost estimate "
+"only appear with a key.\n"
 "- **Model** (default: claude-haiku-5-5): choose from the list; Haiku is "
 "enough for looking things up and is the cheapest. **Load list** asks "
 "Anthropic with the API key for the models available right now (newest "
@@ -6741,26 +6492,23 @@ msgid ""
 "sent: [[kosten]].\n"
 msgstr ""
 "\n"
-"- **API-Schlüssel**: von console.anthropic.com (Konto mit Guthaben). Leer: "
-"die Umgebungsvariable ANTHROPIC_API_KEY wird genommen. Steht im Klartext in "
-"einstellungen.json ([[dateien]]) - beim Exportieren der Einstellungen daran "
-"denken.\n"
-"- **Modell** (Standard: claude-haiku-5-5): aus der Liste wählen; Haiku "
-"reicht zum Nachschlagen und ist am günstigsten. **Liste laden** fragt mit "
-"dem API-Schlüssel bei Anthropic nach den gerade verfügbaren Modellen "
-"(neueste zuerst). Einen Namen eintippen geht auch.\n"
-"- **Geschätzte Kosten je Buch** (Standard: 0,015 $): nur für die Rückfrage "
-"vor dem Nachschlagen aller fehlenden Klappentexte; die echten Kosten hängen "
-"von Seitenlänge und Suchen ab.\n"
+"Schlüssel für die Dienste, die Bookbench im Internet fragt; beide stehen im Klartext in einstellungen.json ([[dateien]]) - beim Exportieren der Einstellungen daran denken. Was wohin geht: [[kosten]].\n"
 "\n"
-"Außerdem nötig: das Paket **anthropic** (pip install anthropic). Was "
-"gesendet wird: [[kosten]].\n"
+"**Google Books**\n"
+"- **Eigener Google-Books-API-Schlüssel** (Standard: leer): fürs Nachschlagen von Klappentexten und Covern. Ohne Schlüssel antwortet Google Books oft mit \"Kontingent überschritten\", weil alle ohne Schlüssel sich ein Tageskontingent teilen. Ein eigener Schlüssel ist kostenlos: in der Google Cloud Console ein Projekt anlegen, die **Books API** aktivieren und unter Anmeldedaten einen **API-Schlüssel** erstellen. Lehnt Google ihn ab, sagt das Nachschlagen das.\n"
+"\n"
+"**Claude API** (Klappentexte aus Quellprofilen, Wörterbuch-Einträge)\n"
+"- **API-Schlüssel**: von console.anthropic.com (Konto mit Guthaben). Leer: die Umgebungsvariable ANTHROPIC_API_KEY wird genommen. Modell und Kostenschätzung erscheinen erst mit Schlüssel.\n"
+"- **Modell** (Standard: claude-haiku-5-5): aus der Liste wählen; Haiku reicht zum Nachschlagen und ist am günstigsten. **Liste laden** fragt mit dem API-Schlüssel bei Anthropic nach den gerade verfügbaren Modellen (neueste zuerst). Einen Namen eintippen geht auch.\n"
+"- **Geschätzte Kosten je Buch** (Standard: 0,015 $): nur für die Rückfrage vor dem Nachschlagen aller fehlenden Klappentexte; die echten Kosten hängen von Seitenlänge und Suchen ab.\n"
+"\n"
+"Außerdem nötig: das Paket **anthropic** (pip install anthropic). Was gesendet wird: [[kosten]].\n"
 
-#: help_topics.py:854 plugins.py:552 settings.py:53 settings.py:505
+#: help_topics.py:864 plugins.py:552 settings.py:56 settings.py:521
 msgid "Covers"
 msgstr "Cover"
 
-#: help_topics.py:854
+#: help_topics.py:864
 msgid ""
 "\n"
 "**Inserting a new cover** ([[cover_bild]])\n"
@@ -6789,11 +6537,11 @@ msgstr ""
 "- **Cover unter dieser Höhe markieren** (Standard: 800 px, 0 = nie): ⚠ im "
 "Bereich Metadaten und dessen Filter \"Kleines Cover\".\n"
 
-#: help_topics.py:862
+#: help_topics.py:872
 msgid ""
 "\n"
 "**Sources** (both free, no key needed; Google Books uses your own key if "
-"there is one, [[einst_klappentexte]]; [[kosten]])\n"
+"there is one, [[einst_online]]; [[kosten]])\n"
 "- **Open Library** (default: on): often large scans, sometimes of another "
 "edition.\n"
 "- **Google Books** (default: on): the publisher's image, usually smaller.\n"
@@ -6806,22 +6554,32 @@ msgid ""
 "most 3 per book and uses the largest.\n"
 msgstr ""
 "\n"
-"**Quellen** (beide kostenlos, kein Schlüssel nötig; Google Books nimmt "
-"deinen eigenen Schlüssel, falls eingetragen, [[einst_klappentexte]]; "
-"[[kosten]])\n"
-"- **Open Library** (Standard: an): oft große Scans, manchmal von einer "
-"anderen Ausgabe.\n"
+"**Quellen** (beide kostenlos, kein Schlüssel nötig; Google Books nimmt deinen eigenen Schlüssel, falls eingetragen, [[einst_online]]; [[kosten]])\n"
+"- **Open Library** (Standard: an): oft große Scans, manchmal von einer anderen Ausgabe.\n"
 "- **Google Books** (Standard: an): das Bild des Verlags, meist kleiner.\n"
 "\n"
 "**Welche Bilder zählen**\n"
-"- **Kleinste Höhe** (Standard: 300 px): kleinere Bilder fallen weg "
-"(Vorschaubildchen, Platzhalter).\n"
-"- **Höchstens so viele zur Auswahl** (Standard: 8): jedes Bild wird "
-"heruntergeladen, mehr dauert also länger. Das Nachschlagen aller fehlenden "
-"Cover nimmt höchstens 3 je Buch und davon das größte.\n"
+"- **Kleinste Höhe** (Standard: 300 px): kleinere Bilder fallen weg (Vorschaubildchen, Platzhalter).\n"
+"- **Höchstens so viele zur Auswahl** (Standard: 8): jedes Bild wird heruntergeladen, mehr dauert also länger. Das Nachschlagen aller fehlenden Cover nimmt höchstens 3 je Buch und davon das größte.\n"
 
-#: help_topics.py:871
+#: help_topics.py:881 settings.py:58 settings.py:549
+msgid "Metadata and Calibre"
+msgstr "Metadaten und Calibre"
+
+#: help_topics.py:881
 msgid ""
+"\n"
+"**Calibre**\n"
+"- **Compare with Calibre** (default: on): Bookbench reads Calibre's "
+"metadata.calibre (root of the e-reader, or the opened folder and the "
+"folders above it) and shows its values: in [[metadaten_calibre]] for "
+"comparing, in the library and in Blurbs for taking over series and blurbs "
+"([[bibliothek_calibre]]).\n"
+"- Off: metadata.calibre is ignored and the Calibre buttons and menu entries "
+"disappear. Useful once Bookbench has replaced Calibre for you.\n"
+"- Switching off applies at once, switching on after reloading (F5).\n"
+"- The one-time import from a Calibre library (metadata.db) works "
+"independently of this setting: [[calibre_import]].\n"
 "\n"
 "**Own fields** ([[metadaten_felder]])\n"
 "- The list holds one Calibre column per row: **lookup name** (as in "
@@ -6834,48 +6592,18 @@ msgid ""
 "the opened folder, with Calibre's labels. Delete the ones you do not want.\n"
 msgstr ""
 "\n"
-"**Eigene Felder** ([[metadaten_felder]])\n"
-"- Die Liste hat je Zeile eine Calibre-Spalte: **Suchname** (wie in Calibre, "
-"mit #, z. B. #subtitle) und die **Bezeichnung**, die Bookbench anzeigt. "
-"Standard: keine.\n"
-"- Eine Zeile wählen, um sie unten zu ändern; **Eintragen** übernimmt die "
-"beiden Felder (ein vorhandener Suchname wird geändert, ein neuer "
-"dazugenommen). **Löschen**, **Hoch** und **Runter** wirken auf die gewählte "
-"Zeile; die Reihenfolge ist die im Formular.\n"
-"- **Aus Calibre** nimmt alle eigenen Spalten aus der metadata.calibre des "
-"geöffneten Ordners dazu, mit den Bezeichnungen aus Calibre. Die "
-"unerwünschten danach löschen.\n"
-
-#: help_topics.py:877
-msgid ""
-"\n"
-"- **Compare with Calibre** (default: on): Bookbench reads Calibre's "
-"metadata.calibre (root of the e-reader, or the opened folder and the "
-"folders above it) and shows its values: in [[metadaten_calibre]] for "
-"comparing, in the library and in Blurbs for taking over series and blurbs "
-"([[bibliothek_calibre]]).\n"
-"- Off: metadata.calibre is ignored, the Calibre buttons disappear from the "
-"toolbars, the Calibre entries in the Edit menu only give a hint. Useful "
-"once Bookbench has replaced Calibre for you.\n"
-"- Switching off applies at once, switching on after reloading (F5).\n"
-"- The one-time import from a Calibre library (metadata.db) works "
-"independently of this setting: [[calibre_import]].\n"
-msgstr ""
-"\n"
-"- **Mit Calibre abgleichen** (Standard: an): Bookbench liest Calibres "
-"metadata.calibre (Hauptordner des E-Readers bzw. der geöffnete Ordner und "
-"die Ordner darüber) und zeigt die Werte: in [[metadaten_calibre]] zum "
-"Vergleichen, in der Bibliothek und in Klappentexte zum Übernehmen von "
-"Reihen und Klappentexten ([[bibliothek_calibre]]).\n"
-"- Aus: metadata.calibre wird nicht beachtet, die Calibre-Knöpfe "
-"verschwinden aus den Werkzeugleisten, die Calibre-Einträge im Menü "
-"Bearbeiten geben nur einen Hinweis. Sinnvoll, sobald Bookbench Calibre für "
-"dich ersetzt hat.\n"
+"**Calibre**\n"
+"- **Mit Calibre abgleichen** (Standard: an): Bookbench liest Calibres metadata.calibre (Hauptordner des E-Readers bzw. der geöffnete Ordner und die Ordner darüber) und zeigt die Werte: in [[metadaten_calibre]] zum Vergleichen, in der Bibliothek und in Klappentexte zum Übernehmen von Reihen und Klappentexten ([[bibliothek_calibre]]).\n"
+"- Aus: metadata.calibre wird nicht beachtet, die Calibre-Knöpfe und Menüeinträge verschwinden. Sinnvoll, sobald Bookbench Calibre für dich ersetzt hat.\n"
 "- Ausschalten wirkt sofort, Einschalten nach dem Neu-Einlesen (F5).\n"
-"- Der einmalige Import aus einer Calibre-Bibliothek (metadata.db) geht "
-"unabhängig von dieser Einstellung: [[calibre_import]].\n"
+"- Der einmalige Import aus einer Calibre-Bibliothek (metadata.db) geht unabhängig von dieser Einstellung: [[calibre_import]].\n"
+"\n"
+"**Eigene Felder** ([[metadaten_felder]])\n"
+"- Die Liste hat je Zeile eine Calibre-Spalte: **Suchname** (wie in Calibre, mit #, z. B. #subtitle) und die **Bezeichnung**, die Bookbench anzeigt. Standard: keine.\n"
+"- Eine Zeile wählen, um sie unten zu ändern; **Eintragen** übernimmt die beiden Felder (ein vorhandener Suchname wird geändert, ein neuer dazugenommen). **Löschen**, **Hoch** und **Runter** wirken auf die gewählte Zeile; die Reihenfolge ist die im Formular.\n"
+"- **Aus Calibre** nimmt alle eigenen Spalten aus der metadata.calibre des geöffneten Ordners dazu, mit den Bezeichnungen aus Calibre. Die unerwünschten danach löschen.\n"
 
-#: help_topics.py:883
+#: help_topics.py:893
 msgid ""
 "\n"
 "**Detection**\n"
@@ -6884,15 +6612,12 @@ msgid ""
 "- **When an e-reader is connected** (default: open its books, ask if "
 "another folder is open): or always ask, or do nothing ([[kobo]]).\n"
 "\n"
-"**Backups**\n"
-"- **Backups of the KOReader settings** (default: 10): this many stay in the "
-"subfolder KOReader of the backup folder, including the backup before each "
-"restore ([[kobo_sicherungen]]).\n"
+"**Copying dictionaries**\n"
+"- **Copy dictionaries from (folder on the computer)**: where the "
+"dictionaries to copy are ([[kobo_woerterbuecher]]). Also set by Choose "
+"source in the E-reader area.\n"
 "\n"
-"**Dictionaries**\n"
-"- **Dictionaries (folder on the computer)**: where the dictionaries to copy "
-"are ([[kobo_woerterbuecher]]). Also set by Choose source in the E-reader "
-"area.\n"
+"How many KOReader backups are kept: [[einst_speichern]].\n"
 "\n"
 "**Ejecting**\n"
 "- **Remind me to eject when quitting** (default: on): only if something was "
@@ -6900,27 +6625,18 @@ msgid ""
 msgstr ""
 "\n"
 "**Erkennung**\n"
-"- **E-Reader suchen alle** (Standard: 3 Sekunden): wie oft das Programm "
-"prüft, ob ein E-Reader angesteckt oder abgezogen wurde ([[kobo]]).\n"
-"- **Wenn ein E-Reader angesteckt wird** (Standard: seine Bücher öffnen, "
-"nachfragen, wenn ein anderer Ordner offen ist): oder immer nachfragen, oder "
-"nichts tun ([[kobo]]).\n"
+"- **E-Reader suchen alle** (Standard: 3 Sekunden): wie oft das Programm prüft, ob ein E-Reader angesteckt oder abgezogen wurde ([[kobo]]).\n"
+"- **Wenn ein E-Reader angesteckt wird** (Standard: seine Bücher öffnen, nachfragen, wenn ein anderer Ordner offen ist): oder immer nachfragen, oder nichts tun ([[kobo]]).\n"
 "\n"
-"**Sicherungen**\n"
-"- **Sicherungen der KOReader-Einstellungen** (Standard: 10): so viele "
-"bleiben im Unterordner KOReader des Sicherungsordners, einschließlich der "
-"Sicherung vor jedem Zurückspielen ([[kobo_sicherungen]]).\n"
+"**Wörterbücher kopieren**\n"
+"- **Wörterbücher kopieren aus (Ordner auf dem Rechner)**: wo die Wörterbücher zum Kopieren liegen ([[kobo_woerterbuecher]]). Wird auch mit Quelle wählen im Bereich E-Reader gesetzt.\n"
 "\n"
-"**Wörterbücher**\n"
-"- **Wörterbücher (Ordner auf dem Rechner)**: wo die zu kopierenden "
-"Wörterbücher liegen ([[kobo_woerterbuecher]]). Wird auch über Quelle wählen "
-"im Bereich E-Reader gesetzt.\n"
+"Wie viele KOReader-Sicherungen bleiben: [[einst_speichern]].\n"
 "\n"
 "**Auswerfen**\n"
-"- **Beim Beenden ans Auswerfen erinnern** (Standard: an): nur, wenn in der "
-"Sitzung etwas auf den E-Reader geschrieben wurde ([[kobo_auswerfen]]).\n"
+"- **Beim Beenden ans Auswerfen erinnern** (Standard: an): nur, wenn in der Sitzung etwas auf den E-Reader geschrieben wurde ([[kobo_auswerfen]]).\n"
 
-#: help_topics.py:897
+#: help_topics.py:906
 msgid ""
 "\n"
 "Only on Linux and macOS.\n"
@@ -6946,11 +6662,11 @@ msgstr ""
 "mit Breite, Höhe (Pixel im Hochformat), ppi und Farbbildschirm für andere "
 "E-Reader mit KOReader. Siehe [[vorschau_bildschirm]].\n"
 
-#: help_topics.py:903 settings.py:60 settings.py:716
+#: help_topics.py:912 settings.py:63 settings.py:727
 msgid "Advanced"
 msgstr "Erweitert"
 
-#: help_topics.py:903
+#: help_topics.py:912
 msgid ""
 "\n"
 "**Files of the program**\n"
@@ -6995,11 +6711,11 @@ msgstr ""
 "Bleiben: geöffnete Ordner, die Liste der Wörterbücher, Fenstergröße, "
 "Sprache und der API-Schlüssel.\n"
 
-#: help_topics.py:917
+#: help_topics.py:926
 msgid "Installing and updating"
 msgstr "Installieren und aktualisieren"
 
-#: help_topics.py:917
+#: help_topics.py:926
 msgid ""
 "\n"
 "**Installing**\n"
@@ -7097,11 +6813,11 @@ msgstr ""
 "Der **Desktop-KOReader** für die Vorschau (nur Linux) gehört nicht zur "
 "Installation ([[vorschau]]).\n"
 
-#: help_topics.py:936
+#: help_topics.py:945
 msgid "Troubleshooting"
 msgstr "Fehlerbehebung"
 
-#: help_topics.py:936
+#: help_topics.py:945
 msgid ""
 "\n"
 "**KOReader still shows the old chapter names, blurb or cover**\n"
@@ -7115,9 +6831,9 @@ msgid ""
 "PNG and GIF can be shown.\n"
 "\n"
 "**\"No API key\" or nothing goes to Claude**\n"
-"- Key under [[einst_klappentexte_claude]] or the environment variable "
-"ANTHROPIC_API_KEY; package anthropic installed? Without a key only the free "
-"sources are asked.\n"
+"- Key under [[einst_online]] or the environment variable ANTHROPIC_API_KEY; "
+"package anthropic installed? Without a key only the free sources are "
+"asked.\n"
 "\n"
 "**API error**\n"
 "- The status bar shows Anthropic's message: no credit, wrong key, model "
@@ -7177,82 +6893,45 @@ msgid ""
 "are in the backup folder ([[speichern]]).\n"
 msgstr ""
 "\n"
-"**KOReader zeigt noch die alten Kapitelnamen, den alten Klappentext oder "
-"das alte Cover**\n"
-"- KOReader hält eine eigene Kopie der Buchinfos. Cover-Browser > Buch lange "
-"drücken bzw. Menü > **Extract and cache book information** (oder für den "
-"ganzen Ordner). Das Inhaltsverzeichnis wird beim Öffnen des Buchs neu "
-"gelesen.\n"
+"**KOReader zeigt noch die alten Kapitelnamen, den alten Klappentext oder das alte Cover**\n"
+"- KOReader hält eine eigene Kopie der Buchinfos. Cover-Browser > Buch lange drücken bzw. Menü > **Extract and cache book information** (oder für den ganzen Ordner). Das Inhaltsverzeichnis wird beim Öffnen des Buchs neu gelesen.\n"
 "\n"
 "**JPEG-Cover werden nicht gezeigt**\n"
-"- Das Paket **Pillow** fehlt: pip install pillow. Ohne lassen sich nur PNG "
-"und GIF zeigen.\n"
+"- Das Paket **Pillow** fehlt: pip install pillow. Ohne lassen sich nur PNG und GIF zeigen.\n"
 "\n"
 "**\"Kein API-Schlüssel\" oder nichts geht an Claude**\n"
-"- Schlüssel unter [[einst_klappentexte_claude]] oder Umgebungsvariable "
-"ANTHROPIC_API_KEY; Paket anthropic installiert? Ohne Schlüssel werden nur "
-"die kostenlosen Quellen gefragt.\n"
+"- Schlüssel unter [[einst_online]] oder Umgebungsvariable ANTHROPIC_API_KEY; Paket anthropic installiert? Ohne Schlüssel werden nur die kostenlosen Quellen gefragt.\n"
 "\n"
 "**API-Fehler**\n"
-"- Die Statuszeile zeigt die Meldung von Anthropic: kein Guthaben, falscher "
-"Schlüssel, Modellname unbekannt, überlastet. Das Buch gilt nicht als "
-"versucht und wird beim nächsten Mal wieder nachgeschlagen.\n"
+"- Die Statuszeile zeigt die Meldung von Anthropic: kein Guthaben, falscher Schlüssel, Modellname unbekannt, überlastet. Das Buch gilt nicht als versucht und wird beim nächsten Mal wieder nachgeschlagen.\n"
 "\n"
 "**Google Books / Open Library: Netzfehler**\n"
-"- Hinter einem Proxy oder ohne Netz ist nichts erreichbar; das Buch wird "
-"nicht als versucht vermerkt. Google begrenzt Anfragen ohne Schlüssel "
-"manchmal: später noch einmal.\n"
+"- Hinter einem Proxy oder ohne Netz ist nichts erreichbar; das Buch wird nicht als versucht vermerkt. Google begrenzt Anfragen ohne Schlüssel manchmal: später noch einmal.\n"
 "\n"
 "**Der E-Reader wird nicht gefunden**\n"
-"- Am E-Reader die Verbindung bestätigen (KOReader: USB-Massenspeicher, bzw. "
-"in der Software des Geräts: Verbinden).\n"
-"- Neuere Kindles und Android-Geräte verbinden sich nur per MTP, ohne "
-"Laufwerk ([[kobo_geraete]]).\n"
-"- Dann ein paar Sekunden warten oder Menü E-Reader > **E-Reader suchen**. "
-"Ist das Laufwerk eingehängt (Linux: Dateimanager)? Notfalls den "
-"Bücherordner auf dem E-Reader öffnen: dann zählt dessen Wurzel mit.\n"
+"- Am E-Reader die Verbindung bestätigen (KOReader: USB-Massenspeicher, bzw. in der Software des Geräts: Verbinden).\n"
+"- Neuere Kindles und Android-Geräte verbinden sich nur per MTP, ohne Laufwerk ([[kobo_geraete]]).\n"
+"- Dann ein paar Sekunden warten oder Menü E-Reader > **E-Reader suchen**. Ist das Laufwerk eingehängt (Linux: Dateimanager)? Notfalls den Bücherordner auf dem E-Reader öffnen: dann zählt dessen Wurzel mit.\n"
 "\n"
 "**Zurückgespielte Einstellungen sind wieder weg**\n"
-"- KOReader schreibt seine Einstellungen beim Beenden. Erst auswerfen, dann "
-"KOReader starten - in einem KOReader, der schon lief, nichts mehr ändern.\n"
+"- KOReader schreibt seine Einstellungen beim Beenden. Erst auswerfen, dann KOReader starten - in einem KOReader, der schon lief, nichts mehr ändern.\n"
 "\n"
 "**Eine Kapitelebene lässt sich nicht ändern**\n"
-"- nav.xhtml und toc.ncx dieses Buchs haben unterschiedlich viele Einträge; "
-"die Statuszeile nennt den Grund ([[kapitel_ebenen]]).\n"
+"- nav.xhtml und toc.ncx dieses Buchs haben unterschiedlich viele Einträge; die Statuszeile nennt den Grund ([[kapitel_ebenen]]).\n"
 "\n"
 "**Vorschau: Fenster zu groß oder Patches schlagen fehl**\n"
-"- \"An den Bildschirm angepasst\" wählen ([[vorschau_bildschirm]]). "
-"Patches, die Kobo-Hardware brauchen, schlagen auf dem Rechner fehl; die "
-"Ausgabe unter **Profil, Gerät und Ausgabe** sagt, welche (Werkbank: "
-"vorschau/werkbank/koreader.log).\n"
+"- \"An den Bildschirm angepasst\" wählen ([[vorschau_bildschirm]]). Patches, die Kobo-Hardware brauchen, schlagen auf dem Rechner fehl; die Ausgabe unter **Profil, Gerät und Ausgabe** sagt, welche (Werkbank: vorschau/werkbank/koreader.log).\n"
 "\n"
 "**Vorschau: Die Werkbank zeigt kein Bild**\n"
-"- Die Zeile unter ◀ ▶ sagt, was KOReader meldet. **Neu starten** versucht "
-"es noch einmal; nötig ist ein Profil vom E-Reader ([[vorschau_profil]]). "
-"Startet KOReader selbst nicht, gelten dieselben Ursachen wie beim Fenster "
-"(unten).\n"
+"- Die Zeile unter ◀ ▶ sagt, was KOReader meldet. **Neu starten** versucht es noch einmal; nötig ist ein Profil vom E-Reader ([[vorschau_profil]]). Startet KOReader selbst nicht, gelten dieselben Ursachen wie beim Fenster (unten).\n"
 "\n"
-"**Vorschau: KOReader geht sofort wieder zu (\"device/kobo/device.lua\" in "
-"der Ausgabe)**\n"
-"- Der Desktop-KOReader hält den Rechner für einen E-Reader: bis mindestens "
-"Version 2026.07 erkennt er das Gerät an Dateien wie /usr/bin/hwdetect "
-"(Arch/EndeavourOS: Paket hwdetect), /bin/kobo_config.sh oder /proc/usid. "
-"KOReader allein macht das genauso.\n"
-"- In der Vorschau passiert das normalerweise nicht: Bookbench legt einen "
-"Start-Patch (1-bookbench-desktop.lua) ins Profil, der diese Dateien vor "
-"KOReader versteckt. Er zählt nicht zu deinen Patches und kommt nie auf den "
-"E-Reader. Er wirkt nicht, wenn Patches in KOReader abgeschaltet sind; dann "
-"sagt Bookbench das und welche Datei es ist.\n"
-"- Ausweg: KOReader als Flatpak (flatpak install flathub "
-"rocks.koreader.KOReader), das sieht diese Dateien nicht. Unter "
-"Einstellungen > Gerät > Vorschau > Desktop-KOReader **flatpak** eintragen "
-"([[einst_vorschau]]), damit es auch dann genommen wird, wenn KOReader "
-"zusätzlich normal installiert ist. Oder die Datei entfernen, wenn sonst "
-"nichts sie braucht.\n"
+"**Vorschau: KOReader geht sofort wieder zu (\"device/kobo/device.lua\" in der Ausgabe)**\n"
+"- Der Desktop-KOReader hält den Rechner für einen E-Reader: bis mindestens Version 2026.07 erkennt er das Gerät an Dateien wie /usr/bin/hwdetect (Arch/EndeavourOS: Paket hwdetect), /bin/kobo_config.sh oder /proc/usid. KOReader allein macht das genauso.\n"
+"- In der Vorschau passiert das normalerweise nicht: Bookbench legt einen Start-Patch (1-bookbench-desktop.lua) ins Profil, der diese Dateien vor KOReader versteckt. Er zählt nicht zu deinen Patches und kommt nie auf den E-Reader. Er wirkt nicht, wenn Patches in KOReader abgeschaltet sind; dann sagt Bookbench das und welche Datei es ist.\n"
+"- Ausweg: KOReader als Flatpak (flatpak install flathub rocks.koreader.KOReader), das sieht diese Dateien nicht. Unter Einstellungen > Gerät > Vorschau > Desktop-KOReader **flatpak** eintragen ([[einst_vorschau]]), damit es auch dann genommen wird, wenn KOReader zusätzlich normal installiert ist. Oder die Datei entfernen, wenn sonst nichts sie braucht.\n"
 "\n"
 "**Etwas anderes**\n"
-"- Die Statuszeile hat immer die letzte Meldung. Sicherungen aller "
-"gespeicherten Bücher liegen im Sicherungsordner ([[speichern]]).\n"
+"- Die Statuszeile hat immer die letzte Meldung. Sicherungen aller gespeicherten Bücher liegen im Sicherungsordner ([[speichern]]).\n"
 
 #: koreader_settings.py:30 plugins.py:52
 msgid "Font size"
@@ -7474,7 +7153,7 @@ msgstr "Autor"
 msgid "Publisher"
 msgstr "Verlag"
 
-#: listing.py:64 metadata.py:38 settings.py:197
+#: listing.py:64 metadata.py:38 settings.py:200
 msgid "Language"
 msgstr "Sprache"
 
@@ -7606,7 +7285,7 @@ msgstr "{n} Bücher mit ungespeicherten Änderungen"
 msgid "connected"
 msgstr "angeschlossen"
 
-#: markers.py:38 settings.py:235
+#: markers.py:38 settings.py:238
 msgid "Sidebar"
 msgstr "Seitenleiste"
 
@@ -7768,7 +7447,7 @@ msgstr "Unten rechts"
 msgid "Regular"
 msgstr "Normal"
 
-#: plugins.py:44 workbench_plugins.py:1115
+#: plugins.py:44 workbench_plugins.py:1127
 msgid "Bold"
 msgstr "Fett"
 
@@ -7784,7 +7463,7 @@ msgstr "Fett kursiv"
 msgid "Font scale (%)"
 msgstr "Schriftskalierung (%)"
 
-#: plugins.py:53 workbench_plugins.py:610
+#: plugins.py:53 workbench_plugins.py:622
 msgid "Margin top"
 msgstr "Rand oben"
 
@@ -7792,7 +7471,7 @@ msgstr "Rand oben"
 msgid "Margin bottom"
 msgstr "Rand unten"
 
-#: plugins.py:54 workbench_plugins.py:256 workbench_plugins.py:610
+#: plugins.py:54 workbench_plugins.py:265 workbench_plugins.py:622
 msgid "Margin left"
 msgstr "Rand links"
 
@@ -7948,7 +7627,7 @@ msgstr "Unsichtbare Knöpfe"
 msgid "Start menu button"
 msgstr "Knopf Startmenü"
 
-#: plugins.py:442 settings.py:307
+#: plugins.py:442 settings.py:310
 msgid "Off"
 msgstr "Aus"
 
@@ -7960,11 +7639,11 @@ msgstr "Regal-Knöpfe so breit wie ihr Text"
 msgid "Shelf buttons in capitals"
 msgstr "Regal-Knöpfe in Großbuchstaben"
 
-#: plugins.py:445 settings.py:40 workbench_plugins.py:268
+#: plugins.py:445 settings.py:44 workbench_plugins.py:278
 msgid "General"
 msgstr "Allgemein"
 
-#: plugins.py:446 workbench_plugins.py:1026 workbench_plugins.py:1517 workbench_plugins.py:1529 workbench_plugins.py:1554
+#: plugins.py:446 workbench_plugins.py:1038 workbench_plugins.py:1529 workbench_plugins.py:1541 workbench_plugins.py:1566
 msgid "Start menu"
 msgstr "Startmenü"
 
@@ -7984,7 +7663,7 @@ msgstr "Stapel-Beschriftungen"
 msgid "Modules in the hero card"
 msgstr "Module in der Hero-Karte"
 
-#: plugins.py:451 workbench_plugins.py:1753
+#: plugins.py:451 workbench_plugins.py:1765
 msgid "Full screen shelves"
 msgstr "Vollbild-Regale"
 
@@ -8064,7 +7743,7 @@ msgstr "Sammlungen"
 msgid "Genres"
 msgstr "Genres"
 
-#: plugins.py:476 workbench_plugins.py:1434 workbench_plugins.py:1436
+#: plugins.py:476 workbench_plugins.py:1446 workbench_plugins.py:1448
 msgid "Folder"
 msgstr "Ordner"
 
@@ -8128,7 +7807,7 @@ msgstr "Mittel"
 msgid "Heavy"
 msgstr "Stark"
 
-#: plugins.py:814 transfer_window.py:48 workbench_plugins.py:1751
+#: plugins.py:814 transfer_window.py:48 workbench_plugins.py:1763
 msgid "None"
 msgstr "Keine"
 
@@ -8216,7 +7895,7 @@ msgstr "Auswahl"
 msgid "Cover shadow"
 msgstr "Cover-Schatten"
 
-#: plugins.py:823 workbench_plugins.py:1021 workbench_plugins.py:1774
+#: plugins.py:823 workbench_plugins.py:1033 workbench_plugins.py:1786
 msgid "Plank"
 msgstr "Brett"
 
@@ -8236,7 +7915,7 @@ msgstr "Gewähltes Regal"
 msgid "Selected shelf text"
 msgstr "Gewähltes Regal (Text)"
 
-#: plugins.py:826 workbench_plugins.py:1324
+#: plugins.py:826 workbench_plugins.py:1336
 msgid "Page"
 msgstr "Seite"
 
@@ -8244,83 +7923,81 @@ msgstr "Seite"
 msgid "plank"
 msgstr "Brett"
 
-#: settings.py:40
+#: settings.py:44
 msgid "Language, look, start, updates"
 msgstr "Sprache, Aussehen, Start, Updates"
 
-#: settings.py:41
+#: settings.py:45
 msgid "Language of the interface, light or dark"
 msgstr "Sprache der Oberfläche, hell oder dunkel"
 
-#: settings.py:42
+#: settings.py:46
 msgid "Status strip, tooltips, covers in the headers, sidebar"
 msgstr "Statusstreifen, Tooltips, Cover in den Kopfzeilen, Seitenleiste"
 
-#: settings.py:43
+#: settings.py:47
 msgid "Which symbols are shown where"
 msgstr "Welche Piktogramme wo erscheinen"
 
-#: settings.py:44
+#: settings.py:48
 msgid "What opens when the program starts"
 msgstr "Was beim Programmstart geöffnet wird"
 
-#: settings.py:45
+#: settings.py:49
 msgid "Checking for new versions"
 msgstr "Suche nach neuen Versionen"
 
-#: settings.py:46
-msgid "Backup folder and how many backups are kept"
-msgstr "Sicherungsordner und wie viele Sicherungen bleiben"
+#: settings.py:50
+msgid "Backup folder, backups of books and of the KOReader settings"
+msgstr ""
+"Sicherungsordner, Sicherungen der Bücher und der KOReader-Einstellungen"
 
-#: settings.py:47
+#: settings.py:51
 msgid "Chapters, blurbs, covers and metadata"
 msgstr "Kapitel, Klappentexte, Cover und Metadaten"
 
-#: settings.py:48
+#: settings.py:52
 msgid "How chapter names are taken from the book text"
 msgstr "Wie Kapitelnamen aus dem Buchtext entstehen"
 
-#: settings.py:49
+#: settings.py:53
 msgid "Order of the sources, free sources, checks"
 msgstr "Reihenfolge der Quellen, kostenlose Quellen, Prüfungen"
 
-#: settings.py:51
+#: settings.py:55
 msgid "Where Claude looks, per publisher, series or author"
 msgstr "Wo Claude sucht, je Verlag, Reihe oder Autor"
 
-#: settings.py:52
-msgid "Key, model, cost estimate"
-msgstr "Schlüssel, Modell, Kostenschätzung"
-
-#: settings.py:53
+#: settings.py:56
 msgid "Inserting and marking covers"
 msgstr "Cover einsetzen und markieren"
 
-#: settings.py:54
+#: settings.py:57
 msgid "Sources and which images count"
 msgstr "Quellen und welche Bilder zählen"
 
-#: settings.py:55
-msgid "Own fields from Calibre columns, e.g. a subtitle"
-msgstr "Eigene Felder aus Calibre-Spalten, z. B. ein Untertitel"
+#: settings.py:58
+msgid "Own fields from Calibre columns, comparing with Calibre"
+msgstr "Eigene Felder aus Calibre-Spalten, Abgleich mit Calibre"
 
-#: settings.py:56
-msgid "Comparing with Calibre's metadata.calibre on or off"
-msgstr "Abgleich mit Calibres metadata.calibre an oder aus"
-
-#: settings.py:57
+#: settings.py:59
 msgid "E-reader and preview"
 msgstr "E-Reader und Vorschau"
 
-#: settings.py:58
-msgid "Detection, backups, dictionaries, ejecting"
-msgstr "Erkennung, Sicherungen, Wörterbücher, Auswerfen"
+#: settings.py:60
+msgid "Detection, copying dictionaries, ejecting"
+msgstr "Erkennung, Wörterbücher kopieren, Auswerfen"
 
-#: settings.py:59
+#: settings.py:61
 msgid "Desktop KOReader and the device shown"
 msgstr "Desktop-KOReader und das nachgebildete Gerät"
 
-#: settings.py:60
+#: settings.py:62
+msgid "Google Books key, Claude API: key, model, cost estimate"
+msgstr ""
+"Google-Books-Schlüssel, Claude API: Schlüssel, Modell, Kostenschätzung"
+
+#: settings.py:63
 msgid "Files of the program, cache, export, reset"
 msgstr "Dateien des Programms, Zwischenspeicher, Export, Zurücksetzen"
 
@@ -8328,15 +8005,15 @@ msgstr "Dateien des Programms, Zwischenspeicher, Export, Zurücksetzen"
 msgid "Web search"
 msgstr "Websuche"
 
-#: settings.py:95 workbench_plugins.py:1107
+#: settings.py:95 workbench_plugins.py:1119
 msgid "Subtitle"
 msgstr "Untertitel"
 
-#: settings.py:192
+#: settings.py:195
 msgid "Automatic (system language)"
 msgstr "Automatisch (Systemsprache)"
 
-#: settings.py:206
+#: settings.py:209
 msgid ""
 "Automatic: German if the system language is German, otherwise English. The "
 "change applies at once; folder, area, selected book and unsaved changes "
@@ -8346,11 +8023,11 @@ msgstr ""
 "Die Änderung wirkt sofort; Ordner, Bereich, gewähltes Buch und "
 "ungespeicherte Änderungen bleiben, wie sie sind."
 
-#: settings.py:208
+#: settings.py:211
 msgid "Theme"
 msgstr "Farben"
 
-#: settings.py:210
+#: settings.py:213
 msgid ""
 "Like the system: the style and colours of your desktop (on KDE with the "
 "system's PySide6: Breeze), checked at start. Light and dark use the colours "
@@ -8360,15 +8037,15 @@ msgstr ""
 "Systems: Breeze), beim Start ermittelt. Hell und Dunkel nehmen die Farben "
 "des Keller-Designleitfadens."
 
-#: settings.py:216
+#: settings.py:219
 msgid "Lists"
 msgstr "Listen"
 
-#: settings.py:217
+#: settings.py:220
 msgid "Status strip next to the lists"
 msgstr "Statusstreifen neben den Listen"
 
-#: settings.py:218
+#: settings.py:221
 msgid ""
 "Coloured dots (changed, applied, saved) and ⚠ to the right of the book "
 "lists."
@@ -8376,51 +8053,51 @@ msgstr ""
 "Farbige Punkte (geändert, übernommen, gespeichert) und ⚠ rechts neben den "
 "Bücherlisten."
 
-#: settings.py:220
+#: settings.py:223
 msgid "Tooltips"
 msgstr "Tooltips"
 
-#: settings.py:221
+#: settings.py:224
 msgid "Show tooltips"
 msgstr "Tooltips zeigen"
 
-#: settings.py:221
+#: settings.py:224
 msgid "Explanations when the mouse stays over a button."
 msgstr "Erklärungen, wenn die Maus über einem Knopf stehen bleibt."
 
-#: settings.py:223
+#: settings.py:226
 msgid "Delay (ms):"
 msgstr "Verzögerung (ms):"
 
-#: settings.py:224
+#: settings.py:227
 msgid "How long the mouse has to stay still before the explanation appears."
 msgstr "Wie lange die Maus stillstehen muss, bis die Erklärung erscheint."
 
-#: settings.py:226
+#: settings.py:229
 msgid "Covers in the headers"
 msgstr "Cover in den Kopfzeilen"
 
-#: settings.py:227
+#: settings.py:230
 msgid "Show cover in Chapters"
 msgstr "Cover in Kapitel zeigen"
 
-#: settings.py:228
+#: settings.py:231
 msgid "Small cover next to the book title; a click shows it large."
 msgstr "Kleines Cover neben dem Buchtitel; ein Klick zeigt es groß."
 
-#: settings.py:229
+#: settings.py:232
 msgid "Height (px):"
 msgstr "Höhe (px):"
 
-#: settings.py:229
+#: settings.py:232
 msgid "Default 96."
 msgstr "Standard 96."
 
-#: settings.py:231
+#: settings.py:234
 msgid "Double-click on a book opens it in:"
 msgstr "Doppelklick auf ein Buch öffnet es in:"
 
-#: settings.py:233
+#: settings.py:236
 msgid ""
 "Right-click on a book offers all of them. KOReader: selects the book in the "
 "Preview and starts the desktop KOReader with it."
@@ -8428,11 +8105,11 @@ msgstr ""
 "Ein Rechtsklick auf ein Buch bietet alle an. KOReader: wählt das Buch in "
 "der Vorschau und startet damit den Desktop-KOReader."
 
-#: settings.py:236
+#: settings.py:239
 msgid "Sidebar expanded"
 msgstr "Seitenleiste ausgeklappt"
 
-#: settings.py:237
+#: settings.py:240
 msgid ""
 "With names and counters; collapsed only the symbols. Ctrl+B switches at any "
 "time."
@@ -8440,7 +8117,7 @@ msgstr ""
 "Mit Namen und Zählern; eingeklappt nur die Symbole. Strg+B schaltet "
 "jederzeit um."
 
-#: settings.py:242
+#: settings.py:245
 msgid ""
 "The small symbols next to the books and in the sidebar (no cover, no blurb, "
 "questionable chapter names …). Switched off, a symbol is only hidden: "
@@ -8450,15 +8127,15 @@ msgstr ""
 "kein Klappentext, fragwürdige Kapitelnamen …). Abgeschaltet ist ein Symbol "
 "nur ausgeblendet: Filter und Sortieren nach Status zählen es weiter."
 
-#: settings.py:270
+#: settings.py:273
 msgid "All on"
 msgstr "Alle an"
 
-#: settings.py:271
+#: settings.py:274
 msgid "All off"
 msgstr "Alle aus"
 
-#: settings.py:273
+#: settings.py:276
 msgid ""
 "Book lists: the narrow lists in Chapters and Metadata. Library: the Status "
 "column of the library. The coloured dot for changed, applied and saved "
@@ -8469,11 +8146,11 @@ msgstr ""
 "und gespeichert bleibt; den ganzen Streifen schaltet man unter Oberfläche "
 "ab."
 
-#: settings.py:283
+#: settings.py:286
 msgid "Open the last folder"
 msgstr "Letzten Ordner öffnen"
 
-#: settings.py:284
+#: settings.py:287
 msgid ""
 "The books folder that was open when the program was last closed, if it "
 "still exists (e.g. the e-reader is connected). Otherwise the program starts "
@@ -8482,29 +8159,29 @@ msgstr ""
 "Der Bücherordner, der beim letzten Beenden offen war, wenn es ihn noch gibt "
 "(z. B. der E-Reader angeschlossen ist). Sonst startet das Programm leer."
 
-#: settings.py:286
+#: settings.py:289
 msgid "Area at start"
 msgstr "Bereich beim Start"
 
-#: settings.py:287
+#: settings.py:290
 msgid "The last area used"
 msgstr "Der zuletzt benutzte Bereich"
 
-#: settings.py:294
+#: settings.py:297
 msgid "This copy"
 msgstr "Diese Kopie"
 
-#: settings.py:295
+#: settings.py:298
 msgid "Installed with the Windows setup: updates are installed by the setup."
 msgstr "Mit dem Windows-Setup installiert: Updates spielt das Setup ein."
 
-#: settings.py:296
+#: settings.py:299
 msgid ""
 "Installed with install.sh: updates replace the program folder {ordner}."
 msgstr ""
 "Mit install.sh installiert: Updates ersetzen den Programmordner {ordner}."
 
-#: settings.py:298
+#: settings.py:301
 msgid ""
 "Runs from the source code ({ordner}), e.g. a git clone: updates are only "
 "shown, not installed, and there is no automatic check."
@@ -8512,31 +8189,31 @@ msgstr ""
 "Läuft aus dem Quelltext ({ordner}), z. B. ein git-Klon: Updates werden nur "
 "angezeigt, nicht eingespielt, und es gibt keine automatische Suche."
 
-#: settings.py:301
+#: settings.py:304
 msgid "Check now"
 msgstr "Jetzt suchen"
 
-#: settings.py:303
+#: settings.py:306
 msgid "Last check: {wann}"
 msgstr "Zuletzt gesucht: {wann}"
 
-#: settings.py:306
+#: settings.py:309
 msgid "Automatic check"
 msgstr "Automatische Suche"
 
-#: settings.py:307
+#: settings.py:310
 msgid "At every start"
 msgstr "Bei jedem Start"
 
-#: settings.py:308
+#: settings.py:311
 msgid "At start, at most once a day"
 msgstr "Beim Start, höchstens einmal am Tag"
 
-#: settings.py:309
+#: settings.py:312
 msgid "At start, at most once a week"
 msgstr "Beim Start, höchstens einmal pro Woche"
 
-#: settings.py:310
+#: settings.py:313
 msgid ""
 "Looks a few seconds after the start whether GitHub has a newer release. "
 "Only a new version shows a window; errors (no network) only appear in the "
@@ -8546,37 +8223,33 @@ msgstr ""
 "Veröffentlichung gibt. Nur eine neue Version öffnet ein Fenster; Fehler "
 "(kein Netz) stehen nur in der Statuszeile."
 
-#: settings.py:316
+#: settings.py:320
 msgid "Skipped version: {version}"
 msgstr "Übersprungene Version: {version}"
 
-#: settings.py:321
-msgid "Skipped version: none"
-msgstr "Übersprungene Version: keine"
-
-#: settings.py:322 workbench_sleep.py:50
+#: settings.py:325 workbench_sleep.py:50
 msgid "Show again"
 msgstr "Wieder anzeigen"
 
-#: settings.py:325
+#: settings.py:328
 msgid "Include pre-releases"
 msgstr "Vorabversionen einbeziehen"
 
-#: settings.py:326
+#: settings.py:329
 msgid "Also offers releases marked as pre-release on GitHub (test versions)."
 msgstr ""
 "Bietet auch Veröffentlichungen an, die auf GitHub als Vorabversion "
 "(pre-release) markiert sind (Testversionen)."
 
-#: settings.py:327
+#: settings.py:330
 msgid "The releases come from github.com/{repo}."
 msgstr "Die Veröffentlichungen kommen von github.com/{repo}."
 
-#: settings.py:338
+#: settings.py:341
 msgid "Backup folder"
 msgstr "Sicherungsordner"
 
-#: settings.py:339
+#: settings.py:342
 msgid ""
 "Before each save the book is copied here (name with date and time). Do not "
 "put it on the e-reader, or KOReader shows the backups as books. The "
@@ -8588,19 +8261,31 @@ msgstr ""
 "Sicherungen als Bücher. Die KOReader-Sicherungen aus dem Bereich E-Reader "
 "kommen in den Unterordner KOReader, Wörterbücher in Wörterbücher."
 
-#: settings.py:343
+#: settings.py:346
 msgid "Backups per book:"
 msgstr "Sicherungen je Buch:"
 
-#: settings.py:344
+#: settings.py:347
 msgid "The newest ones are kept, older ones are deleted when saving."
 msgstr "Die neuesten bleiben, ältere werden beim Speichern gelöscht."
 
+#: settings.py:348
+msgid "Backups of the KOReader settings:"
+msgstr "Sicherungen der KOReader-Einstellungen:"
+
 #: settings.py:349
+msgid ""
+"Backups made in the E-reader area. This many stay in the KOReader subfolder "
+"of the backup folder; older ones are deleted. This includes the backup made "
+"before each restore."
+msgstr ""
+"Sicherungen aus dem Bereich E-Reader. So viele bleiben im Unterordner KOReader des Sicherungsordners; ältere werden gelöscht. Dazu zählt auch die Sicherung, die vor jedem Zurückspielen angelegt wird."
+
+#: settings.py:356
 msgid "Subtitle lines per chapter:"
 msgstr "Untertitel-Zeilen je Kapitel:"
 
-#: settings.py:350
+#: settings.py:357
 msgid ""
 "1: only the first line below the number. Some books have three; with 3 all "
 "of them are joined with \" / \". Applies after reloading (F5)."
@@ -8608,11 +8293,11 @@ msgstr ""
 "1: nur die erste Zeile unter der Nummer. Bei Horus Rising stehen drei; mit "
 "3 werden alle mit \" / \" verbunden. Gilt nach dem Neu-Einlesen (F5)."
 
-#: settings.py:352
+#: settings.py:359
 msgid "Write entries in capitals normally"
 msgstr "Einträge in Großbuchstaben normal schreiben"
 
-#: settings.py:353
+#: settings.py:360
 msgid ""
 "THE SHIRE becomes The Shire, A LONG-EXPECTED PARTY becomes A Long-Expected "
 "Party. Applies after reloading (F5)."
@@ -8620,7 +8305,7 @@ msgstr ""
 "PRIMOGENITOR wird zu Primogenitor, A MEMORY OF THARSIS zu A Memory of "
 "Tharsis. Gilt nach dem Neu-Einlesen (F5)."
 
-#: settings.py:358
+#: settings.py:365
 msgid ""
 "Order when looking up: the EPUB itself, Calibre (From Calibre), the free "
 "sources, then Claude with the matching source profile."
@@ -8628,65 +8313,52 @@ msgstr ""
 "Reihenfolge beim Nachschlagen: das EPUB selbst, Calibre (Aus Calibre), die "
 "kostenlosen Quellen, dann Claude mit dem passenden Quellprofil."
 
-#: settings.py:360
+#: settings.py:367
 msgid "Free sources"
 msgstr "Kostenlose Quellen"
 
-#: settings.py:361
+#: settings.py:368
 msgid "Ask Google Books and Open Library first"
 msgstr "Zuerst Google Books und Open Library fragen"
 
-#: settings.py:362
-msgid ""
-"No key, no cost. Claude is only asked if they have nothing. Switched off, "
-"every look-up goes to Claude."
-msgstr ""
-"Ohne Schlüssel, ohne Kosten. Claude wird nur gefragt, wenn dort nichts "
-"steht. Abgeschaltet geht jedes Nachschlagen an Claude."
-
-#: settings.py:364
-msgid "Own Google Books API key (optional)"
-msgstr "Eigener Google-Books-API-Schlüssel (optional)"
-
-#: settings.py:365
-msgid ""
-"Without a key, Google Books often answers \"quota exceeded\": everyone "
-"without a key shares one daily quota. With your own key (free, Google Cloud "
-"Console: enable the Books API, then create an API key) you get your own "
-"quota. Also used for looking up covers. Stored in plain text in the "
-"settings file."
-msgstr ""
-"Ohne Schlüssel antwortet Google Books oft mit „Kontingent überschritten“: "
-"alle ohne Schlüssel teilen sich ein Tageskontingent. Mit eigenem Schlüssel "
-"(kostenlos, Google Cloud Console: Books API aktivieren, dann einen "
-"API-Schlüssel anlegen) gibt es ein eigenes. Gilt auch fürs Nachschlagen von "
-"Covern. Steht im Klartext in der Einstellungsdatei."
-
 #: settings.py:369
+msgid ""
+"No cost. Claude is only asked if they have nothing. Switched off, every "
+"look-up goes to Claude."
+msgstr ""
+"Ohne Kosten. Claude wird nur gefragt, wenn dort nichts steht. Abgeschaltet geht jedes Nachschlagen an Claude."
+
+#: settings.py:371
+msgid ""
+"An own Google Books key (Online services) avoids the shared daily quota."
+msgstr ""
+"Ein eigener Google-Books-Schlüssel (Online-Dienste) umgeht das geteilte Tageskontingent."
+
+#: settings.py:372
 msgid "Checks"
 msgstr "Prüfungen"
 
-#: settings.py:370
+#: settings.py:373
 msgid "Shortest blurb (characters):"
 msgstr "Kürzester Klappentext (Zeichen):"
 
-#: settings.py:371
+#: settings.py:374
 msgid "Shorter texts from a source are not taken (often only a teaser line)."
 msgstr ""
 "Kürzere Texte einer Quelle werden nicht genommen (oft nur ein Anreißer)."
 
-#: settings.py:372
+#: settings.py:375
 msgid "Longest blurb (characters):"
 msgstr "Längster Klappentext (Zeichen):"
 
-#: settings.py:373
+#: settings.py:376
 msgid ""
 "Longer texts are not taken (usually a plot summary or a whole article)."
 msgstr ""
 "Längere Texte werden nicht genommen (meist eine Inhaltsangabe oder ein "
 "ganzer Artikel)."
 
-#: settings.py:378
+#: settings.py:381
 msgid ""
 "A profile says where Claude looks for a blurb. The first active profile "
 "that fits the book is used; order with Up/Down. Double-click edits."
@@ -8695,23 +8367,23 @@ msgstr ""
 "aktive Profil, das zum Buch passt; Reihenfolge mit Höher/Tiefer. "
 "Doppelklick bearbeitet."
 
-#: settings.py:381 settings.py:863
+#: settings.py:384 settings.py:874
 msgid "Applies to"
 msgstr "Gilt für"
 
-#: settings.py:384
+#: settings.py:387
 msgid "Edit …"
 msgstr "Bearbeiten …"
 
-#: settings.py:385 settings.py:541 workbench_plugins.py:130 workbench_reader.py:323
+#: settings.py:388 settings.py:563 workbench_plugins.py:130 workbench_reader.py:323
 msgid "Delete"
 msgstr "Löschen"
 
-#: settings.py:387
+#: settings.py:390
 msgid "Defaults"
 msgstr "Standard"
 
-#: settings.py:388
+#: settings.py:391
 msgid ""
 "Defaults puts the included profiles (Lexicanum, web search) back; your own "
 "profiles are removed."
@@ -8719,27 +8391,51 @@ msgstr ""
 "Standard holt die mitgelieferten Profile (Lexicanum, Websuche) zurück; "
 "eigene Profile werden entfernt."
 
-#: settings.py:394
+#: settings.py:397
+msgid ""
+"Keys for the services Bookbench asks on the internet. Both are stored in "
+"plain text in the settings file (also when exporting it). What is sent "
+"where: Help > Costs and privacy."
+msgstr ""
+"Schlüssel für die Dienste, die Bookbench im Internet fragt. Beide stehen im Klartext in der Einstellungsdatei (auch beim Exportieren). Was wohin geht: Hilfe > Kosten und Datenschutz."
+
+#: settings.py:401
+msgid "Own Google Books API key (optional)"
+msgstr "Eigener Google-Books-API-Schlüssel (optional)"
+
+#: settings.py:402
+msgid ""
+"For looking up blurbs and covers. Without a key, Google Books often answers "
+"\"quota exceeded\": everyone without a key shares one daily quota. With "
+"your own key (free, Google Cloud Console: enable the Books API, then create "
+"an API key) you get your own quota."
+msgstr ""
+"Fürs Nachschlagen von Klappentexten und Covern. Ohne Schlüssel antwortet Google Books oft mit „Kontingent überschritten“: alle ohne Schlüssel teilen sich ein Tageskontingent. Mit eigenem Schlüssel (kostenlos, Google Cloud Console: Books API aktivieren, dann einen API-Schlüssel anlegen) gibt es ein eigenes."
+
+#: settings.py:406
+msgid "Claude API"
+msgstr "Claude-API"
+
+#: settings.py:407
 msgid "API key"
 msgstr "API-Schlüssel"
 
-#: settings.py:394
+#: settings.py:408
 msgid ""
-"From console.anthropic.com. Empty: environment variable ANTHROPIC_API_KEY. "
-"Stored in plain text in the settings file."
+"From console.anthropic.com; for blurbs from source profiles and for "
+"dictionary entries. Empty: environment variable ANTHROPIC_API_KEY."
 msgstr ""
-"Von console.anthropic.com. Leer: Umgebungsvariable ANTHROPIC_API_KEY. Wird "
-"im Klartext in der Einstellungsdatei gespeichert."
+"Von console.anthropic.com; für Klappentexte aus Quellprofilen und Wörterbuch-Einträge. Leer: Umgebungsvariable ANTHROPIC_API_KEY."
 
-#: settings.py:397
+#: settings.py:413
 msgid "Model"
 msgstr "Modell"
 
-#: settings.py:409
+#: settings.py:425
 msgid "Load list"
 msgstr "Liste laden"
 
-#: settings.py:411
+#: settings.py:427
 msgid ""
 "Haiku is enough for looking things up and is the cheapest. Load list asks "
 "Anthropic with the API key which models there are; typing a name also works."
@@ -8748,11 +8444,11 @@ msgstr ""
 "dem API-Schlüssel bei Anthropic nach, welche Modelle es gibt; einen Namen "
 "eintippen geht auch."
 
-#: settings.py:414
+#: settings.py:430
 msgid "Estimated cost per book ($):"
 msgstr "Geschätzte Kosten je Buch ($):"
 
-#: settings.py:415
+#: settings.py:431
 msgid ""
 "Only for the question before \"Look up all\"; the real cost depends on page "
 "length and searches."
@@ -8760,53 +8456,53 @@ msgstr ""
 "Nur für die Rückfrage vor \"Alle nachschlagen\"; die echten Kosten hängen "
 "von Seitenlänge und Suchen ab."
 
-#: settings.py:422
+#: settings.py:438
 msgid "Enter the API key first."
 msgstr "Erst den API-Schlüssel eintragen."
 
-#: settings.py:424
+#: settings.py:440
 msgid "Asking Anthropic …"
 msgstr "Frage bei Anthropic nach …"
 
-#: settings.py:432
+#: settings.py:448
 msgid "Anthropic returned no models."
 msgstr "Anthropic hat keine Modelle geliefert."
 
-#: settings.py:434
+#: settings.py:450
 msgid "The package anthropic is missing (pip install anthropic)."
 msgstr "Das Paket anthropic fehlt (pip install anthropic)."
 
-#: settings.py:436
+#: settings.py:452
 msgid "Could not load the models ({fehler})."
 msgstr "Die Modelle ließen sich nicht laden ({fehler})."
 
-#: settings.py:448
+#: settings.py:464
 msgid "{n} model loaded; the list is newest first."
 msgid_plural "{n} models loaded; the list is newest first."
 msgstr[0] "{n} Modell geladen; die Liste ist neueste zuerst."
 msgstr[1] "{n} Modelle geladen; die Liste ist neueste zuerst."
 
-#: settings.py:459
+#: settings.py:475
 msgid "all books"
 msgstr "alle Bücher"
 
-#: settings.py:460
+#: settings.py:476
 msgid "(off) {text}"
 msgstr "(aus) {text}"
 
-#: settings.py:476
+#: settings.py:492
 msgid "New profile"
 msgstr "Neues Profil"
 
-#: settings.py:506
+#: settings.py:522
 msgid "Inserting a new cover"
 msgstr "Neues Cover einsetzen"
 
-#: settings.py:507
+#: settings.py:523
 msgid "Shrink to at most this height (px):"
 msgstr "Verkleinern auf höchstens diese Höhe (px):"
 
-#: settings.py:508
+#: settings.py:524
 msgid ""
 "0: never shrink. Your e-reader shows at most its screen height (e.g. 1680 "
 "px); larger images only make the file bigger. Images are never enlarged."
@@ -8815,11 +8511,11 @@ msgstr ""
 "B. 1680 px); größere Bilder machen nur die Datei größer. Vergrößert wird "
 "nie."
 
-#: settings.py:510
+#: settings.py:526
 msgid "JPEG quality:"
 msgstr "JPEG-Qualität:"
 
-#: settings.py:511
+#: settings.py:527
 msgid ""
 "Only when an image is converted or shrunk; otherwise it is taken unchanged. "
 "The new cover keeps the format of the old one (JPEG stays JPEG)."
@@ -8828,127 +8524,71 @@ msgstr ""
 "unverändert übernommen. Das neue Cover behält das Format des alten (JPEG "
 "bleibt JPEG)."
 
-#: settings.py:513
+#: settings.py:529
 msgid "Marking"
 msgstr "Markieren"
 
-#: settings.py:514
+#: settings.py:530
 msgid "Mark covers below this height (px):"
 msgstr "Cover unter dieser Höhe markieren (px):"
 
-#: settings.py:515
+#: settings.py:531
 msgid ""
 "Shown with ⚠ in the Metadata area and in the filter \"Small cover\". 0: "
 "never."
 msgstr "Mit ⚠ im Bereich Metadaten und im Filter „Kleines Cover“. 0: nie."
 
-#: settings.py:520
+#: settings.py:536
 msgid "Sources"
 msgstr "Quellen"
 
-#: settings.py:521
+#: settings.py:537
 msgid "Open Library"
 msgstr "Open Library"
 
-#: settings.py:521
+#: settings.py:537
 msgid ""
 "Free, no key. Often large scans of the cover, sometimes of another edition."
 msgstr ""
 "Kostenlos, ohne Schlüssel. Oft große Scans des Covers, manchmal von einer "
 "anderen Ausgabe."
 
-#: settings.py:524
+#: settings.py:540
 msgid "Google Books"
 msgstr "Google Books"
 
-#: settings.py:524
+#: settings.py:540
 msgid ""
 "Free. Usually smaller images. Uses your own Google Books key if there is "
-"one (Blurbs)."
+"one (Online services)."
 msgstr ""
-"Kostenlos. Meist kleinere Bilder. Nimmt deinen eigenen "
-"Google-Books-Schlüssel, falls eingetragen (Klappentexte)."
+"Kostenlos. Meist kleinere Bilder. Nimmt deinen eigenen Google-Books-Schlüssel, falls eingetragen (Online-Dienste)."
 
-#: settings.py:526
+#: settings.py:542
 msgid "Which images count"
 msgstr "Welche Bilder zählen"
 
-#: settings.py:527
+#: settings.py:543
 msgid "Smallest height (px):"
 msgstr "Kleinste Höhe (px):"
 
-#: settings.py:528
+#: settings.py:544
 msgid "Smaller images are left out (preview thumbnails)."
 msgstr "Kleinere Bilder fallen weg (Vorschaubildchen)."
 
-#: settings.py:529
+#: settings.py:545
 msgid "At most this many to choose from:"
 msgstr "Höchstens so viele zur Auswahl:"
 
-#: settings.py:530
+#: settings.py:546
 msgid "Each image is downloaded, so more takes longer."
 msgstr "Jedes Bild wird heruntergeladen, mehr dauert also länger."
 
-#: settings.py:535
-msgid ""
-"Extra fields in the Metadata area, one per Calibre column (Calibre: "
-"Preferences > Add your own columns). Bookbench reads and writes them the "
-"way Calibre stores them in the book."
-msgstr ""
-"Zusätzliche Felder im Bereich Metadaten, eines je Calibre-Spalte (Calibre: "
-"Einstellungen > Eigene Spalten hinzufügen). Bookbench liest und schreibt "
-"sie so, wie Calibre sie im Buch ablegt."
-
-#: settings.py:538
-msgid "Lookup name"
-msgstr "Suchname"
-
-#: settings.py:538
-msgid "Label"
-msgstr "Bezeichnung"
-
-#: settings.py:546
-msgid "Lookup name:"
-msgstr "Suchname:"
-
 #: settings.py:551
-msgid "Label:"
-msgstr "Bezeichnung:"
-
-#: settings.py:555
-msgid "Add / change"
-msgstr "Eintragen"
-
-#: settings.py:557
-msgid ""
-"Lookup name as in Calibre, with #, e.g. #subtitle; the label is what "
-"Bookbench shows. From Calibre adds all own columns found in the "
-"metadata.calibre of the open folder. Columns with several values (ampersand "
-"or comma separated) are shown joined with \" & \" or \", \"."
-msgstr ""
-"Suchname wie in Calibre, mit #, z. B. #subtitle; die Bezeichnung zeigt "
-"Bookbench an. „Aus Calibre“ nimmt alle eigenen Spalten dazu, die in der "
-"metadata.calibre des geöffneten Ordners stehen. Spalten mit mehreren Werten "
-"(durch & oder Komma getrennt) werden mit „ & “ bzw. „, “ verbunden "
-"angezeigt."
-
-#: settings.py:623
-msgid "{n} column added."
-msgid_plural "{n} columns added."
-msgstr[0] "{n} Spalte hinzugefügt."
-msgstr[1] "{n} Spalten hinzugefügt."
-
-#: settings.py:624
-msgid "No own columns found (open a folder with metadata.calibre first)."
-msgstr ""
-"Keine eigenen Spalten gefunden (erst einen Ordner mit metadata.calibre "
-"öffnen)."
-
-#: settings.py:629
 msgid "Compare with Calibre"
 msgstr "Mit Calibre abgleichen"
 
-#: settings.py:630
+#: settings.py:552
 msgid ""
 "Reads Calibre's metadata.calibre (on the e-reader or in the opened folder) "
 "and shows its values: in the Metadata area for comparing, in Blurbs and the "
@@ -8963,15 +8603,70 @@ msgstr ""
 "Calibre-Knöpfe verschwinden dann. Einschalten wirkt nach dem Neu-Einlesen "
 "(F5)."
 
-#: settings.py:638
+#: settings.py:557
+msgid ""
+"Extra fields in the Metadata area, one per Calibre column (Calibre: "
+"Preferences > Add your own columns). Bookbench reads and writes them the "
+"way Calibre stores them in the book."
+msgstr ""
+"Zusätzliche Felder im Bereich Metadaten, eines je Calibre-Spalte (Calibre: "
+"Einstellungen > Eigene Spalten hinzufügen). Bookbench liest und schreibt "
+"sie so, wie Calibre sie im Buch ablegt."
+
+#: settings.py:560
+msgid "Lookup name"
+msgstr "Suchname"
+
+#: settings.py:560
+msgid "Label"
+msgstr "Bezeichnung"
+
+#: settings.py:568
+msgid "Lookup name:"
+msgstr "Suchname:"
+
+#: settings.py:573
+msgid "Label:"
+msgstr "Bezeichnung:"
+
+#: settings.py:577
+msgid "Add / change"
+msgstr "Eintragen"
+
+#: settings.py:579
+msgid ""
+"Lookup name as in Calibre, with #, e.g. #subtitle; the label is what "
+"Bookbench shows. From Calibre adds all own columns found in the "
+"metadata.calibre of the open folder. Columns with several values (ampersand "
+"or comma separated) are shown joined with \" & \" or \", \"."
+msgstr ""
+"Suchname wie in Calibre, mit #, z. B. #subtitle; die Bezeichnung zeigt "
+"Bookbench an. „Aus Calibre“ nimmt alle eigenen Spalten dazu, die in der "
+"metadata.calibre des geöffneten Ordners stehen. Spalten mit mehreren Werten "
+"(durch & oder Komma getrennt) werden mit „ & “ bzw. „, “ verbunden "
+"angezeigt."
+
+#: settings.py:645
+msgid "{n} column added."
+msgid_plural "{n} columns added."
+msgstr[0] "{n} Spalte hinzugefügt."
+msgstr[1] "{n} Spalten hinzugefügt."
+
+#: settings.py:646
+msgid "No own columns found (open a folder with metadata.calibre first)."
+msgstr ""
+"Keine eigenen Spalten gefunden (erst einen Ordner mit metadata.calibre "
+"öffnen)."
+
+#: settings.py:652
 msgid "Detection"
 msgstr "Erkennung"
 
-#: settings.py:639
+#: settings.py:653
 msgid "Look for the e-reader every (seconds):"
 msgstr "E-Reader suchen alle (Sekunden):"
 
-#: settings.py:640
+#: settings.py:654
 msgid ""
 "While Bookbench is open it checks this often whether an e-reader is "
 "connected or unplugged."
@@ -8979,68 +8674,47 @@ msgstr ""
 "Solange Bookbench offen ist, prüft sie so oft, ob ein E-Reader angesteckt "
 "oder abgezogen wurde."
 
-#: settings.py:643
+#: settings.py:657
 msgid "When an e-reader is connected:"
 msgstr "Wenn ein E-Reader angesteckt wird:"
 
-#: settings.py:645
+#: settings.py:659
 msgid "Open its books (ask if another folder is open)"
 msgstr "Seine Bücher öffnen (nachfragen, wenn ein anderer Ordner offen ist)"
 
-#: settings.py:646
+#: settings.py:660
 msgid "Always ask whether to open its books"
 msgstr "Immer nachfragen, ob seine Bücher geöffnet werden sollen"
 
-#: settings.py:647
+#: settings.py:661
 msgid "Do nothing (open with Books in the E-reader area)"
 msgstr "Nichts tun (öffnen mit Bücher im Bereich E-Reader)"
 
-#: settings.py:648
-msgid "Backups"
-msgstr "Sicherungen"
+#: settings.py:663
+msgid "Copy dictionaries from (folder on the computer)"
+msgstr "Wörterbücher kopieren aus (Ordner auf dem Rechner)"
 
-#: settings.py:649
-msgid "Backups of the KOReader settings:"
-msgstr "Sicherungen der KOReader-Einstellungen:"
-
-#: settings.py:650
+#: settings.py:664
 msgid ""
-"This many stay in the KOReader subfolder of the backup folder; older ones "
-"are deleted. This includes the backup made before each restore."
+"Where Copy dictionary in the E-reader area takes them from: a dictionary "
+"folder (with an .ifo file, e.g. My-Dictionary) or a folder with several of "
+"them. Also set by Choose source there."
 msgstr ""
-"So viele bleiben im Unterordner KOReader des Sicherungsordners; ältere "
-"werden gelöscht. Dazu zählt auch die Sicherung, die vor jedem Zurückspielen "
-"angelegt wird."
+"Woher Wörterbuch kopieren im Bereich E-Reader sie nimmt: ein Wörterbuch-Ordner (mit .ifo-Datei, z. B. Mein-Woerterbuch) oder ein Ordner mit mehreren davon. Wird dort auch mit Quelle wählen … gesetzt."
 
-#: settings.py:652
-msgid "Dictionaries"
-msgstr "Wörterbücher"
-
-#: settings.py:653
-msgid "Dictionaries (folder on the computer)"
-msgstr "Wörterbücher (Ordner auf dem Rechner)"
-
-#: settings.py:654
-msgid ""
-"A dictionary folder (with an .ifo file, e.g. My-Dictionary) or a folder "
-"with several of them."
-msgstr ""
-"Ein Wörterbuch-Ordner (mit .ifo-Datei, z. B. Mein-Woerterbuch) oder ein "
-"Ordner mit mehreren davon."
-
-#: settings.py:657
+#: settings.py:668
 msgid "Remind me to eject when quitting"
 msgstr "Beim Beenden ans Auswerfen erinnern"
 
-#: settings.py:658
+#: settings.py:669
 msgid "Only if something was written to the e-reader in this session."
 msgstr "Nur wenn in dieser Sitzung etwas auf den E-Reader geschrieben wurde."
 
-#: settings.py:662
+#: settings.py:673
 msgid "Desktop KOReader (optional)"
 msgstr "Desktop-KOReader (optional)"
 
-#: settings.py:663
+#: settings.py:674
 msgid ""
 "Empty: searched for (koreader in PATH, AppImage in ~/Applications or "
 "~/Downloads, Flatpak). Only fill in if it is somewhere else. flatpak: "
@@ -9052,15 +8726,15 @@ msgstr ""
 "immer das Flatpak rocks.koreader.KOReader, auch wenn KOReader zusätzlich "
 "normal installiert ist."
 
-#: settings.py:667
+#: settings.py:678
 msgid "Device shown"
 msgstr "Nachgebildetes Gerät"
 
-#: settings.py:668
+#: settings.py:679
 msgid "Automatic (device of the profile, otherwise the connected e-reader)"
 msgstr "Automatisch (Gerät des Profils, sonst der angeschlossene E-Reader)"
 
-#: settings.py:682
+#: settings.py:693
 msgid ""
 "Size and pixel density of the window, and colour or black and white. Tolino "
 "devices from 2024 on are Kobo hardware and are listed too."
@@ -9068,23 +8742,23 @@ msgstr ""
 "Größe und Pixeldichte des Fensters, dazu Farbe oder Schwarzweiß. "
 "Tolino-Geräte ab 2024 sind Kobo-Hardware und stehen mit in der Liste."
 
-#: settings.py:690
+#: settings.py:701
 msgid "Width:"
 msgstr "Breite:"
 
-#: settings.py:690
+#: settings.py:701
 msgid "Height:"
 msgstr "Höhe:"
 
-#: settings.py:691
+#: settings.py:702
 msgid "ppi:"
 msgstr "ppi:"
 
-#: settings.py:701
+#: settings.py:712
 msgid "Colour screen"
 msgstr "Farbbildschirm"
 
-#: settings.py:704
+#: settings.py:715
 msgid ""
 "Pixels in portrait format. For other e-readers with KOReader: see the "
 "maker's data sheet."
@@ -9092,23 +8766,23 @@ msgstr ""
 "Pixel im Hochformat. Für andere E-Reader mit KOReader: siehe Datenblatt des "
 "Herstellers."
 
-#: settings.py:717
+#: settings.py:728
 msgid "Files of the program"
 msgstr "Dateien des Programms"
 
-#: settings.py:721
+#: settings.py:732
 msgid "Chapter decisions"
 msgstr "Kapitel-Entscheidungen"
 
-#: settings.py:722 settings.py:733 settings.py:759
+#: settings.py:733 settings.py:744 settings.py:770
 msgid "Blurb cache"
 msgstr "Klappentext-Zwischenspeicher"
 
-#: settings.py:728
+#: settings.py:739
 msgid "Open settings folder"
 msgstr "Einstellungsordner öffnen"
 
-#: settings.py:730
+#: settings.py:741
 msgid ""
 "The chapter decisions remember which names were applied, so they are "
 "suggested again for other copies of the same book. The cache holds "
@@ -9120,27 +8794,27 @@ msgstr ""
 "Zwischenspeicher hält nachgeschlagene Klappentexte und was schon versucht "
 "wurde, damit erneutes Nachschlagen nichts kostet."
 
-#: settings.py:737
+#: settings.py:748
 msgid "Empty …"
 msgstr "Leeren …"
 
-#: settings.py:740
+#: settings.py:751
 msgid "Afterwards everything is looked up again (and Claude costs again)."
 msgstr "Danach wird alles neu nachgeschlagen (und Claude kostet wieder)."
 
-#: settings.py:741
+#: settings.py:752
 msgid "Export and import"
 msgstr "Exportieren und Importieren"
 
-#: settings.py:743
+#: settings.py:754
 msgid "Export settings …"
 msgstr "Einstellungen exportieren …"
 
-#: settings.py:744
+#: settings.py:755
 msgid "Import settings …"
 msgstr "Einstellungen importieren …"
 
-#: settings.py:746
+#: settings.py:757
 msgid ""
 "A JSON file, e.g. to take the settings to another computer. It contains the "
 "API keys. Importing replaces the current settings, the language included."
@@ -9149,15 +8823,15 @@ msgstr ""
 "mitzunehmen. Sie enthält die API-Schlüssel. Importieren ersetzt die "
 "aktuellen Einstellungen, auch die Sprache."
 
-#: settings.py:748 settings.py:797
+#: settings.py:759 settings.py:808
 msgid "Reset"
 msgstr "Zurücksetzen"
 
-#: settings.py:749
+#: settings.py:760
 msgid "Reset all settings …"
 msgstr "Alle Einstellungen zurücksetzen …"
 
-#: settings.py:750
+#: settings.py:761
 msgid ""
 "Everything back to the defaults. Kept: opened folders, the list of "
 "dictionaries, window size, language and the API keys."
@@ -9165,59 +8839,59 @@ msgstr ""
 "Alles zurück auf den Standard. Bleiben: geöffnete Ordner, die Liste der "
 "Wörterbücher, Fenstergröße, Sprache und die API-Schlüssel."
 
-#: settings.py:759
+#: settings.py:770
 msgid "Empty the blurb cache?"
 msgstr "Klappentext-Zwischenspeicher leeren?"
 
-#: settings.py:766 settings.py:774
+#: settings.py:777 settings.py:785
 msgid "Export settings"
 msgstr "Einstellungen exportieren"
 
-#: settings.py:776
+#: settings.py:787
 msgid "Settings exported: {datei}"
 msgstr "Einstellungen exportiert: {datei}"
 
-#: settings.py:779 settings.py:788
+#: settings.py:790 settings.py:799
 msgid "Import settings"
 msgstr "Einstellungen importieren"
 
-#: settings.py:786
+#: settings.py:797
 msgid "not a settings file"
 msgstr "keine Einstellungsdatei"
 
-#: settings.py:794
+#: settings.py:805
 msgid "Settings imported from {datei}."
 msgstr "Einstellungen importiert aus {datei}."
 
-#: settings.py:797
+#: settings.py:808
 msgid "Reset all settings to the defaults?"
 msgstr "Alle Einstellungen auf den Standard zurücksetzen?"
 
-#: settings.py:804
+#: settings.py:815
 msgid "All settings reset to the defaults."
 msgstr "Alle Einstellungen auf den Standard zurückgesetzt."
 
-#: settings.py:848
+#: settings.py:859
 msgid "Source profile"
 msgstr "Quellprofil"
 
-#: settings.py:858
+#: settings.py:869
 msgid "Active"
 msgstr "Aktiv"
 
-#: settings.py:867
+#: settings.py:878
 msgid "Publisher:"
 msgstr "Verlag:"
 
-#: settings.py:867
+#: settings.py:878
 msgid "Series:"
 msgstr "Reihe:"
 
-#: settings.py:867
+#: settings.py:878
 msgid "Author:"
 msgstr "Autor:"
 
-#: settings.py:872
+#: settings.py:883
 msgid ""
 "Parts of names, separated by commas. One match is enough. All empty: every "
 "book."
@@ -9225,15 +8899,15 @@ msgstr ""
 "Namensteile, durch Komma getrennt. Ein Treffer reicht. Alles leer: jedes "
 "Buch."
 
-#: settings.py:873
+#: settings.py:884
 msgid "Where Claude looks"
 msgstr "Wo Claude sucht"
 
-#: settings.py:874
+#: settings.py:885
 msgid "Pages to fetch (one address per line, in this order):"
 msgstr "Abzurufende Seiten (eine Adresse je Zeile, in dieser Reihenfolge):"
 
-#: settings.py:879
+#: settings.py:890
 msgid ""
 "Placeholders: {title}, {author}, {series} as a wiki page name, {title_q} "
 "and {author_q} for search addresses, {base} = title without \"Omnibus\". "
@@ -9243,15 +8917,15 @@ msgstr ""
 "{author_q} für Suchadressen, {base} = Titel ohne \"Omnibus\". Leer: nur "
 "suchen."
 
-#: settings.py:883
+#: settings.py:894
 msgid "Further allowed sites:"
 msgstr "Weitere erlaubte Seiten:"
 
-#: settings.py:884
+#: settings.py:895
 msgid "Section with the blurb:"
 msgstr "Abschnitt mit dem Klappentext:"
 
-#: settings.py:889
+#: settings.py:900
 msgid ""
 "Further sites separated by commas, e.g. tor.com; the sites of the addresses "
 "above are always allowed. Section and topic are optional hints for Claude, "
@@ -9261,11 +8935,11 @@ msgstr ""
 "oben sind immer erlaubt. Abschnitt und Thema sind freiwillige Hinweise für "
 "Claude, z. B. \"Official Description\" oder \"Star Wars\"."
 
-#: settings.py:892
+#: settings.py:903
 msgid "Web search if no page fits"
 msgstr "Websuche, wenn keine Seite passt"
 
-#: settings.py:895
+#: settings.py:906
 msgid "Only in the allowed sites; without any, on the whole web."
 msgstr "Nur in den erlaubten Seiten; ohne welche im ganzen Netz."
 
@@ -9309,15 +8983,15 @@ msgstr "schwarz"
 msgid "white"
 msgstr "weiß"
 
-#: sleep_screen.py:35 workbench_plugins.py:1020 workbench_sleep.py:59
+#: sleep_screen.py:35 workbench_plugins.py:1032 workbench_sleep.py:59
 msgid "Wallpaper"
 msgstr "Hintergrundbild"
 
-#: sleep_screen.py:36 workbench_sleep.py:293
+#: sleep_screen.py:36 workbench_sleep.py:296
 msgid "Image or book"
 msgstr "Bild oder Buch"
 
-#: sleep_screen.py:37 workbench_sleep.py:291
+#: sleep_screen.py:37 workbench_sleep.py:294
 msgid "Image folder"
 msgstr "Bilderordner"
 
@@ -9712,7 +9386,7 @@ msgstr "Eintrag"
 msgid "Change"
 msgstr "Änderung"
 
-#: transfer_window.py:47 workbench_plugins.py:1569 workbench_reader.py:322
+#: transfer_window.py:47 workbench_plugins.py:1581 workbench_reader.py:322
 msgid "On/off"
 msgstr "An/aus"
 
@@ -10435,25 +10109,25 @@ msgstr ""
 "Kein Wiki eingestellt - beim ersten Lauf mit --wiki <Adresse> (und --topic) "
 "angeben."
 
-#: workbench_base.py:236
+#: workbench_base.py:244
 msgid ""
 "The {plugin} settings have unsaved changes. Save them in the profile first?"
 msgstr ""
 "Die {plugin}-Einstellungen haben ungespeicherte Änderungen. Erst im Profil "
 "speichern?"
 
-#: workbench_base.py:245
+#: workbench_base.py:253
 msgid "Discard the unsaved changes?"
 msgstr "Die ungespeicherten Änderungen verwerfen?"
 
-#: workbench_base.py:251
+#: workbench_base.py:259
 msgid ""
 "● Unsaved changes - so far only in the picture. \"Save to profile\" keeps "
 "them."
 msgstr ""
 "● Ungespeicherte Änderungen - bisher nur im Bild. \"Ins Profil\" behält sie."
 
-#: workbench_base.py:254
+#: workbench_base.py:262
 msgid ""
 "Same as in the profile. \"To the e-reader …\" in the toolbar writes it to "
 "the e-reader."
@@ -10525,7 +10199,7 @@ msgstr "Name"
 msgid "Lines"
 msgstr "Zeilen"
 
-#: workbench_plugins.py:153 workbench_plugins.py:1106
+#: workbench_plugins.py:153 workbench_plugins.py:1118
 msgid "Insert token"
 msgstr "Token einfügen"
 
@@ -10549,7 +10223,7 @@ msgstr "Zusatzrand"
 msgid "Selected line"
 msgstr "Gewählte Zeile"
 
-#: workbench_plugins.py:191 workbench_plugins.py:487
+#: workbench_plugins.py:191 workbench_plugins.py:497
 msgid "Click into a line above."
 msgstr "Oben in eine Zeile klicken."
 
@@ -10557,7 +10231,7 @@ msgstr "Oben in eine Zeile klicken."
 msgid "Style"
 msgstr "Stil"
 
-#: workbench_plugins.py:198 workbench_plugins.py:1115
+#: workbench_plugins.py:198 workbench_plugins.py:1127
 msgid "Capitals"
 msgstr "Großbuchstaben"
 
@@ -10581,15 +10255,15 @@ msgstr "↑ ↓"
 msgid "Back to 0"
 msgstr "Auf 0"
 
-#: workbench_plugins.py:223 workbench_plugins.py:254 workbench_plugins.py:607
+#: workbench_plugins.py:227 workbench_plugins.py:263 workbench_plugins.py:619
 msgid "Thickness"
 msgstr "Dicke"
 
-#: workbench_plugins.py:223 workbench_plugins.py:254
+#: workbench_plugins.py:227 workbench_plugins.py:263
 msgid "unread"
 msgstr "ungelesen"
 
-#: workbench_plugins.py:230
+#: workbench_plugins.py:235
 msgid ""
 "Empty size = the general font size. Offset in pixels: negative = left or "
 "up. Empty thickness = as high as the text; empty unread = like read. Font "
@@ -10601,52 +10275,52 @@ msgstr ""
 "wie gelesen. Schrift je Zeile, Farben und Markierungen eines Balkens und "
 "Bedingungen im Text bleiben, wie sie sind."
 
-#: workbench_plugins.py:235
+#: workbench_plugins.py:240
 msgid "Progress bars"
 msgstr "Fortschrittsbalken"
 
-#: workbench_plugins.py:240
+#: workbench_plugins.py:245
 msgid "Switched on"
 msgstr "Eingeschaltet"
 
-#: workbench_plugins.py:248
+#: workbench_plugins.py:253
 msgid "Edge"
 msgstr "Rand"
 
-#: workbench_plugins.py:255 workbench_plugins.py:609
+#: workbench_plugins.py:264 workbench_plugins.py:621
 msgid "Distance from the edge"
 msgstr "Abstand vom Rand"
 
-#: workbench_plugins.py:256 workbench_plugins.py:611
+#: workbench_plugins.py:265 workbench_plugins.py:623
 msgid "right"
 msgstr "rechts"
 
-#: workbench_plugins.py:277 workbench_reader.py:141 workbench_sleep.py:103
+#: workbench_plugins.py:287 workbench_reader.py:141 workbench_sleep.py:103
 msgid "empty = {wert}"
 msgstr "leer = {wert}"
 
-#: workbench_plugins.py:278
+#: workbench_plugins.py:288
 msgid "size of KOReader's status bar"
 msgstr "Größe von KOReaders Statusleiste"
 
-#: workbench_plugins.py:309
+#: workbench_plugins.py:319
 msgid ""
 "Bookends {version} in the profile. Changes show in the picture at once."
 msgstr "Bookends {version} im Profil. Änderungen erscheinen sofort im Bild."
 
-#: workbench_plugins.py:346
+#: workbench_plugins.py:356
 msgid "Preset {datei} could not be read: {fehler}"
 msgstr "Vorlage {datei} ließ sich nicht lesen: {fehler}"
 
-#: workbench_plugins.py:393
+#: workbench_plugins.py:403
 msgid "No preset in the profile. \"New\" makes one."
 msgstr "Keine Vorlage im Profil. \"Neu\" legt eine an."
 
-#: workbench_plugins.py:395
+#: workbench_plugins.py:405
 msgid "This is the active preset (Bookends uses it on the e-reader)."
 msgstr "Das ist die aktive Vorlage (Bookends nimmt sie auf dem E-Reader)."
 
-#: workbench_plugins.py:397
+#: workbench_plugins.py:407
 msgid ""
 "Not active: on the e-reader Bookends uses \"{name}\". The picture shows "
 "this one."
@@ -10654,47 +10328,47 @@ msgstr ""
 "Nicht aktiv: Auf dem E-Reader nimmt Bookends \"{name}\". Das Bild zeigt "
 "diese hier."
 
-#: workbench_plugins.py:444
+#: workbench_plugins.py:454
 msgid "This Bookends version has no list of special characters."
 msgstr "Diese Bookends-Version hat keine Liste mit Sonderzeichen."
 
-#: workbench_plugins.py:500
+#: workbench_plugins.py:510
 msgid "{position}, line {nr}"
 msgstr "{position}, Zeile {nr}"
 
-#: workbench_plugins.py:527
+#: workbench_plugins.py:537
 msgid "Bar in this line"
 msgstr "Balken in dieser Zeile"
 
-#: workbench_plugins.py:527
+#: workbench_plugins.py:537
 msgid "No bar in this line (token %bar)."
 msgstr "Kein Balken in dieser Zeile (Token %bar)."
 
-#: workbench_plugins.py:528
+#: workbench_plugins.py:538
 msgid "Remove bar"
 msgstr "Balken entfernen"
 
-#: workbench_plugins.py:528
+#: workbench_plugins.py:538
 msgid "Insert bar"
 msgstr "Balken einfügen"
 
-#: workbench_plugins.py:589
+#: workbench_plugins.py:600
 msgid "Bar {nr}"
 msgstr "Balken {nr}"
 
-#: workbench_plugins.py:607
+#: workbench_plugins.py:619
 msgid "Diameter"
 msgstr "Durchmesser"
 
-#: workbench_plugins.py:608
+#: workbench_plugins.py:620
 msgid "Distance from the line text"
 msgstr "Abstand zum Zeilentext"
 
-#: workbench_plugins.py:611
+#: workbench_plugins.py:623
 msgid "bottom"
 msgstr "unten"
 
-#: workbench_plugins.py:623
+#: workbench_plugins.py:635
 msgid ""
 "Up to {n} bars across the page. Colours, markers and \"Position relative to "
 "line text\" stay as they are; switch those on the e-reader."
@@ -10703,44 +10377,44 @@ msgstr ""
 "relativ zum Zeilentext“ bleiben, wie sie sind; die stellst du am E-Reader "
 "um."
 
-#: workbench_plugins.py:798
+#: workbench_plugins.py:810
 msgid "The preset \"{name}\" has unsaved changes. Save them in the profile?"
 msgstr ""
 "Die Vorlage \"{name}\" hat ungespeicherte Änderungen. Im Profil speichern?"
 
-#: workbench_plugins.py:809
+#: workbench_plugins.py:821
 msgid "New preset"
 msgstr "Neue Vorlage"
 
-#: workbench_plugins.py:809
+#: workbench_plugins.py:821
 msgid "Name of the new preset:"
 msgstr "Name der neuen Vorlage:"
 
-#: workbench_plugins.py:810
+#: workbench_plugins.py:822
 msgid "{name} (copy)"
 msgstr "{name} (Kopie)"
 
-#: workbench_plugins.py:832
+#: workbench_plugins.py:844
 msgid "Delete the preset \"{name}\" from the profile?"
 msgstr "Die Vorlage \"{name}\" aus dem Profil löschen?"
 
-#: workbench_plugins.py:846
+#: workbench_plugins.py:858
 msgid "Preset deleted from the profile."
 msgstr "Vorlage aus dem Profil gelöscht."
 
-#: workbench_plugins.py:864
+#: workbench_plugins.py:876
 msgid "Bookends preset \"{name}\" saved in the profile."
 msgstr "Bookends-Vorlage \"{name}\" im Profil gespeichert."
 
-#: workbench_plugins.py:885
+#: workbench_plugins.py:897
 msgid "Special characters"
 msgstr "Sonderzeichen"
 
-#: workbench_plugins.py:891
+#: workbench_plugins.py:903
 msgid "Group"
 msgstr "Gruppe"
 
-#: workbench_plugins.py:898
+#: workbench_plugins.py:910
 msgid ""
 "KOReader's symbol font (nerdfonts/symbols.ttf) was not found: symbols show "
 "as names. Take the profile from the e-reader to get its fonts."
@@ -10749,7 +10423,7 @@ msgstr ""
 "Symbole erscheinen als Namen. Das Profil vom E-Reader holen, dann kommen "
 "seine Schriften mit."
 
-#: workbench_plugins.py:1001
+#: workbench_plugins.py:1013
 msgid ""
 "Bookshelf has no way to reload its settings while running: after a change "
 "the workbench restarts on the start screen (about a second)."
@@ -10758,47 +10432,47 @@ msgstr ""
 "Nach einer Änderung startet die Werkbank auf dem Startbildschirm neu (etwa "
 "eine Sekunde)."
 
-#: workbench_plugins.py:1003
+#: workbench_plugins.py:1015
 msgid "Start screen shows:"
 msgstr "Startbildschirm zeigt:"
 
-#: workbench_plugins.py:1006
+#: workbench_plugins.py:1018
 msgid "sample books"
 msgstr "Beispielbücher"
 
-#: workbench_plugins.py:1006
+#: workbench_plugins.py:1018
 msgid "the opened library"
 msgstr "die geöffnete Bibliothek"
 
-#: workbench_plugins.py:1019
+#: workbench_plugins.py:1031
 msgid "Themes"
 msgstr "Themes"
 
-#: workbench_plugins.py:1022
+#: workbench_plugins.py:1034
 msgid "Decoration (ornaments)"
 msgstr "Dekoration (Ornamente)"
 
-#: workbench_plugins.py:1023
+#: workbench_plugins.py:1035
 msgid "Colours"
 msgstr "Farben"
 
-#: workbench_plugins.py:1024
+#: workbench_plugins.py:1036
 msgid "Top panel"
 msgstr "Oberer Bereich"
 
-#: workbench_plugins.py:1025
+#: workbench_plugins.py:1037
 msgid "Modules in the top panel"
 msgstr "Module im oberen Bereich"
 
-#: workbench_plugins.py:1027 workbench_plugins.py:1647 workbench_plugins.py:1665
+#: workbench_plugins.py:1039 workbench_plugins.py:1659 workbench_plugins.py:1677
 msgid "Shelves"
 msgstr "Regale"
 
-#: workbench_plugins.py:1054
+#: workbench_plugins.py:1066
 msgid "All keys in the file"
 msgstr "Alle Schlüssel in der Datei"
 
-#: workbench_plugins.py:1057
+#: workbench_plugins.py:1069
 msgid ""
 "For everything not listed above. Double-click a simple value to change it; "
 "tables (shelves, modules) only in the sections above or in Bookshelf "
@@ -10808,43 +10482,43 @@ msgstr ""
 "Tabellen (Regale, Module) nur in den Abschnitten oben oder in Bookshelf "
 "selbst. \"Vorgabe\" entfernt den Schlüssel, dann gilt Bookshelfs Vorgabe."
 
-#: workbench_plugins.py:1062
+#: workbench_plugins.py:1074
 msgid "Key"
 msgstr "Schlüssel"
 
-#: workbench_plugins.py:1062
+#: workbench_plugins.py:1074
 msgid "Value"
 msgstr "Wert"
 
-#: workbench_plugins.py:1066 workbench_plugins.py:1109
+#: workbench_plugins.py:1078 workbench_plugins.py:1121
 msgid "Default"
 msgstr "Vorgabe"
 
-#: workbench_plugins.py:1066
+#: workbench_plugins.py:1078
 msgid "Change …"
 msgstr "Ändern …"
 
-#: workbench_plugins.py:1094
+#: workbench_plugins.py:1106
 msgid "Shows"
 msgstr "Zeigt"
 
-#: workbench_plugins.py:1095
+#: workbench_plugins.py:1107
 msgid "Lines of the hero card (the current book):"
 msgstr "Zeilen der Hero-Karte (das aktuelle Buch):"
 
-#: workbench_plugins.py:1098
+#: workbench_plugins.py:1110
 msgid "Shown"
 msgstr "Gezeigt"
 
-#: workbench_plugins.py:1128
+#: workbench_plugins.py:1140
 msgid "Rows at most"
 msgstr "Höchstens Reihen"
 
-#: workbench_plugins.py:1173
+#: workbench_plugins.py:1185
 msgid "Stars to tap; only on/off, size and alignment."
 msgstr "Sterne zum Antippen; nur an/aus, Größe und Ausrichtung."
 
-#: workbench_plugins.py:1174
+#: workbench_plugins.py:1186
 msgid ""
 "Buttons for author, series, collections, genres and folder, each can be "
 "hidden."
@@ -10852,7 +10526,7 @@ msgstr ""
 "Knöpfe für Autor, Reihe, Sammlungen, Genres und Ordner, jeder lässt sich "
 "ausblenden."
 
-#: workbench_plugins.py:1175
+#: workbench_plugins.py:1187
 msgid ""
 "An extra line between author and description; Bookshelf puts the series "
 "here by default. \"Subtitle\" puts the book's subtitle here (needs the "
@@ -10862,7 +10536,7 @@ msgstr ""
 "hier standardmäßig die Reihe. „Untertitel“ setzt den Untertitel des Buchs "
 "hierher (braucht den Bookbench-Patch 2-bookbench-subtitle, Seite Patches)."
 
-#: workbench_plugins.py:1178
+#: workbench_plugins.py:1190
 msgid ""
 "Tokens like in Bookshelf's line editor, [if:token]…[/if] shows a part only "
 "if the token has a value. Empty = the line is left out."
@@ -10870,7 +10544,7 @@ msgstr ""
 "Tokens wie in Bookshelfs Zeilen-Editor, [if:token]…[/if] zeigt einen Teil "
 "nur, wenn der Token einen Wert hat. Leer = die Zeile entfällt."
 
-#: workbench_plugins.py:1181
+#: workbench_plugins.py:1193
 msgid ""
 "⚠ %subtitle needs the patch 2-bookbench-subtitle in the profile (page "
 "Patches)."
@@ -10878,35 +10552,35 @@ msgstr ""
 "⚠ %subtitle braucht den Patch 2-bookbench-subtitle im Profil (Seite "
 "Patches)."
 
-#: workbench_plugins.py:1195
+#: workbench_plugins.py:1207
 msgid "Subtitle from the EPUB (needs the Bookbench patch)"
 msgstr "Untertitel aus dem EPUB (braucht den Bookbench-Patch)"
 
-#: workbench_plugins.py:1316 workbench_plugins.py:1318 workbench_plugins.py:1433 workbench_plugins.py:1436 workbench_plugins.py:1571 workbench_plugins.py:1572
+#: workbench_plugins.py:1328 workbench_plugins.py:1330 workbench_plugins.py:1445 workbench_plugins.py:1448 workbench_plugins.py:1583 workbench_plugins.py:1584
 msgid "Add"
 msgstr "Hinzufügen"
 
-#: workbench_plugins.py:1319
+#: workbench_plugins.py:1331
 msgid "Place automatically"
 msgstr "Automatisch platzieren"
 
-#: workbench_plugins.py:1324
+#: workbench_plugins.py:1336
 msgid "Column"
 msgstr "Spalte"
 
-#: workbench_plugins.py:1324
+#: workbench_plugins.py:1336
 msgid "Row"
 msgstr "Reihe"
 
-#: workbench_plugins.py:1324
+#: workbench_plugins.py:1336
 msgid "Width"
 msgstr "Breite"
 
-#: workbench_plugins.py:1325
+#: workbench_plugins.py:1337
 msgid "Height"
 msgstr "Höhe"
 
-#: workbench_plugins.py:1333
+#: workbench_plugins.py:1345
 msgid ""
 "Positions in grid cells. The top panel has 1 or 2 rows and 2 to 8 columns, "
 "depending on the screen; Bookshelf moves a module that does not fit or "
@@ -10918,15 +10592,15 @@ msgstr ""
 "überdeckt, rückt Bookshelf weiter. Module, die eine Auswahl brauchen "
 "(Aktion, Regal, Ornament), fügst du in Bookshelf hinzu."
 
-#: workbench_plugins.py:1355
+#: workbench_plugins.py:1367
 msgid "page {seite}: {spalte}/{reihe}, {w}×{h}"
 msgstr "Seite {seite}: {spalte}/{reihe}, {w}×{h}"
 
-#: workbench_plugins.py:1357
+#: workbench_plugins.py:1369
 msgid "automatic"
 msgstr "automatisch"
 
-#: workbench_plugins.py:1363
+#: workbench_plugins.py:1375
 msgid ""
 "Bookshelf has not set up the modules yet: open the top panel's modules once "
 "on the e-reader."
@@ -10934,11 +10608,11 @@ msgstr ""
 "Bookshelf hat die Module noch nicht angelegt: die Module im oberen Bereich "
 "einmal am E-Reader öffnen."
 
-#: workbench_plugins.py:1435 workbench_plugins.py:1570
+#: workbench_plugins.py:1447 workbench_plugins.py:1582
 msgid "Rename …"
 msgstr "Umbenennen …"
 
-#: workbench_plugins.py:1437
+#: workbench_plugins.py:1449
 msgid ""
 "A folder holds entries, one level deep as in Bookshelf. New entries are "
 "Bookshelf's standard ones; other actions and icons are set in Bookshelf's "
@@ -10948,61 +10622,61 @@ msgstr ""
 "Einträge sind Bookshelfs Standard-Einträge; andere Aktionen und Symbole "
 "stellst du in Bookshelfs Startmenü-Editor ein."
 
-#: workbench_plugins.py:1475
+#: workbench_plugins.py:1487
 msgid ""
 "Bookshelf has not set up its start menu yet: open it once on the e-reader."
 msgstr ""
 "Bookshelf hat sein Startmenü noch nicht angelegt: einmal am E-Reader öffnen."
 
-#: workbench_plugins.py:1481
+#: workbench_plugins.py:1493
 msgid "Folder …"
 msgstr "Ordner …"
 
-#: workbench_plugins.py:1482
+#: workbench_plugins.py:1494
 msgid "Divider"
 msgstr "Trennlinie"
 
-#: workbench_plugins.py:1483
+#: workbench_plugins.py:1495
 msgid "Module"
 msgstr "Modul"
 
-#: workbench_plugins.py:1488
+#: workbench_plugins.py:1500
 msgid "Standard entry"
 msgstr "Standard-Eintrag"
 
-#: workbench_plugins.py:1495
+#: workbench_plugins.py:1507
 msgid "Into \"{name}\""
 msgstr "In „{name}“"
 
-#: workbench_plugins.py:1497
+#: workbench_plugins.py:1509
 msgid "Out of the folder"
 msgstr "Aus dem Ordner"
 
-#: workbench_plugins.py:1517
+#: workbench_plugins.py:1529
 msgid "Name of the folder:"
 msgstr "Name des Ordners:"
 
-#: workbench_plugins.py:1527
+#: workbench_plugins.py:1539
 msgid "Only entries and folders have a name."
 msgstr "Nur Einträge und Ordner haben einen Namen."
 
-#: workbench_plugins.py:1529 workbench_plugins.py:1647
+#: workbench_plugins.py:1541 workbench_plugins.py:1659
 msgid "New name:"
 msgstr "Neuer Name:"
 
-#: workbench_plugins.py:1544
+#: workbench_plugins.py:1556
 msgid "Folders and dividers stay at the top level."
 msgstr "Ordner und Trennlinien bleiben auf der obersten Ebene."
 
-#: workbench_plugins.py:1554
+#: workbench_plugins.py:1566
 msgid "Remove the folder with its {n} entries?"
 msgstr "Den Ordner mit seinen {n} Einträgen entfernen?"
 
-#: workbench_plugins.py:1575
+#: workbench_plugins.py:1587
 msgid "Shown as"
 msgstr "Ansicht"
 
-#: workbench_plugins.py:1576
+#: workbench_plugins.py:1588
 msgid ""
 "☑ shown as a button above the shelf, ☐ hidden. Sorting, filters and new "
 "shelves from collections or folders are set in Bookshelf; removed standard "
@@ -11012,7 +10686,7 @@ msgstr ""
 "neue Regale aus Sammlungen oder Ordnern stellst du in Bookshelf ein; "
 "entfernte Standard-Regale lassen sich hier wieder hinzufügen."
 
-#: workbench_plugins.py:1598
+#: workbench_plugins.py:1610
 msgid ""
 "Bookshelf still uses its standard shelves; change them once on the "
 "e-reader, then they can be edited here."
@@ -11020,15 +10694,15 @@ msgstr ""
 "Bookshelf nutzt noch seine Standard-Regale; einmal am E-Reader ändern, dann "
 "lassen sie sich hier bearbeiten."
 
-#: workbench_plugins.py:1609
+#: workbench_plugins.py:1621
 msgid "All standard shelves are there."
 msgstr "Alle Standard-Regale sind da."
 
-#: workbench_plugins.py:1633 workbench_plugins.py:1663
+#: workbench_plugins.py:1645 workbench_plugins.py:1675
 msgid "At least one shelf stays shown."
 msgstr "Mindestens ein Regal bleibt sichtbar."
 
-#: workbench_plugins.py:1665
+#: workbench_plugins.py:1677
 msgid ""
 "Remove the shelf? Standard shelves can be added again; your own "
 "(collections, folders) only in Bookshelf."
@@ -11036,31 +10710,31 @@ msgstr ""
 "Das Regal entfernen? Standard-Regale lassen sich wieder hinzufügen, eigene "
 "(Sammlungen, Ordner) nur in Bookshelf."
 
-#: workbench_plugins.py:1726 workbench_plugins.py:1737
+#: workbench_plugins.py:1738 workbench_plugins.py:1749
 msgid "Custom theme"
 msgstr "Eigenes Theme"
 
-#: workbench_plugins.py:1726 workbench_plugins.py:1737
+#: workbench_plugins.py:1738 workbench_plugins.py:1749
 msgid "Plain"
 msgstr "Schlicht"
 
-#: workbench_plugins.py:1727
+#: workbench_plugins.py:1739
 msgid "Default theme"
 msgstr "Standard-Theme"
 
-#: workbench_plugins.py:1729
+#: workbench_plugins.py:1741
 msgid "Light or dark"
 msgstr "Hell oder dunkel"
 
-#: workbench_plugins.py:1733
+#: workbench_plugins.py:1745
 msgid "Theme per shelf"
 msgstr "Theme je Regal"
 
-#: workbench_plugins.py:1737
+#: workbench_plugins.py:1749
 msgid "Like the default"
 msgstr "Wie Standard"
 
-#: workbench_plugins.py:1743
+#: workbench_plugins.py:1755
 msgid ""
 "Theme packs are folders in settings/bookshelf/ornaments with a "
 "theme/theme.json; new ones come from Bookshelf's theme library. Wallpaper, "
@@ -11072,43 +10746,43 @@ msgstr ""
 "Hintergrundbild, Brett und Farben unten gehören zum eigenen Theme; ein "
 "Theme-Paket legt seine eigenen Teile darüber."
 
-#: workbench_plugins.py:1746
+#: workbench_plugins.py:1758
 msgid "No theme pack in the profile."
 msgstr "Kein Theme-Paket im Profil."
 
-#: workbench_plugins.py:1751
+#: workbench_plugins.py:1763
 msgid "Picture"
 msgstr "Bild"
 
-#: workbench_plugins.py:1753
+#: workbench_plugins.py:1765
 msgid "Same as above"
 msgstr "Wie oben"
 
-#: workbench_plugins.py:1755
+#: workbench_plugins.py:1767
 msgid "Panel shading"
 msgstr "Tafeln abdunkeln"
 
-#: workbench_plugins.py:1758
+#: workbench_plugins.py:1770
 msgid "Transparent buttons"
 msgstr "Durchsichtige Knöpfe"
 
-#: workbench_plugins.py:1759
+#: workbench_plugins.py:1771
 msgid "Blur the picture under panels"
 msgstr "Bild unter Tafeln weichzeichnen"
 
-#: workbench_plugins.py:1760
+#: workbench_plugins.py:1772
 msgid "Invert the picture in night mode"
 msgstr "Bild im Nachtmodus umkehren"
 
-#: workbench_plugins.py:1761
+#: workbench_plugins.py:1773
 msgid "One panel over the whole covers shelf"
 msgstr "Eine Tafel über das ganze Cover-Regal"
 
-#: workbench_plugins.py:1766
+#: workbench_plugins.py:1778
 msgid "Add picture …"
 msgstr "Bild hinzufügen …"
 
-#: workbench_plugins.py:1769
+#: workbench_plugins.py:1781
 msgid ""
 "Pictures are in settings/bookshelf/wallpapers of the profile. \"Add "
 "picture\" copies one there at once (it still has to get to the e-reader)."
@@ -11116,31 +10790,31 @@ msgstr ""
 "Die Bilder liegen in settings/bookshelf/wallpapers im Profil. \"Bild "
 "hinzufügen\" kopiert sofort eins dorthin (auf den E-Reader muss es noch)."
 
-#: workbench_plugins.py:1774
+#: workbench_plugins.py:1786
 msgid "Default (oak, unless you chose a plank colour)"
 msgstr "Vorgabe (Eiche, außer du hast eine Brettfarbe gewählt)"
 
-#: workbench_plugins.py:1775
+#: workbench_plugins.py:1787
 msgid "Oak"
 msgstr "Eiche"
 
-#: workbench_plugins.py:1775
+#: workbench_plugins.py:1787
 msgid "Colour only"
 msgstr "Nur Farbe"
 
-#: workbench_plugins.py:1777
+#: workbench_plugins.py:1789
 msgid "The plank colour is under Colours (Plank)."
 msgstr "Die Brettfarbe steht unter Farben (Brett)."
 
-#: workbench_plugins.py:1783
+#: workbench_plugins.py:1795
 msgid "How often per shelf"
 msgstr "Wie oft je Regal"
 
-#: workbench_plugins.py:1793
+#: workbench_plugins.py:1805
 msgid "Ornaments (double-click switches on/off)"
 msgstr "Ornamente (Doppelklick schaltet an/aus)"
 
-#: workbench_plugins.py:1802
+#: workbench_plugins.py:1814
 msgid ""
 "Ornaments stand in the gaps of spine shelves only. Their files are in "
 "settings/bookshelf/ornaments (one level of packs)."
@@ -11148,19 +10822,19 @@ msgstr ""
 "Ornamente stehen nur in den Lücken von Buchrücken-Regalen. Ihre Dateien "
 "liegen in settings/bookshelf/ornaments (eine Ebene Pakete)."
 
-#: workbench_plugins.py:1804
+#: workbench_plugins.py:1816
 msgid "No ornaments in the profile."
 msgstr "Keine Ornamente im Profil."
 
-#: workbench_plugins.py:1809
+#: workbench_plugins.py:1821
 msgid "Day"
 msgstr "Tag"
 
-#: workbench_plugins.py:1810
+#: workbench_plugins.py:1822
 msgid "Night"
 msgstr "Nacht"
 
-#: workbench_plugins.py:1823
+#: workbench_plugins.py:1835
 msgid ""
 "Click a field to choose a colour; \"-\" = the default. ✕ resets day and "
 "night. Colours belong to the custom theme."
@@ -11168,35 +10842,35 @@ msgstr ""
 "Klick auf ein Feld wählt eine Farbe; \"-\" = Vorgabe. ✕ setzt Tag und Nacht "
 "zurück. Die Farben gehören zum eigenen Theme."
 
-#: workbench_plugins.py:1894
+#: workbench_plugins.py:1906
 msgid "Colour"
 msgstr "Farbe"
 
-#: workbench_plugins.py:1901
+#: workbench_plugins.py:1913
 msgid "Wallpaper for Bookshelf"
 msgstr "Hintergrundbild für Bookshelf"
 
-#: workbench_plugins.py:1902
+#: workbench_plugins.py:1914
 msgid "Pictures"
 msgstr "Bilder"
 
-#: workbench_plugins.py:1929
+#: workbench_plugins.py:1941
 msgid "Bookshelf {version} in the profile ({datei})."
 msgstr "Bookshelf {version} im Profil ({datei})."
 
-#: workbench_plugins.py:2024
+#: workbench_plugins.py:2036
 msgid "{schluessel} is a table: change it in Bookshelf itself."
 msgstr "{schluessel} ist eine Tabelle: in Bookshelf selbst ändern."
 
-#: workbench_plugins.py:2026
+#: workbench_plugins.py:2038
 msgid "New value for {schluessel}:"
 msgstr "Neuer Wert für {schluessel}:"
 
-#: workbench_plugins.py:2033
+#: workbench_plugins.py:2045
 msgid "\"{text}\" does not fit the value ({art})."
 msgstr "\"{text}\" passt nicht zum Wert ({art})."
 
-#: workbench_plugins.py:2070
+#: workbench_plugins.py:2082
 msgid "Bookshelf settings saved in the profile ({n} changed)."
 msgstr "Bookshelf-Einstellungen im Profil gespeichert ({n} geändert)."
 
@@ -11436,19 +11110,19 @@ msgstr "leer = „{text}“"
 msgid "Sleeping"
 msgstr "Sleeping"
 
-#: workbench_sleep.py:303
+#: workbench_sleep.py:306
 msgid "There are no images in the folder."
 msgstr "Im Ordner sind keine Bilder."
 
-#: workbench_sleep.py:304
+#: workbench_sleep.py:307
 msgid "The file could not be copied."
 msgstr "Die Datei ließ sich nicht kopieren."
 
-#: workbench_sleep.py:307
+#: workbench_sleep.py:310
 msgid "Copied into the profile (folder screensaver): {name}"
 msgstr "Ins Profil kopiert (Ordner screensaver): {name}"
 
-#: workbench_sleep.py:379
+#: workbench_sleep.py:382
 msgid ""
 "KOReader shows no sleep screen with these settings: the screen stays as it "
 "is and there is no message."
@@ -11456,6 +11130,6 @@ msgstr ""
 "Mit diesen Einstellungen zeigt KOReader keinen Sperrbildschirm: Der "
 "Bildschirm bleibt, wie er ist, und es gibt keine Meldung."
 
-#: workbench_sleep.py:392
+#: workbench_sleep.py:395
 msgid "Sleep screen saved in the profile ({n} changed)."
 msgstr "Sperrbildschirm im Profil gespeichert ({n} geändert)."

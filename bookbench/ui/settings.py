@@ -32,6 +32,10 @@ from bookbench.ui import threads
 from bookbench.ui.forms import EINZUG, Formular, Werte, label
 
 
+# Seiten bis 2.0 -> heutige Seite (Aufrufe, Hilfeverweise)
+ALT = {"klappentexte_claude": "online", "calibre": "metadaten"}
+
+
 class EinstellungsDialog(QDialog):
     """Baum links (Gruppen mit Unterseiten), Seite rechts (scrollbar), unter jedem Feld ein Hinweis.
     Seiten mit Unterseiten haben eigenen Inhalt; reine Gruppen zeigen eine Übersicht ihrer Seiten."""
@@ -43,20 +47,19 @@ class EinstellungsDialog(QDialog):
         ("marken", "oberflaeche", N_("Status symbols"), N_("Which symbols are shown where")),
         ("start", "allgemein", N_("Startup"), N_("What opens when the program starts")),
         ("updates", "allgemein", N_("Updates"), N_("Checking for new versions")),
-        ("speichern", "", N_("Saving and backups"), N_("Backup folder and how many backups are kept")),
+        ("speichern", "", N_("Saving and backups"), N_("Backup folder, backups of books and of the KOReader settings")),
         ("buecher", "", N_("Books"), N_("Chapters, blurbs, covers and metadata")),
         ("kapitel", "buecher", N_("Chapters"), N_("How chapter names are taken from the book text")),
         ("klappentexte", "buecher", N_("Blurbs"), N_("Order of the sources, free sources, checks")),
         ("klappentexte_profile", "klappentexte", N_("Source profiles"),
          N_("Where Claude looks, per publisher, series or author")),
-        ("klappentexte_claude", "klappentexte", N_("Claude API"), N_("Key, model, cost estimate")),
         ("cover", "buecher", N_("Covers"), N_("Inserting and marking covers")),
         ("cover_nachschlagen", "cover", N_("Looking up covers"), N_("Sources and which images count")),
-        ("metadaten", "buecher", N_("Metadata"), N_("Own fields from Calibre columns, e.g. a subtitle")),
-        ("calibre", "buecher", N_("Calibre"), N_("Comparing with Calibre's metadata.calibre on or off")),
+        ("metadaten", "buecher", N_("Metadata and Calibre"), N_("Own fields from Calibre columns, comparing with Calibre")),
         ("geraet", "", N_("Device"), N_("E-reader and preview")),
-        ("kobo", "geraet", N_("E-reader"), N_("Detection, backups, dictionaries, ejecting")),
+        ("kobo", "geraet", N_("E-reader"), N_("Detection, copying dictionaries, ejecting")),
         ("vorschau", "geraet", N_("Preview"), N_("Desktop KOReader and the device shown")),
+        ("online", "", N_("Online services"), N_("Google Books key, Claude API: key, model, cost estimate")),
         ("erweitert", "", N_("Advanced"), N_("Files of the program, cache, export, reset")),
     )
     UEBERSICHT = {"allgemein", "buecher", "geraet"}          # nur Übersicht, keine eigenen Einstellungen
@@ -129,7 +132,7 @@ class EinstellungsDialog(QDialog):
             self.seiten[name] = rahmen
         self.baum.expandAll()
         self.baum.currentItemChanged.connect(lambda it, __: self._zeigen(it))
-        start = (seite or "darstellung").lower()
+        start = ALT.get((seite or "darstellung").lower(), (seite or "darstellung").lower())
         self.gehe_zu(start if start in self.eintraege else "darstellung")
         QShortcut(QKeySequence("F1"), self, activated=self.hilfe)
 
@@ -218,15 +221,15 @@ class EinstellungsDialog(QDialog):
                    _("Coloured dots (changed, applied, saved) and ⚠ to the right of the book lists."),
                    self._w("status_liste"))
         f.abschnitt(_("Tooltips"))
-        f.schalter("tooltips", _("Show tooltips"), _("Explanations when the mouse stays over a button."),
-                   self._w("tooltips"))
-        f.zahl("tooltip_verzoegerung", _("Delay (ms):"),
+        an = f.schalter("tooltips", _("Show tooltips"), _("Explanations when the mouse stays over a button."),
+                        self._w("tooltips"))
+        f.unter(an).zahl("tooltip_verzoegerung", _("Delay (ms):"),
                _("How long the mouse has to stay still before the explanation appears."),
                self._w("tooltip_verzoegerung"), 0, 3000, 100)
         f.abschnitt(_("Covers in the headers"))
-        f.schalter("cover", _("Show cover in Chapters"),
-                   _("Small cover next to the book title; a click shows it large."), self._w("cover"))
-        f.zahl("cover_kopf_hoehe", _("Height (px):"), _("Default 96."), self._w("cover_kopf_hoehe"), 40, 300, 8)
+        an = f.schalter("cover", _("Show cover in Chapters"),
+                        _("Small cover next to the book title; a click shows it large."), self._w("cover"))
+        f.unter(an).zahl("cover_kopf_hoehe", _("Height (px):"), _("Default 96."), self._w("cover_kopf_hoehe"), 40, 300, 8)
         f.abschnitt(_("Library"))
         f.text(_("Double-click on a book opens it in:"))
         f.auswahl("buch_oeffnen", [(k, _(t)) for k, t in self.app.oeffnen_ziele()],
@@ -312,16 +315,16 @@ class EinstellungsDialog(QDialog):
                   wert=self._w("update_pruefen"))
         ausgelassen = self.app.e.get("update_ausgelassen")
         if ausgelassen:
-            z = f.zeile()
-            lab = label(_("Skipped version: {version}").format(version=ausgelassen))
-            z.addWidget(lab)
+            u = f.unter(bedingung=lambda: bool(self.app.e.get("update_ausgelassen")))
+            z = u.zeile()
+            z.addWidget(label(_("Skipped version: {version}").format(version=ausgelassen)))
 
             def wieder():
                 self.app.e["update_ausgelassen"] = ""
-                lab.setText(_("Skipped version: none"))
-            f.knopf(_("Show again"), wieder, z)
+                u.pruefen()
+            u.knopf(_("Show again"), wieder, z)
             z.addStretch(1)
-            f.lay.addSpacing(8)
+            u.lay.addSpacing(8)
         f.schalter("update_vorab", _("Include pre-releases"),
                    _("Also offers releases marked as pre-release on GitHub (test versions)."), self._w("update_vorab"))
         f.hinweis(_("The releases come from github.com/{repo}.").format(repo=ku.REPO))
@@ -342,6 +345,10 @@ class EinstellungsDialog(QDialog):
             knopf=(_("Choose …"), lambda: self._ordner_waehlen("sicherungsordner")))
         f.zahl("sicherungen_anzahl", _("Backups per book:"),
                _("The newest ones are kept, older ones are deleted when saving."), self._w("sicherungen_anzahl"), 1, 50)
+        f.zahl("kobo_sicherungen_anzahl", _("Backups of the KOReader settings:"),
+               _("Backups made in the E-reader area. This many stay in the KOReader subfolder of the backup "
+                 "folder; older ones are deleted. This includes the backup made before each restore."),
+               self._w("kobo_sicherungen_anzahl"), 1, 100)
 
     # -- Bücher --------------------------------------------------------------------------
     def _seite_kapitel(self, f):
@@ -359,13 +366,9 @@ class EinstellungsDialog(QDialog):
                     "then Claude with the matching source profile."), einzug=0)
         f.abschnitt(_("Free sources"))
         f.schalter("kostenlos", _("Ask Google Books and Open Library first"),
-                   _("No key, no cost. Claude is only asked if they have nothing. Switched off, every look-up "
+                   _("No cost. Claude is only asked if they have nothing. Switched off, every look-up "
                      "goes to Claude."), self._w("kostenlos"))
-        f.feld("google_key", _("Own Google Books API key (optional)"),
-               _("Without a key, Google Books often answers \"quota exceeded\": everyone without a key shares "
-                 "one daily quota. With your own key (free, Google Cloud Console: enable the Books API, then "
-                 "create an API key) you get your own quota. Also used for looking up covers. Stored in plain "
-                 "text in the settings file."), self._w("google_key"), 46, verdeckt=True)
+        f.hinweis(_("An own Google Books key (Online services) avoids the shared daily quota."))
         f.abschnitt(_("Checks"))
         f.zahl("kt_min", _("Shortest blurb (characters):"),
                _("Shorter texts from a source are not taken (often only a teaser line)."), self._w("kt_min"), 0, 2000, 10)
@@ -389,11 +392,24 @@ class EinstellungsDialog(QDialog):
                     "are removed."))
         self._profile_zeigen()
 
-    def _seite_klappentexte_claude(self, f):
-        f.ueberschrift(_("Claude API"))
-        f.feld("api_key", _("API key"), _("From console.anthropic.com. Empty: environment variable "
-                                         "ANTHROPIC_API_KEY. Stored in plain text in the settings file."),
-               self._w("api_key"), 46, verdeckt=True)
+    def _seite_online(self, f):
+        f.ueberschrift(_("Online services"))
+        f.hinweis(_("Keys for the services Bookbench asks on the internet. Both are stored in plain text in the "
+                    "settings file (also when exporting it). What is sent where: Help > Costs and privacy."),
+                  einzug=0)
+        f.abschnitt("Google Books")
+        f.feld("google_key", _("Own Google Books API key (optional)"),
+               _("For looking up blurbs and covers. Without a key, Google Books often answers \"quota exceeded\": "
+                 "everyone without a key shares one daily quota. With your own key (free, Google Cloud Console: "
+                 "enable the Books API, then create an API key) you get your own quota."),
+               self._w("google_key"), 46, verdeckt=True)
+        f.abschnitt(_("Claude API"))
+        schl = f.feld("api_key", _("API key"),
+                      _("From console.anthropic.com; for blurbs from source profiles and for dictionary entries. "
+                        "Empty: environment variable ANTHROPIC_API_KEY."), self._w("api_key"), 46, verdeckt=True)
+        u = f.unter(bedingung=lambda: bool(schl.text().strip() or os.environ.get("ANTHROPIC_API_KEY")))
+        schl.textChanged.connect(lambda *a: u.pruefen())
+        f = u                                              # Modell und Kosten erst mit Schlüssel
         f.text(_("Model"))
         z = f.zeile()
         self.modell_wahl = QComboBox()
@@ -522,7 +538,7 @@ class EinstellungsDialog(QDialog):
                                                              "cover, sometimes of another edition."),
                    self._w("cover_openlibrary"))
         f.schalter("cover_google", _("Google Books"), _("Free. Usually smaller images. Uses your own Google Books key "
-                                                        "if there is one (Blurbs)."), self._w("cover_google"))
+                                                        "if there is one (Online services)."), self._w("cover_google"))
         f.abschnitt(_("Which images count"))
         f.zahl("cover_min_hoehe", _("Smallest height (px):"),
                _("Smaller images are left out (preview thumbnails)."), self._w("cover_min_hoehe"), 50, 2000, 10)
@@ -530,7 +546,13 @@ class EinstellungsDialog(QDialog):
                _("Each image is downloaded, so more takes longer."), self._w("cover_anzahl"), 1, 30)
 
     def _seite_metadaten(self, f):
-        f.ueberschrift(_("Metadata"))
+        f.ueberschrift(_("Metadata and Calibre"))
+        f.abschnitt("Calibre")
+        f.schalter("calibre_an", _("Compare with Calibre"),
+                   _("Reads Calibre's metadata.calibre (on the e-reader or in the opened folder) and shows its "
+                     "values: in the Metadata area for comparing, in Blurbs and the Library for taking over "
+                     "series and blurbs. Switch it off if you do not use Calibre (any more); the Calibre buttons "
+                     "then disappear. Switching on applies after reloading (F5)."), self._w("calibre_an"))
         f.abschnitt(_("Own fields"))
         f.hinweis(_("Extra fields in the Metadata area, one per Calibre column (Calibre: Preferences > Add your "
                     "own columns). Bookbench reads and writes them the way Calibre stores them in the book."))
@@ -624,14 +646,6 @@ class EinstellungsDialog(QDialog):
             if gefunden else _("No own columns found (open a folder with metadata.calibre first).")
         dialogs.info(self, _("Settings"), self.spalten_meldung)
 
-    def _seite_calibre(self, f):
-        f.ueberschrift("Calibre")
-        f.schalter("calibre_an", _("Compare with Calibre"),
-                   _("Reads Calibre's metadata.calibre (on the e-reader or in the opened folder) and shows its "
-                     "values: in the Metadata area for comparing, in Blurbs and the Library for taking over "
-                     "series and blurbs. Switch it off if you do not use Calibre (any more); the Calibre buttons "
-                     "then disappear. Switching on applies after reloading (F5)."), self._w("calibre_an"))
-
     # -- Gerät -------------------------------------------------------------------------
     def _seite_kobo(self, f):
         f.ueberschrift(_("E-reader"))
@@ -645,13 +659,10 @@ class EinstellungsDialog(QDialog):
             ("auto", _("Open its books (ask if another folder is open)")),
             ("fragen", _("Always ask whether to open its books")),
             ("nie", _("Do nothing (open with Books in the E-reader area)"))), wert=self._w("kobo_oeffnen"))
-        f.abschnitt(_("Backups"))
-        f.zahl("kobo_sicherungen_anzahl", _("Backups of the KOReader settings:"),
-               _("This many stay in the KOReader subfolder of the backup folder; older ones are deleted. This "
-                 "includes the backup made before each restore."), self._w("kobo_sicherungen_anzahl"), 1, 100)
-        f.abschnitt(_("Dictionaries"))
-        f.feld("woerterbuch_quelle", _("Dictionaries (folder on the computer)"),
-               _("A dictionary folder (with an .ifo file, e.g. My-Dictionary) or a folder with several of them."),
+        f.abschnitt(_("Copying dictionaries"))
+        f.feld("woerterbuch_quelle", _("Copy dictionaries from (folder on the computer)"),
+               _("Where Copy dictionary in the E-reader area takes them from: a dictionary folder (with an .ifo "
+                 "file, e.g. My-Dictionary) or a folder with several of them. Also set by Choose source there."),
                self._w("woerterbuch_quelle"), 46, knopf=(_("Choose …"), lambda: self._ordner_waehlen("woerterbuch_quelle")))
         f.abschnitt(_("Ejecting"))
         f.schalter("auswerfen_erinnern", _("Remind me to eject when quitting"),

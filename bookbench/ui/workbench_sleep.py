@@ -196,7 +196,7 @@ class SperrSeite(_NeustartSeite):
         self.stand_zeigen()
 
     def _ausgrauen(self):
-        """Felder ausgrauen, die bei der aktuellen Wahl nichts bewirken (wie KOReaders Menü)."""
+        """Felder ausblenden, die bei der aktuellen Wahl nichts bewirken (KOReaders Menü graut sie aus)."""
         w = self._werte()
         typ = kss.wert(w, "screensaver_type")
         bild = typ in ("cover", "document_cover", "random_image")
@@ -217,11 +217,14 @@ class SperrSeite(_NeustartSeite):
             "screensaver_show_exit_message": geste,
             "screensaver_exit_message": geste and kss.wert(w, "screensaver_show_exit_message"),
         }
-        for schl, widgets in self.felder.items():
+        for schl, widgets in self.felder.items():         # was zur Wahl nicht passt, verschwindet (2.0.1)
             an = bool(aktiv.get(schl, True))
             for wd in widgets:
-                if not isinstance(wd, QLabel):
-                    wd.setEnabled(an)
+                wd.setVisible(an)
+        if "ausnahmen" in self.abschnitte:                 # Buchcover auslassen gibt es nur beim Buchcover
+            knopf, inhalt = self.abschnitte["ausnahmen"]
+            knopf.setVisible(typ == "cover")
+            inhalt.setVisible(typ == "cover" and knopf.isChecked())
 
     def _geaendert(self, schl):
         if self._laden or self.datei_werte is None:

@@ -104,7 +104,7 @@ Until version 0.23 the two JSON files were next to the program; until 0.24 the f
 """)),
     ("ueberblick", "kosten", N_("Costs and privacy"), N_("""
 **Free, without a key**
-- Google Books and Open Library: blurbs ([[klappentexte_nachschlagen]]) and covers ([[cover_aendern]]). Sent: ISBN, title and author of the book. Google Books without a key shares one daily quota with everyone else; an own key (also free) gives you your own ([[einst_klappentexte]]).
+- Google Books and Open Library: blurbs ([[klappentexte_nachschlagen]]) and covers ([[cover_aendern]]). Sent: ISBN, title and author of the book. Google Books without a key shares one daily quota with everyone else; an own key (also free) gives you your own ([[einst_online]]).
 - Everything else in the program runs on the computer only.
 
 **Costs money: Claude (Anthropic API)**
@@ -127,7 +127,7 @@ The sidebar on the left switches between the areas (Ctrl+1 … 6):
 - [[kobo]] - the connected e-reader: backups, dictionaries, ejecting
 - [[vorschau]] - a book in the desktop KOReader (Linux/macOS)
 
-The toolbar has the buttons of the current area on the left; on the right, separated, are the ones that always apply: Open, Reload, Save and Help. [[speichern]] applies to all book areas together.
+The toolbar has the buttons of the current area on the left; on the right, separated, Open, Reload and Save (only in Library, Chapters and Metadata - the areas with the books of the folder) and Help. [[speichern]] applies to all book areas together. The **Edit** menu only holds the commands of the area shown; Dictionary, E-reader and Preview have menus of their own.
 
 The **book lists** on the left of Chapters and Metadata (and the list of the dictionary; in the Preview the left column) can be made wider or narrower by dragging the divider to their right; the width is remembered, a double-click on the divider restores the default. A name that does not fit is shown completely in a tooltip when the mouse is over it, together with what its pictograms mean.
 """)),
@@ -189,7 +189,7 @@ All books of the opened folder (with all subfolders) with series, number, author
 Order, shown columns, widths and sorting are remembered in the settings.
 """)),
     ("bibliothek", "bibliothek_calibre", N_("Calibre and series"), N_("""
-**From Calibre** (toolbar of the library) takes series, number and blurb from Calibre's **metadata.calibre**, but only where the EPUB has nothing - existing data is never overwritten. Then save as usual (Ctrl+S); after that the data is in the book itself, and KOReader, Bookshelf and the reading software of the e-reader see it without Calibre too.
+**Series and blurbs from Calibre** (toolbar of the library) takes series, number and blurb from Calibre's **metadata.calibre**, but only where the EPUB has nothing - existing data is never overwritten. Then save as usual (Ctrl+S); after that the data is in the book itself, and KOReader, Bookshelf and the reading software of the e-reader see it without Calibre too.
 
 **Where the file is**
 Calibre writes metadata.calibre into the root folder of the e-reader when transferring books. It is searched for in the opened folder and in all folders above it; for a copy on the computer simply copy the file into the books folder too. Books are matched by path, file name, Calibre UUID or title and author.
@@ -244,7 +244,7 @@ Applied names are remembered in **tocfix_entscheidungen.json** in the settings f
 The books on the left, in the middle a form with the metadata stored in the book: **title**, **authors**, **author sort**, **series** and **number**, **publisher**, **language**, **ISBN** and **tags**, followed by your **own fields** from Calibre columns ([[metadaten_felder]]). Below the form the **blurb** ([[klappentexte]]), on the right the **cover** ([[cover]]).
 
 - Type in the fields; the book turns red (changed, not applied). **Apply** (Ctrl+Enter or Enter in a field) applies form and blurb and makes the book yellow, **Save** (Ctrl+S) writes it into the file, with backup.
-- **Discard** restores values, blurb and cover from the file. This also drops a series taken over with **From Calibre** in the library.
+- **Discard** restores values, blurb and cover from the file. This also drops a series taken over with **Series and blurbs from Calibre** in the library.
 - Several authors are separated with **&**, as in Calibre: "Dan Abnett & Graham McNeill". The **author sort** works the same way ("Abnett, Dan & McNeill, Graham"); with as many names as authors each author gets his own, otherwise the first one gets the whole text.
 - **Number** sits behind the series and only takes numbers; the arrows (or arrow up/down, mouse wheel) count up and down. It may have decimals, e.g. 1.5 or 0.9 for a story between two books; a comma is turned into a point, as in Calibre.
 - **Tags** are separated with commas.
@@ -259,7 +259,7 @@ The file name is never changed: KOReader keeps reading positions and highlights 
 
 After saving, KOReader only shows the new values after re-reading the book information (Cover browser > Extract and cache book information).
 
-**Toolbar**: Apply, Discard, From Calibre (only with the Calibre comparison on) and **Complete ▾** for all books: look up all missing blurbs, look up all missing covers, import from a Calibre library ([[calibre_import]]), fill gaps from Calibre.
+**Toolbar**: Apply, Discard, From Calibre (only with the Calibre comparison on) and **Complete ▾** for all books: look up all missing blurbs, look up all missing covers, import from a Calibre library ([[calibre_import]]), fill metadata gaps from Calibre.
 
 **Markers** in the list show what a book lacks: speech bubble (blurb), picture (cover), not-equal sign (Calibre), label (language/ISBN) - see [[status]].
 
@@ -273,14 +273,14 @@ After saving, KOReader only shows the new values after re-reading the book infor
 """)),
     ("metadaten", "metadaten_calibre", N_("Calibre and KOReader"), N_("""
 **Calibre**
-If Calibre's **metadata.calibre** is found ([[bibliothek_calibre]]) and the comparison is on ([[einst_calibre]]), Calibre's value is shown next to (or below) every field where it differs: **← Calibre: …**. A click on **←** puts the value into the field. Matching values are not shown.
+If Calibre's **metadata.calibre** is found ([[bibliothek_calibre]]) and the comparison is on ([[einst_metadaten]]), Calibre's value is shown next to (or below) every field where it differs: **← Calibre: …**. A click on **←** puts the value into the field. Matching values are not shown.
 
 - **From Calibre** (toolbar) puts all differing values of this book into the form - check them, then apply.
-- **Complete ▾ > Fill gaps from Calibre** works on all books, but only on fields that are empty in the book. It applies directly (yellow); save afterwards.
+- **Complete ▾ > Fill metadata gaps from Calibre** (also in the Edit menu of the library) works on all books, but only on fields that are empty in the book. It applies directly (yellow); save afterwards.
 - A **not-equal sign** in the list means title, authors, series or number differ from Calibre. The filter **Differs from Calibre** also counts the other fields.
 - Calibre stores languages as three letters (eng); Bookbench compares them with the two-letter codes of the book (en) and takes over the short form.
 
-**Important:** When Calibre sends a book to the e-reader again, it writes its own values into the file. Change the metadata in Calibre as well, otherwise your changes in Bookbench are overwritten. If you no longer use Calibre, switch the comparison off: [[einst_calibre]].
+**Important:** When Calibre sends a book to the e-reader again, it writes its own values into the file. Change the metadata in Calibre as well, otherwise your changes in Bookbench are overwritten. If you no longer use Calibre, switch the comparison off: [[einst_metadaten]].
 
 **KOReader**
 If you edited the book information in KOReader itself (Book information > long-press a field), KOReader keeps it in **custom_metadata.lua** in the .sdr folder next to the book and shows it **instead of** the values in the file. Bookbench shows these values next to the fields as **← KOReader: …** (only when the folder with the .sdr folders is opened, e.g. the e-reader directly) and points it out below the form. The filter **Edited in KOReader** lists these books. To make KOReader show the file again, reset the fields in KOReader.
@@ -303,7 +303,7 @@ If you want to stop using Calibre, take its metadata over once into the books: *
 4. If Calibre has own columns (e.g. #subtitle) that are not fields yet, **Add as own fields** adds them ([[metadaten_felder]]); then their values appear in the table too.
 5. **Apply ticked** applies the values (yellow), then save with Ctrl+S.
 
-Afterwards switch the Calibre comparison off ([[einst_calibre]]) if Calibre does not manage the books anymore. Calibre's own fields like date added, rating stars or read status only come along as own columns.
+Afterwards switch the Calibre comparison off ([[einst_metadaten]]) if Calibre does not manage the books anymore. Calibre's own fields like date added, rating stars or read status only come along as own columns.
 """)),
     ("metadaten", "klappentexte", N_("Blurb"), N_("""
 The blurb is below the form in the Metadata area. The text can be edited directly; the divider between form and blurb can be dragged (a double-click puts it back below the form). If the form no longer fits above it, it gets a scrollbar (the mouse wheel scrolls it too).
@@ -334,7 +334,7 @@ A text that is too short or too long is not taken (limits: [[einst_klappentexte]
 
 **When nothing is found**
 The message at the end says per source why, and below the blurb the result of the last look-up stays as long as the book has no text:
-- **daily quota used up (429)**: Google Books without a key shares one daily quota with everyone else and often answers like this. An own key ([[einst_klappentexte]]) gives you your own quota.
+- **daily quota used up (429)**: Google Books without a key shares one daily quota with everyone else and often answers like this. An own key ([[einst_online]]) gives you your own quota.
 - **book found, but no blurb stored**: the source knows the book but has no description (Open Library often).
 - **book not found**: no matching title and author (or ISBN).
 A quota or network error is not remembered as tried; the next look-up asks that source again.
@@ -342,7 +342,7 @@ A quota or network error is not remembered as tried; the next look-up asks that 
 **Cache**
 What was found and what was already tried is in **blurbs_cache.json** ([[dateien]]). Looking up again costs nothing. If a profile is changed, Claude tries again for the books it covers; the free sources are asked again only after a network error. The cache can be emptied: [[einst_erweitert]].
 
-Claude needs an API key and the package **anthropic** (pip install anthropic): [[einst_klappentexte_claude]].
+Claude needs an API key and the package **anthropic** (pip install anthropic): [[einst_online]].
 """)),
     ("klappentexte", "klappentexte_profile", N_("Source profiles"), N_("""
 A source profile tells Claude where to look for a blurb. They are set up under Settings > Books > Blurbs > Source profiles ([[einst_klappentexte_profile]]). The **first active profile that fits** the book is used.
@@ -389,7 +389,7 @@ The sources, the smallest height that counts and how many to choose from: [[eins
 
 **Tips**
 - Open Library often has large scans, sometimes of another edition (another cover). Google Books has the publisher's image, usually smaller.
-- In the Edit menu the same actions work from Chapters; the program switches to Metadata with the same book.
+- The Edit menu has the same actions while Metadata is shown; **Look up all missing covers** also in the library.
 """)),
     ("cover", "cover_bild", N_("What happens to the image"), N_("""
 - The new cover keeps the **format** and the **file name** of the old one (a PNG becomes a JPEG if the old cover is a JPEG). That way the manifest and a title page that shows the image stay valid.
@@ -486,7 +486,7 @@ Newer Kindles and Android devices only connect via MTP and do not appear as a dr
 Only the Kobo was tested on a real device so far; Kindle and PocketBook follow the KOReader source code.
 """)),
     ("kobo", "kobo_sicherungen", N_("Backups of the KOReader settings"), N_("""
-- **Back up** packs the parts ticked on the right into a ZIP file in the subfolder **KOReader** of the backup folder (KOReader_YYYYMMDD_HHMMSS.zip). The newest backups are kept ([[einst_kobo]]).
+- **Back up** packs the parts ticked on the right into a ZIP file in the subfolder **KOReader** of the backup folder (KOReader_YYYYMMDD_HHMMSS.zip). The newest backups are kept ([[einst_speichern]]).
 - **Restore** (or double-click) writes the ticked parts from the selected backup back. Files with the same name are overwritten, others stay. The current state is backed up first (reason "before restoring").
 - When a backup is selected, the status bar shows its contents, device and KOReader version; backups from another device are pointed out.
 
@@ -595,7 +595,7 @@ Paths are the ones on the e-reader (on a Kobo /mnt/onboard/…). **Choose …** 
 
 **After waking up**: whether the sleep screen stays after waking (seconds, until a tap, until the "Exit sleep screen" gesture), the message for the gesture, and whether reboot/power-off messages are hidden.
 
-Fields that do nothing with the current choice are greyed out, like in KOReader's menu. Changes are a draft until **Save to profile**.
+Fields that do nothing with the current choice are hidden (KOReader's menu greys them out); **Ignore the book cover** only appears with the book cover as wallpaper. Changes are a draft until **Save to profile**.
 """)),
     ("vorschau", "vorschau_patches", N_("Patches"), N_("""
 Below Preview, **Patches** lists the user patches of the profile (folder koreader/patches) as KOReader's patch management does (Tools > More tools > Patch management on the e-reader).
@@ -633,11 +633,11 @@ The page is divided into sections (Preset, Lines, Selected line, Progress bars, 
 - **Extra margin** next to each position moves the whole position away from the edge (↕ top or bottom, ↔ left or right for the corners), in pixels.
 - Click into a line (section **Selected line**) to set its **style** (bold, italic), **size** (empty = the general size), **capitals** and **offset**: ← → and ↑ ↓ in pixels, negative = left or up, **Back to 0** sets both to 0. Inserting or deleting lines keeps the settings with their line.
 - **Show on**: all pages, or only odd or even pages (for example page numbers on the outer side).
-- **Bar in this line**: the token %bar draws a progress bar inside the line. **Insert bar** adds it, **Remove bar** takes it out again. For a line with a bar: chapter or book, chapter ticks (book only), style, fill direction, thickness and unread thickness in pixels (empty thickness = as high as the text).
+- **Bar in this line**: the token %bar draws a progress bar inside the line. **Insert bar** adds it, **Remove bar** takes it out again. Only for a line with a bar the bar fields appear: chapter or book, chapter ticks (book only), style, fill direction, thickness and unread thickness in pixels (empty thickness = as high as the text).
 - Settings Bookbench does not offer yet (font per line, colours and markers of bars, conditions in the text) are kept unchanged when saving.
 
 **Progress bars**
-Up to eight bars across the page, independent of the lines. Choose a bar in the list (✓ = switched on, with its edge), then: **Switched on**, chapter or book, chapter ticks, style, fill direction, **Edge** (top, bottom, left, right), thickness (diameter for round bars) and unread thickness, distance from the edge and the margins at both ends. A bar set to "Position relative to line text" on the e-reader shows its distance from the line text instead; switching that on or off stays on the e-reader, as do colours and markers.
+Up to eight bars across the page, independent of the lines. Choose a bar in the list (✓ = switched on, with its edge), then **Switched on**; only a switched-on bar shows its fields: chapter or book, chapter ticks, style, fill direction, **Edge** (top, bottom, left, right), thickness (diameter for round bars) and unread thickness, distance from the edge and the margins at both ends. A bar set to "Position relative to line text" on the e-reader shows its distance from the line text instead; switching that on or off stays on the e-reader, as do colours and markers.
 
 **General**
 Font size and scale, the four margins, the gap before texts overlap and what is shortened first. Empty fields use Bookends' defaults.
@@ -766,9 +766,12 @@ All settings are in **einstellungen.json** in the settings folder ([[dateien]]).
 **Pages**
 - General: [[einst_darstellung]], [[einst_oberflaeche]], [[einst_start]]
 - [[einst_speichern]]
-- Books: [[einst_kapitel]], [[einst_klappentexte]] ([[einst_klappentexte_profile]], [[einst_klappentexte_claude]]), [[einst_cover]] ([[einst_cover_nachschlagen]]), [[einst_metadaten]], [[einst_calibre]]
+- Books: [[einst_kapitel]], [[einst_klappentexte]] ([[einst_klappentexte_profile]]), [[einst_cover]] ([[einst_cover_nachschlagen]]), [[einst_metadaten]]
 - Device: [[einst_kobo]], [[einst_vorschau]]
+- [[einst_online]]
 - [[einst_erweitert]]
+
+Options that only matter with another setting (e.g. the tooltip delay, the Claude model) only appear when that setting is on.
 """)),
     ("einstellungen", "einst_darstellung", N_("Language and theme"), N_("""
 **Language** (default: automatic)
@@ -818,6 +821,7 @@ The releases come from github.com/kepfle-git/Bookbench; that is fixed in the pro
     ("einstellungen", "einst_speichern", N_("Saving and backups"), N_("""
 - **Backup folder** (default: Bookbench Backups in the user folder): books are copied here before each save ([[speichern]]). The E-reader area uses its subfolder KOReader, the dictionary its subfolder Wörterbücher. Not on the e-reader.
 - **Backups per book** (default: 5): the newest ones are kept, older ones are deleted when saving.
+- **Backups of the KOReader settings** (default: 10): backups made in the E-reader area; this many stay in the subfolder KOReader, including the backup before each restore ([[kobo_sicherungen]]).
 """)),
     ("einstellungen", "einst_kapitel", N_("Chapters"), N_("""
 - **Subtitle lines per chapter** (default: 1): how many lines below a chapter number make up the suggested name. Some books have three (e.g. place, time, person); with 3 all of them are joined with " / ".
@@ -829,7 +833,7 @@ Both apply after reloading (F5), because the suggestions are made when reading t
 The page shows the order of the sources ([[klappentexte_nachschlagen]]).
 
 - **Ask Google Books and Open Library first** (default: on): free, no key. Off: every look-up goes to Claude straight away.
-- **Own Google Books API key** (default: empty): without a key Google Books often answers "quota exceeded", because everyone without a key shares one daily quota. An own key is free: in the Google Cloud Console create a project, enable the **Books API** and create an **API key** under Credentials. It is also used for looking up covers and is stored in plain text in the settings file. If Google rejects it, the look-up says so.
+- The own Google Books key is under [[einst_online]].
 - **Shortest blurb** (default: 80 characters): shorter texts from a source are not taken - often only a teaser line or "A novel".
 - **Longest blurb** (default: 4000 characters): longer texts are not taken - usually a plot summary or a whole article.
 The limits apply to all sources (free ones and Claude), not to text you enter yourself.
@@ -844,8 +848,14 @@ The list of profiles in the order in which they are checked. The first active on
 
 Changes count after OK. If a profile changes, Claude looks up again for its books; books it already found stay as they are.
 """)),
-    ("einst_klappentexte", "einst_klappentexte_claude", N_("Claude API"), N_("""
-- **API key**: from console.anthropic.com (account with credit). Empty: the environment variable ANTHROPIC_API_KEY is used. Stored in plain text in einstellungen.json ([[dateien]]) - keep that in mind when exporting the settings.
+    ("einstellungen", "einst_online", N_("Online services"), N_("""
+Keys for the services Bookbench asks on the internet; both are stored in plain text in einstellungen.json ([[dateien]]) - keep that in mind when exporting the settings. What is sent where: [[kosten]].
+
+**Google Books**
+- **Own Google Books API key** (default: empty): for looking up blurbs and covers. Without a key Google Books often answers "quota exceeded", because everyone without a key shares one daily quota. An own key is free: in the Google Cloud Console create a project, enable the **Books API** and create an **API key** under Credentials. If Google rejects it, the look-up says so.
+
+**Claude API** (blurbs from source profiles, dictionary entries)
+- **API key**: from console.anthropic.com (account with credit). Empty: the environment variable ANTHROPIC_API_KEY is used. Model and cost estimate only appear with a key.
 - **Model** (default: claude-haiku-5-5): choose from the list; Haiku is enough for looking things up and is the cheapest. **Load list** asks Anthropic with the API key for the models available right now (newest first). A name can also be typed in.
 - **Estimated cost per book** (default: 0.015 $): only for the question before looking up all missing blurbs; the real cost depends on page length and searches.
 
@@ -860,7 +870,7 @@ Also needed: the package **anthropic** (pip install anthropic). What is sent: [[
 - **Mark covers below this height** (default: 800 px, 0 = never): ⚠ in the Metadata area and its filter "Small cover".
 """)),
     ("einst_cover", "einst_cover_nachschlagen", N_("Looking up covers"), N_("""
-**Sources** (both free, no key needed; Google Books uses your own key if there is one, [[einst_klappentexte]]; [[kosten]])
+**Sources** (both free, no key needed; Google Books uses your own key if there is one, [[einst_online]]; [[kosten]])
 - **Open Library** (default: on): often large scans, sometimes of another edition.
 - **Google Books** (default: on): the publisher's image, usually smaller.
 
@@ -868,28 +878,27 @@ Also needed: the package **anthropic** (pip install anthropic). What is sent: [[
 - **Smallest height** (default: 300 px): smaller images are left out (preview thumbnails, placeholders).
 - **At most this many to choose from** (default: 8): each image is downloaded, so more takes longer. Looking up all missing covers takes at most 3 per book and uses the largest.
 """)),
-    ("einstellungen", "einst_metadaten", N_("Metadata"), N_("""
+    ("einstellungen", "einst_metadaten", N_("Metadata and Calibre"), N_("""
+**Calibre**
+- **Compare with Calibre** (default: on): Bookbench reads Calibre's metadata.calibre (root of the e-reader, or the opened folder and the folders above it) and shows its values: in [[metadaten_calibre]] for comparing, in the library and in Blurbs for taking over series and blurbs ([[bibliothek_calibre]]).
+- Off: metadata.calibre is ignored and the Calibre buttons and menu entries disappear. Useful once Bookbench has replaced Calibre for you.
+- Switching off applies at once, switching on after reloading (F5).
+- The one-time import from a Calibre library (metadata.db) works independently of this setting: [[calibre_import]].
+
 **Own fields** ([[metadaten_felder]])
 - The list holds one Calibre column per row: **lookup name** (as in Calibre, with #, e.g. #subtitle) and the **label** Bookbench shows. Default: none.
 - Select a row to change it below, **Add / change** takes the two fields (an existing lookup name is changed, a new one added). **Delete**, **Up** and **Down** work on the selected row; the order is the order in the form.
 - **From Calibre** adds all own columns found in the metadata.calibre of the opened folder, with Calibre's labels. Delete the ones you do not want.
-""")),
-    ("einstellungen", "einst_calibre", N_("Calibre"), N_("""
-- **Compare with Calibre** (default: on): Bookbench reads Calibre's metadata.calibre (root of the e-reader, or the opened folder and the folders above it) and shows its values: in [[metadaten_calibre]] for comparing, in the library and in Blurbs for taking over series and blurbs ([[bibliothek_calibre]]).
-- Off: metadata.calibre is ignored, the Calibre buttons disappear from the toolbars, the Calibre entries in the Edit menu only give a hint. Useful once Bookbench has replaced Calibre for you.
-- Switching off applies at once, switching on after reloading (F5).
-- The one-time import from a Calibre library (metadata.db) works independently of this setting: [[calibre_import]].
 """)),
     ("einstellungen", "einst_kobo", N_("E-reader"), N_("""
 **Detection**
 - **Look for the e-reader every** (default: 3 seconds): how often the program checks whether an e-reader is connected or unplugged ([[kobo]]).
 - **When an e-reader is connected** (default: open its books, ask if another folder is open): or always ask, or do nothing ([[kobo]]).
 
-**Backups**
-- **Backups of the KOReader settings** (default: 10): this many stay in the subfolder KOReader of the backup folder, including the backup before each restore ([[kobo_sicherungen]]).
+**Copying dictionaries**
+- **Copy dictionaries from (folder on the computer)**: where the dictionaries to copy are ([[kobo_woerterbuecher]]). Also set by Choose source in the E-reader area.
 
-**Dictionaries**
-- **Dictionaries (folder on the computer)**: where the dictionaries to copy are ([[kobo_woerterbuecher]]). Also set by Choose source in the E-reader area.
+How many KOReader backups are kept: [[einst_speichern]].
 
 **Ejecting**
 - **Remind me to eject when quitting** (default: on): only if something was written to the e-reader in this session ([[kobo_auswerfen]]).
@@ -941,7 +950,7 @@ The **desktop KOReader** for the preview (Linux only) is not part of the install
 - The package **Pillow** is missing: pip install pillow. Without it only PNG and GIF can be shown.
 
 **"No API key" or nothing goes to Claude**
-- Key under [[einst_klappentexte_claude]] or the environment variable ANTHROPIC_API_KEY; package anthropic installed? Without a key only the free sources are asked.
+- Key under [[einst_online]] or the environment variable ANTHROPIC_API_KEY; package anthropic installed? Without a key only the free sources are asked.
 
 **API error**
 - The status bar shows Anthropic's message: no credit, wrong key, model name unknown, overloaded. The book does not count as tried and is looked up again next time.

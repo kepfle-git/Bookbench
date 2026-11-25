@@ -51,6 +51,7 @@ from bookbench.ui import threads
 from bookbench.version import PROGRAMM, VERSION
 
 DARSTELLUNGEN = (("hell", N_("Light")), ("dunkel", N_("Dark")), ("system", N_("Like the system")))
+BUCH_BEREICHE = ("bibliothek", "kapitel", "metadaten")      # Bereiche mit den Büchern des Ordners (Öffnen/Speichern)
 
 
 class StatusText:
@@ -233,28 +234,37 @@ class App(QMainWindow):
         m.addAction(_("Settings …"), lambda: self.einstellungen())
         m.addSeparator()
         m.addAction(_("Quit"), self.close)
-        b = leiste.addMenu(_("Edit"))
-        act = b.addAction(_("Apply"), self.uebernehmen)
+        # Bearbeiten: nur die Befehle des gezeigten Bereichs (_bearbeiten_anpassen); ohne passende Befehle weg
+        b = self._bearbeiten = leiste.addMenu(_("Edit"))
+        self._bearbeiten_aktionen = []
+        K, M, B = "kapitel", "metadaten", "bibliothek"
+
+        def eintrag(text, fn, bereiche, calibre=False):
+            act = b.addAction(text, fn)
+            self._bearbeiten_aktionen.append((act, set(bereiche), calibre))
+            return act
+        act = eintrag(_("Apply"), self.uebernehmen, (K, M))
         act.setShortcut(QKeySequence("Ctrl+Return"))
         act.setShortcutContext(Qt.WidgetShortcut)           # die Taste fängt der QShortcut im Fenster
-        b.addAction(_("Apply all chapter suggestions"), lambda: self.kapitel.alle_uebernehmen())
+        eintrag(_("Apply all chapter suggestions"), lambda: self.kapitel.alle_uebernehmen(), (K,))
         b.addSeparator()
-        b.addAction(_("Chapters: restore suggestions"), lambda: self._kapitel_aktion("vorschlaege"))
-        b.addAction(_("Chapters: restore original"), lambda: self._kapitel_aktion("original"))
-        b.addAction(_("Chapters: level up") + "\t" + _("Shift+Tab"), lambda: self._kapitel_aktion("ebene", -1))
-        b.addAction(_("Chapters: level down") + "\tTab", lambda: self._kapitel_aktion("ebene", 1))
+        eintrag(_("Chapters: restore suggestions"), lambda: self._kapitel_aktion("vorschlaege"), (K,))
+        eintrag(_("Chapters: restore original"), lambda: self._kapitel_aktion("original"), (K,))
+        eintrag(_("Chapters: level up") + "\t" + _("Shift+Tab"), lambda: self._kapitel_aktion("ebene", -1), (K,))
+        eintrag(_("Chapters: level down") + "\tTab", lambda: self._kapitel_aktion("ebene", 1), (K,))
         b.addSeparator()
-        b.addAction(_("Look up blurb"), self.klappentext_nachschlagen)
-        b.addAction(_("Look up all missing blurbs"), self.klappentexte_alle)
+        eintrag(_("Look up blurb"), self.klappentext_nachschlagen, (M,))
+        eintrag(_("Look up all missing blurbs"), self.klappentexte_alle, (M, B))
         b.addSeparator()
-        b.addAction(_("Cover from file …"), lambda: self.cover_aktion("aus_datei"))
-        b.addAction(_("Look up cover"), lambda: self.cover_aktion("nachschlagen"))
-        b.addAction(_("Look up all missing covers"), lambda: self.cover_aktion("alle_ohne"))
-        b.addAction(_("Show cover large"), lambda: self.cover_aktion("gross"))
+        eintrag(_("Cover from file …"), lambda: self.cover_aktion("aus_datei"), (M,))
+        eintrag(_("Look up cover"), lambda: self.cover_aktion("nachschlagen"), (M,))
+        eintrag(_("Look up all missing covers"), lambda: self.cover_aktion("alle_ohne"), (M, B))
+        eintrag(_("Show cover large"), lambda: self.cover_aktion("gross"), (M,))
         b.addSeparator()
-        b.addAction(_("Take series and blurbs from Calibre"), self.calibre_uebernehmen)
-        b.addAction(_("Metadata from Calibre (this book)"), lambda: self.metadaten_aktion("alle_von_calibre"))
-        b.addAction(_("Fill metadata gaps from Calibre"), lambda: self.metadaten.luecken_fuellen())
+        eintrag(_("Series and blurbs from Calibre"), self.calibre_uebernehmen, (B,), calibre=True)
+        eintrag(_("Metadata from Calibre (this book)"), lambda: self.metadaten_aktion("alle_von_calibre"), (M,),
+                calibre=True)
+        eintrag(_("Fill metadata gaps from Calibre"), lambda: self.metadaten.luecken_fuellen(), (M, B), calibre=True)
         for b in self.bereiche:
             b.menue(leiste)
         a = leiste.addMenu(_("View"))
@@ -281,6 +291,19 @@ class App(QMainWindow):
         h.addSeparator()
         h.addAction(_("About"), self.ueber)
         kuerzel_verteilen(leiste)
+        self._bearbeiten_anpassen()
+
+    def _bearbeiten_anpassen(self):
+        """Menü Bearbeiten auf den gezeigten Bereich zuschneiden; Calibre-Befehle nur mit Calibre-Vergleich."""
+        if getattr(self, "_bearbeiten", None) is None:
+            return
+        calibre = bool(self.e.get("calibre_an", True))
+        sichtbar = 0
+        for act, bereiche, nur_calibre in self._bearbeiten_aktionen:
+            an = self._aktuell in bereiche and (calibre or not nur_calibre)
+            act.setVisible(an)
+            sichtbar += an
+        self._bearbeiten.menuAction().setVisible(bool(sichtbar))
 
     def _schalter_aktion(self, menue, text, schl, nachher=None):
         act = menue.addAction(text)
@@ -315,7 +338,8 @@ class App(QMainWindow):
     # -- Werkzeugleiste --------------------------------------------------------------------
     def _werkzeugleiste(self):
         """Designleitfaden 2.: links die Aktionen des Bereichs, rechts die globalen Knöpfe - Öffnen,
-        Neu einlesen und Speichern gelten für alle Bereiche und stehen deshalb rechts, vor Hilfe."""
+        Neu einlesen und Speichern stehen rechts vor Hilfe, aber nur in den Bereichen mit den Büchern des
+        Ordners (BUCH_BEREICHE); Wörterbuch, E-Reader und Vorschau speichern selbst."""
         alt = getattr(self, "wz", None)
         if alt is not None:
             self.removeToolBar(alt)
@@ -341,7 +365,7 @@ class App(QMainWindow):
                 None,
                 ("hilfe", _("Help"), self.hilfe, _("Help for the current area (F1)"))):
             if eintrag is None:
-                wz.addSeparator()
+                self._wz_trenner = wz.addSeparator()
                 continue
             symbol, text, fn, tipp = eintrag
             act = wz.addAction(theme.symbol(symbol), text, fn)
@@ -381,6 +405,11 @@ class App(QMainWindow):
                 if knopf is not None:
                     knopf.setPopupMode(QToolButton.InstantPopup)
             self._wz_bereich.append(a)
+        buecher = self._aktuell in BUCH_BEREICHE
+        for a in self._wz_global:
+            if a.symbol != "hilfe":
+                a.setVisible(buecher)
+        self._wz_trenner.setVisible(buecher)
 
     def _symbole_auffrischen(self):
         for a in self._wz_global + self._wz_bereich:
@@ -450,6 +479,7 @@ class App(QMainWindow):
             b.kind_waehlen(kind)
         self.leiste.waehlen(b.kennung, kind or (b.aktuelles_kind() if hasattr(b, "aktuelles_kind") else None))
         self._wz_bereich_bauen()
+        self._bearbeiten_anpassen()
         if wechsel or kind:
             b.beim_zeigen()
 

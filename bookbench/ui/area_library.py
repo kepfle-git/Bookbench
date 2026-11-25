@@ -203,7 +203,7 @@ class BibliothekBereich(Bereich):
 
     def werkzeug(self):
         if self.app.e.get("calibre_an", True):
-            return [("uebernehmen", _("From Calibre"), self.app.calibre_uebernehmen,
+            return [("uebernehmen", _("Series and blurbs from Calibre"), self.app.calibre_uebernehmen,
                      _("Take series, number and blurb from metadata.calibre where the EPUB lacks them"))]
         return []
 

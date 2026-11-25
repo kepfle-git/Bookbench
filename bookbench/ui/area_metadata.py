@@ -379,7 +379,7 @@ class MetadatenBereich(Bereich):
                  None,
                  (_("Import from Calibre library …"), self.app.calibre_importieren)]
         if km_calibre_an(self.app):
-            menue += [None, (_("Fill gaps from Calibre"), self.luecken_fuellen)]
+            menue += [None, (_("Fill metadata gaps from Calibre"), self.luecken_fuellen)]
         eintraege.append(("neu_laden", _("Complete"), None,
                           _("For all books: look up missing blurbs or covers, fill gaps from Calibre"), menue))
         return eintraege

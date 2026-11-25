@@ -108,6 +108,24 @@ class Formular(QWidget):
     def dehnen(self):
         self.lay.addStretch(1)
 
+    def unter(self, schalter=None, bedingung=None):
+        """Teilformular für Unteroptionen (gleiche Werte, kein Rand). Mit schalter (QCheckBox) nur sichtbar, solange
+        er an ist; mit bedingung (Funktion) sichtbar, solange sie wahr ist (dann selbst mit .pruefen() auffrischen).
+        Regel: Unteroptionen einer Wahl ausblenden, was nur gerade nicht geht, ausgrauen."""
+        u = Formular(self.werte, rand=(0, 0, 0, 0), hinweis_breite=self.hinweis_breite)
+        self.lay.addWidget(u)
+        if schalter is not None:
+            bedingung = schalter.isChecked
+            schalter.toggled.connect(lambda *a: u.pruefen())
+        u.bedingung = bedingung
+        u.pruefen()
+        return u
+
+    def pruefen(self):
+        b = getattr(self, "bedingung", None)
+        if b is not None:
+            self.setVisible(bool(b()))
+
     # -- Eingaben -------------------------------------------------------------------------------
     def schalter(self, schl, text, hinweis=None, wert=False):
         cb = QCheckBox(text)

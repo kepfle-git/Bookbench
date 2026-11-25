@@ -34,7 +34,8 @@ from bookbench.core import metadata
 from bookbench.core import toc_fix as tocfix
 from bookbench.core import toc_report as tocreport
 from bookbench import i18n as ks
-from bookbench.i18n import _, ngettext
+from bookbench.i18n import N_, _, ngettext, spaet
+from bookbench.i18n import text as i18n_text
 
 ORDNER = Path(__file__).resolve().parents[2]       # Programmordner; dort lagen die Datendateien bis 0.23
 
@@ -615,10 +616,10 @@ def buch_laden(pfad, max_sub=1, caps=False, entscheidungen=None):
         for p, (art, src) in b.quellen.items():          # lassen sich die Ebenen umbauen?
             n = toc_eintraege(art, src)
             if n != len(b.zeilen):
-                b.ebenen_sperre = (_("{datei} has an unusual structure").format(datei=posixpath.basename(p))
+                b.ebenen_sperre = (spaet(N_("{datei} has an unusual structure"), datei=posixpath.basename(p))
                                    if n is None else
-                                   _("{datei} has {n} entries instead of {soll}").format(
-                                       datei=posixpath.basename(p), n=n, soll=len(b.zeilen)))
+                                   spaet(N_("{datei} has {n} entries instead of {soll}"),
+                                         datei=posixpath.basename(p), n=n, soll=len(b.zeilen)))
                 break
         for i in items:
             i["schluessel"] = i["key"]
@@ -690,7 +691,7 @@ def speichern(buch, sicherungsordner, anzahl=5):
     geaendert = {}
     if buch.neu or buch.tiefen_neu is not None:
         if buch.tiefen_neu is not None and buch.ebenen_sperre:
-            raise ValueError(_("levels cannot be changed: {grund}").format(grund=buch.ebenen_sperre))
+            raise ValueError(_("levels cannot be changed: {grund}").format(grund=i18n_text(buch.ebenen_sperre)))
         for p, (art, src) in buch.quellen.items():
             aus, n = tocfix.rewrite(art, src, posixpath.dirname(p), buch.neu) if buch.neu else (src, 0)
             if buch.tiefen_neu is not None and buch.tiefen_neu != buch.original_tiefen():

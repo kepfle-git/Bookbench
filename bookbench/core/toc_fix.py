@@ -16,7 +16,7 @@ import posixpath
 import re
 import zipfile
 
-from bookbench.i18n import _
+from bookbench.i18n import N_, spaet
 
 from bookbench.core.toc_report import GENERIC, clean, resolve_href, text_lines  # noqa: E402
 
@@ -99,27 +99,27 @@ def analyse_book(z, entries, book_title, max_sub):
     # Nur 2 von 40 gefunden heisst: das waren zufaellig kurze Zeilen, keine Titel.
     skipped = None
     if found and len(items) >= 4 and len(found) < 0.5 * len(items):
-        kurz = _("only {n} of {m} chapters with a title").format(n=len(found), m=len(items))
-        skipped = kurz + " - " + _("probably coincidence")
+        kurz = spaet(N_("only {n} of {m} chapters with a title"), n=len(found), m=len(items))
+        skipped = spaet(N_("{grund} - probably coincidence"), grund=kurz)
 
     # Verdaechtiges fuer --review markieren
     count = Counter(norm(" / ".join(i["subs"])) for i in found)
     for i in found:
         s = " / ".join(i["subs"])
         if count[norm(s)] > 1:
-            i["reasons"].append(_("the same name occurs several times in the book"))
+            i["reasons"].append(spaet(N_("the same name occurs several times in the book")))
         if len(s) < 4:
-            i["reasons"].append(_("very short"))
+            i["reasons"].append(spaet(N_("very short")))
         if len(s) > 45:
-            i["reasons"].append(_("very long"))
+            i["reasons"].append(spaet(N_("very long")))
         if s[:1].islower():
-            i["reasons"].append(_("starts with a lowercase letter"))
+            i["reasons"].append(spaet(N_("starts with a lowercase letter")))
         if skipped:
-            i["reasons"].append(_("book would be skipped otherwise ({grund})").format(grund=kurz))
+            i["reasons"].append(spaet(N_("book would be skipped otherwise ({grund})"), grund=kurz))
     if found and not skipped and len(found) < len(items):
         for i in items:
             if not i["proposal"]:
-                i["reasons"].append(_("no name found, other chapters in the book have one"))
+                i["reasons"].append(spaet(N_("no name found, other chapters in the book have one")))
 
     new = {} if skipped else {i["key"]: i["proposal"] for i in found}
     return new, items, skipped

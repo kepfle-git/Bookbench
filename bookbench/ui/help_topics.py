@@ -246,11 +246,12 @@ The books on the left, in the middle a form with the metadata stored in the book
 - Type in the fields; the book turns red (changed, not applied). **Apply** (Ctrl+Enter or Enter in a field) applies form and blurb and makes the book yellow, **Save** (Ctrl+S) writes it into the file, with backup.
 - **Discard** restores values, blurb and cover from the file. This also drops a series taken over with **From Calibre** in the library.
 - Several authors are separated with **&**, as in Calibre: "Dan Abnett & Graham McNeill". The **author sort** works the same way ("Abnett, Dan & McNeill, Graham"); with as many names as authors each author gets his own, otherwise the first one gets the whole text.
-- **Number** may have decimals, e.g. 1.5 or 0.9 for a story between two books. A comma is turned into a point when applying, as in Calibre.
+- **Number** sits behind the series and only takes numbers; the arrows (or arrow up/down, mouse wheel) count up and down. It may have decimals, e.g. 1.5 or 0.9 for a story between two books; a comma is turned into a point, as in Calibre.
 - **Tags** are separated with commas.
+- **Suggestions:** authors, series, publisher, language, tags and own text fields suggest values from the other books while you type; **arrow down** in an empty field shows all. With several authors or tags the suggestion is for the part after the last & or comma.
 - **Language** as a code, e.g. en, de or en-GB. KOReader uses it for hyphenation.
 - Below the form Bookbench warns about an invalid ISBN, a missing language or title, a number without series and values that do not fit an own field (e.g. letters in a number column).
-- If Calibre or KOReader have a different value, it is shown below the field: **← Calibre: …**. A click on ← puts it into the field ([[metadaten_calibre]]).
+- If Calibre or KOReader have a different value, it is shown behind the field (below it when there is not enough room): **← Calibre: …**. A click on ← puts it into the field ([[metadaten_calibre]]). This needs Calibre's metadata.calibre next to the books; without it there is nothing to compare, and the one-time import ([[calibre_import]]) is the way to take Calibre's values.
 
 The cover panel on the right can be made wider or narrower with the divider between form and cover; the width is remembered, a double-click on the divider restores the default.
 
@@ -272,7 +273,7 @@ After saving, KOReader only shows the new values after re-reading the book infor
 """)),
     ("metadaten", "metadaten_calibre", N_("Calibre and KOReader"), N_("""
 **Calibre**
-If Calibre's **metadata.calibre** is found ([[bibliothek_calibre]]) and the comparison is on ([[einst_calibre]]), Calibre's value is shown below every field where it differs: **← Calibre: …**. A click on **←** puts the value into the field. Matching values are not shown.
+If Calibre's **metadata.calibre** is found ([[bibliothek_calibre]]) and the comparison is on ([[einst_calibre]]), Calibre's value is shown next to (or below) every field where it differs: **← Calibre: …**. A click on **←** puts the value into the field. Matching values are not shown.
 
 - **From Calibre** (toolbar) puts all differing values of this book into the form - check them, then apply.
 - **Complete ▾ > Fill gaps from Calibre** works on all books, but only on fields that are empty in the book. It applies directly (yellow); save afterwards.
@@ -282,10 +283,10 @@ If Calibre's **metadata.calibre** is found ([[bibliothek_calibre]]) and the comp
 **Important:** When Calibre sends a book to the e-reader again, it writes its own values into the file. Change the metadata in Calibre as well, otherwise your changes in Bookbench are overwritten. If you no longer use Calibre, switch the comparison off: [[einst_calibre]].
 
 **KOReader**
-If you edited the book information in KOReader itself (Book information > long-press a field), KOReader keeps it in **custom_metadata.lua** in the .sdr folder next to the book and shows it **instead of** the values in the file. Bookbench shows these values below the fields as **← KOReader: …** (only when the folder with the .sdr folders is opened, e.g. the e-reader directly) and points it out below the form. The filter **Edited in KOReader** lists these books. To make KOReader show the file again, reset the fields in KOReader.
+If you edited the book information in KOReader itself (Book information > long-press a field), KOReader keeps it in **custom_metadata.lua** in the .sdr folder next to the book and shows it **instead of** the values in the file. Bookbench shows these values next to the fields as **← KOReader: …** (only when the folder with the .sdr folders is opened, e.g. the e-reader directly) and points it out below the form. The filter **Edited in KOReader** lists these books. To make KOReader show the file again, reset the fields in KOReader.
 """)),
     ("metadaten", "metadaten_felder", N_("Own fields"), N_("""
-In Calibre you can add columns of your own (Preferences > Add your own columns), e.g. a subtitle with the lookup name **#subtitle**. Bookbench shows such columns as further fields below the usual ones - which ones and with what label, you decide in [[einst_metadaten]]. **From Calibre** there adds all columns found in metadata.calibre at once.
+In Calibre you can add columns of your own (Preferences > Add your own columns), e.g. a subtitle with the lookup name **#subtitle**. Bookbench shows such columns as further fields below the usual ones - which ones and with what label, you decide in [[einst_metadaten]]. The label is yours and is not translated: a column named "Untertitel" in Calibre stays "Untertitel" in the English interface until you rename it there. **From Calibre** there adds all columns found in metadata.calibre at once.
 
 - Bookbench reads and writes the columns the way Calibre stores them in the book: in EPUB 2 one entry per column, in EPUB 3 all own columns together in one entry. Columns you do not show stay untouched.
 - If the book does not have a column yet, Bookbench takes its definition (type, how values are separated) from metadata.calibre, so Calibre recognises it when adding the book again. Without metadata.calibre a plain text column is written.
@@ -415,7 +416,7 @@ Your own dictionaries for KOReader: read, edit, fill missing terms, build from a
 """)),
     ("woerterbuch", "woerterbuch_anzeigen", N_("Views and missing terms"), N_("""
 - **Entries**: everything in the dictionary. The search also finds other names ("Strider" finds Aragorn).
-- **Missing terms**: names from the books without an entry (from the step Search books) and **words that were looked up in KOReader and are missing** (⚠, first). The lookup history comes from the connected e-reader, otherwise from the newest backup of the KOReader settings ([[kobo_sicherungen]]). Everyday words in lower case are left out.
+- **Missing terms**: names from the books without an entry (from the step Search books) and **words that were looked up in KOReader and are missing** (dictionary pictogram in the list, first). The lookup history comes from the connected e-reader, otherwise from the newest backup of the KOReader settings ([[kobo_sicherungen]]). Everyday words in lower case are left out.
 - Which looked-up words belong to which dictionary is decided by the searched books and the **books filter** in the properties (parts of title, series or author). Without either, all of them belong.
 - **Ignored and removed**: terms that no longer count as missing, and entries taken out; **Remove** or **Bring back** brings them back.
 - **Steps** (only with a database): [[woerterbuch_aufbau]].
@@ -429,7 +430,7 @@ Your own dictionaries for KOReader: read, edit, fill missing terms, build from a
 **Claude ▾** (for the chosen term; the result is always a draft to check; topic and spoilers from the properties)
 - **Search the web**: web search anywhere, text only from the pages found, which are given as the source in the entry. About 2-4 cents.
 - **Summarize from a page**: give an address, Claude reads only that page.
-- **From own knowledge**: without a source; the entry says "unverified", the list shows ⚠.
+- **From own knowledge**: without a source; the entry says "unverified", the list shows the dictionary pictogram.
 - If Claude finds the full name ("Baggins" -> "Bilbo Baggins"), the searched name becomes another name of the entry.
 
 Costs and what is sent: [[kosten]].

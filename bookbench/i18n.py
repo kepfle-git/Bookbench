@@ -202,4 +202,18 @@ def N_(text):
     return text
 
 
+def spaet(text, **werte):
+    """Text, der erst bei der Anzeige übersetzt wird (die Sprache wechselt ohne Neustart): für Gründe und
+    Hinweise, die beim Einlesen entstehen und lange am Buch hängen. Anzeigen mit text(); Werte dürfen
+    selbst spaet(...) sein."""
+    return (text, werte)
+
+
+def text(t):
+    """spaet(...) in der aktuellen Sprache; gewöhnliche Texte bleiben, wie sie sind."""
+    if isinstance(t, tuple) and len(t) == 2 and isinstance(t[1], dict):
+        return _(t[0]).format(**{k: text(v) for k, v in t[1].items()})
+    return t
+
+
 einstellen(gewuenscht())

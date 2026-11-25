@@ -34,7 +34,7 @@ from urllib.parse import urlparse
 
 from bookbench.dictionary import stardict as ksd
 from bookbench.dictionary import wikidict as W
-from bookbench.i18n import _
+from bookbench.i18n import N_, _
 
 KATEGORIEN = W.CATEGORIES
 AUSLASSEN = {"Publication"}                       # wie wikidict build --skip-categories
@@ -797,11 +797,11 @@ class Abgebrochen(BaseException):               # BaseException: kein "except Ex
 
 
 SCHRITTE = {                                       # Befehl -> (Name, braucht API, sperrt Arbeitsordner)
-    "titles": (_("Load titles"), False, False),
-    "scan": (_("Search books"), False, False),
-    "fetch": (_("Load articles"), False, False),
-    "summarize": (_("Summarize"), True, True),
-    "crosscheck": (_("Cross-check"), True, True),
+    "titles": (N_("Load titles"), False, False),
+    "scan": (N_("Search books"), False, False),
+    "fetch": (N_("Load articles"), False, False),
+    "summarize": (N_("Summarize"), True, True),
+    "crosscheck": (N_("Cross-check"), True, True),
 }
 
 
@@ -835,9 +835,9 @@ def schritt(arbeitsordner, befehl, argumente, schreiben, fragen, abbrechen):
             W.lock_or_exit(Path(arbeitsordner))
         wiki = W.wiki_oeffnen(db, args) if befehl in ("titles", "fetch", "check") else None
         getattr(W, f"cmd_{befehl}")(db, wiki, args)
-        return f"{SCHRITTE.get(befehl, (befehl,))[0]}: " + _("done.")
+        return f"{_(SCHRITTE.get(befehl, (befehl,))[0])}: " + _("done.")
     except Abgebrochen:
-        return f"{SCHRITTE.get(befehl, (befehl,))[0]}: " + _("cancelled. What was done so far is saved, "
+        return f"{_(SCHRITTE.get(befehl, (befehl,))[0])}: " + _("cancelled. What was done so far is saved, "
                                                              "the next run continues from there.")
     except SystemExit as e:
         return f"{SCHRITTE.get(befehl, (befehl,))[0]}: {e.code}" if e.code not in (None, 0) else \

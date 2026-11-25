@@ -20,6 +20,7 @@ from bookbench.core import library as kd
 from bookbench.core import listing
 from bookbench.core import markers as km
 from bookbench.i18n import N_, _, ngettext
+from bookbench.i18n import text as i18n_text
 from bookbench.ui import cover_view
 from bookbench.ui import theme
 from bookbench.ui.area import Bereich
@@ -226,7 +227,7 @@ class KapitelBereich(Bereich):
         self.kopf.setText(b.name)
         teile = [x for x in (b.autor, f"{b.reihe} {b.nummer}".strip()) if x] + [b.pfad.name]
         if b.uebersprungen:
-            teile.append(_("No suggestions: {grund}").format(grund=b.uebersprungen))
+            teile.append(_("No suggestions: {grund}").format(grund=i18n_text(b.uebersprungen)))
         if b.fehler:
             teile.append(b.fehler)
         self.info.setText("  ·  ".join(teile))
@@ -237,7 +238,7 @@ class KapitelBereich(Bereich):
         for i, (tiefe, titel, href, k) in enumerate(b.zeilen):
             neu = aktuell.get(k, "")
             kand = b.kandidaten.get(k)
-            hinweis = "; ".join(kand["reasons"]) if kand and kand["reasons"] and k not in b.neu else ""
+            hinweis = "; ".join(i18n_text(r) for r in kand["reasons"]) if kand and kand["reasons"] and k not in b.neu else ""
             farbe = warn if hinweis else None
             if not hinweis and kand and (not neu or neu == titel):
                 hinweis, farbe = _("number only, no name found"), ohne    # zählt in "ok (n ohne Namen)"
@@ -321,7 +322,7 @@ class KapitelBereich(Bereich):
             self.app.status.set(_("Select entries in the table, then Tab (down) or Shift+Tab (up)."))
             return
         if b.ebenen_sperre:
-            self.app.status.set(f"{b.name}: " + _("levels cannot be changed - {grund}.").format(grund=b.ebenen_sperre))
+            self.app.status.set(f"{b.name}: " + _("levels cannot be changed - {grund}.").format(grund=i18n_text(b.ebenen_sperre)))
             return
         try:
             neu = kd.ebenen_verschieben(b.aktuelle_tiefen(), sel, richtung)

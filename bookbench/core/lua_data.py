@@ -51,7 +51,7 @@ class _Leser:
                 if lang:
                     ende = t.find("]" + lang.group(1) + "]", self.i + lang.end())
                     if ende < 0:
-                        self.fehler("Kommentar ohne Ende")
+                        self.fehler("unterminated comment")
                     self.i = ende + len(lang.group(1)) + 2
                 else:
                     nl = t.find("\n", self.i)
@@ -63,7 +63,7 @@ class _Leser:
         self.leer()
         t, i = self.t, self.i
         if i >= len(t):
-            self.fehler("Wert fehlt")
+            self.fehler("value expected")
         c = t[i]
         if c == "{":
             return self.tabelle()
@@ -98,7 +98,7 @@ class _Leser:
             self.leer()
         m = _ZAHL.match(t, self.i)
         if not m:
-            self.fehler("Zahl erwartet")
+            self.fehler("number expected")
         self.i = m.end()
         s = m.group()
         if s[:2] in ("0x", "0X"):
@@ -116,13 +116,13 @@ class _Leser:
         b = bytearray()
         while True:
             if self.i >= len(t):
-                self.fehler("Zeichenkette ohne Ende")
+                self.fehler("unterminated string")
             c = t[self.i]
             if c == q:
                 self.i += 1
                 break
             if c == "\n":
-                self.fehler("Zeilenende in Zeichenkette")
+                self.fehler("line break in string")
             if c != "\\":
                 b += c.encode("utf-8")
                 self.i += 1
@@ -146,7 +146,7 @@ class _Leser:
             elif e == "u":
                 m = re.match(r"u\{([0-9a-fA-F]+)\}", t[self.i:])
                 if not m:
-                    self.fehler("ungültiges \\u")
+                    self.fehler("invalid \\u escape")
                 b += chr(int(m.group(1), 16)).encode("utf-8")
                 self.i += m.end()
             else:
@@ -159,7 +159,7 @@ class _Leser:
         anfang = self.i + m.end()
         ende = t.find("]" + m.group(1) + "]", anfang)
         if ende < 0:
-            self.fehler("lange Zeichenkette ohne Ende")
+            self.fehler("unterminated long string")
         self.i = ende + len(m.group(1)) + 2
         s = t[anfang:ende]
         return s[1:] if s.startswith("\n") else s
@@ -172,7 +172,7 @@ class _Leser:
         while True:
             self.leer()
             if self.i >= len(t):
-                self.fehler("Tabelle ohne Ende")
+                self.fehler("unterminated table")
             if t[self.i] == "}":
                 self.i += 1
                 break
@@ -181,7 +181,7 @@ class _Leser:
                 k = self.wert()
                 self.leer()
                 if not t.startswith("]", self.i):
-                    self.fehler("] erwartet")
+                    self.fehler("] expected")
                 self.i += 1
                 self.gleich()
                 v = self.wert()
@@ -211,7 +211,7 @@ class _Leser:
     def gleich(self):
         self.leer()
         if not self.t.startswith("=", self.i):
-            self.fehler("= erwartet")
+            self.fehler("= expected")
         self.i += 1
 
 
@@ -224,7 +224,7 @@ def lesen(text):
     w = le.wert()
     le.leer()
     if le.i < len(text):
-        le.fehler("unerwarteter Text nach dem Wert")
+        le.fehler("unexpected text after the value")
     return w
 
 

@@ -5,8 +5,10 @@
 #  Ergebnis: dist\Bookbench\Bookbench.exe (Ordner, kein onefile: startet schneller,
 #  Windows Defender prüft nicht bei jedem Start ein frisch entpacktes Archiv).
 #
-#  Wie beim Keller-Tool fliegen die Tcl/Tk-Dateien fremder Sprachen, Zeitzonen und
-#  Zeichensätze raus; behalten werden Deutsch und Englisch (Knöpfe der Tk-Dialoge).
+#  Seit 2.0 Qt (PySide6-Essentials) statt Tk: tkinter und die alte Tk-Oberfläche (bookbench/tk,
+#  bookbench/keller außer keller_icons) kommen nicht mit; von den Qt-Übersetzungen nur Deutsch
+#  (Englisch braucht keine), von den Qt-Modulen nur, was Bookbench importiert (QtCore, QtGui, QtWidgets) -
+#  die übrigen der Essentials (Qml, Quick, Designer, Sql …) schließt EXCLUDES ausdrücklich aus.
 #  Zusatzpakete (Pillow, wordfreq, requests, mwparserfromhell, anthropic) kommen mit,
 #  wenn sie im bauenden Python installiert sind; wordfreq braucht seine Datendateien, davon
 #  aber nur die Wortlisten der Sprachen in WORDFREQ_SPRACHEN (alle zusammen ca. 60 MB, darunter
@@ -18,11 +20,14 @@ from PyInstaller.utils.hooks import collect_data_files, collect_submodules
 WURZEL = os.path.abspath(os.path.join(SPECPATH, ".."))
 BOOK = os.path.join(WURZEL, "bookbench")
 
-BEHALTEN_MSGS = {"de.msg", "en.msg", "en_gb.msg"}
-BEHALTEN_TZ = {"Europe/Berlin", "UTC", "GMT", "Etc/UTC", "Etc/GMT"}
 WORDFREQ_SPRACHEN = {"en"}                         # zipf_frequency(..., "en") in bookbench/dictionary
-BEHALTEN_ENC = {"ascii.enc", "cp1252.enc", "cp850.enc", "cp437.enc", "iso8859-1.enc", "iso8859-15.enc",
-                "utf-8.enc"}
+QT_SPRACHEN = ("_de.qm",)                          # Qt-eigene Texte (OK, Abbrechen, Dateidialog)
+EXCLUDES = ["tkinter", "_tkinter", "bookbench.tk", "keller_theme", "keller_streifen", "keller_navigation",
+            "matplotlib", "numpy.tests", "pytest",
+            "PySide6.QtQml", "PySide6.QtQuick", "PySide6.QtQuickWidgets", "PySide6.QtQuickControls2",
+            "PySide6.QtDesigner", "PySide6.QtUiTools", "PySide6.QtSql", "PySide6.QtTest", "PySide6.QtHelp",
+            "PySide6.QtOpenGL", "PySide6.QtOpenGLWidgets", "PySide6.QtPdf", "PySide6.QtPdfWidgets",
+            "PySide6.QtConcurrent", "PySide6.QtDBus", "PySide6.QtXml", "PySide6.QtSvgWidgets"]
 
 
 def _behalten(ziel):
@@ -31,15 +36,8 @@ def _behalten(ziel):
         name = teile[2]
         sprache = name.split(".")[0].split("_", 1)[-1] if name.startswith(("large_", "small_")) else ""
         return sprache in WORDFREQ_SPRACHEN
-    if len(teile) < 3 or teile[0] not in ("_tcl_data", "_tk_data"):
-        return True
-    rest = "/".join(teile[2:])
-    if teile[1] == "msgs":
-        return rest in BEHALTEN_MSGS
-    if teile[0] == "_tcl_data" and teile[1] == "tzdata":
-        return rest in BEHALTEN_TZ
-    if teile[0] == "_tcl_data" and teile[1] == "encoding":
-        return rest in BEHALTEN_ENC
+    if "translations" in teile and teile[-1].endswith(".qm"):
+        return teile[-1].startswith("qtbase") and teile[-1].endswith(QT_SPRACHEN)
     return True
 
 
@@ -58,20 +56,22 @@ datas = [
 if _vorhanden("wordfreq"):
     datas += collect_data_files("wordfreq")
 
-# bookbench lädt manches erst bei Bedarf; die keller_*.py liegen ohne Paketnamen in bookbench/keller
-hidden = collect_submodules("bookbench") + ["keller_theme", "keller_icons", "keller_streifen", "keller_navigation"]
+# bookbench lädt manches erst bei Bedarf; nicht die alte Tk-Oberfläche (bookbench/tk, nur Vorlage)
+hidden = [m for m in collect_submodules("bookbench", filter=lambda n: not n.startswith("bookbench.tk"))
+          if not m.startswith(("bookbench.keller.keller_theme", "bookbench.keller.keller_streifen",
+                               "bookbench.keller.keller_navigation"))]
 
 a = Analysis(
     [os.path.join(WURZEL, "start.py")],
     pathex=[WURZEL, os.path.join(BOOK, "keller")],
     datas=datas,
     hiddenimports=hidden,
-    excludes=["matplotlib", "numpy.tests", "pytest"],
+    excludes=EXCLUDES,
     noarchive=False,
 )
 vorher = len(a.datas)
 a.datas = [e for e in a.datas if _behalten(e[0])]
-print(f"bookbench.spec: {vorher - len(a.datas)} Tcl/Tk-Sprach-/Länderdateien und wordfreq-Listen weggelassen")
+print(f"bookbench.spec: {vorher - len(a.datas)} Qt-Übersetzungen und wordfreq-Listen weggelassen")
 
 pyz = PYZ(a.pure)
 exe = EXE(

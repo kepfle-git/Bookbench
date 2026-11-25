@@ -7,7 +7,9 @@
 #
 # Ergebnis (XDG_DATA_HOME, sonst ~/.local/share):
 #   bookbench/programm/          start.py, bookbench/ … (das tauscht auch der Updater)
-#   bookbench/venv/              Python-Umgebung mit --system-site-packages (Tkinter vom System)
+#   bookbench/venv/              Python-Umgebung mit --system-site-packages: ein PySide6 vom System
+#                                (pacman -S pyside6) wird genommen - dann gibt es Breeze und den KDE-Dateidialog;
+#                                sonst kommt PySide6-Essentials per pip in die Umgebung (Stil Fusion)
 #   bookbench/installation.json  Marke für den Updater (art "linux")
 #   ~/.local/bin/bookbench       Starter
 #   applications/bookbench.desktop, icons/hicolor/256x256/apps/bookbench.png
@@ -91,10 +93,10 @@ case "$QUELLE/" in
     "$ZIEL/"*) echo "Run install.sh from the downloaded folder, not from the installed copy." >&2; exit 1 ;;
 esac
 if ! command -v "$PYTHON" >/dev/null 2>&1; then
-    echo "$PYTHON not found. Install Python 3.9 or newer with Tkinter:" >&2
-    echo "  Arch/EndeavourOS: sudo pacman -S python tk" >&2
-    echo "  Debian/Ubuntu:    sudo apt install python3 python3-tk python3-venv" >&2
-    echo "  Fedora:           sudo dnf install python3 python3-tkinter" >&2
+    echo "$PYTHON not found. Install Python 3.9 or newer:" >&2
+    echo "  Arch/EndeavourOS: sudo pacman -S python pyside6" >&2
+    echo "  Debian/Ubuntu:    sudo apt install python3 python3-venv" >&2
+    echo "  Fedora:           sudo dnf install python3" >&2
     exit 1
 fi
 PYTHON="$(command -v "$PYTHON")"
@@ -102,14 +104,18 @@ if ! "$PYTHON" -c 'import sys; sys.exit(0 if sys.version_info >= (3, 9) else 1)'
     echo "Bookbench needs Python 3.9 or newer ($("$PYTHON" --version 2>&1))." >&2
     exit 1
 fi
-if ! "$PYTHON" -c 'import tkinter' 2>/dev/null; then
-    echo "Tkinter is missing for $PYTHON:" >&2
-    echo "  Arch/EndeavourOS: sudo pacman -S tk" >&2
-    echo "  Debian/Ubuntu:    sudo apt install python3-tk" >&2
-    echo "  Fedora:           sudo dnf install python3-tkinter" >&2
+# Qt (seit 2.0): lieber das PySide6 des Systems (Breeze, KDE-Dateidialog), sonst per pip in die venv
+QT_SYSTEM=0
+if "$PYTHON" -c 'import PySide6.QtWidgets' 2>/dev/null; then
+    QT_SYSTEM=1
+elif [ "$PAKETE_AN" = 0 ] && ! { [ -x "$ZIEL/venv/bin/python" ] && "$ZIEL/venv/bin/python" -c 'import PySide6.QtWidgets' 2>/dev/null; }; then
+    echo "Bookbench needs Qt (PySide6), which is missing for $PYTHON:" >&2
+    echo "  Arch/EndeavourOS: sudo pacman -S pyside6" >&2
+    echo "  Debian/Ubuntu:    sudo apt install python3-pyside6.qtwidgets" >&2
+    echo "  or run ./install.sh without --no-packages (installs PySide6-Essentials with pip)" >&2
     exit 1
 fi
-VERSION="$(sed -n 's/^VERSION = "\([^"]*\)".*/\1/p' "$QUELLE/bookbench/ui/help.py" | head -n 1)"
+VERSION="$(sed -n 's/^VERSION = "\([^"]*\)".*/\1/p' "$QUELLE/bookbench/version.py" 2>/dev/null | head -n 1)"
 echo "Installing Bookbench ${VERSION:-?} to $ZIEL"
 
 # ---------------------------------------------------------------- Programm kopieren
@@ -137,11 +143,30 @@ if [ "$PAKETE_AN" = 1 ]; then
     fi
     if [ -x "$ZIEL/venv/bin/python" ]; then
         LAUF_PYTHON="$ZIEL/venv/bin/python"
+        if [ "$QT_SYSTEM" = 1 ]; then
+            # PySide6 vom System: ein früher per pip geholtes in der venv würde es verdecken
+            if "$LAUF_PYTHON" -m pip show --quiet PySide6-Essentials >/dev/null 2>&1; then
+                echo "Using the system's PySide6; removing the pip copy from the environment ..."
+                "$LAUF_PYTHON" -m pip uninstall --quiet -y PySide6-Essentials shiboken6 >/dev/null 2>&1 || true
+            fi
+        else
+            echo "Installing Qt (PySide6-Essentials, about 100 MB) ..."
+            if ! "$LAUF_PYTHON" -m pip install --quiet --upgrade PySide6-Essentials; then
+                echo "PySide6 could not be installed (no network?). Bookbench needs it." >&2
+                echo "  Arch/EndeavourOS: sudo pacman -S pyside6, then run ./install.sh again" >&2
+                exit 1
+            fi
+        fi
         echo "Installing optional packages: ${PAKETE[*]} ..."
         if ! "$LAUF_PYTHON" -m pip install --quiet --upgrade "${PAKETE[@]}"; then
             echo "Some packages could not be installed (no network?). Bookbench still runs;" >&2
             echo "run ./install.sh again later for JPEG covers, better synonyms and Claude." >&2
         fi
+    elif [ "$QT_SYSTEM" = 0 ]; then
+        echo "Without a Python environment PySide6 cannot be installed. Install it for $PYTHON:" >&2
+        echo "  Arch/EndeavourOS: sudo pacman -S pyside6" >&2
+        echo "  Debian/Ubuntu:    sudo apt install python3-venv python3-pyside6.qtwidgets" >&2
+        exit 1
     fi
 elif [ -x "$ZIEL/venv/bin/python" ]; then
     LAUF_PYTHON="$ZIEL/venv/bin/python"       # vorhandene Umgebung weiter nutzen

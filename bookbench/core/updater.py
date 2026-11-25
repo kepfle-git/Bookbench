@@ -270,28 +270,37 @@ def download_ordner():
 
 
 # -- Einspielen -------------------------------------------------------------------------------
+# Wo die Versionsnummer steht: seit 2.0 bookbench/version.py, bis 1.4 bookbench/ui/help.py
+VERSIONSDATEIEN = ("bookbench/version.py", "bookbench/ui/help.py")
+_VERSIONSZEILE = re.compile(r'^VERSION = "([^"]+)"', re.M)
+
+
 def _version_im_ordner(ordner):
-    hilfe = Path(ordner) / "bookbench" / "ui" / "help.py"
-    try:
-        m = re.search(r'^VERSION = "([^"]+)"', hilfe.read_text(encoding="utf-8"), re.M)
-    except OSError:
-        return ""
-    return m.group(1) if m else ""
+    for name in VERSIONSDATEIEN:
+        try:
+            m = _VERSIONSZEILE.search((Path(ordner) / name).read_text(encoding="utf-8"))
+        except OSError:
+            continue
+        if m:
+            return m.group(1)
+    return ""
 
 
 def version_im_zip(zip_pfad):
-    """Version aus bookbench/ui/help.py im Quelltext-ZIP (ohne Auspacken), "" wenn nicht lesbar."""
+    """Version aus dem Quelltext-ZIP (ohne Auspacken; VERSIONSDATEIEN), "" wenn nicht lesbar."""
     try:
         with zipfile.ZipFile(zip_pfad) as z:
-            name = next((n for n in z.namelist() if n.endswith("bookbench/ui/help.py")
-                         and n.count("/") <= 3), None)
-            if not name:
-                return ""
-            text = z.read(name).decode("utf-8", "replace")
+            namen = z.namelist()
+            for datei in VERSIONSDATEIEN:
+                name = next((n for n in namen if n.endswith(datei) and n.count("/") <= 3), None)
+                if not name:
+                    continue
+                m = _VERSIONSZEILE.search(z.read(name).decode("utf-8", "replace"))
+                if m:
+                    return m.group(1)
     except (OSError, zipfile.BadZipFile, KeyError):
         return ""
-    m = re.search(r'^VERSION = "([^"]+)"', text, re.M)
-    return m.group(1) if m else ""
+    return ""
 
 
 def vorhandene_datei_ok(pfad, name, summen, erwartet=""):

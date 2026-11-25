@@ -1,1480 +1,412 @@
 # -*- coding: utf-8 -*-
 """
-app.py - Hauptfenster von Bookbench (Gestaltung nach dem
-Designleitfaden des Keller-Nietprogramm-Tools, Seitenleiste nach 5a).
+app.py - Hauptfenster von Bookbench (Qt, seit 2.0; die Tk-Fassung bis 1.4 liegt in bookbench/tk/).
+Gestaltung nach dem Designleitfaden des Keller-Nietprogramm-Tools, Seitenleiste nach 5a.
 
-  Menüleiste     Datei, Bearbeiten, Ansicht, Hilfe
-  Werkzeugleiste links die Aktionen des aktuellen Bereichs, rechts Hilfe
-  Seitenleiste   Bibliothek, Kapitel, Metadaten, Wörterbuch, E-Reader, Vorschau (ui/markers.MarkenNavigation:
-                 keller_navigation mit Piktogrammen je Bereich statt ⚠, seit 1.3-beta3)
-  Statuszeile    kurze Rückmeldungen
+  Menüleiste     Datei, (Bereichsmenüs), Ansicht, Hilfe
+  Werkzeugleiste links die Aktionen des aktuellen Bereichs, rechts Öffnen, Neu einlesen, Speichern, Hilfe
+  Seitenleiste   ui/sidebar.py, Marken je Bereich (core/markers, ui/markers)
+  Hinweisleiste  nur sichtbar, wenn der geöffnete Ordner nicht mehr da ist
+  Statuszeile    kurze Rückmeldungen (self.status.set(text) wie im Tk-Programm)
 
-Bereiche:
-  Bibliothek     Tabelle aller Bücher, Suche und Filter
-  Kapitel        Bücherliste links, Inhaltsverzeichnis alt/neu rechts (Namen und Ebenen
-                 änderbar), Textanfang darunter
-  Metadaten      Titel, Autoren, Reihe, Verlag, Sprache, ISBN, Schlagwörter, eigene Calibre-Spalten, darunter
-                 der Klappentext, rechts das Cover (ui/area_metadata mit area_blurbs, area_covers, seit 1.3);
-                 das Nachschlagen der Klappentexte im Hintergrund steht weiter hier
-  Wörterbuch     eigenes Wörterbuch (wikidict-Datenbank) lesen, bearbeiten, Lücken füllen
-                 (kobo_bereich_woerterbuch)
-  E-Reader       angeschlossener Kobo/Kindle/PocketBook, KOReader-Einstellungen sichern, Wörterbücher
-                 (ui/area_device, Kennung "kobo")
-  Vorschau       Buch im Desktop-KOReader mit den Einstellungen vom Gerät zeigen (kobo_bereich_vorschau);
-                 nur Linux/macOS, der Desktop-KOReader ist optional
+Zustand und Oberfläche sind getrennt: App hält Bücher, Ordner, Einstellungen und die Bereichs-
+Objekte (ui/area.py); oberflaeche_bauen() baut Menü, Werkzeugleiste und Seiten neu und kann jederzeit
+wieder aufgerufen werden - so wirkt ein Sprachwechsel sofort, ohne Neustart und ohne dass offene
+Änderungen verloren gehen.
 
-Die Daten liegen in kobo_daten (Buch), die Logik in tocfix/tocreport/blurbs.
-Langsames (Einlesen, Nachschlagen) läuft in einem Hilfsthread; Ergebnisse kommen
-über eine Queue zurück, die Oberfläche fasst nur der Hauptthread an
-(hintergrund() für einfache Aufgaben: Ergebnistext in die Statuszeile).
+Langsames läuft im Hilfsthread (hintergrund(); ui/threads.py), die Oberfläche fasst nur der
+Hauptthread an.
 """
-import base64
-import io
+import argparse
 import os
-import queue
 import subprocess
 import sys
-import threading
-import tkinter as tk
-import tkinter.font as tkfont
 from pathlib import Path
-from tkinter import filedialog, messagebox, ttk
-from types import SimpleNamespace
-
 
 from bookbench.i18n import N_, _, ngettext  # noqa: E402  (zuerst: legt die Sprache fest)
-import keller_icons as kic          # noqa: E402
-import keller_navigation as knv     # noqa: E402
-import keller_streifen as kst       # noqa: E402
-import keller_theme as kth          # noqa: E402
-from bookbench.ui import area_device as kbk     # noqa: E402
-from bookbench.ui import area_metadata as kbm   # noqa: E402
-from bookbench.ui import markers as kmk         # noqa: E402
-from bookbench.ui import panes as kpn           # noqa: E402
-from bookbench.ui import area_preview as kbv  # noqa: E402
-from bookbench.ui import area_dictionary as kbw  # noqa: E402
-from bookbench.core import blurbs                       # noqa: E402
-from bookbench.core import library as kd             # noqa: E402
-from bookbench.ui import settings as kei    # noqa: E402
-from bookbench.ui import help as khi            # noqa: E402
-from bookbench.ui import list_filter as klf    # noqa: E402
-from bookbench.ui import table_columns as ktc  # noqa: E402
-from bookbench.ui import icons as ksy          # noqa: E402
-from bookbench.ui import updates as kup        # noqa: E402
-from bookbench.preview import emulator as kv          # noqa: E402
-from bookbench.ui.help import PROGRAMM, VERSION  # noqa: E402
+from bookbench import i18n
 
-MARK = {
-    "hell": {"rot": "#d9534f", "gelb": "#e8a317", "gruen": "#4caf50", "warn": "#d9534f"},
-    "dunkel": {"rot": "#d9534f", "gelb": "#e8a317", "gruen": "#4caf50", "warn": "#ff6b61"},
-}
-COVER_HOEHE = 96                    # px, Cover in den Kopfzeilen von Kapitel und Klappentexte
-WARNZEILE = {"hell": "#f6c9c9", "dunkel": "#6b2b2b"}
-OHNEZEILE = {"hell": "#fbeec9", "dunkel": "#4f4220"}      # nur Nummer, kein Name: dezenter als Warnung
-kst.TEXTE.update(rot=_("changed, not yet applied"), gelb=_("applied, not yet saved"),
-                 gruen=_("saved (since opening)"))
+from PySide6.QtCore import QEvent, QLibraryInfo, QLocale, QObject, QSize, Qt, QTimer, QTranslator
+from PySide6.QtGui import QAction, QActionGroup, QIcon, QKeySequence, QShortcut
+from PySide6.QtWidgets import (QApplication, QFrame, QHBoxLayout, QLabel, QMainWindow, QMessageBox, QPushButton,
+                               QSizePolicy, QStackedWidget, QToolBar, QVBoxLayout, QWidget)
 
-# Filter der Bibliothek: nur noch allgemeine; die Filter nach Kapiteln, Klappentexten und Covern
-# stehen seit 1.0.5 über den Listen der Bereiche (_kap_filter, _kt_filter, CoverBereich.FILTER)
-FILTER = (_("All books"), _("Changed"), _("Unreadable files"), _("No series in the EPUB"))
-SPALTEN = (("titel", _("Title"), 300), ("reihe", _("Series"), 200), ("nummer", _("No."), 46), ("autor", _("Author"), 150),
-           ("kapitel", _("Chapters"), 150), ("klappentext", _("Blurb"), 100), ("cover", _("Cover"), 90),
-           ("verlag", _("Publisher"), 140), ("sprache", _("Language"), 70), ("isbn", "ISBN", 120))
-SPALTEN_AUS = ("verlag", "sprache", "isbn")      # seit 1.3: standardmäßig ausgeblendet (Ansicht > Spalten)
+from bookbench.core import blurbs
+from bookbench.core import library as kd
+from bookbench.core import markers as km
+from bookbench.core import settings as kei
+from bookbench.preview import emulator as kv
+from bookbench.ui import area as kar
+from bookbench.ui import dialogs
+from bookbench.ui import help_topics
+from bookbench.ui import markers as kmk
+from bookbench.ui import sidebar as ksb
+from bookbench.ui import theme
+from bookbench.ui import threads
+from bookbench.version import PROGRAMM, VERSION
+
+DARSTELLUNGEN = (("hell", N_("Light")), ("dunkel", N_("Dark")), ("system", N_("Like the system")))
 
 
-def baumlinien(tiefen):
-    """Je Zeile die Zeichen vor dem Eintrag: für jede Ebene ab der zweiten "│" (Linie
-    läuft weiter), " " (keine) und für die eigene Ebene "├" oder "└" (letzter Eintrag
-    unter demselben Eltern-Eintrag). Ebenen werden auf die flachste Ebene bezogen."""
-    if not tiefen:
-        return []
-    basis = min(tiefen)
-    t = [x - basis + 1 for x in tiefen]
+class StatusText:
+    """Wie die StringVar der Statuszeile im Tk-Programm: status.set(text), status.get()."""
 
-    def weiter(i, ebene):
-        for x in t[i + 1:]:
-            if x < ebene:
-                return False
-            if x == ebene:
-                return True
-        return False
-    erg = []
-    for i, d in enumerate(t):
-        teile = ["│" if weiter(i, ebene) else " " for ebene in range(2, d)]
-        if d >= 2:
-            teile.append("├" if weiter(i, d) else "└")
-        erg.append(teile)
-    return erg
+    def __init__(self):
+        self.text = ""
+        self.label = None
+
+    def set(self, text):
+        self.text = text or ""
+        if self.label is not None:
+            self.label.setText(self.text)
+
+    def get(self):
+        return self.text
 
 
-def _nr(s):
-    try:
-        return float(s)
-    except (TypeError, ValueError):
-        return 1e9
+class TooltipFilter(QObject):
+    """Einstellung tooltips aus: Tooltip-Ereignisse im ganzen Programm schlucken."""
+    an = True
+
+    def eventFilter(self, obj, ev):
+        return ev.type() == QEvent.ToolTip and not self.an
 
 
-class App(tk.Tk):
+def kuerzel_verteilen(leiste):
+    """Alt-Kürzel der Menüleiste ohne Doppelte: jedes Menü bekommt den ersten noch freien Buchstaben
+    seiner (übersetzten) Beschriftung (englisch kollidieren sonst „Edit“ und „E-reader“)."""
+    vergeben = set()
+    for a in leiste.actions():
+        text = a.text().replace("&", "")
+        for pos, zeichen in enumerate(text):
+            if zeichen.isalnum() and zeichen.lower() not in vergeben:
+                vergeben.add(zeichen.lower())
+                a.setText(text[:pos] + "&" + text[pos:])
+                break
+        else:
+            a.setText(text)
+
+
+class App(QMainWindow):
     def __init__(self, ordner=None, bereich=None, buch=None, geometrie=None):
         super().__init__()
-        self._start_bereich, self._start_buch = bereich, buch
+        self._start_buch = buch
         self._popen = subprocess.Popen           # Tests ersetzen das, um den Neustart abzufangen
         self.e = kei.laden()
         blurbs.GOOGLE_KEY = self.e.get("google_key", "") or ""     # auch fürs Cover-Nachschlagen
         zuletzt = self.e.get("bereich_zuletzt")      # wird beim ersten Bereichswechsel überschrieben
-        self.darstellung = tk.StringVar(value=self.e["darstellung"])
-        self.dark_mode = tk.BooleanVar(value=kth.ist_dunkel(self.e["darstellung"]))
-        self.tooltips_an = tk.BooleanVar(value=self.e["tooltips"])
-        self.status_liste = tk.BooleanVar(value=self.e["status_liste"])
-        self.status = tk.StringVar(value=_("Open a folder (Ctrl+O)."))
+        self.status = StatusText()
+        self.status.set(_("Open a folder (Ctrl+O)."))
         self.buecher = []                    # [kd.Buch]
         self.nach_schluessel = {}
         self.ordner = None
         self.calibre_wurzel, self.calibre_eintraege = None, []
         self.entscheidungen = kd.json_laden(kd.ENTSCHEIDUNGEN)
         self.cache = kd.json_laden(kd.KLAPPENTEXT_CACHE)
-        self._q = queue.Queue()
-        self.updates = kup.Updates(self)     # Suche nach neuen Versionen (ui/updates.py)
         self._arbeit = None                  # Name der laufenden Hintergrundarbeit
-        self._tipp_job = self._tipp = None
-        self._ikonen = {}
+        self._ordner_weg = False
         self._hilfe = None
-        self._bearbeiter = None              # Eingabefeld beim Bearbeiten einer Zelle
-        self._kt_laden = False               # Klappentext-Feld wird gerade programmseitig gefüllt
-        self.cover_an = tk.BooleanVar(value=self.e["cover"])
-        self._cover, self._cover_hinweis = {}, False
-        self._linien_font, self._linien_teil = None, {}
+        self.tooltips = TooltipFilter(self)
+        QApplication.instance().installEventFilter(self.tooltips)
+        from bookbench.ui import updates as kup
+        self.updates = kup.Updates(self)     # Suche nach neuen Versionen (ui/updates.py)
 
-        self.title(f"{PROGRAMM} {VERSION}")
-        self.geometry(geometrie or self.e["fenster"])
-        self.minsize(860, 520)
-        try:                                  # Programmsymbol (tools/make_app_icon.py), sonst das der Seitenleiste
-            self._programmsymbol = tk.PhotoImage(file=str(Path(__file__).resolve().parent / "ui" / "bookbench.png"))
-        except tk.TclError:
-            self._programmsymbol = tk.PhotoImage(data=ksy.HELL["bibliothek_aktiv"])
-        self.iconphoto(True, self._programmsymbol)
-        self._menue()
-        self._werkzeugleiste()
-        self.statuszeile = ttk.Label(self, textvariable=self.status, anchor="w", padding=(6, 2))
-        self.statuszeile.pack(side="bottom", fill="x")
-        self._hinweisleiste_bauen()
-        self.nb = knv.NaviNotebook(self)
-        self.nb.pack(fill="both", expand=True, padx=8, pady=(4, 0))
-        self.navi = kmk.MarkenNavigation(self, self.nb, {"hell": ksy.HELL, "dunkel": ksy.DUNKEL},
-                                   dunkel=self.dark_mode.get(), ausgeklappt=self.e["navi_ausgeklappt"],
-                                   offen=self.e["navi_offen"],
-                                   merken=lambda k, w: self.e.__setitem__("navi_" + k, w))
-        self.navi.pack(side="left", fill="y", before=self._wz_rahmen)
-        self.statuszeile.pack(side="bottom", fill="x", before=self.navi)
-        self.navi.tastenkuerzel(self)
-        self._bibliothek_bauen()
-        self._kapitel_bauen()
-        self.OHNEZEILE = OHNEZEILE
-        self.metadaten = kbm.MetadatenBereich(self)      # legt auch self.cover an (Cover-Tafel darin)
-        self.woerterbuch = kbw.WoerterbuchBereich(self)
-        self.kobo = kbk.KoboBereich(self)
-        # Vorschau nur, wo es einen Desktop-KOReader geben kann (nicht unter Windows)
-        self.vorschau = kbv.VorschauBereich(self) if kv.verfuegbar() else None
-        self.nb.bind("<<NotebookTabChanged>>", lambda e: self._bereich_gewechselt())
-        self._theme_anwenden()
-        self._bereich_gewechselt()
-        self.protocol("WM_DELETE_WINDOW", self.beenden)
-        for k, f in (("<Control-o>", self.ordner_oeffnen), ("<F5>", self.neu_einlesen), ("<Control-s>", self.speichern),
-                     ("<Control-Return>", self.uebernehmen), ("<F1>", self.hilfe),
-                     ("<Control-f>", self._suche_fokus)):
-            self.bind_all(k, lambda e, f=f: (f(), "break")[1])
-        self.after(100, self._abholen)
+        # Bereiche: leben so lange wie das Fenster; bis sie umgezogen sind, Platzhalter
+        self.bereiche = [kar.Platzhalter(self, k, t, s, beta) for k, t, s, beta in kar.BEREICHE
+                         if k != "vorschau" or kv.verfuegbar()]
+        self.vorschau = None                 # wie im Tk-Programm: None, wo es keine Vorschau gibt
+        self._aktuell = "bibliothek"
+
+        self.setWindowIcon(self._programmsymbol())
+        self.setMinimumSize(860, 520)
+        self._geometrie_setzen(geometrie or self.e.get("fenster") or kei.STANDARD["fenster"])
+        self.darstellung = self.e.get("darstellung") or "system"
+        theme.anwenden(QApplication.instance(), self.darstellung)
+        self._tooltips_anwenden()
+        self.oberflaeche_bauen()
+        QShortcut(QKeySequence("Ctrl+B"), self, activated=lambda: self.leiste.umschalten())
+        for i in range(9):
+            QShortcut(QKeySequence(f"Ctrl+{i + 1}"), self, activated=lambda i=i: self.leiste.nummer(i))
+
         start = ordner or (self.e.get("ordner") if self.e.get("start_ordner", True) else None)
         if start and Path(start).is_dir():
-            self.after(50, lambda: self.laden(start))
+            QTimer.singleShot(50, lambda: self.laden(start))
         if not bereich and self.e.get("start_bereich") == "zuletzt":
             bereich = zuletzt
-        if bereich:
-            self.after(60, lambda: self.bereich_zeigen(bereich))
-        self.after(4000, self.updates.automatisch)     # nach dem Start, damit das Fenster schon steht
+        self.bereich_zeigen(bereich or "bibliothek")
+        QTimer.singleShot(4000, self.updates.automatisch)     # nach dem Start, damit das Fenster schon steht
 
     # ================================================================ Rahmen
     @staticmethod
-    def _kuerzel_verteilen(leiste):
-        """Alt-Kürzel der Menüleiste ohne Doppelte: jedes Menü bekommt den ersten noch freien Buchstaben
-        seiner (übersetzten) Beschriftung (englisch kollidieren sonst „Edit“ und „E-reader“)."""
-        vergeben = set()
-        for i in range(int(leiste.index("end") or 0) + 1):
-            if leiste.type(i) != "cascade":
-                continue
-            text = leiste.entrycget(i, "label")
-            for pos, zeichen in enumerate(text):
-                if zeichen.isalnum() and zeichen.lower() not in vergeben:
-                    vergeben.add(zeichen.lower())
-                    leiste.entryconfigure(i, underline=pos)
-                    break
-            else:
-                leiste.entryconfigure(i, underline=-1)
+    def _programmsymbol():
+        p = Path(__file__).resolve().parent / "ui" / "bookbench.png"
+        return QIcon(str(p)) if p.is_file() else QIcon(theme.seitenleiste("bibliothek", True))
 
+    def _geometrie_setzen(self, text):
+        """"1200x760" oder "1200x760+10+20" (Format des Tk-Programms, so bleibt die Einstellung)."""
+        try:
+            groesse, __, ort = text.partition("+")
+            w, h = (int(x) for x in groesse.split("x"))
+            self.resize(w, h)
+            if ort:
+                x, __, y = ort.partition("+")
+                self.move(int(x), int(y))
+        except (ValueError, AttributeError):
+            self.resize(1200, 760)
+
+    def geometrie(self, mit_ort=False):
+        g = f"{self.width()}x{self.height()}"
+        return g + f"+{self.x()}+{self.y()}" if mit_ort else g
+
+    def bereich_obj(self, kennung):
+        return next((b for b in self.bereiche if b.kennung == kennung), None)
+
+    def oberflaeche_bauen(self):
+        """Menü, Werkzeugleiste, Seitenleiste und Seiten (neu) aufbauen. Zustand der Bereiche bleibt."""
+        zustaende = {b.kennung: b.zustand() for b in self.bereiche if b.seite is not None}
+        self._menue()
+        self._werkzeugleiste()
+        mitte = QWidget()
+        aussen = QVBoxLayout(mitte)
+        aussen.setContentsMargins(0, 0, 0, 0)
+        aussen.setSpacing(0)
+        self._hinweisleiste_bauen(aussen)
+        innen = QHBoxLayout()
+        innen.setContentsMargins(0, 0, 0, 0)
+        innen.setSpacing(0)
+        aussen.addLayout(innen, 1)
+        self.leiste = ksb.Seitenleiste(ausgeklappt=bool(self.e.get("navi_ausgeklappt", True)),
+                                       offen=self.e.get("navi_offen") or [])
+        self.leiste.gewaehlt.connect(lambda k, kind: self.bereich_zeigen(k, kind or None))
+        self.leiste.zustand_geaendert.connect(lambda k, w: self.e.__setitem__("navi_" + k, w))
+        innen.addWidget(self.leiste)
+        self.stapel = QStackedWidget()
+        rand = QWidget()
+        rl = QVBoxLayout(rand)
+        rl.setContentsMargins(8, 4, 8, 0)
+        rl.addWidget(self.stapel)
+        innen.addWidget(rand, 1)
+        for b in self.bereiche:
+            b.seite = b.bauen()
+            self.stapel.addWidget(b.seite)
+            if b.kennung in zustaende:
+                b.wiederherstellen(zustaende[b.kennung])
+        self.setCentralWidget(mitte)
+        if self.status.label is None:
+            self.status.label = QLabel(self.status.get())
+            self.status.label.setContentsMargins(6, 2, 6, 2)
+            self.statusBar().addWidget(self.status.label, 1)
+            self.statusBar().setSizeGripEnabled(True)
+        self._ordner_weg_zeigen()
+        self.bereich_zeigen(self._aktuell)
+        self._zaehler()
+
+    # -- Menü --------------------------------------------------------------------------
     def _menue(self):
-        leiste = tk.Menu(self)
-        m = tk.Menu(leiste, tearoff=False)
-        m.add_command(label=_("Open folder …"), accelerator=_("Ctrl+O"), command=self.ordner_oeffnen)
-        self._zuletzt = tk.Menu(m, tearoff=False, postcommand=self._zuletzt_fuellen)
-        m.add_cascade(label=_("Recently opened"), menu=self._zuletzt)
-        m.add_command(label=_("Reload"), accelerator="F5", command=self.neu_einlesen)
-        m.add_command(label=_("Close library"), command=self.bibliothek_schliessen)
-        m.add_separator()
-        m.add_command(label=_("Save"), accelerator=_("Ctrl+S"), command=self.speichern)
-        m.add_separator()
-        m.add_command(label=_("Import from Calibre library …"), command=self.calibre_importieren)
-        m.add_separator()
-        m.add_command(label=_("Settings …"), command=lambda: kei.EinstellungsDialog(self))
-        m.add_separator()
-        m.add_command(label=_("Quit"), command=self.beenden)
-        leiste.add_cascade(label=_("File"), menu=m, underline=0)
-        b = tk.Menu(leiste, tearoff=False)
-        b.add_command(label=_("Apply"), accelerator=_("Ctrl+Enter"), command=self.uebernehmen)
-        b.add_command(label=_("Apply all chapter suggestions"), command=self.alle_uebernehmen)
-        b.add_separator()
-        b.add_command(label=_("Chapters: restore suggestions"), command=self.kapitel_vorschlaege)
-        b.add_command(label=_("Chapters: restore original"), command=self.kapitel_original)
-        b.add_command(label=_("Chapters: level up"), accelerator=_("Shift+Tab"), command=lambda: self.ebene(-1))
-        b.add_command(label=_("Chapters: level down"), accelerator="Tab", command=lambda: self.ebene(1))
-        b.add_separator()
-        b.add_command(label=_("Look up blurb"), command=self.klappentext_nachschlagen)
-        b.add_command(label=_("Look up all missing blurbs"), command=self.klappentexte_alle)
-        b.add_separator()
-        b.add_command(label=_("Cover from file …"), command=lambda: self._cover_aktion("aus_datei"))
-        b.add_command(label=_("Look up cover"), command=lambda: self._cover_aktion("nachschlagen"))
-        b.add_command(label=_("Look up all missing covers"), command=lambda: self.cover.alle_ohne())
-        b.add_command(label=_("Show cover large"), command=lambda: self._cover_aktion("gross"))
-        b.add_separator()
-        b.add_command(label=_("Take series and blurbs from Calibre"), command=self.calibre_uebernehmen)
-        b.add_command(label=_("Metadata from Calibre (this book)"),
-                      command=lambda: self._metadaten_aktion("alle_von_calibre"))
-        b.add_command(label=_("Fill metadata gaps from Calibre"), command=lambda: self.metadaten.luecken_fuellen())
-        leiste.add_cascade(label=_("Edit"), menu=b, underline=0)
-        k = tk.Menu(leiste, tearoff=False)
-        k.add_command(label=_("Find e-reader"), command=lambda: self.kobo.suchen(still=False))
-        k.add_command(label=_("Open books on the e-reader"), command=lambda: self.kobo.buecher_oeffnen())
-        k.add_separator()
-        k.add_command(label=_("Back up KOReader settings"), command=lambda: self.kobo.sichern())
-        k.add_command(label=_("Restore backup …"), command=lambda: self.kobo.zurueckspielen())
-        k.add_command(label=_("Copy dictionary"), command=lambda: self.kobo.woerterbuch_kopieren())
-        k.add_separator()
-        k.add_command(label=_("Eject"), command=lambda: self.kobo.auswerfen())
-        w = tk.Menu(leiste, tearoff=False)
-        w.add_command(label=_("New dictionary …"), command=lambda: self._woerterbuch(lambda b: b.anlegen()))
-        w.add_command(label=_("Open dictionary …"), command=lambda: self._woerterbuch(lambda b: b.oeffnen_dialog()))
-        w.add_command(label=_("Properties …"), command=lambda: self._woerterbuch(lambda b: b.eigenschaften()))
-        w.add_command(label=_("Take changes from a StarDict folder …"),
-                      command=lambda: self._woerterbuch(lambda b: b.aus_stardict_uebernehmen()))
-        w.add_separator()
-        w.add_command(label=_("New entry"), command=lambda: self._woerterbuch(lambda b: b.neu()))
-        w.add_command(label=_("Apply"), accelerator=_("Ctrl+Enter"),
-                      command=lambda: self._woerterbuch(lambda b: b.uebernehmen()))
-        w.add_command(label=_("Discard"), command=lambda: self._woerterbuch(lambda b: b.verwerfen()))
-        w.add_command(label=_("Discard own version (original)"),
-                      command=lambda: self._woerterbuch(lambda b: b.original()))
-        w.add_separator()
-        w.add_command(label=_("Claude: search the web"), command=lambda: self._woerterbuch(lambda b: b.ki("suche")))
-        w.add_command(label=_("Claude: summarize from a page …"),
-                      command=lambda: self._woerterbuch(lambda b: b.ki("link")))
-        w.add_command(label=_("Claude: from own knowledge (unverified)"),
-                      command=lambda: self._woerterbuch(lambda b: b.ki("wissen")))
-        w.add_separator()
-        w.add_command(label=_("Ignore / remove"), command=lambda: self._woerterbuch(lambda b: b.entfernen()))
-        w.add_command(label=_("Bring back"), command=lambda: self._woerterbuch(lambda b: b.wiederherstellen()))
-        w.add_separator()
-        w.add_command(label=_("Build dictionary"), command=lambda: self._woerterbuch(lambda b: b.erzeugen()))
-        w.add_command(label=_("Steps (from the wiki)"),
-                      command=lambda: self._woerterbuch(lambda b: (b.ansicht.set(kbw.ANSICHTEN[3]), b.liste_fuellen())))
-        leiste.add_cascade(label=_("Dictionary"), menu=w, underline=0)
-        leiste.add_cascade(label=_("E-reader"), menu=k, underline=0)
-        if kv.verfuegbar():
-            v = tk.Menu(leiste, tearoff=False)
-            # die Befehle gehören dem Bereich, der hier noch nicht gebaut ist
-            for text, f in ((N_("Open in KOReader"), "starten"), (N_("Restart the workbench"), "werkbank_starten"),
-                            (None, None),
-                            (N_("Take profile from the e-reader"), "vom_kobo"),
-                            (N_("Take profile from a backup"), "aus_sicherung"), (N_("Other file …"), "datei_waehlen"),
-                            (None, None), (N_("Find KOReader"), "koreader_suchen_menue"),
-                            (N_("Choose KOReader …"), "koreader_waehlen"), (N_("Open profile folder"), "profil_oeffnen")):
-                if text is None:
-                    v.add_separator()
-                else:
-                    v.add_command(label=_(text), command=lambda f=f: self._vorschau(f))
-            leiste.add_cascade(label=_("Preview"), menu=v, underline=0)
-        a = tk.Menu(leiste, tearoff=False)
-        for wert, text in (("hell", _("Light")), ("dunkel", _("Dark")), ("system", _("Like the system"))):
-            a.add_radiobutton(label=text, value=wert, variable=self.darstellung, command=self._darstellung)
-        a.add_separator()
-        a.add_command(label=_("Sidebar on/off"), accelerator=_("Ctrl+B"), command=lambda: self.navi.umschalten())
-        a.add_checkbutton(label=_("Status in the lists"), variable=self.status_liste, command=self._streifen_umschalten)
-        sp = tk.Menu(a, tearoff=False)
-        sp.configure(postcommand=lambda: self.tabellen_spalten.menue_fuellen(sp))
-        a.add_cascade(label=_("Library columns"), menu=sp)
-        a.add_checkbutton(label="Cover", variable=self.cover_an, command=self._cover_umschalten)
-        a.add_checkbutton(label="Tooltips", variable=self.tooltips_an,
-                          command=lambda: self.e.__setitem__("tooltips", self.tooltips_an.get()))
-        leiste.add_cascade(label=_("View"), menu=a, underline=0)
-        h = tk.Menu(leiste, tearoff=False)
-        h.add_command(label=_("Help"), accelerator="F1", command=self.hilfe)
-        h.add_command(label=_("Check for updates …"), command=lambda: self.updates.pruefen(von_hand=True))
-        h.add_separator()
-        h.add_command(label=_("About"), command=lambda: messagebox.showinfo(
-            _("About"), f"{PROGRAMM} {VERSION}\n\n" + _("Chapter names, blurbs and settings for KOReader "
-                                                           "on the e-reader."), parent=self))
-        leiste.add_cascade(label=_("Help"), menu=h, underline=0)
-        self._kuerzel_verteilen(leiste)
-        self.config(menu=leiste)
+        leiste = self.menuBar()
+        leiste.clear()
+        m = leiste.addMenu(_("File"))
+        m.addAction(_("Open folder …"), QKeySequence("Ctrl+O"), self.ordner_oeffnen)
+        self._zuletzt = m.addMenu(_("Recently opened"))
+        self._zuletzt.aboutToShow.connect(self._zuletzt_fuellen)
+        m.addAction(_("Reload"), QKeySequence("F5"), self.neu_einlesen)
+        m.addAction(_("Close library"), self.bibliothek_schliessen)
+        m.addSeparator()
+        m.addAction(_("Save"), QKeySequence("Ctrl+S"), self.speichern)
+        m.addSeparator()
+        m.addAction(_("Settings …"), lambda: self.einstellungen())
+        m.addSeparator()
+        m.addAction(_("Quit"), self.close)
+        for b in self.bereiche:
+            b.menue(leiste)
+        a = leiste.addMenu(_("View"))
+        gruppe = QActionGroup(a)
+        self._darstellungs_aktionen = {}
+        for wert, text in DARSTELLUNGEN:
+            act = a.addAction(_(text), lambda w=wert: self.darstellung_setzen(w))
+            act.setCheckable(True)
+            act.setChecked(self.darstellung == wert)
+            gruppe.addAction(act)
+            self._darstellungs_aktionen[wert] = act
+        a.addSeparator()
+        act = a.addAction(_("Sidebar on/off"), lambda: self.leiste.umschalten())
+        act.setShortcut(QKeySequence("Ctrl+B"))
+        act.setShortcutContext(Qt.WidgetShortcut)           # die Taste fängt der QShortcut im Fenster
+        self._schalter_aktion(a, _("Status in the lists"), "status_liste")
+        self._schalter_aktion(a, "Cover", "cover")
+        self._schalter_aktion(a, "Tooltips", "tooltips", self._tooltips_anwenden)
+        h = leiste.addMenu(_("Help"))
+        h.addAction(_("Help"), QKeySequence("F1"), self.hilfe)
+        h.addAction(_("Check for updates …"), lambda: self.updates.pruefen(von_hand=True))
+        h.addSeparator()
+        h.addAction(_("About"), self.ueber)
+        kuerzel_verteilen(leiste)
 
-    def _woerterbuch(self, aktion):
-        """Menübefehl des Wörterbuchs: Bereich zeigen, dann ausführen."""
-        if self._bereich() != "woerterbuch":
-            self.nb.select(self.woerterbuch.seite)
-            self.update_idletasks()
-        aktion(self.woerterbuch)
+    def _schalter_aktion(self, menue, text, schl, nachher=None):
+        act = menue.addAction(text)
+        act.setCheckable(True)
+        act.setChecked(bool(self.e.get(schl, kei.STANDARD[schl])))
 
-    def _vorschau(self, name):
-        """Menübefehl der Vorschau: Bereich zeigen, dann ausführen."""
-        if self._bereich() != "vorschau":
-            self.nb.select(self.vorschau.seite)
-            self.update_idletasks()
-        getattr(self.vorschau, name)()
+        def umschalten(an):
+            self.e[schl] = an
+            if nachher:
+                nachher()
+            self._alles_neu_zeichnen()
+        act.toggled.connect(umschalten)
+        return act
 
     def _zuletzt_fuellen(self):
-        self._zuletzt.delete(0, "end")
+        self._zuletzt.clear()
         for o in self.e.get("letzte_ordner", [])[:8]:
-            self._zuletzt.add_command(label=o, command=lambda o=o: self.laden(o))
+            self._zuletzt.addAction(o, lambda o=o: self._zuletzt_oeffnen(o))
         if not self.e.get("letzte_ordner"):
-            self._zuletzt.add_command(label=_("(empty)"), state="disabled")
+            self._zuletzt.addAction(_("(empty)")).setEnabled(False)
 
+    def _zuletzt_oeffnen(self, ordner):
+        if self._aenderungen_verwerfen_ok():
+            self.laden(ordner)
+
+    def ueber(self):
+        QMessageBox.about(self, _("About"), f"<b>{PROGRAMM} {VERSION}</b><br><br>" + _(
+            "Chapter names, blurbs and settings for KOReader on the e-reader.") + "<br><br>"
+            + _("Interface: Qt {qt} (PySide6), style {stil}.").format(
+                qt=__import__("PySide6").__version__, stil=theme.stilname()))
+
+    # -- Werkzeugleiste --------------------------------------------------------------------
     def _werkzeugleiste(self):
-        wz = self._wz_rahmen = ttk.Frame(self, padding=(4, 3))
-        wz.pack(side="top", fill="x")
-        # Designleitfaden 2.: links die Aktionen des Bereichs, rechts die globalen Knöpfe - Öffnen, Neu
-        # einlesen und Speichern gelten für alle Bereiche und stehen deshalb rechts, vor Hilfe (seit 1.0.4)
-        self._wz_bereich, self._wz_rechts = ttk.Frame(wz), ttk.Frame(wz)
-        self._wz_bereich.pack(side="left")
-        self._wz_rechts.pack(side="right")
-        self._wz = []
-        ttk.Separator(self._wz_rechts, orient="vertical").pack(side="left", fill="y", padx=6, pady=2)
-        self._wz_knopf(self._wz_rechts, "oeffnen", _("Open"), self.ordner_oeffnen, _("Open books folder (Ctrl+O)"))
-        self._wz_knopf(self._wz_rechts, "neu_laden", _("Reload"), self.neu_einlesen, _("Reload folder (F5)"))
-        self._wz_knopf(self._wz_rechts, "speichern", _("Save"), self.speichern,
-                       _("Write applied changes to the files, with backup (Ctrl+S)"))
-        ttk.Separator(self._wz_rechts, orient="vertical").pack(side="left", fill="y", padx=6, pady=2)
-        self._wz_knopf(self._wz_rechts, "hilfe", _("Help"), self.hilfe, _("Help for the current area (F1)"))
+        """Designleitfaden 2.: links die Aktionen des Bereichs, rechts die globalen Knöpfe - Öffnen,
+        Neu einlesen und Speichern gelten für alle Bereiche und stehen deshalb rechts, vor Hilfe."""
+        alt = getattr(self, "wz", None)
+        if alt is not None:
+            self.removeToolBar(alt)
+            alt.deleteLater()
+        wz = self.wz = QToolBar(_("Toolbar"))
+        wz.setObjectName("werkzeugleiste")
+        wz.setMovable(False)
+        wz.setFloatable(False)
+        wz.setToolButtonStyle(Qt.ToolButtonTextBesideIcon)
+        wz.setIconSize(QSize(20, 20))
+        wz.setContextMenuPolicy(Qt.PreventContextMenu)
+        self.addToolBar(wz)
+        self._wz_bereich = []
+        abstand = QWidget()
+        abstand.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
+        self._wz_abstand = wz.addWidget(abstand)
+        wz.addSeparator()
+        self._wz_global = []
+        for eintrag in (
+                ("oeffnen", _("Open"), self.ordner_oeffnen, _("Open books folder (Ctrl+O)")),
+                ("neu_laden", _("Reload"), self.neu_einlesen, _("Reload folder (F5)")),
+                ("speichern", _("Save"), self.speichern, _("Write applied changes to the files, with backup (Ctrl+S)")),
+                None,
+                ("hilfe", _("Help"), self.hilfe, _("Help for the current area (F1)"))):
+            if eintrag is None:
+                wz.addSeparator()
+                continue
+            symbol, text, fn, tipp = eintrag
+            act = wz.addAction(theme.symbol(symbol), text, fn)
+            act.setToolTip(tipp)
+            act.symbol = symbol
+            self._wz_global.append(act)
 
-    def _hinweisleiste_bauen(self):
+    def _wz_bereich_bauen(self):
+        for a in self._wz_bereich:
+            self.wz.removeAction(a)
+            a.deleteLater()
+        self._wz_bereich = []
+        b = self.bereich_obj(self._aktuell)
+        for eintrag in (b.werkzeug() if b else []):
+            if eintrag is None:
+                a = QAction(self.wz)
+                a.setSeparator(True)
+            else:
+                symbol, text, fn, tipp = eintrag
+                a = QAction(theme.symbol(symbol), text, self.wz)
+                a.symbol = symbol
+                a.setToolTip(tipp)
+                a.triggered.connect(lambda __=False, fn=fn: fn())
+            self.wz.insertAction(self._wz_abstand, a)
+            self._wz_bereich.append(a)
+
+    def _symbole_auffrischen(self):
+        for a in self._wz_global + self._wz_bereich:
+            if getattr(a, "symbol", None):
+                a.setIcon(theme.symbol(a.symbol))
+
+    # -- Hinweisleiste -----------------------------------------------------------------------
+    def _hinweisleiste_bauen(self, lay):
         """Leiste unter der Werkzeugleiste, nur sichtbar, wenn der geöffnete Ordner nicht mehr da ist
-        (ordner_pruefen); Farbe wie Warnzeilen, gesetzt in _theme_anwenden."""
-        h = self.hinweisleiste = tk.Frame(self, padx=8, pady=4)
-        h._feste_farben = True
-        self.hinweis_text = tk.Label(h, text="", anchor="w", justify="left")
-        self.hinweis_text._feste_farben = True
-        ttk.Button(h, text=_("Close library"), command=self.bibliothek_schliessen).pack(side="right")
-        self.hinweis_text.pack(side="left", fill="x", expand=True)
-        # Umbruch an der wirklichen Breite (neben dem Knopf), auch beim Ändern der Fenstergröße
-        self.hinweis_text.bind("<Configure>", lambda e: self.hinweis_text.configure(wraplength=max(200, e.width - 8)))
-        self._ordner_weg = False
+        (ordner_pruefen); Farbe wie Warnzeilen."""
+        h = self.hinweisleiste = QFrame()
+        h.setObjectName("hinweisleiste")
+        hl = QHBoxLayout(h)
+        hl.setContentsMargins(8, 4, 8, 4)
+        self.hinweis_text = QLabel("")
+        self.hinweis_text.setWordWrap(True)
+        hl.addWidget(self.hinweis_text, 1)
+        k = QPushButton(_("Close library"))
+        k.clicked.connect(lambda: self.bibliothek_schliessen())
+        hl.addWidget(k)
+        rand = QWidget()
+        rl = QVBoxLayout(rand)
+        rl.setContentsMargins(8, 4, 8, 0)
+        rl.addWidget(h)
+        self._hinweis_rand = rand
+        lay.addWidget(rand)
+        self._hinweis_faerben()
+
+    def _hinweis_faerben(self):
+        self.hinweisleiste.setStyleSheet(f"QFrame#hinweisleiste {{ background: {theme.WARNZEILE[theme.modus()]}; }}"
+                                         f"QFrame#hinweisleiste QLabel {{ color: {theme.farben()['fg']}; }}")
 
     def ordner_pruefen(self):
         """Ist der geöffnete Ordner noch da? Sonst Hinweisleiste (Bibliothek bleibt sichtbar, Speichern
-        verweigert _nicht_erreichbar). Aufgerufen bei jeder Gerätesuche (area_device)."""
+        verweigert _nicht_erreichbar). Aufgerufen bei jeder Gerätesuche (Bereich E-Reader)."""
         weg = bool(self.ordner) and not self._arbeit and not Path(self.ordner).is_dir()
         if weg == self._ordner_weg:
             return
         self._ordner_weg = weg
-        if weg:
-            self.hinweis_text.configure(text="⚠ " + _(
+        self._ordner_weg_zeigen()
+        if not weg and self.ordner:
+            self.status.set(_("The folder {ordner} is reachable again.").format(ordner=self.ordner))
+
+    def _ordner_weg_zeigen(self):
+        if self._ordner_weg:
+            self.hinweis_text.setText("⚠ " + _(
                 "The folder {ordner} is no longer reachable (e-reader unplugged?). The library stays visible, "
                 "but saving only works again once the folder is back.").format(ordner=self.ordner))
-            self.hinweisleiste.pack(side="top", fill="x", after=self._wz_rahmen, padx=8, pady=(4, 0))
-        else:
-            self.hinweisleiste.pack_forget()
-            if self.ordner:
-                self.status.set(_("The folder {ordner} is reachable again.").format(ordner=self.ordner))
+        self._hinweis_rand.setVisible(self._ordner_weg)
 
-    def bibliothek_schliessen(self, still=False):
-        """Geöffneten Ordner schließen (ungespeicherte Änderungen nach Rückfrage verwerfen)."""
-        if self._arbeit or not self.ordner:
-            return
-        if not still and not self._aenderungen_verwerfen_ok():
-            return
-        self._bearbeiter_weg(speichern=False)
-        self.ordner = None
-        self.buecher, self.nach_schluessel = [], {}
-        self.calibre_wurzel, self.calibre_eintraege = None, []
-        self._ordner_weg = True                      # damit ordner_pruefen die Leiste wegnimmt
-        self.ordner_pruefen()
-        self._alles_neu_zeichnen()
-        if not still:
-            self.status.set(_("Library closed."))
+    # ================================================================ Bereiche
+    def _bereich(self):
+        return self._aktuell
 
-    def _wz_knopf(self, eltern, symbol, text, befehl, tipp):
-        k = tk.Label(eltern, text=text, compound="left", padx=4, pady=3, borderwidth=0, cursor="hand2")
-        k._feste_farben = True
-        k.pack(side="left", padx=1)
-        k.bind("<Enter>", lambda e: (k.configure(bg=self._farben["knopf_aktiv"]), self._tipp_planen(k, tipp)))
-        k.bind("<Leave>", lambda e: (k.configure(bg=self._farben["bg"]), self._tipp_weg()))
-        k.bind("<ButtonRelease-1>", lambda e: (self._tipp_weg(), befehl()))
-        self._wz.append((k, symbol))
-        if hasattr(self, "_farben"):
-            self._knopf_faerben(k, symbol)
-        return k
-
-    def _knopf_faerben(self, k, symbol):
-        symbole = dict(kic.DUNKEL, **ksy.WZ_DUNKEL) if self.dark_mode.get() else dict(kic.HELL, **ksy.WZ_HELL)
-        if symbol in symbole:
-            schl = (symbol, self.dark_mode.get())
-            if schl not in self._ikonen:
-                self._ikonen[schl] = tk.PhotoImage(data=symbole[symbol])
-            k.configure(image=self._ikonen[schl])
-        k.configure(bg=self._farben["bg"], fg=self._farben["fg"])
-
-    def _wz_bereich_bauen(self, name):
-        for w in self._wz_bereich.winfo_children():
-            self._wz = [(k, s) for k, s in self._wz if k is not w]
-            w.destroy()
-        if name == "bibliothek":
-            if self.e.get("calibre_an", True):
-                self._wz_knopf(self._wz_bereich, "uebernehmen", _("From Calibre"), self.calibre_uebernehmen,
-                               _("Take series, number and blurb from metadata.calibre where the EPUB lacks them"))
-        elif name == "kapitel":
-            self._wz_knopf(self._wz_bereich, "uebernehmen", _("Apply"), self.uebernehmen,
-                           _("Apply the New column for this book (Ctrl+Enter)"))
-            self._wz_knopf(self._wz_bereich, "pruefen", _("Apply all"), self.alle_uebernehmen,
-                           _("Apply the suggestions of all books without questionable entries"))
-            ttk.Separator(self._wz_bereich, orient="vertical").pack(side="left", fill="y", padx=6, pady=2)
-            self._wz_knopf(self._wz_bereich, "ausruecken", _("Up"), lambda: self.ebene(-1),
-                           _("Move the selected entries with their sub-entries one level up (Shift+Tab)"))
-            self._wz_knopf(self._wz_bereich, "einruecken", _("Down"), lambda: self.ebene(1),
-                           _("Move the selected entries with their sub-entries one level down (Tab)"))
-            ttk.Separator(self._wz_bereich, orient="vertical").pack(side="left", fill="y", padx=6, pady=2)
-            self._wz_knopf(self._wz_bereich, "rueckgaengig", _("Suggestions"), self.kapitel_vorschlaege,
-                           _("Reset the book to the suggestions"))
-            self._wz_knopf(self._wz_bereich, "zurueckschreiben", _("Original"), self.kapitel_original,
-                           _("Reset the book to the unchanged table of contents"))
-        elif name == "metadaten":
-            self.metadaten.werkzeug(self._wz_bereich)
-        elif name == "kobo":
-            self.kobo.werkzeug(self._wz_bereich)
-        elif name == "vorschau":
-            self.vorschau.werkzeug(self._wz_bereich)
-        elif name == "woerterbuch":
-            self.woerterbuch.werkzeug(self._wz_bereich)
-
-    # -- Tooltips als Einblendung (kein eigenes Fenster) -------------------------
-    def _tipp_planen(self, widget, text):
-        self._tipp_weg()
-        if self.tooltips_an.get():
-            self._tipp_job = self.after(int(self.e.get("tooltip_verzoegerung", 600)),
-                                        lambda: self._tipp_zeigen(widget, text))
-
-    def _tipp_zeigen(self, widget, text):
-        p = kth.PALETTE["dunkel" if self.dark_mode.get() else "hell"]
-        t = self._tipp = tk.Label(self, text=text, bg=p["kopf"], fg=p["fg"], padx=6, pady=3,
-                                  relief="solid", borderwidth=1, font=kth.schrift(9))
-        t._feste_farben = True
-        x = widget.winfo_rootx() - self.winfo_rootx()
-        t.place(x=min(x, max(0, self.winfo_width() - t.winfo_reqwidth() - 8)),
-                y=widget.winfo_rooty() - self.winfo_rooty() + widget.winfo_height() + 4)
-
-    def _tipp_weg(self):
-        if self._tipp_job:
-            self.after_cancel(self._tipp_job)
-            self._tipp_job = None
-        if self._tipp is not None:
-            self._tipp.destroy()
-            self._tipp = None
-
-    # -- Bausteine ---------------------------------------------------------------
-    def _seite(self, titel, symbol):
-        s = ttk.Frame(self.nb, padding=(10, 8, 4, 6))
-        s.nav_symbol = symbol
-        self.nb.add(s, text=titel)
-        return s
-
-    def _listenrahmen(self, eltern):
-        r = tk.Frame(eltern, highlightthickness=1, borderwidth=0)
-        self._rahmen_liste.append(r)
-        return r
-
-    def _buchliste(self, eltern, auswahl, status_fn=None, streifen=True, filter=None, geaendert=None, kopf=None,
-                   marken_fn=None, breite=32):
-        """Schmale Bücherliste mit Scrollbalken in einem Rahmen, mit Statusstreifen
-        (streifen=False: ohne, z. B. in der Vorschau). Darüber die Such-/Filterzeile
-        (list_filter.ListenFilter, als lb.filter): filter = [(kennung, Text, Prüfung)],
-        geaendert() füllt die Liste neu, kopf = Label "Bücher:" darüber. marken_fn(name) =
-        [(kennung, text)]: Piktogramme im Streifen statt ⚠ (ui/markers)."""
-        lf = klf.ListenFilter(eltern, filter or [("alle", "All books", None)], geaendert or (lambda: None), kopf)
-        r = self._listenrahmen(eltern)
-        r.pack(fill="both", expand=True)
-        # schmal anfordern: die Breite gibt der verstellbare Teiler vor (panes.teilen, seit 1.3-beta4)
-        lb = tk.Listbox(r, width=min(breite, 12), borderwidth=0, highlightthickness=0, exportselection=False,
-                        activestyle="none")
-        lb.tipp = kpn.ListenTipp(lb)
-        sb = ttk.Scrollbar(r, orient="vertical", command=lb.yview)
-        sb.pack(side="right", fill="y")
-        lb.pack(side="left", fill="both", expand=True)
-        lb.bind("<<ListboxSelect>>", lambda e: auswahl())
-        lb.filter = lf
-        if not streifen:
-            lb.configure(yscrollcommand=sb.set)
-            return lb
-        if marken_fn:
-            st = kmk.MarkenStreifen(self, lb, r, status_fn or self._status_von_name, marken_fn,
-                                    alle_fn=lambda: list(self._listen_buch))
-        else:
-            st = kst.StatusStreifen(self, lb, r, status_fn or self._status_von_name)
-        lb.configure(yscrollcommand=lambda *a: (sb.set(*a), st.zeichnen()))
-        if self.status_liste.get():
-            st.einpacken()
-        self._auswahl_mitzeichnen(lb, st)
-        self._streifen.append(st)
-        return lb
-
-    @staticmethod
-    def _auswahl_mitzeichnen(lb, st):
-        """Der Streifen zeichnet die Auswahlmarkierung selbst und erfährt nur über
-        <<ListboxSelect>> davon - das kommt bei einer Auswahl aus dem Programm heraus
-        (selection_set beim Bereichswechsel usw.) nicht, dann blieb die alte Markierung
-        im Streifen stehen. Hier für genau diese Liste umgeleitet (keller_streifen bleibt)."""
-        def nachher(echt):
-            def neu(*a):
-                erg = echt(*a)
-                try:
-                    st.canvas.after_idle(st.zeichnen)
-                except tk.TclError:
-                    pass
-                return erg
-            return neu
-        for name in ("selection_set", "selection_clear", "select_set", "select_clear", "delete", "insert"):
-            setattr(lb, name, nachher(getattr(lb, name)))
-        # Auf einer verdeckten Seite hat die Liste noch keine Zeilenmaße (bbox None): beim Sichtbarwerden
-        # neu zeichnen, sonst fehlt die Markierung im Streifen bis zum nächsten Klick
-        for w in (lb, st.canvas):
-            w.bind("<Map>", lambda e: st.canvas.after_idle(st.zeichnen), add="+")
-
-    def _status_von_name(self, name):
-        b = self._listen_buch.get(name)
-        return (b.stand(), b.warnung()) if b else (None, None)
-
-    def _kt_fehlt(self, b):
-        """Warntext, wenn das Buch keinen Klappentext hat (ui/area_blurbs)."""
-        return self.metadaten.klappentext.fehlt(b)
-
-    def kapitel_marken(self, b):
-        """Marken für Kapitel-Liste und Seitenleiste: unlesbar, fragwürdige Namen, Vorschläge offen."""
-        if b.fehler:
-            return [("unlesbar", b.fehler)]
-        erg = []
-        w = b.warnung()
-        if w:
-            erg.append(("kapitel", w))
-        if b.vorschlag and not b.neu and b.entwurf is None:
-            erg.append(("vorschlag", ngettext("{n} chapter suggestion", "{n} chapter suggestions",
-                                              len(b.vorschlag)).format(n=len(b.vorschlag))))
-        return erg
-
-    def bibliothek_marken(self, b):
-        """Marken in der Bibliothek: alles, was die Bereiche melden (Kapitel und Metadaten)."""
-        if b.fehler:
-            return [("unlesbar", b.fehler)]
-        return [m for m in self.kapitel_marken(b) if m[0] != "vorschlag"] + self.metadaten.marken(b)
-
-    def _marken_kapitel(self, name):
-        b = self._listen_buch.get(name)
-        return self.kapitel_marken(b) if b else []
-
-    def _status_von_iid(self, iid):
-        b = self.nach_schluessel.get(iid)
-        return (b.stand(), b.warnung()) if b else (None, None)
-
-    # ================================================================ Bibliothek
-    def _bibliothek_bauen(self):
-        self._rahmen_liste, self._streifen, self._listen_buch = [], [], {}
-        s = self.seite_bibliothek = self._seite(_("Library"), "bibliothek")
-        oben = ttk.Frame(s)
-        oben.pack(fill="x", pady=(0, 6))
-        ttk.Label(oben, text=_("Search:")).pack(side="left")
-        self.suche = tk.StringVar()
-        self.suchfeld = ttk.Entry(oben, textvariable=self.suche, width=30)
-        self.suchfeld.pack(side="left", padx=(4, 14))
-        self.suche.trace_add("write", lambda *a: self._tabelle_fuellen())
-        ttk.Label(oben, text=_("Filter:")).pack(side="left")
-        self.filter = tk.StringVar(value=FILTER[0])
-        cb = ttk.Combobox(oben, textvariable=self.filter, values=FILTER, state="readonly", width=22)
-        cb.pack(side="left", padx=4)
-        cb.bind("<<ComboboxSelected>>", lambda e: self._tabelle_fuellen())
-        self.ordner_label = ttk.Label(oben, text="", style="Hinweis.TLabel")
-        self.ordner_label.pack(side="right")
-        r = self._listenrahmen(s)
-        r.pack(fill="both", expand=True)
-        # Spalte #0 (die Baumspalte, nur sie kann Bilder zeigen) ist seit 1.3-beta4 die Statusspalte
-        t = self.tabelle = ttk.Treeview(r, columns=[c for c, __, __ in SPALTEN], show="tree headings",
-                                        selectmode="browse", style="Bibliothek.Treeview")
-        t.heading("#0", text=_("Status"), anchor="w", command=lambda: self._sortieren("status"))
-        for c, text, w in SPALTEN:
-            t.heading(c, text=text, command=lambda c=c: self._sortieren(c))
-            t.column(c, anchor="e" if c == "nummer" else "w")
-        sb = ttk.Scrollbar(r, orient="vertical", command=t.yview)
-        sb.pack(side="right", fill="y")
-        # waagrecht nur, wenn die Spalten breiter sind als das Fenster (keine Spalte dehnt sich)
-        xsb = self.tabelle_xsb = ttk.Scrollbar(r, orient="horizontal", command=t.xview)
-
-        def waagrecht(lo, hi):
-            xsb.set(lo, hi)
-            if float(lo) <= 0 and float(hi) >= 1:
-                xsb.pack_forget()
-            elif not xsb.winfo_ismapped():
-                xsb.pack(side="bottom", fill="x", before=t)
-        t.configure(xscrollcommand=waagrecht)
-        t.pack(side="left", fill="both", expand=True)
-        self.tabellen_streifen = kmk.TabellenStatus(
-            self, t, self._status_von_iid,
-            lambda iid: self.bibliothek_marken(self.nach_schluessel[iid]) if iid in self.nach_schluessel else [],
-            lambda iid: self.nach_schluessel[iid].name)
-        t.configure(yscrollcommand=sb.set)
-        self._streifen.append(self.tabellen_streifen)
-        self.tabellen_spalten = ktc.Spalten(self, t, SPALTEN, aus=SPALTEN_AUS)
-        self.tabellen_spalten.anwenden()
-        t.bind("<Double-1>", lambda e: self._buch_oeffnen() if t.identify_region(e.x, e.y) == "cell" else None)
-        t.bind("<Return>", lambda e: self._buch_oeffnen())
-        t.bind("<Button-3>", self._tabelle_menue, add="+")
-        t.bind("<<TreeviewSelect>>", lambda e: self._tabelle_auswahl(), add="+")
-
-    def _filter_passt(self, b):
-        f, such = self.filter.get(), self.suche.get().strip().casefold()
-        if such and such not in " ".join((b.titel, b.reihe, b.autor)).casefold():
-            return False
-        if f == FILTER[1]:
-            return b.stand() is not None
-        if f == FILTER[2]:
-            return bool(b.fehler)
-        if f == FILTER[3]:
-            return not b.reihe_datei[0] and b.reihe_neu is None
-        return True
-
-    def _sortieren(self, spalte, umgekehrt=None):
-        """Klick auf den Kopf: nach der Spalte sortieren, nochmal = umgekehrt (umgekehrt=True/False:
-        fest, aus dem Kontextmenü). Kein Sortieren direkt nach dem Verschieben einer Spalte."""
-        if umgekehrt is None and not self.tabellen_spalten.sortieren_erlaubt():
-            return
-        alt, rueck = self.e.get("sortierung", ["reihe", False])
-        if umgekehrt is None:
-            umgekehrt = not rueck if alt == spalte else False
-        self.e["sortierung"] = [spalte, umgekehrt]
-        self.tabellen_spalten.kopf_beschriften()
-        self._tabelle_fuellen()
-
-    def _sortiert(self, buecher):
-        spalte, rueck = self.e.get("sortierung", ["reihe", False])
-        if spalte == "reihe":
-            schl = lambda b: (b.reihe.casefold() or "￿", _nr(b.nummer), b.titel.casefold())
-        elif spalte == "nummer":
-            schl = lambda b: (_nr(b.nummer), b.titel.casefold())
-        elif spalte == "cover":
-            schl = lambda b: (self.cover.hoehe(b), b.titel.casefold())       # nach Pixelhöhe, nicht als Text
-        elif spalte == "status":
-            # Statusspalte: unlesbar zuerst, dann nach Zahl der Marken, dann Ungespeichertes
-            schl = lambda b: (not b.fehler, -len(self.bibliothek_marken(b)), b.stand() is None, b.titel.casefold())
-        else:
-            schl = lambda b: (str(self._zelle(b, spalte)).casefold(), b.titel.casefold())
-        return sorted(buecher, key=schl, reverse=rueck)
-
-    def _zelle(self, b, spalte):
-        if spalte == "kapitel":
-            return b.fehler or b.kapitel_zustand()
-        if spalte == "klappentext":
-            if b.klappentext_neu is not None or b.klappentext_entwurf is not None:
-                return _("changed")
-            if b.klappentext:
-                return blurbs.source_name(b.klappentext_quelle_datei) or _("yes")
-            return _("in Calibre") if b.calibre and b.calibre.get("comments") else "-"
-        if spalte == "cover":
-            if b.cover_neu is not None:
-                return _("changed")
-            return f"{b.cover_info[0]} × {b.cover_info[1]}" if b.cover_info else "-"
-        return getattr(b, spalte)
-
-    def _tabelle_fuellen(self):
-        t = self.tabelle
-        gewaehlt = t.selection()
-        t.delete(*t.get_children())
-        sichtbar = [b for b in self._sortiert(self.buecher) if self._filter_passt(b)]
-        for b in sichtbar:
-            t.insert("", "end", iid=b.schluessel, values=[self._zelle(b, c) for c, __, __ in SPALTEN],
-                     tags=("warn",) if b.fehler else ())
-        if gewaehlt and t.exists(gewaehlt[0]):
-            t.selection_set(gewaehlt[0])
-            t.see(gewaehlt[0])
-        self.tabellen_streifen.vergessen()
-        self.tabellen_streifen.zeichnen()
-        self.tabellen_spalten.status_breite()
-        if self.buecher:
-            self.ordner_label.configure(text=ngettext("{n} of {gesamt} book", "{n} of {gesamt} books", len(self.buecher))
-                                        .format(n=len(sichtbar), gesamt=len(self.buecher)) + f"  ·  {self.ordner}")
-
-    def _tabelle_auswahl(self):
-        sel = self.tabelle.selection()
-        if sel:
-            b = self.nach_schluessel[sel[0]]
-            zusatz = [b.fehler] if b.fehler else []
-            if b.reihe_neu is not None:
-                zusatz.append(_("series applied, not yet saved"))
-            elif b.reihe_quelle == "Calibre":
-                zusatz.append(_("Series from metadata.calibre, not in the EPUB - \"From Calibre\" applies it"))
-            elif b.reihe_quelle:
-                zusatz.append(_("Series from the {quelle} data, not in the EPUB").format(quelle=b.reihe_quelle))
-            self.status.set(" - ".join([b.pfad.name] + zusatz))
-
-    # Ziele beim Öffnen eines Buchs aus der Bibliothek (Doppelklick: Einstellung buch_oeffnen, seit 1.3-beta5)
-    OEFFNEN_ZIELE = (("kapitel", N_("Chapters")), ("metadaten", N_("Metadata")), ("vorschau", N_("Preview")),
-                     ("koreader", N_("KOReader (start the preview)")))
+    def bereich_zeigen(self, kennung, kind=None):
+        alias = {"klappentexte": "metadaten", "cover": "metadaten"}
+        kennung = alias.get(kennung, kennung)
+        b = self.bereich_obj(kennung) or self.bereiche[0]
+        wechsel = b.kennung != self._aktuell
+        self._aktuell = b.kennung
+        self.e["bereich_zuletzt"] = b.kennung
+        if b.seite is not None:
+            self.stapel.setCurrentWidget(b.seite)
+        self.leiste.waehlen(b.kennung, kind)
+        self._wz_bereich_bauen()
+        if wechsel or kind:
+            b.beim_zeigen()
 
     def oeffnen_ziele(self):
-        """[(Kennung, Text)] der möglichen Ziele; Vorschau und KOReader nur, wo es die Vorschau gibt."""
-        return [(k, t) for k, t in self.OEFFNEN_ZIELE if k in ("kapitel", "metadaten") or self.vorschau]
+        """[(Kennung, Text)] der Ziele für den Doppelklick in der Bibliothek; Vorschau und KOReader nur,
+        wo es die Vorschau gibt."""
+        ziele = (("kapitel", N_("Chapters")), ("metadaten", N_("Metadata")), ("vorschau", N_("Preview")),
+                 ("koreader", N_("KOReader (start the preview)")))
+        return [(k, t) for k, t in ziele if k in ("kapitel", "metadaten") or kv.verfuegbar()]
 
-    def _buch_oeffnen(self, ziel=None):
-        """Gewähltes Buch der Bibliothek öffnen: in Kapitel, Metadaten, der Vorschau oder gleich in KOReader."""
-        sel = self.tabelle.selection()
-        if not sel:
-            return
-        b = self.nach_schluessel[sel[0]]
-        ziel = ziel or self.e.get("buch_oeffnen") or "kapitel"
-        if ziel in ("vorschau", "koreader") and not self.vorschau:
-            ziel = "kapitel"                             # z. B. Einstellung von Linux, jetzt unter Windows
-        if ziel == "metadaten":
-            self.metadaten.auswaehlen(b)
-            self.nb.select(self.metadaten.seite)
-        elif ziel in ("vorschau", "koreader"):
-            self.vorschau.buch_waehlen(b, starten=ziel == "vorschau")   # vor dem Wechsel: kein Doppelstart
-            self.nb.select(self.vorschau.seite)
-            if ziel == "koreader":
-                self.vorschau.starten()
-        else:
-            self._auswaehlen(self.kap_liste, b)
-            self.nb.select(self.seite_kapitel)
-
-    def _tabelle_menue(self, e):
-        """Rechtsklick auf ein Buch der Bibliothek: Öffnen in … (der Kopf hat sein eigenes Menü)."""
-        t = self.tabelle
-        if t.identify_region(e.x, e.y) not in ("cell", "tree"):
-            return
-        iid = t.identify_row(e.y)
-        if not iid:
-            return
-        t.selection_set(iid)
-        t.focus(iid)
-        standard = self.e.get("buch_oeffnen") or "kapitel"
-        m = tk.Menu(t, tearoff=False)
-        for k, text in self.oeffnen_ziele():
-            m.add_command(label=_("Open in {ziel}").format(ziel=_(text)) if k != "koreader" else _("Start in KOReader"),
-                          command=lambda k=k: self._buch_oeffnen(k),
-                          accelerator=_("Double-click") if k == standard else "")
-        self._tabelle_menue_offen = m                     # für Tests
-        try:
-            m.tk_popup(e.x_root, e.y_root)
-        finally:
-            m.grab_release()
-
-    def _suche_fokus(self):
-        if self._bereich() == "woerterbuch" and self.woerterbuch.wb:
-            self.woerterbuch.suchfeld.focus_set()
-            self.woerterbuch.suchfeld.select_range(0, "end")
-            return
-        bereich = self._bereich()
-        liste = {"kapitel": self.kap_liste,
-                 "metadaten": getattr(getattr(self, "metadaten", None), "liste", None),
-                 "vorschau": getattr(getattr(self, "vorschau", None), "liste", None)}.get(bereich)
-        if liste is not None and getattr(liste, "filter", None):
-            liste.filter.fokus()
-            return
-        self.nb.select(self.seite_bibliothek)
-        self.suchfeld.focus_set()
-        self.suchfeld.select_range(0, "end")
-
-    # ================================================================ Kapitel
-    def _kapitel_bauen(self):
-        s = self.seite_kapitel = self._seite(_("Chapters"), "kapitel")
-        links, rechts_teil = kpn.teilen(self, s, "kapitel", 300)
-        kopf = ttk.Label(links, text=_("Books:"))
-        kopf.pack(anchor="w")
-        self.kap_liste = self._buchliste(links, self._kapitel_anzeigen, filter=self._kap_filter(),
-                                         geaendert=lambda: self._liste_neu(self.kap_liste), kopf=kopf,
-                                         marken_fn=self._marken_kapitel)
-        rechts = ttk.Frame(rechts_teil)
-        rechts.pack(side="left", fill="both", expand=True, padx=(10, 0))
-        self.kap_cover, self.kap_kopf, self.kap_info = self._kopfzeile(rechts)
-        teiler = ttk.PanedWindow(rechts, orient="vertical")
-        teiler.pack(fill="both", expand=True)
-        r = self._listenrahmen(teiler)
-        t = self.kap_tabelle = ttk.Treeview(r, columns=("alt", "neu", "hinweis"), show="headings",
-                                            selectmode="extended")
-        for c, text, w in (("alt", _("Entry"), 200), ("neu", _("New"), 260), ("hinweis", _("Note"), 160)):
-            t.heading(c, text=text)
-            t.column(c, width=w, minwidth=60, stretch=True)
-        sb = ttk.Scrollbar(r, orient="vertical", command=t.yview)
-        t.configure(yscrollcommand=sb.set)
-        sb.pack(side="right", fill="y")
-        t.pack(side="left", fill="both", expand=True)
-        teiler.add(r, weight=4)
-        unten = ttk.Frame(teiler, padding=(0, 6, 0, 0))
-        ttk.Label(unten, text=_("In the book at this point:")).pack(anchor="w")
-        tr = self._listenrahmen(unten)
-        tr.pack(fill="both", expand=True)
-        self.kap_text = tk.Text(tr, height=6, wrap="word", borderwidth=0, highlightthickness=0, padx=6, pady=4,
-                                font=kth.schrift(10), state="disabled")
-        tsb = ttk.Scrollbar(tr, orient="vertical", command=self.kap_text.yview)
-        self.kap_text.configure(yscrollcommand=tsb.set)
-        tsb.pack(side="right", fill="y")
-        self.kap_text.pack(side="left", fill="both", expand=True)
-        teiler.add(unten, weight=1)
-        t.bind("<<TreeviewSelect>>", lambda e: self._kapitel_zeile())
-        t.bind("<Double-1>", self._zelle_bearbeiten)
-        t.bind("<F2>", self._zelle_bearbeiten)
-        t.bind("<Delete>", lambda e: self._zeile_original())
-        for taste, richtung in (("<Tab>", 1), ("<Alt-Right>", 1), ("<Shift-Tab>", -1), ("<ISO_Left_Tab>", -1),
-                                ("<Alt-Left>", -1)):
-            try:
-                t.bind(taste, lambda e, r=richtung: (self.ebene(r), "break")[1])
-            except tk.TclError:                         # ISO_Left_Tab gibt es unter Windows nicht
-                pass
-        self._kap_buch = None
-
-    def _kopfzeile(self, eltern):
-        """Cover links, Titel und Angaben daneben. Gibt (cover, titel, info) zurück."""
-        z = ttk.Frame(eltern)
-        z.pack(fill="x", pady=(0, 6))
-        cover = tk.Label(z, borderwidth=0, highlightthickness=0, cursor="hand2")
-        cover.bind("<Button-1>", lambda e: self.cover.gross(getattr(cover, "buch", None)))
-        texte = ttk.Frame(z)
-        texte.pack(side="left", fill="x", anchor="n")
-        kopf = ttk.Label(texte, text=_("Choose a book on the left."), style="Ueberschrift.TLabel")
-        kopf.pack(anchor="w")
-        info = ttk.Label(texte, text="", style="Hinweis.TLabel")
-        info.pack(anchor="w", pady=(2, 0))
-        cover.texte = texte
-        return cover, kopf, info
-
-    def _cover_zeigen(self, label, b):
-        if getattr(label, "buch", None) is not b and getattr(self, "cover", None):
-            self.cover.gross_schliessen(ausser=b)          # Buchwechsel in Kapitel: großes Cover schließen
-        label.buch = b
-        bild = self._cover_bild(b) if b and self.cover_an.get() else None
-        if bild is None:
-            label.configure(image="")
-            label.pack_forget()
-            return
-        label.configure(image=bild)
-        label.pack(side="left", padx=(0, 10), before=label.texte)
-
-    def _cover_bild(self, b, hoehe=None):
-        """PhotoImage des Titelbilds in der Höhe `hoehe` (zwischengespeichert) oder None.
-        JPEG braucht Pillow; ohne Pillow gehen nur PNG und GIF."""
-        hoehe = hoehe or int(self.e.get("cover_kopf_hoehe") or COVER_HOEHE)
-        try:
-            stempel = b.pfad.stat().st_mtime
-        except OSError:
-            return None
-        schl = (str(b.pfad), stempel, hoehe, id(b.cover_neu) if b.cover_neu is not None else None)
-        if schl in self._cover:
-            return self._cover[schl]
-        daten = b.cover_neu if b.cover_neu is not None else kd.cover_lesen(b.pfad)
-        bild = None
-        if daten:
-            try:
-                from PIL import Image, ImageTk
-                im = Image.open(io.BytesIO(daten))
-                im.load()
-                breite = max(1, round(im.width * hoehe / im.height))
-                bild = ImageTk.PhotoImage(im.convert("RGB").resize((breite, hoehe), Image.LANCZOS), master=self)
-            except ImportError:
-                try:
-                    roh = tk.PhotoImage(data=base64.b64encode(daten).decode(), master=self)
-                    faktor = max(1, -(-roh.height() // hoehe))
-                    bild = roh.subsample(faktor) if faktor > 1 else roh
-                except tk.TclError:                         # JPEG ohne Pillow
-                    if not self._cover_hinweis:
-                        self._cover_hinweis = True
-                        self.status.set(_("JPEG covers need Pillow (pip install pillow)."))
-            except Exception:                                # kaputtes Bild
-                bild = None
-        self._cover[schl] = bild
-        return bild
-
-    def _cover_umschalten(self):
-        self.e["cover"] = self.cover_an.get()
-        self._cover_zeigen(self.kap_cover, self._kap_buch)
-
-    def _linien(self, teile):
-        """Zeichen aus baumlinien() als Text; jede Ebene gleich breit (Proportionalschrift:
-        aufgefüllt mit Leerzeichen, schmalen und Haar-Leerzeichen, gemessen in der Schrift
-        der Tabelle)."""
-        if self._linien_font is None:
-            name = ttk.Style().lookup("Treeview", "font") or "TkDefaultFont"
-            try:
-                self._linien_font = tkfont.nametofont(name)
-            except tk.TclError:
-                self._linien_font = tkfont.Font(font=name)
-            self._linien_teil = {}
-        f = self._linien_font
-        if not self._linien_teil:
-            ziel = f.measure("├─ ")
-            for zeichen, text in (("├", "├─"), ("└", "└─"), ("│", "│"), (" ", "")):
-                for fueller in (" ", "\u2009", "\u200a"):
-                    while f.measure(text + fueller) <= ziel:
-                        text += fueller
-                self._linien_teil[zeichen] = text
-        return "".join(self._linien_teil[z] for z in teile)
-
-    # ================================================================ Listen und Filter
-    def _kap_filter(self):
-        return [("alle", N_("All books"), None),
-                ("vorschlaege", N_("With suggestions"), lambda b: bool(b.vorschlag)),
-                ("fragwuerdig", N_("Questionable names"), lambda b: bool(b.warnung())),
-                ("ohne_namen", N_("Some without names"), lambda b: b.einzelne_ohne_namen()),
-                ("geaendert", N_("Changed chapters"), lambda b: bool(
-                    b.neu or b.entwurf is not None or b.tiefen_neu is not None or b.tiefen_entwurf is not None))]
-
-    def _links_sortiert(self):
-        """Bücher wie in den Listen links: nach Reihe, Nummer, Titel - wie im Bookshelf."""
-        return sorted(self.buecher, key=lambda b: (b.reihe.casefold() or "\uffff", _nr(b.nummer),
-                                                   b.titel.casefold()))
-
-    def _liste_fuellen(self, liste, sortiert, vorher, anzeige):
-        """Füllt eine schmale Bücherliste nach ihrem Filter und wählt wieder das bisherige
-        Buch (oder das nächste passende, list_filter.nachfolger); anzeige() zeigt es rechts."""
-        lf = liste.filter
-        sichtbar = [b for b in sortiert if lf.passt(b)]
-        liste.delete(0, "end")
-        for b in sichtbar:
-            liste.insert("end", self._anzeigename(b))
-        lf.anzahl(len(sichtbar), len(sortiert))
-        ziel = klf.nachfolger(sortiert, vorher, lf.passt) if vorher else None
-        if ziel:
-            self._auswaehlen(liste, ziel)
-        elif vorher and sichtbar:
-            # das bisherige ist weggefiltert und es gibt nichts darunter/darüber - erstes nehmen
-            self._auswaehlen(liste, sichtbar[0])
-        else:
-            anzeige()
-
-    def _liste_neu(self, liste):
-        """Suche oder Filter einer Liste geändert."""
-        if liste is not self.kap_liste:
-            return self.metadaten.liste_fuellen()
-        anzeige = self._kapitel_anzeigen
-        if liste is self.kap_liste:
-            self._bearbeiter_weg(speichern=True)
-        self._liste_fuellen(liste, self._links_sortiert(), self._aktuelles_buch(liste), anzeige)
-        for s in self._streifen:
-            s.zeichnen()
-
-    def _aktuelles_buch(self, liste):
-        sel = liste.curselection()
-        return self._listen_buch.get(liste.get(sel[0])) if sel else None
-
-    @staticmethod
-    def _anzeigename(b):
-        return getattr(b, "titel_anzeige", None) or b.name
-
-    def _auswaehlen(self, liste, buch):
-        """Buch in der Liste wählen und rechts zeigen. Ist es weggefiltert (z. B. Doppelklick in
-        der Bibliothek), werden Suche und Filter dieser Liste zurückgesetzt."""
-        namen = list(liste.get(0, "end"))
-        lf = getattr(liste, "filter", None)
-        if liste is not self.kap_liste:
-            return self.metadaten.auswaehlen(buch)
-        if self._anzeigename(buch) not in namen and lf and lf.aktiv() and buch in self.buecher:
-            lf.zuruecksetzen()
-            namen = list(liste.get(0, "end"))
-        if self._anzeigename(buch) in namen:
-            i = namen.index(self._anzeigename(buch))
-            liste.selection_clear(0, "end")
-            liste.selection_set(i)
-            liste.see(i)
-            # direkt aufrufen: <<ListboxSelect>> kommt bei verdeckten Seiten nicht an
-            self._kapitel_anzeigen()
-            for s in self._streifen:
-                s.zeichnen()
-
-    def _kapitel_anzeigen(self):
-        self._bearbeiter_weg(speichern=True)
-        b = self._kap_buch = self._aktuelles_buch(self.kap_liste)
-        t = self.kap_tabelle
-        t.delete(*t.get_children())
-        self._text_setzen(self.kap_text, [])
-        if not b:
-            self._cover_zeigen(self.kap_cover, None)
-            return
-        self.kap_kopf.configure(text=b.name)
-        self._cover_zeigen(self.kap_cover, b)
-        teile = [x for x in (b.autor, f"{b.reihe} {b.nummer}".strip()) if x] + [b.pfad.name]
-        if b.uebersprungen:
-            teile.append(_("No suggestions: {grund}").format(grund=b.uebersprungen))
-        if b.fehler:
-            teile.append(b.fehler)
-        self.kap_info.configure(text="  ·  ".join(teile))
-        aktuell = b.aktuelle_titel()
-        tiefen = b.aktuelle_tiefen()
-        linien = baumlinien(tiefen)
-        for i, (tiefe, titel, href, k) in enumerate(b.zeilen):
-            neu = aktuell.get(k, "")
-            kand = b.kandidaten.get(k)
-            hinweis = "; ".join(kand["reasons"]) if kand and kand["reasons"] and k not in b.neu else ""
-            tags = []
-            if hinweis:
-                tags.append("warn")
-            elif kand and (not neu or neu == titel):
-                hinweis = _("number only, no name found")     # zählt in "ok (n ohne Namen)"
-                tags.append("ohne")
-            if tiefen[i] != tiefe:
-                hinweis = "; ".join(x for x in (_("Level {alt} → {neu}").format(alt=tiefe, neu=tiefen[i]), hinweis)
-                                    if x)
-            t.insert("", "end", iid=str(i), values=(self._linien(linien[i]) + titel, neu if neu != titel else "", hinweis),
-                     tags=tags)
-        self.status.set(f"{b.name}: " + ngettext("{n} entry", "{n} entries", len(b.zeilen)).format(n=len(b.zeilen))
-                        + ", " + ngettext("{n} suggestion.", "{n} suggestions.", len(b.vorschlag)).format(n=len(b.vorschlag)))
-
-    def _kapitel_zeile(self):
-        b, sel = self._kap_buch, self.kap_tabelle.selection()
-        if not (b and sel):
-            return
-        tiefe, titel, href, k = b.zeilen[int(sel[0])]
-        self._text_setzen(self.kap_text, kd.textanfang(b, href))
-        hinweis = self.kap_tabelle.set(sel[0], "hinweis")
-        if hinweis:
-            self.status.set(f"{titel}: {hinweis}")
-
-    def _text_setzen(self, w, zeilen):
-        w.configure(state="normal")
-        w.delete("1.0", "end")
-        w.insert("end", "\n".join(zeilen))
-        w.configure(state="disabled")
-
-    # -- Zellen bearbeiten -------------------------------------------------------
-    def _zelle_bearbeiten(self, ev=None):
-        b, t = self._kap_buch, self.kap_tabelle
-        if not b:
-            return "break"
-        iid = t.identify_row(ev.y) if ev is not None and hasattr(ev, "y") and ev.type == tk.EventType.ButtonPress \
-            else (t.selection() or [None])[0]
-        if iid is None:
-            return "break"
-        self._bearbeiter_weg(speichern=True)
-        t.selection_set(iid)
-        t.see(iid)
-        self.update_idletasks()
-        box = t.bbox(iid, "neu")
-        if not box:
-            return "break"
-        tiefe, titel, href, k = b.zeilen[int(iid)]
-        wert = tk.StringVar(value=t.set(iid, "neu") or titel)
-        f = self._bearbeiter = ttk.Entry(t, textvariable=wert)
-        f.place(x=box[0], y=box[1], width=box[2], height=box[3])
-        f.focus_set()
-        f.select_range(0, "end")
-        f._ziel = (iid, wert)
-        f.bind("<Return>", lambda e: (self._bearbeiter_weg(speichern=True), "break")[1])
-        f.bind("<KP_Enter>", lambda e: (self._bearbeiter_weg(speichern=True), "break")[1])
-        f.bind("<Escape>", lambda e: (self._bearbeiter_weg(speichern=False), "break")[1])
-        f.bind("<FocusOut>", lambda e: self._bearbeiter_weg(speichern=True))
-        return "break"
-
-    def _bearbeiter_weg(self, speichern):
-        f = self._bearbeiter
-        if f is None:
-            return
-        self._bearbeiter = None
-        iid, wert = f._ziel
-        f.destroy()
-        if speichern:
-            self._zeile_setzen(int(iid), wert.get().strip())
-        self.kap_tabelle.focus_set()
-
-    def _zeile_setzen(self, index, text):
-        b = self._kap_buch
-        tiefe, titel, href, k = b.zeilen[index]
-        aktuell = b.aktuelle_titel()
-        alt = aktuell.get(k, titel)
-        neu = text or titel
-        if neu == alt:
-            return
-        if b.entwurf is None:
-            b.entwurf = dict(aktuell)
-        if neu == titel:
-            b.entwurf.pop(k, None)
-        else:
-            b.entwurf[k] = neu
-        self.kap_tabelle.set(str(index), "neu", neu if neu != titel else "")
-        self._geaendert(b)
-        self.status.set(f"{titel}: " + _("changed, not yet applied (Ctrl+Enter)."))
-
-    def _zeile_original(self):
-        for iid in self.kap_tabelle.selection() if self._kap_buch else ():
-            self._zeile_setzen(int(iid), "")
-
-    def ebene(self, richtung):
-        """Markierte Einträge samt Untereinträgen eine Ebene tiefer (+1) oder höher (-1)."""
-        b, t = self._kap_buch, self.kap_tabelle
-        if self._bereich() != "kapitel" or not b:
-            return
-        self._bearbeiter_weg(speichern=True)
-        sel = [int(i) for i in t.selection()]
-        if not sel:
-            self.status.set(_("Select entries in the table, then Tab (down) or Shift+Tab (up)."))
-            return
-        if b.ebenen_sperre:
-            self.status.set(f"{b.name}: " + _("levels cannot be changed - {grund}.").format(grund=b.ebenen_sperre))
-            return
-        try:
-            neu = kd.ebenen_verschieben(b.aktuelle_tiefen(), sel, richtung)
-        except ValueError as e:
-            self.status.set((_("Cannot move down: {grund}.") if richtung > 0 else _("Cannot move up: {grund}."))
-                            .format(grund=e))
-            return
-        basis = b.tiefen_neu if b.tiefen_neu is not None else b.original_tiefen()
-        b.tiefen_entwurf = None if neu == basis else neu
-        oben = t.yview()[0]
-        self._geaendert(b)
-        self._kapitel_anzeigen()
-        t.yview_moveto(oben)
-        t.selection_set([str(i) for i in sel])
-        t.focus(str(sel[0]))
-        self.status.set((ngettext("{n} entry moved down (with sub-entries), not yet applied (Ctrl+Enter).",
-                                  "{n} entries moved down (with sub-entries), not yet applied (Ctrl+Enter).", len(sel))
-                         if richtung > 0 else
-                         ngettext("{n} entry moved up (with sub-entries), not yet applied (Ctrl+Enter).",
-                                  "{n} entries moved up (with sub-entries), not yet applied (Ctrl+Enter).", len(sel)))
-                        .format(n=len(sel)))
-
-    # -- Kapitel: Aktionen -------------------------------------------------------
-    def _kapitel_uebernehmen(self, b):
-        original = {z[3]: z[1] for z in b.zeilen}
-        b.neu = {k: v for k, v in b.aktuelle_titel().items() if v != original.get(k)}
-        b.entwurf = None
-        if b.tiefen_entwurf is not None:
-            b.tiefen_neu = None if b.tiefen_entwurf == b.original_tiefen() else b.tiefen_entwurf
-            b.tiefen_entwurf = None
-        for kand in b.kandidaten.values():              # entschieden = nicht mehr fragwürdig
-            kand["reasons"] = []
-        kd.entscheidungen_merken(b, self.entscheidungen)
-
-    def uebernehmen(self):
-        bereich = self._bereich()
-        if bereich == "woerterbuch":
-            return self.woerterbuch.uebernehmen()
-        if bereich == "metadaten":
-            return self.metadaten.uebernehmen()
-        if bereich != "kapitel" or not self._kap_buch:
-            self.status.set(_("Apply: choose a book in the Chapters or Blurbs area."))
-            return
-        self._bearbeiter_weg(speichern=True)
-        b = self._kap_buch
-        self._kapitel_uebernehmen(b)
-        kd.json_speichern(kd.ENTSCHEIDUNGEN, self.entscheidungen)
-        self._geaendert(b, neu_zeichnen=True)
-        self.status.set(f"{b.name}: " + ngettext("{n} chapter name applied, not yet saved.",
-                                                  "{n} chapter names applied, not yet saved.", len(b.neu)).format(n=len(b.neu)))
-
-    def alle_uebernehmen(self):
-        self._bearbeiter_weg(speichern=True)
-        n = 0
-        for b in self.buecher:
-            if b.vorschlag and b.entwurf is None and b.tiefen_entwurf is None and not b.warnung() and not b.neu:
-                self._kapitel_uebernehmen(b)
-                n += 1
-        kd.json_speichern(kd.ENTSCHEIDUNGEN, self.entscheidungen)
-        self._alles_neu_zeichnen()
-        offen = sum(1 for b in self.buecher if b.warnung())
-        self.status.set(ngettext("Suggestions of {n} book applied.", "Suggestions of {n} books applied.", n).format(n=n) +
-                        (" " + ngettext("Please check {n} book with questionable entries one by one.",
-                                        "Please check {n} books with questionable entries one by one.", offen)
-                         .format(n=offen) if offen else ""))
-
-    def kapitel_vorschlaege(self):
-        b = self._kap_buch
-        if b:
-            b.entwurf, b.neu = None, {}
-            b.tiefen_entwurf = b.tiefen_neu = None
-            self._geaendert(b, neu_zeichnen=True)
-            self.status.set(f"{b.name}: " + _("reset to the suggestions."))
-
-    def kapitel_original(self):
-        b = self._kap_buch
-        if b:
-            b.entwurf = {}
-            b.tiefen_entwurf = b.original_tiefen() if b.aktuelle_tiefen() != b.original_tiefen() else None
-            self._geaendert(b, neu_zeichnen=True)
-            self.status.set(f"{b.name}: " + _("original restored, not yet applied."))
-
-    # ================================================================ Klappentexte
-    # Seit 1.3-beta3 im Bereich Metadaten (ui/area_blurbs.KlappentextTafel); die alten Namen bleiben
-    # als Zugang (Menü, Tests), das Nachschlagen im Hintergrund steht weiter hier.
-    @property
-    def kt_liste(self):
-        return self.metadaten.liste
-
-    @property
-    def seite_klappentext(self):
-        return self.metadaten.seite
-
-    @property
-    def _kt_buch(self):
-        return self.metadaten.buch
-
-    def _kt_aktueller_text(self, b):
-        return self.metadaten.klappentext.aktueller_text(b)
-
-    def _klappentext_anzeigen(self):
-        self.metadaten.klappentext.anzeigen()
-
-    def klappentext_verwerfen(self):
-        b = self.metadaten.buch
-        if b:
-            self.metadaten.klappentext.verwerfen(b)
-            self.metadaten.klappentext.anzeigen()
-            self._geaendert(b)
-            self.metadaten._aktualisieren()
-            self.status.set(f"{b.name}: " + _("blurb restored from the file."))
-
-    def klappentext_aus_calibre(self):
-        self.metadaten.klappentext.aus_calibre()
-
-    # -- Nachschlagen (Hintergrund) ------------------------------------------------
-    def _api_client(self, stumm=False):
-        try:
-            import anthropic
-        except ImportError:
-            if not stumm:
-                messagebox.showerror(_("Look up"), _("The anthropic package is missing.\n\npip install anthropic"),
-                                     parent=self)
-            return None
-        key = self.e.get("api_key") or os.environ.get("ANTHROPIC_API_KEY")
-        if not key:
-            if not stumm:
-                messagebox.showerror(_("Look up"), _("No API key. Settings > Blurbs."), parent=self)
-            return None
-        return anthropic.Anthropic(api_key=key)
-
-    def klappentext_nachschlagen(self):
-        b = self._kt_buch if self._bereich() == "metadaten" else None
-        if not b:
-            self.status.set(_("Look up: choose a book in the Metadata area."))
-            return
-        self._nachschlagen_starten([b], einzeln=True)
-
-    def klappentexte_alle(self):
-        # Bücher, für die Calibre eine Beschreibung hat, nicht nachschlagen (_("From Calibre"))
-        offen = [b for b in self.buecher if not self._kt_aktueller_text(b).strip() and not b.fehler
-                 and not (b.calibre and b.calibre.get("comments"))]
-        if not offen:
-            self.status.set(_("All books have a blurb."))
-            return
-        self._nachschlagen_starten(offen)
-
-    # Zwischenspeicher (blurbs_cache.json), Schlüssel "Titel|Autor":
-    #   {"blurb": …, "source": …}            gefunden
-    #   {"none": true, "versucht": [...]}    nichts gefunden; "frei" bzw. "claude:<Profilkennung>"
-    #   null                                 bis 0.20: im Lexicanum nichts gefunden
-    def _kt_versucht(self, schl):
-        if schl not in self.cache:
-            return set()
-        eintrag = self.cache[schl]
-        if eintrag is None:                 # gilt für das Lexicanum-Profil, wie es auch eingestellt ist
-            return {"claude:lexicanum"}
-        return set(eintrag.get("versucht") or [])
-
-    @staticmethod
-    def _kt_profil_kennung(p):
-        """Ändern sich Seiten, Suche oder Hinweise eines Profils, wird neu nachgeschlagen."""
-        import hashlib
-        inhalt = "|".join(str(p.get(k, "")) for k in ("seiten", "domains", "abschnitt", "thema", "websuche"))
-        return f"{blurbs.profile_id(p)}-{hashlib.sha1(inhalt.encode('utf-8')).hexdigest()[:8]}"
-
-    def _kt_plan(self, buecher):
-        """[(Buch, Schritte, schon versucht)] mit Schritten "frei" und/oder ("claude", Profil) - ohne die schon versuchten."""
-        profile = kei.klappentext_profile(self.e)
-        plan = []
-        for b in buecher:
-            schl = f"{b.titel}|{b.autor}"
-            if (self.cache.get(schl) or {}).get("blurb"):
-                plan.append((b, [], set()))
-                continue
-            versucht, schritte = self._kt_versucht(schl), []
-            if self.e.get("kostenlos", True) and "frei" not in versucht:
-                schritte.append("frei")
-            p = blurbs.profile_for(profile, b.verlag, b.reihe, b.autor)
-            if p and not {"claude:" + self._kt_profil_kennung(p), "claude:" + blurbs.profile_id(p)} & versucht:
-                schritte.append(("claude", p))
-            plan.append((b, schritte, versucht))
-        return plan
-
-    def _nachschlagen_starten(self, buecher, einzeln=False):
-        if self._arbeit:
-            self.status.set(_("Still running: {arbeit}.").format(arbeit=self._arbeit))
-            return
-        plan = self._kt_plan(buecher)
-        mit_claude = sum(1 for __, sch, __ in plan if any(isinstance(x, tuple) for x in sch))
-        mit_frei = sum(1 for __, sch, __ in plan if "frei" in sch)
-        client, ohne_schluessel = None, False
-        if mit_claude:
-            # Ohne Schlüssel nur meckern, wenn es sonst gar nichts zu tun gibt
-            client = self._api_client(stumm=bool(mit_frei))
-            if client is None:
-                if not mit_frei:
-                    return
-                plan = [(b, [x for x in sch if x == "frei"], v) for b, sch, v in plan]
-                mit_claude, ohne_schluessel = 0, True
-        if not einzeln and mit_claude and not messagebox.askyesno(
-                _("Look up all"),
-                ngettext("{n} book without a blurb.", "{n} books without a blurb.", len(plan)).format(n=len(plan))
-                + "\n" + (_("The free sources are asked first; Claude only for what they do not have.") + "\n"
-                          if mit_frei else "")
-                + ngettext("At most {n} book goes to Claude: up to about {kosten} $.",
-                           "At most {n} books go to Claude: up to about {kosten} $.", mit_claude)
-                .format(n=mit_claude, kosten=f"{mit_claude * float(self.e.get('kt_kosten', 0.015)):.2f}")
-                + "\n\n" + _("Start?"),
-                parent=self):
-            return
-        args = SimpleNamespace(model=self.e["modell"])
-        blurbs.MIN_LAENGE = int(self.e.get("kt_min", 80))
-        blurbs.MAX_LAENGE = int(self.e.get("kt_max", 4000))
-        blurbs.GOOGLE_KEY = self.e.get("google_key", "") or ""
-        self._arbeit = _("Looking up blurbs")
-        zaehler = {}                                    # (Quelle, Kennung, Fehlertext) -> Anzahl Bücher
-
-        def arbeit():
-            gefunden = 0
-            for i, (b, schritte, versucht) in enumerate(plan, 1):
-                schl = f"{b.titel}|{b.autor}"
-                treffer = None
-                for schritt in schritte:
-                    self._q.put(("status", _("Looking up ({i}/{n}): {name} …").format(i=i, n=len(plan), name=b.name)))
-                    if schritt == "frei":
-                        bericht = []
-                        treffer, fehler = blurbs.free_look_up(b.titel, b.autor, b.isbn, b.sprache, bericht=bericht)
-                        for eintrag in bericht:
-                            if eintrag[1] != blurbs.TREFFER:
-                                zaehler[eintrag] = zaehler.get(eintrag, 0) + 1
-                        # Ergebnis je Quelle am Buch merken (Tafel Klappentext zeigt es), nur ohne Treffer
-                        b.kt_nachschlag = "" if treffer else "; ".join(self._kt_quelle_text(*x) for x in bericht)
-                        if not fehler and not treffer:  # Netzfehler (auch 429): nicht als versucht merken
-                            versucht.add("frei")
-                    else:
-                        try:
-                            treffer = blurbs.look_up(client, args, b.titel, b.autor, b.reihe, schritt[1], b.sprache)
-                        except Exception as e:
-                            self._q.put(("status", f"{b.name}: " + _("API error ({fehler})").format(fehler=e)))
-                            continue
-                        if not treffer:
-                            versucht.add("claude:" + self._kt_profil_kennung(schritt[1]))
-                    if treffer:
-                        break
-                if treffer:
-                    gefunden += 1
-                    self._q.put(("cache", (schl, treffer)))
-                elif schritte:
-                    self._q.put(("cache", (schl, {"none": True, "versucht": sorted(versucht)})))
-                self._q.put(("klappentext", b.schluessel))
-            text = ngettext("Look-up finished ({n} book).", "Look-up finished ({n} books).", len(plan)) \
-                .format(n=len(plan))
-            if len(plan) > 1:
-                text += " " + ngettext("{n} blurb found.", "{n} blurbs found.", gefunden).format(n=gefunden)
-            quellen = self._kt_zusammenfassung(zaehler, len(plan) > 1)
-            if quellen:
-                text += " " + quellen
-            if ohne_schluessel:
-                text += " " + _("Claude was not asked (no API key).")
-            self._q.put(("fertig", text))
-        threading.Thread(target=arbeit, daemon=True).start()
-
-    @staticmethod
-    def _kt_quelle_text(quelle, art, fehler="", n=None):
-        """Ergebnis einer kostenlosen Quelle als Text (n: Anzahl Bücher für die Zusammenfassung)."""
-        if art == blurbs.FEHLER:
-            return f"{quelle}: {fehler}" + (f" ({n}×)" if n and n > 1 else "")
-        if art == blurbs.KEIN_TEXT:
-            if n is None:
-                return _("{quelle}: book found, but no blurb stored").format(quelle=quelle)
-            return ngettext("{quelle}: no blurb stored for {n} book", "{quelle}: no blurb stored for {n} books",
-                            n).format(quelle=quelle, n=n)
-        if n is None:
-            return _("{quelle}: book not found").format(quelle=quelle)
-        return ngettext("{quelle}: {n} book not found", "{quelle}: {n} books not found", n).format(quelle=quelle, n=n)
-
-    def _kt_zusammenfassung(self, zaehler, mehrere):
-        """Abschlussmeldung je Quelle: Fehler (z. B. Kontingent erschöpft), kein Text, nicht gefunden."""
-        teile = [self._kt_quelle_text(q, art, fehler, n if mehrere else None)
-                 for (q, art, fehler), n in sorted(zaehler.items(), key=lambda x: (x[0][1] != blurbs.FEHLER, x[0]))]
-        return ("; ".join(teile) + ".") if teile else ""
-
-    def _klappentext_ergebnis(self, schluessel):
-        b = self.nach_schluessel.get(schluessel)
-        if not b:
-            return
-        treffer = self.cache.get(f"{b.titel}|{b.autor}") or {}
-        if treffer.get("blurb"):
-            b.klappentext_entwurf = treffer["blurb"]
-            b.klappentext_quelle = treffer.get("source", "")
-            self.status.set(f"{b.name}: " + _("blurb found ({quelle}), not yet applied.")
-                            .format(quelle=blurbs.source_name(b.klappentext_quelle) or "?"))
-        else:
-            self.status.set(f"{b.name}: " + _("no blurb found.")
-                            + (f" ({b.kt_nachschlag})" if getattr(b, "kt_nachschlag", "") else ""))
-        self._geaendert(b)
-        if b is self._kt_buch:
-            self._klappentext_anzeigen()
-            self.metadaten._aktualisieren()
-
-    # ================================================================ Calibre
-    def calibre_importieren(self):
-        """Einmaliger Import aus einer Calibre-Bibliothek (ui/calibre_import, seit 1.3-beta4)."""
-        if not self.buecher:
-            self.status.set(_("Open a folder with books first, then import from Calibre."))
-            return None
-        from bookbench.ui import calibre_import as kci
-        return kci.ImportDialog(self)
-
-    def _calibre_aus(self):
-        """True (mit Hinweis), wenn der Calibre-Abgleich abgeschaltet ist (Einstellungen > Bücher > Calibre)."""
-        if self.e.get("calibre_an", True):
-            return False
-        self.status.set(_("The Calibre comparison is switched off (Settings > Books > Calibre)."))
-        return True
-
-    def calibre_uebernehmen(self):
-        """Reihe/Nummer und Klappentext aus metadata.calibre übernehmen - nur, wo das EPUB nichts hat."""
-        if self._calibre_aus():
-            return
-        if not self.calibre_eintraege:
-            self.status.set(_("No metadata.calibre found (it is in the root folder of the e-reader when Calibre "
-                              "transfers the books). Open the folder on the e-reader or copy the file into the books folder."))
-            return
-        reihen = texte = 0
-        for b in self.buecher:
-            reihe, text = kd.calibre_vorschlag(b)
-            if reihe:
-                b.reihe_neu = reihe
-                b.reihe, b.nummer = reihe
-                reihen += 1
-            if text:
-                b.klappentext_neu = text
-                b.klappentext_quelle = "Calibre"
-                texte += 1
-        self._alles_neu_zeichnen()
-        self.status.set(_("Taken from Calibre: {reihen} series, {texte} blurbs - not yet saved (Ctrl+S).")
-                        .format(reihen=reihen, texte=texte)
-                        if reihen or texte else _("Nothing to take from Calibre; the EPUBs already have everything."))
-
-    # ================================================================ Laden und Speichern
+    # ================================================================ Bücher laden und speichern
     def ordner_oeffnen(self):
         if not self._aenderungen_verwerfen_ok():
             return
-        o = filedialog.askdirectory(parent=self, title=_("Open books folder"),
-                                    initialdir=self.e.get("ordner") or str(Path.home()))
+        o = dialogs.ordner(self, _("Open books folder"), self.e.get("ordner") or str(Path.home()))
         if o:
             self.laden(o)
 
@@ -1502,12 +434,13 @@ class App(tk.Tk):
             ergebnis = []
             for i, f in enumerate(dateien, 1):
                 if i % 5 == 1:
-                    self._q.put(("status", _("Reading books … {i}/{n}").format(i=i, n=len(dateien))))
+                    text = _("Reading books … {i}/{n}").format(i=i, n=len(dateien))
+                    threads.im_hauptthread(lambda t=text: self.status.set(t))
                 ergebnis.append(kd.buch_laden(f, einst[0], einst[1], einst[2]))
             wurzel, eintraege = kd.calibre_finden(ordner) if calibre else (None, [])
             kd.calibre_zuordnen(ergebnis, wurzel, eintraege)
-            self._q.put(("geladen", (ergebnis, wurzel, eintraege)))
-        threading.Thread(target=arbeit, daemon=True).start()
+            threads.im_hauptthread(lambda: self._geladen((ergebnis, wurzel, eintraege)))
+        threads.starten(arbeit)
 
     def _geladen(self, daten):
         buecher, self.calibre_wurzel, self.calibre_eintraege = daten
@@ -1522,9 +455,7 @@ class App(tk.Tk):
         self._arbeit = None
         self._alles_neu_zeichnen()
         self.ordner_pruefen()
-        if self._start_buch:
-            self._buch_wieder_waehlen(self._start_buch)
-            self._start_buch = None
+        self._start_buch = None              # Buch wieder wählen: kommt mit den Bereichen (2.0-beta2)
         fehler = sum(1 for b in buecher if b.fehler)
         sicherung = Path(self.e["sicherungsordner"]).resolve()
         hinweis = " " + _("The backup folder is inside the books folder - better put it elsewhere (Settings).") \
@@ -1536,6 +467,21 @@ class App(tk.Tk):
         self.status.set(ngettext("{n} book read.", "{n} books read.", len(buecher)).format(n=len(buecher))
                         + (" " + _("{n} not readable.").format(n=fehler) if fehler else "")
                         + cal_text + hinweis)
+
+    def bibliothek_schliessen(self, still=False):
+        """Geöffneten Ordner schließen (ungespeicherte Änderungen nach Rückfrage verwerfen)."""
+        if self._arbeit or not self.ordner:
+            return
+        if not still and not self._aenderungen_verwerfen_ok():
+            return
+        self.ordner = None
+        self.buecher, self.nach_schluessel = [], {}
+        self.calibre_wurzel, self.calibre_eintraege = None, []
+        self._ordner_weg = True                      # damit ordner_pruefen die Leiste wegnimmt
+        self.ordner_pruefen()
+        self._alles_neu_zeichnen()
+        if not still:
+            self.status.set(_("Library closed."))
 
     def _nicht_erreichbar(self, buecher):
         """Text, wenn der Ordner bzw. Bücher daraus nicht mehr da sind (E-Reader ausgeworfen oder
@@ -1553,7 +499,6 @@ class App(tk.Tk):
                                   "again and save, or discard them with Reload.")
 
     def speichern(self):
-        self._bearbeiter_weg(speichern=True)
         faellig = [b for b in self.buecher if b.neu or b.klappentext_neu is not None or b.reihe_neu is not None
                    or b.tiefen_neu is not None or b.cover_neu is not None or b.meta_neu is not None]
         rot = sum(1 for b in self.buecher if b.stand() == "rot")
@@ -1564,7 +509,7 @@ class App(tk.Tk):
             return
         grund = self._nicht_erreichbar(faellig)
         if grund:
-            messagebox.showwarning(_("Save"), grund, parent=self)
+            dialogs.warnung(self, _("Save"), grund)
             self.status.set(_("Not saved: the books are not reachable."))
             return
         ok, fehler = 0, []
@@ -1587,19 +532,24 @@ class App(tk.Tk):
             self.nach_schluessel[neu.schluessel] = neu
             ok += 1
         self._alles_neu_zeichnen()
-        if ok:
-            self.kobo.vermerken(self.ordner)
+        kobo = self.bereich_obj("kobo")
+        if ok and hasattr(kobo, "vermerken"):
+            kobo.vermerken(self.ordner)
         if fehler:
-            messagebox.showerror(_("Save"), _("Not saved:") + "\n\n" + "\n".join(fehler), parent=self)
+            dialogs.fehler(self, _("Save"), _("Not saved:") + "\n\n" + "\n".join(fehler))
         self.status.set(ngettext("{n} book saved, backups in {ordner}.", "{n} books saved, backups in {ordner}.", ok)
                         .format(n=ok, ordner=self.e["sicherungsordner"]) +
                         (" " + _("{n} with changes not yet applied.").format(n=rot) if rot else ""))
 
+    def _offen(self):
+        return sum(1 for b in self.buecher if b.stand() in ("rot", "gelb"))
+
     def _aenderungen_verwerfen_ok(self):
-        offen = sum(1 for b in self.buecher if b.stand() in ("rot", "gelb"))
-        return not offen or messagebox.askyesno(
-            _("Changes"), ngettext("{n} book has unsaved changes. Discard them?",
-                                   "{n} books have unsaved changes. Discard them?", offen).format(n=offen), parent=self)
+        offen = self._offen()
+        return not offen or dialogs.frage(
+            self, _("Changes"), ngettext("{n} book has unsaved changes. Discard them?",
+                                         "{n} books have unsaved changes. Discard them?", offen).format(n=offen),
+            standard=False)
 
     # ================================================================ Hilfsthread
     def hintergrund(self, name, arbeit, nachher=None):
@@ -1623,363 +573,208 @@ class App(tk.Tk):
                     self.status.set(text)
                 if nachher:
                     nachher()
-            self._q.put(("rueckruf", fertig))
-        threading.Thread(target=lauf, daemon=True).start()
-
-    def _abholen(self):
-        try:
-            while True:
-                art, daten = self._q.get_nowait()
-                if art == "status":
-                    self.status.set(daten)
-                elif art == "geladen":
-                    self._geladen(daten)
-                elif art == "cache":
-                    self.cache[daten[0]] = daten[1]
-                    kd.json_speichern(kd.KLAPPENTEXT_CACHE, self.cache)
-                elif art == "klappentext":
-                    self._klappentext_ergebnis(daten)
-                elif art == "fertig":
-                    self._arbeit = None
-                    self.status.set(daten)
-                elif art == "rueckruf":
-                    daten()
-        except queue.Empty:
-            pass
-        self.after(100, self._abholen)
+            threads.im_hauptthread(fertig)
+        threads.starten(lauf)
 
     # ================================================================ Anzeige
-    def _geaendert(self, b, neu_zeichnen=False):
-        """Ein Buch hat sich geändert: Listen, Streifen, Zähler, Titel nachziehen."""
-        if self.tabelle.exists(b.schluessel):
-            self.tabelle.item(b.schluessel, values=[self._zelle(b, c) for c, __, __ in SPALTEN])
-        if neu_zeichnen and b is self._kap_buch:
-            sel = self.kap_tabelle.selection()
-            self._kapitel_anzeigen()
-            if sel and self.kap_tabelle.exists(sel[0]):
-                self.kap_tabelle.selection_set(sel[0])
-                self.kap_tabelle.see(sel[0])
-        for s in self._streifen:
-            s.zeichnen()
+    def _alles_neu_zeichnen(self):
+        for b in self.bereiche:
+            b.neu_zeichnen()
         self._zaehler()
 
-    def _alles_neu_zeichnen(self):
-        vorher = self._aktuelles_buch(self.kap_liste)
-        self._listen_buch = {self._anzeigename(b): b for b in self.buecher}
-        sortiert = self._links_sortiert()
-        alt_b = self.nach_schluessel.get(vorher.schluessel) if vorher else None
-        self._liste_fuellen(self.kap_liste, sortiert, alt_b, self._kapitel_anzeigen)
-        self.metadaten.liste_fuellen(sortiert)
-        self._tabelle_fuellen()
-        if getattr(self, "vorschau", None) and self._bereich() == "vorschau":
-            self.vorschau.liste_fuellen()
-        for s in self._streifen:
-            s.zeichnen()
-        self._zaehler()
+    def bibliothek_marken(self, b):
+        """Marken in der Bibliothek: alles, was die Bereiche melden (Kapitel und Metadaten)."""
+        if b.fehler:
+            return [("unlesbar", b.fehler)]
+        meta = self.bereich_obj("metadaten")
+        return [m for m in km.kapitel(b) if m[0] != "vorschlag"] + (meta.marken_buch(b) if hasattr(meta, "marken_buch")
+                                                                    else [])
+
+    def _seitenleiste_marken(self, b):
+        """[(kennung, anzahl)] eines Bereichs: die Bereiche liefern sie selbst; Bibliothek und Kapitel
+        hier, solange es sie nur als Platzhalter gibt."""
+        if not isinstance(b, kar.Platzhalter):
+            return b.marken()
+        if b.kennung == "bibliothek":
+            return [("unlesbar", sum(1 for x in self.buecher if x.fehler)), ("ungespeichert", self._offen())]
+        if b.kennung == "kapitel":
+            return [m for m in km.zaehlen(self.buecher, km.kapitel) if m[0] != "unlesbar"]
+        return []
 
     def _zaehler(self):
-        """Reitertexte und Marken der Seitenleiste (seite.nav_marken, ui/markers). Der Text behält
-        Zahl und ⚠ als Rückfall; die Leiste zeigt statt dessen je Marke Piktogramm und Anzahl."""
-        n = len(self.buecher)
+        """Seitenleiste (Marken je Bereich) und Fenstertitel."""
+        if not hasattr(self, "leiste"):
+            return
+        eintraege = []
+        for b in self.bereiche:
+            marken = [(k, n) for k, n in self._seitenleiste_marken(b) if km.sichtbar(self.e, "seitenleiste", k)]
+            eintraege.append({"id": b.kennung, "name": b.name(), "symbol": b.symbol, "marken": marken,
+                              "zaehler": b.zaehler(), "kinder": b.kinder()})
+        self.leiste.setzen(eintraege)
+        self.setWindowTitle(f"{PROGRAMM} {VERSION}" + (" *" if self._offen() else ""))
 
-        def zaehlen(marken_fn):
-            erg = {}
-            for b in self.buecher:
-                for k, __ in marken_fn(b):
-                    erg[k] = erg.get(k, 0) + 1
-            return list(erg.items())
-        kap = zaehlen(self.kapitel_marken)
-        warn = sum(1 for b in self.buecher if b.warnung())
-        unlesbar = sum(1 for b in self.buecher if b.fehler)
-        offen = sum(1 for b in self.buecher if b.stand() in ("rot", "gelb"))
-        self.seite_bibliothek.nav_marken = [("unlesbar", unlesbar), ("ungespeichert", offen)]
-        self.seite_kapitel.nav_marken = [m for m in kap if m[0] != "unlesbar"]
-        self.metadaten.seite.nav_marken = [m for m in self.metadaten.zaehlen() if m[0] != "unlesbar"]
-        self.nb.tab(self.seite_bibliothek, text=_("Library ({n})").format(n=n) if n else _("Library"))
-        self.nb.tab(self.seite_kapitel, text=_("Chapters ({n} ⚠)").format(n=warn) if warn else _("Chapters"))
-        meta = self.metadaten.warnungen() if self.buecher else 0
-        self.nb.tab(self.metadaten.seite, text=_("Metadata ({n} ⚠)").format(n=meta) if meta else _("Metadata"))
-        self.navi.aktualisieren()
-        self.title(f"{PROGRAMM} {VERSION}" + (" *" if offen else ""))
-
-    def _bereich(self):
-        try:
-            w = self.nb.nametowidget(self.nb.select())
-        except (KeyError, tk.TclError):
-            return "bibliothek"
-        seiten = {self.seite_kapitel: "kapitel",
-                  self.kobo.seite: "kobo", self.woerterbuch.seite: "woerterbuch"}
-        if getattr(self, "metadaten", None):
-            seiten[self.metadaten.seite] = "metadaten"
-        if getattr(self, "vorschau", None):
-            seiten[self.vorschau.seite] = "vorschau"
-        return seiten.get(w, "bibliothek")
-
-    def _bereich_gewechselt(self):
-        self._bearbeiter_weg(speichern=True)
-        name = self._bereich()
-        self.e["bereich_zuletzt"] = name
-        self._wz_bereich_bauen(name)
-        if name == "kapitel" and not self.kap_liste.curselection() and self.kap_liste.size():
-            self.kap_liste.selection_set(0)
-            self._kapitel_anzeigen()
-        if name == "metadaten":
-            self.metadaten.beim_zeigen()
-        if name == "kobo":
-            self.kobo.anzeigen()
-        if name == "woerterbuch":
-            self.woerterbuch.beim_zeigen()
-        if name == "vorschau":
-            self.vorschau.beim_zeigen()
-        self.after_idle(lambda: [s.zeichnen() for s in self._streifen])
-
-    def _mark_farben(self):                       # für keller_streifen
-        return MARK["dunkel" if self.dark_mode.get() else "hell"]
-
-    def _streifen_umschalten(self):
-        self.e["status_liste"] = self.status_liste.get()
-        for s in self._streifen:
-            s.umschalten()
-
-    def _darstellung(self):
-        self.e["darstellung"] = self.darstellung.get()         # sonst setzt der Einstellungsdialog zurück
-        self.dark_mode.set(kth.ist_dunkel(self.darstellung.get()))
-        self._theme_anwenden()
-
-    def _theme_anwenden(self):
-        dunkel = self.dark_mode.get()
-        p = kth.anwenden(self, dunkel)
-        self._farben = p
-        st = ttk.Style(self)
-        st.configure("Klein.TButton", padding=(6, 1), font=kth.schrift(9))
-        # Bibliothek: Statusspalte #0 ohne Platz für das Aufklapp-Dreieck (es gibt keine Unterzeilen)
-        st.layout("Bibliothek.Treeview.Item", [("Treeitem.padding", {"sticky": "nswe", "children": [
-            ("Treeitem.image", {"side": "left", "sticky": ""}), ("Treeitem.text", {"sticky": "nswe"})]})])
-        for k, symbol in self._wz:
-            self._knopf_faerben(k, symbol)
-        for r in self._rahmen_liste:
-            r.configure(highlightbackground=p["rahmen"], highlightcolor=p["rahmen"], bg=p["feld"])
-        modus = "dunkel" if dunkel else "hell"
-        self._linien_font = None                    # Schrift der Tabelle kann sich mit dem Thema ändern
-        for t in (self.tabelle, self.kap_tabelle):
-            t.tag_configure("warn", background=WARNZEILE[modus])
-            t.tag_configure("ohne", background=OHNEZEILE[modus])
-        self.navi.farben(dunkel)
-        if hasattr(self, "kobo"):
-            self.kobo.farben(modus, WARNZEILE)
-        self.hinweisleiste.configure(bg=WARNZEILE[modus])
-        self.hinweis_text.configure(bg=WARNZEILE[modus], fg=p["fg"])
-        if hasattr(self, "woerterbuch"):
-            self.woerterbuch.farben()
-        if hasattr(self, "cover"):
-            self.cover.farben()
-        if getattr(self, "vorschau", None):
-            self.vorschau.farben()
-        if self._hilfe is not None and self._hilfe.winfo_exists():
+    # -- Darstellung ----------------------------------------------------------------------
+    def darstellung_setzen(self, wert):
+        self.darstellung = self.e["darstellung"] = wert
+        theme.anwenden(QApplication.instance(), wert)
+        kmk.leeren()
+        self._symbole_auffrischen()
+        self._hinweis_faerben()
+        if self._hilfe is not None:
             self._hilfe.farben()
-        for s in self._streifen:
-            s.zeichnen()
+        act = self._darstellungs_aktionen.get(wert)
+        if act and not act.isChecked():
+            act.setChecked(True)
+        self._alles_neu_zeichnen()
+        self.leiste.update()
 
-    # ================================================================ Sonstiges
-    def einstellungen_geaendert(self):
+    def _tooltips_anwenden(self):
+        self.tooltips.an = bool(self.e.get("tooltips", True))
+        QApplication.instance().styleHints().setToolTipWakeUpDelay(int(self.e.get("tooltip_verzoegerung", 600)))
+
+    # ================================================================ Sprache
+    def sprache_setzen(self, code):
+        """Neue Sprache sofort: Übersetzung umstellen, Oberfläche neu aufbauen. Bücher, offene Änderungen,
+        Bereich und Auswahl bleiben (Zustand liegt außerhalb der Widgets)."""
+        i18n.einstellen(code)
+        qt_uebersetzung(QApplication.instance())
+        hilfe_offen = self._hilfe.aktuelles_thema() if self._hilfe is not None and self._hilfe.isVisible() else None
+        if self._hilfe is not None:
+            self._hilfe.close()
+            self._hilfe = None
+        self.oberflaeche_bauen()
+        if hilfe_offen:
+            self.hilfe_zeigen(hilfe_offen)
+        self.status.set(_("Language: {sprache}").format(sprache=i18n.SPRACHEN.get(i18n.aktiv(), i18n.aktiv())))
+
+    # ================================================================ Einstellungen
+    def einstellungen(self, seite=None):
+        from bookbench.ui import settings as kst
+        kst.EinstellungsDialog(self, seite).exec()
+
+    def einstellungen_geaendert(self, sprache_alt=None):
+        """Nach OK im Einstellungsdialog (oder Import/Zurücksetzen): alles anwenden und speichern."""
         blurbs.GOOGLE_KEY = self.e.get("google_key", "") or ""
-        self.darstellung.set(self.e["darstellung"])
-        self.tooltips_an.set(self.e["tooltips"])
-        if self.status_liste.get() != self.e["status_liste"]:
-            self.status_liste.set(self.e["status_liste"])
-            self._streifen_umschalten()
-        self.cover_an.set(self.e["cover"])
-        self._cover_umschalten()                         # auch für eine neue Höhe
-        calibre_hinweis = self._calibre_umschalten()
-        self.metadaten.felder_bauen()
-        self.metadaten.klappentext.knoepfe_bauen()
-        self.metadaten.anzeigen()
-        self._wz_bereich_bauen(self._bereich())
-        if self.navi.ausgeklappt != bool(self.e.get("navi_ausgeklappt", True)):
-            self.navi.umschalten()
-        self._darstellung()
-        self.tabellen_streifen.vergessen()               # Status-Piktogramme an/aus (Einstellung marken_aus)
-        for st in self._streifen:
-            st.zeichnen()
-        self._zaehler()
-        if self.vorschau:
-            self.vorschau.koreader_suchen(still=True)
-            self.vorschau.anzeigen()
-            if self.vorschau.werkbank and self.vorschau.werkbank.laeuft():
-                self.vorschau.werkbank_starten(still=True)       # Gerät/KOReader evtl. geändert
-        kei.speichern(self._e_zum_speichern())
-        self.status.set(_("Settings saved. Chapter settings apply after reloading (F5).")
-                        + (" " + calibre_hinweis if calibre_hinweis else ""))
+        if self.leiste.ausgeklappt != bool(self.e.get("navi_ausgeklappt", True)):
+            self.leiste.umschalten()
+        self._tooltips_anwenden()
+        neu = self.e.get("sprache") or "auto"
+        if sprache_alt is not None and neu != sprache_alt:
+            self.darstellung = self.e.get("darstellung") or "system"
+            theme.anwenden(QApplication.instance(), self.darstellung)
+            kmk.leeren()
+            self.sprache_setzen(neu)                 # baut ohnehin alles neu
+        else:
+            self.oberflaeche_bauen()                 # Menüs (Haken), Werkzeugleiste, Bereiche
+            self.darstellung_setzen(self.e.get("darstellung") or "system")
+        kei.speichern(self.e)
+        self.status.set(_("Settings saved. Chapter settings apply after reloading (F5)."))
 
-    def _calibre_umschalten(self):
-        """Calibre-Abgleich aus: Calibre-Daten sofort vergessen; an: wirkt nach dem Neu-Einlesen (Rückgabe:
-        Hinweis dazu oder None)."""
-        an = bool(self.e.get("calibre_an", True))
-        if not an and self.calibre_eintraege:
-            self.calibre_wurzel, self.calibre_eintraege = None, []
-            for b in self.buecher:
-                b.calibre = None
-                if b.reihe_quelle == "Calibre":
-                    b.reihe, b.nummer, b.reihe_quelle = b.reihe_datei[0], b.reihe_datei[1], ""
-            self._alles_neu_zeichnen()
-        elif an and self.ordner and not self.calibre_eintraege and kd.calibre_finden(self.ordner)[1]:
-            return _("Calibre comparison on: reload (F5) to read metadata.calibre.")
-        return None
-
-    def _e_zum_speichern(self):
-        self.e.update(darstellung=self.darstellung.get(), tooltips=self.tooltips_an.get(),
-                      status_liste=self.status_liste.get())
-        return self.e
-
+    # ================================================================ Hilfe
     def hilfe_zeigen(self, kennung):
         """Hilfe mit einem bestimmten Thema öffnen (z. B. aus den Einstellungen)."""
-        if self._hilfe is not None and self._hilfe.winfo_exists():
-            self._hilfe.zeige(kennung)
-        else:
-            self._hilfe = khi.HilfeFenster(self, kennung)
+        from bookbench.ui import help as khi
+        if self._hilfe is None:
+            f = self._hilfe = khi.HilfeFenster(self)
+            # beim Schließen vergessen - aber nur, wenn inzwischen kein neues Fenster da ist (Sprachwechsel)
+            f.destroyed.connect(lambda *a, f=f: setattr(self, "_hilfe", None) if self._hilfe is f else None)
+        self._hilfe.zeige(kennung)
+        self._hilfe.show()
+        self._hilfe.raise_()
+        self._hilfe.activateWindow()
 
     def hilfe(self):
-        thema = khi.thema(self._bereich())
-        if thema == "vorschau" and getattr(self, "vorschau", None):
-            thema = khi.thema(self.vorschau.hilfe_thema())          # Unterseiten Bookends/Bookshelf (1.4-beta2)
-        if self._hilfe is not None and self._hilfe.winfo_exists():
-            self._hilfe.zeige(thema)
-        else:
-            self._hilfe = khi.HilfeFenster(self, thema)
+        b = self.bereich_obj(self._aktuell)
+        self.hilfe_zeigen(help_topics.thema(b.hilfe_thema() if b else "ueberblick"))
 
-    def _cover_aktion(self, name):
-        """Menü: in den Bereich Metadaten (mit dem Cover) wechseln, mit dem gewählten Buch, und ausführen."""
-        if self._bereich() != "metadaten":
-            b = self._gewaehltes_buch() if self._bereich() == "kapitel" else None
-            self.nb.select(self.metadaten.seite)
-            self.update_idletasks()
-            if b:
-                self.metadaten.auswaehlen(b)
-        getattr(self.cover, name)()
-
-    def _metadaten_aktion(self, name):
-        """Menü: in den Bereich Metadaten wechseln (mit dem gewählten Buch) und ausführen."""
-        if self._bereich() != "metadaten":
-            b = self._gewaehltes_buch()
-            self.nb.select(self.metadaten.seite)
-            self.update_idletasks()
-            if b:
-                self.metadaten.auswaehlen(b)
-        getattr(self.metadaten, name)()
-
-    def bereich_zeigen(self, name):
-        seiten = {"bibliothek": self.seite_bibliothek, "kapitel": self.seite_kapitel,
-                  "klappentexte": self.metadaten.seite, "cover": self.metadaten.seite, "kobo": self.kobo.seite,
-                  "metadaten": self.metadaten.seite,
-                  "woerterbuch": self.woerterbuch.seite}
-        if self.vorschau:
-            seiten["vorschau"] = self.vorschau.seite
-        if name in seiten:
-            self.nb.select(seiten[name])
-
-    def _buch_wieder_waehlen(self, pfad):
-        b = next((b for b in self.buecher if str(b.pfad) == str(pfad)), None)
-        if not b:
-            return
-        if self.tabelle.exists(b.schluessel):
-            self.tabelle.selection_set(b.schluessel)
-            self.tabelle.see(b.schluessel)
-        self._auswaehlen(self.kap_liste, b)
-        self.metadaten.auswaehlen(b)
-
-    def _gewaehltes_buch(self):
-        bereich = self._bereich()
-        if bereich == "kapitel":
-            return self._kap_buch
-        if bereich == "metadaten":
-            return self.metadaten.buch
-        sel = self.tabelle.selection()
-        return self.nach_schluessel.get(sel[0]) if sel else None
-
-    def sprache_wechseln(self, alt):
-        """Neue Sprache: Bookbench startet neu, mit Ordner, Bereich, Buch und Fenster. Viele Texte
-        (Ansichten, Spalten, Filter) werden beim Import übersetzt, ein Neuaufbau im laufenden
-        Programm würde sie in der alten Sprache lassen."""
-        self._bearbeiter_weg(speichern=True)
-        offen = sum(1 for b in self.buecher if b.stand() in ("rot", "gelb"))
-        n = self.woerterbuch.offen()
-        fragen = []
-        if offen:
-            fragen.append(ngettext("{n} book has unsaved changes.", "{n} books have unsaved changes.", offen).format(n=offen))
-        if n:
-            fragen.append(ngettext("{n} dictionary entry is changed in the form but not applied.",
-                                   "{n} dictionary entries are changed in the form but not applied.", n).format(n=n))
-        if fragen and not messagebox.askyesno(
-                _("Language"), "\n".join(fragen) + "\n\n" + _("Restart now and lose them? (No: the language "
-                                                               "changes at the next start.)"), parent=self):
-            self.status.set(_("The new language applies at the next start."))
-            return
-        self.neu_starten()
-
+    # ================================================================ Beenden
     def neu_starten(self):
-        """Bookbench neu starten (Sprachwechsel, Update), mit Ordner, Bereich, Buch und Fenster.
+        """Bookbench neu starten (nach einem Update unter Linux), mit Ordner, Bereich und Fenster.
         Fragt nichts mehr; offene Änderungen vorher klären (schliessen_ok)."""
-        b = self._gewaehltes_buch()
         start = Path(__file__).resolve().parent.parent / "start.py"
         befehl = [sys.executable] if getattr(sys, "frozen", False) else [sys.executable, str(start)]
         if self.ordner:
             befehl.append(self.ordner)
-        befehl += ["--bereich", self._bereich(), "--geometrie", self.geometry()]
-        if b:
-            befehl += ["--buch", str(b.pfad)]
+        befehl += ["--bereich", self._aktuell, "--geometrie", self.geometrie(mit_ort=True)]
         self._einstellungen_sichern()
         self._popen(befehl)
-        self.destroy()
+        self._ohne_rueckfrage = True
+        self.close()
 
     def _einstellungen_sichern(self):
-        self.e["fenster"] = self.geometry().split("+")[0]
-        self.e["spalten"] = self.tabellen_spalten.breiten()
+        if not self.isMaximized() and not self.isFullScreen():
+            self.e["fenster"] = self.geometrie()
         try:
-            kei.speichern(self._e_zum_speichern())
+            kei.speichern(self.e)
         except OSError:
             pass
 
     def schliessen_ok(self):
-        """Darf Bookbench jetzt zugehen? Fragt nach ungespeicherten Büchern, nicht übernommenen
-        Wörterbuch-Einträgen und ans Auswerfen des E-Readers (Beenden, Update)."""
-        self._bearbeiter_weg(speichern=True)
-        offen = sum(1 for b in self.buecher if b.stand() in ("rot", "gelb"))
-        if offen and not messagebox.askyesno(
-                _("Quit"), ngettext("{n} book has unsaved changes. Quit anyway?",
-                                    "{n} books have unsaved changes. Quit anyway?", offen).format(n=offen), parent=self):
+        """Darf Bookbench jetzt zugehen? Fragt nach ungespeicherten Büchern und dem, was die Bereiche
+        offen haben (Beenden, Update)."""
+        offen = self._offen()
+        if offen and not dialogs.frage(
+                self, _("Quit"), ngettext("{n} book has unsaved changes. Quit anyway?",
+                                          "{n} books have unsaved changes. Quit anyway?", offen).format(n=offen),
+                standard=False):
             return False
-        n = self.woerterbuch.offen()
-        if n and not messagebox.askyesno(
-                _("Quit"), ngettext("{n} dictionary entry is changed in the form but not applied. Quit anyway?",
-                                    "{n} dictionary entries are changed in the form but not applied. Quit anyway?", n)
-                .format(n=n), parent=self):
-            return False
-        offen = self.vorschau.ungespeichert() if getattr(self, "vorschau", None) else []
-        if offen and not messagebox.askyesno(
-                _("Quit"), _("The workbench has unsaved changes ({liste}) that are not in the profile. Quit anyway?")
-                .format(liste=", ".join(offen)), parent=self):
-            return False
-        return self.kobo.beenden_ok()
+        return all(b.schliessen_ok() for b in self.bereiche)
 
-    def beenden(self):
-        if not self.schliessen_ok():
+    def closeEvent(self, ev):
+        if not getattr(self, "_ohne_rueckfrage", False) and not self.schliessen_ok():
+            ev.ignore()
             return
-        self._einstellungen_sichern()
-        if getattr(self, "vorschau", None):
-            self.vorschau.beenden()                     # KOReader im Hintergrund (Werkbank)
-        self.destroy()
+        if not getattr(self, "_ohne_rueckfrage", False):
+            self._einstellungen_sichern()
+        for b in self.bereiche:
+            b.beenden()
+        if self._hilfe is not None:
+            self._hilfe.close()
+        ev.accept()
+
+
+_uebersetzer = {}
+
+
+def qt_uebersetzung(app):
+    """Qt-eigene Texte (OK, Abbrechen, Ja/Nein, Dateidialog) in der Sprache von Bookbench."""
+    alt = _uebersetzer.pop("qt", None)
+    if alt is not None:
+        app.removeTranslator(alt)
+    code = i18n.aktiv()
+    if code == "en":
+        return
+    t = QTranslator(app)
+    if t.load(QLocale(code), "qtbase", "_", QLibraryInfo.path(QLibraryInfo.TranslationsPath)):
+        app.installTranslator(t)
+        _uebersetzer["qt"] = t
+
+
+def anwendung(argv=None):
+    """QApplication mit Name, Übersetzung und Hilfsthread-Boten (auch für Tests)."""
+    app = QApplication.instance() or QApplication(argv if argv is not None else sys.argv[:1])
+    app.setApplicationName(PROGRAMM)
+    app.setApplicationVersion(VERSION)
+    app.setDesktopFileName("bookbench")          # Wayland: Fenster gehört zu bookbench.desktop (Symbol)
+    theme.merken_beim_start(app)
+    threads.einrichten()
+    qt_uebersetzung(app)
+    return app
 
 
 def main():
-    import argparse
     ap = argparse.ArgumentParser(description=f"{PROGRAMM} {VERSION}")
     ap.add_argument("ordner", nargs="?", help=_("books folder to open"))
-    ap.add_argument("--bereich", help=argparse.SUPPRESS)        # für den Neustart beim Sprachwechsel
+    ap.add_argument("--bereich", help=argparse.SUPPRESS)        # für den Neustart nach einem Update
     ap.add_argument("--buch", help=argparse.SUPPRESS)
     ap.add_argument("--geometrie", help=argparse.SUPPRESS)
     a = ap.parse_args()
-    App(a.ordner, a.bereich, a.buch, a.geometrie).mainloop()
+    app = anwendung()
+    w = App(a.ordner, a.bereich, a.buch, a.geometrie)
+    w.show()
+    sys.exit(app.exec())
 
 
 if __name__ == "__main__":
+    os.environ.setdefault("QT_ENABLE_HIGHDPI_SCALING", "1")
     main()

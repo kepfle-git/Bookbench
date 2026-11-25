@@ -1,1173 +1,256 @@
 # -*- coding: utf-8 -*-
 """
-help.py - Versionsnummer und Hilfefenster von Bookbench.
+help.py - Hilfefenster (Qt): Suche und Gliederung links, Text rechts, Zurück, Pfad über dem Text.
+Die Texte stehen in ui/help_topics.py; Auszeichnung: **fett**, Aufzählungen mit "-", [[kennung]] als
+Verweis (anklickbar, zeigt den Titel des Ziels).
 
-  VERSION        bei jeder Änderung hochzählen
-  THEMEN         (Elternthema, Kennung, Titel, Text), übersetzt; **fett**, Aufzählungen mit "-",
-                 [[kennung]] = Verweis auf ein anderes Thema (zeigt dessen Titel, anklickbar)
-  thema(bereich) Kennung des Themas zu einem Bereich
-  HilfeFenster   Suche und Gliederung links, Text rechts; zeige(kennung) springt hin
+  HilfeFenster(app)   zeige(kennung) springt hin; aktuelles_thema()
 
-Die Kennungen sind die Bereiche von App._bereich() bzw. feste Namen; "einst_<seite>" gehört zur
-Seite <seite> des Einstellungsdialogs. Sie ändern sich mit der Sprache nicht.
+Der Text wird als HTML in einen QTextBrowser gesetzt; Verweise sind Links "thema:<kennung>", die das
+Fenster selbst auswertet (setOpenLinks(False)). Suchtreffer bekommen einen gelben Hintergrund.
 """
+import html
 import re
-import tkinter as tk
-from tkinter import ttk
 
-import keller_theme as kth
-from bookbench.i18n import _
+from PySide6.QtCore import Qt, QUrl
+from PySide6.QtGui import QColor, QKeySequence, QShortcut, QTextCursor, QTextDocument
+from PySide6.QtWidgets import (QDialog, QHBoxLayout, QLabel, QLineEdit, QPushButton, QSplitter, QTextBrowser,
+                               QTreeWidget, QTreeWidgetItem, QVBoxLayout, QWidget)
 
-PROGRAMM = "Bookbench"
-VERSION = "1.4"
+from bookbench.i18n import _, ngettext
+from bookbench.ui import help_topics as ht
+from bookbench.ui import theme
+from bookbench.version import PROGRAMM
 
-# (Elternthema, Kennung, Titel, Text). Übersetzt beim Import. Text: **fett**, Aufzählungen mit "-",
-# [[kennung]] = Verweis.
-THEMEN = [
-    ("", "ueberblick", _("Overview"), _("""
-Bookbench edits EPUB and KEPUB files for KOReader: **chapter names** and levels in the table of contents, **blurbs**, **covers** and **metadata** (title, authors, series …). It also manages your own **dictionaries**, backs up the KOReader settings of the **e-reader** and, on Linux and macOS, shows a book in a **preview** with the settings from the e-reader.
+TREFFER = {"hell": "#f5d76e", "dunkel": "#7a6420"}
 
-**Workflow**
-- Open a folder (Ctrl+O): the books folder on the e-reader, a copy on the computer or the Calibre library.
-- In **Chapters** check the suggestions, change them if needed, apply them.
-- In **Metadata** (with blurb and cover) fill in what is missing, apply it.
-- **Save** (Ctrl+S) writes all applied changes to the files. A backup of every file is made first.
 
-Only the table of contents and the metadata (and the cover image) are changed, never the book text. Reading positions and highlights in KOReader stay valid.
-
-**More**
-- [[status]] - what the coloured dots and the small pictograms mean
-- [[tasten]]
-- [[dateien]] - where settings, caches and backups are
-- [[kosten]] - what is free, what costs money, what leaves the computer
-- [[bereiche]] - one chapter per area
-- [[einstellungen]] - every setting explained
-- [[fehler]]
-""")),
-    ("ueberblick", "status", _("Status and markers"), _("""
-The strip to the right of the book lists shows the status of each book:
-- **red** ●: changed, not yet applied
-- **yellow** ●: applied, not yet saved
-- **green** ●: saved (since opening)
-
-Next to the dot small **pictograms** show what is missing or needs a look - each list only those that belong to its area. The **sidebar** shows the same pictograms per area, each with the number of books.
-
-- **Torn page** (red): the file cannot be read.
-- **Question mark** (orange): questionable chapter names, not yet decided.
-- **Light bulb** (blue): chapter suggestions waiting to be applied.
-- **Speech bubble** (grey): no blurb.
-- **Picture** (grey): no cover. **Small picture with corners** (orange): cover lower than the limit ([[einst_cover]]).
-- **Not-equal sign** (orange): title, authors, series or number differ from Calibre.
-- **Label with !** (orange): missing language or an invalid ISBN.
-- **Floppy disk** (yellow, sidebar only): books with changes that are not saved yet.
-- In Dictionary and E-reader: **book** (words looked up without result), **e-reader with !** (dictionaries missing or outdated), **tick** (connected).
-
-Colours: red = error, orange = check it, grey = missing, blue = information, yellow = not saved. Hovering over the strip or a sidebar entry explains the markers. If the markers of an area do not fit into one line of the sidebar, they move to a second line below the name.
-
-In the **library** dot and pictograms are in a column of their own, **Status**, always on the left: a right-click on a column header hides or shows it, its width can be dragged, a click on it sorts (unreadable files first, then the books with the most markers). The title bar shows an asterisk (*) after the version as long as something is not saved.
-
-**Backgrounds**
-- In the chapter table questionable rows are **red**; a click shows the reason in the status bar. **Yellowish**: only a number, no name found.
-
-The strip can be switched off: Settings > General > Interface ([[einst_oberflaeche]]). Single pictograms can be hidden per place (sidebar, book lists, status column of the library): [[einst_marken]].
-""")),
-    ("ueberblick", "tasten", _("Keyboard shortcuts"), _("""
-**Everywhere**
-- **Ctrl+O** open a folder, **F5** reload it
-- **Ctrl+S** save
-- **Ctrl+Enter** apply (current book, or the dictionary form)
-- **Ctrl+F** search field of the current area (Chapters, Metadata, Dictionary), otherwise of the library; **Esc** in a search field empties it
-- **Ctrl+B** collapse and expand the sidebar
-- **Ctrl+1 … 6** choose an area in the order of the sidebar (6: Preview, Linux/macOS only)
-- **F1** help for the current area; in the settings: help for the page shown
-
-**Chapter table**
-- **Double-click** or **F2** edits the new name, **Enter** confirms, **Esc** cancels, **Del** restores the original
-- **Tab** / **Shift+Tab** (or **Alt+→** / **Alt+←**): level down / up
-
-**Dialogs**
-- **Enter** = OK, **Esc** = cancel; in the cover choice a **double-click** takes a cover at once
-""")),
-    ("ueberblick", "dateien", _("Files and folders"), _("""
-**Settings folder** (Windows: %APPDATA%\\Bookbench, Linux: ~/.config/bookbench)
-- **einstellungen.json**: all settings, including the API key (plain text).
-- **tocfix_entscheidungen.json**: applied chapter names, so they are suggested again for other copies of the same book.
-- **blurbs_cache.json**: looked-up blurbs and what was already tried without success.
-- **vorschau/**: the profile of the preview (Linux/macOS).
-Until version 0.23 the two JSON files were next to the program; until 0.24 the folder was called Kobo-Werkstatt (the old name). Both are copied over once. Settings > Advanced shows the paths and opens the folder ([[einst_erweitert]]).
-
-**Backup folder** (default: Bookbench Backups in your user folder)
-- Backups of the books before each save: <name>_YYYYMMDD_HHMMSS.epub.
-- **KOReader/**: backups of the KOReader settings from the E-reader area.
-- **Wörterbücher/**: dictionary files before they are built again.
-
-**In the book folder**
-- Nothing is created next to the books. Only the EPUB files themselves change when saving.
-
-**On the e-reader**
-- Only what you copy or restore yourself: KOReader settings (in the KOReader folder, e.g. .adds/koreader on a Kobo, [[kobo_geraete]]), dictionaries (data/dict in the KOReader folder), and the books when the e-reader folder is opened and saved.
-""")),
-    ("ueberblick", "kosten", _("Costs and privacy"), _("""
-**Free, without a key**
-- Google Books and Open Library: blurbs ([[klappentexte_nachschlagen]]) and covers ([[cover_aendern]]). Sent: ISBN, title and author of the book. Google Books without a key shares one daily quota with everyone else; an own key (also free) gives you your own ([[einst_klappentexte]]).
-- Everything else in the program runs on the computer only.
-
-**Costs money: Claude (Anthropic API)**
-- Blurbs that the free sources do not have: about 1 to 2 cents per book, with web search about 1 cent more.
-- Dictionary: summarizing wiki articles, cross-checking, filling gaps with Claude: from a few cents per entry; before larger jobs the estimated cost is asked.
-- You need your own API key (console.anthropic.com), billed by Anthropic. Without a key nothing goes to Claude.
-- Sent: title, author, series and language of the book, the profile's instructions; for the dictionary the term, topic and article text. **Book text never leaves the computer** - searching the books for names happens locally.
-
-**Avoiding costs**
-- Results are kept in the cache; looking up again costs nothing ([[dateien]]).
-- From Calibre costs nothing and is used first.
-- Look up all only asks Claude for books the free sources do not know, and asks before it starts.
-""")),
-    ("", "bereiche", _("Areas"), _("""
-The sidebar on the left switches between the areas (Ctrl+1 … 6):
-- [[bibliothek]] - all books in a table
-- [[kapitel]] - chapter names and levels
-- [[metadaten]] - title, authors, series, publisher, language, ISBN, tags, own fields, blurb and cover
-- [[woerterbuch]] - your own dictionaries
-- [[kobo]] - the connected e-reader: backups, dictionaries, ejecting
-- [[vorschau]] - a book in the desktop KOReader (Linux/macOS)
-
-The toolbar has the buttons of the current area on the left; on the right, separated, are the ones that always apply: Open, Reload, Save and Help. [[speichern]] applies to all book areas together.
-
-The **book lists** on the left of Chapters and Metadata (and the list of the dictionary; in the Preview the left column) can be made wider or narrower by dragging the divider to their right; the width is remembered, a double-click on the divider restores the default. A name that does not fit is shown completely below it when the mouse is over it.
-""")),
-    ("bereiche", "suche_filter", _("Search and filters in the lists"), _("""
-Above the book lists of **Chapters** and **Metadata** there is a search field and a filter (the Preview has a book selection instead of a list since 1.4). Each list has its own; they do not affect each other or the library.
-
-- **Search** finds parts of the title, series or author, case does not matter. **✕** or **Esc** in the field empties search and filter.
-- When a filter is active, the line above says how many books are shown: "Books: 3 of 12".
-- The book you are working on stays selected as long as it fits. If it no longer fits, the next fitting book below is selected (otherwise the one above).
-- **Apply** alone does not refill the list, so the book does not vanish while you work on it. Only changing search or filter, **Reload** or **Apply all** takes it out.
-- If a hidden book is opened from elsewhere (double-click in the library), search and filter of that list are reset.
-- Ctrl+F jumps to the search field of the current area.
-
-**Filters**
-- **Chapters**: With suggestions, Questionable names (⚠, not yet decided), Some without names (single entries only with a number), Changed chapters (applied or edited, not yet saved).
-- **Metadata**: Changed, No blurb, Blurb only in Calibre, Differs from Calibre, No author sort, No language, No ISBN, Edited in KOReader, No cover, Small cover (below the limit in [[einst_cover]]).
-
-Search and filters are not remembered; after a restart all books are shown again.
-""")),
-    ("bereiche", "bibliothek", _("Library"), _("""
-All books of the opened folder (with all subfolders) with series, number, author, state of the chapters, blurb and cover.
-
-- A click on a column header sorts (▲ ascending, ▼ descending), a second click reverses. Moving, hiding and widths of the columns: [[bibliothek_spalten]].
-- **Search** filters by title, series and author; the **filter** shows only changed books, unreadable files or books whose series is not in the EPUB. Filters by chapters, blurbs and covers are above the lists of those areas ([[suche_filter]]).
-- **Double-click** opens the book in the Chapters area; under Settings > General > Interface it can be Metadata, the Preview or KOReader instead ([[einst_oberflaeche]]).
-- **Right-click** on a book: open it in Chapters, Metadata, the Preview or start it in KOReader (Preview and KOReader not on Windows). The entry marked "Double-click" is the one the double-click uses.
-
-**Columns**
-- **Chapters**: **suggestions** (the book text has chapter names the table of contents lacks), **without names** (only numbers, nothing in the text either), **no names found** (only a few matches - probably coincidence, so nothing is suggested), **ok**, **ok (2 without names)** (almost all have names, single ones only a number, e.g. a prologue).
-- **Blurb**: where it comes from (Google Books, Calibre, a website), "yes" if unknown, "in Calibre" if only Calibre has one, "changed".
-- **Cover**: size of the title image in pixels, "changed" for a new one not yet saved.
-- **Series**: from the EPUB; if it is only in Calibre or KOReader's data, the status bar says where from ([[bibliothek_calibre]]).
-- **Publisher**, **Language**, **ISBN**: hidden at first; show them with a right-click on a header or View > Library columns.
-- **Status** (left): the coloured dot and the pictograms of each book ([[status]]).
-
-**Filters** All books, Changed (anything not yet saved, or saved since opening), Unreadable files, No series in the EPUB.
-""")),
-    ("bibliothek", "bibliothek_spalten", _("Columns: sorting, moving, widths"), _("""
-**Sorting**
-- A click on a column header sorts by it, a second click reverses. The arrow ▲ (ascending) or ▼ (descending) shows the column.
-- Series sorts by series, then number, then title; No. by number; Cover by the height in pixels (no cover first); Status puts unreadable files first, then the books with the most markers.
-- Right-click on a header: **Sort ascending** / **Sort descending** for this column.
-
-**Moving columns**
-- Drag a header sideways (hold the mouse button or touchpad, move at least a few pixels): a blue line shows where it goes. Releasing there does not sort.
-- Without dragging: right-click on the header > **Move "…" left** / **right**.
-
-**Showing and hiding**
-- Right-click on a header, or View > **Library columns**: one tick per column. A shown column comes back at its usual place. The last column cannot be hidden.
-- **Status** is always the first column and cannot be moved; it can be hidden like the others.
-
-**Widths**
-- Drag the line between two headers. The widths stay exactly as drawn, also after resizing the window or a restart; no column stretches by itself. If the columns are wider than the window, a scroll bar appears below.
-- As long as no width has been drawn, the columns are fitted to the window whenever its size changes.
-- **Status** is as wide as the book with the most pictograms needs, unless you drag it.
-- **Fit columns to the window** spreads the visible columns over the width, keeping their proportions.
-- **Reset columns**: usual order, all columns, default widths fitted to the window.
-
-Order, shown columns, widths and sorting are remembered in the settings.
-""")),
-    ("bibliothek", "bibliothek_calibre", _("Calibre and series"), _("""
-**From Calibre** (toolbar of the library) takes series, number and blurb from Calibre's **metadata.calibre**, but only where the EPUB has nothing - existing data is never overwritten. Then save as usual (Ctrl+S); after that the data is in the book itself, and KOReader, Bookshelf and the reading software of the e-reader see it without Calibre too.
-
-**Where the file is**
-Calibre writes metadata.calibre into the root folder of the e-reader when transferring books. It is searched for in the opened folder and in all folders above it; for a copy on the computer simply copy the file into the books folder too. Books are matched by path, file name, Calibre UUID or title and author.
-
-**Where a series comes from**
-- From the EPUB (Calibre or EPUB 3 notation).
-- Only in metadata.calibre: shown, the status bar says so, the filter **No series in the EPUB** lists these books.
-- Only in KOReader's own book data (metadata edited in KOReader, folder .sdr next to the book): shown too - this only works if the folder with the .sdr folders is opened, e.g. the e-reader directly.
-
-In the Metadata area, **From Calibre** next to the blurb puts Calibre's description of a single book into the text field.
-""")),
-    ("bereiche", "kapitel", _("Chapters"), _("""
-The books on the left, the table of contents on the right: **Entry** (as in the book), **New** (suggestion or own name), **Note**. Below are the first lines of book text at the selected entry.
-
-The lines in front of the entries show the levels: **├** an entry followed by more on the same level, **└** the last one below its parent, **│** the parent level continues.
-
-**Names**
-- **Double-click** on a row (or F2) edits the new name. Leave it empty or press **Del** = original.
-- **Apply** (Ctrl+Enter) applies what is in the New column - including the unchanged suggestions.
-- **Apply all** applies the suggestions of all books that have no questionable entries and are not being edited.
-- **Suggestions** resets the book to the suggestions, **Original** to the unchanged table of contents (including the levels).
-
-Where suggestions come from: the lines below a chapter number in the book text (how many: [[einst_kapitel]]).
-
-**More**
-- [[suche_filter]]
-- [[kapitel_ebenen]]
-- [[kapitel_fragwuerdig]]
-""")),
-    ("kapitel", "kapitel_ebenen", _("Changing levels"), _("""
-- Select entries (several with Ctrl- or Shift-click), then **Tab** or **Alt+→** (or **Down** in the toolbar) moves them one level down, **Shift+Tab** or **Alt+←** (or **Up**) one level up.
-- Sub-entries move along, as in Word's outline view.
-- An entry can be at most one level deeper than the one above; the first one is always at the top. What is not possible is said in the status bar.
-- Column Note: "Level 2 → 3". Apply and save as with the names.
-- When saving, the nesting in nav.xhtml and toc.ncx is rebuilt; the entries themselves (links, names, IDs) stay unchanged, reading positions in KOReader stay valid. Bookends (%chap_title_1 etc.) follows it.
-- If nav.xhtml and toc.ncx have a different number of entries, the levels of this book cannot be changed; the status bar gives the reason.
-""")),
-    ("kapitel", "kapitel_fragwuerdig", _("Questionable names and decisions"), _("""
-**Questionable** (red background, ⚠ in the list) are:
-- the same name several times in the book,
-- very short or very long names,
-- chapters without names between chapters with names,
-- books with only a few matches.
-A click on the row shows the reason in the status bar. Apply the name, change it or put the original back - after applying, the entry no longer counts as questionable.
-
-**Yellowish** rows have only a number and nothing was found in the text; a double-click lets you enter your own name.
-
-**Decisions**
-Applied names are remembered in **tocfix_entscheidungen.json** in the settings folder ([[dateien]]). If the same book turns up again (another copy, after a new transfer from Calibre), these names are suggested at once.
-""")),
-    ("bereiche", "metadaten", _("Metadata"), _("""
-The books on the left, in the middle a form with the metadata stored in the book: **title**, **authors**, **author sort**, **series** and **number**, **publisher**, **language**, **ISBN** and **tags**, followed by your **own fields** from Calibre columns ([[metadaten_felder]]). Below the form the **blurb** ([[klappentexte]]), on the right the **cover** ([[cover]]).
-
-- Type in the fields; the book turns red (changed, not applied). **Apply** (Ctrl+Enter or Enter in a field) applies form and blurb and makes the book yellow, **Save** (Ctrl+S) writes it into the file, with backup.
-- **Discard** restores values, blurb and cover from the file. This also drops a series taken over with **From Calibre** in the library.
-- Several authors are separated with **&**, as in Calibre: "Dan Abnett & Graham McNeill". The **author sort** works the same way ("Abnett, Dan & McNeill, Graham"); with as many names as authors each author gets his own, otherwise the first one gets the whole text.
-- **Number** may have decimals, e.g. 1.5 or 0.9 for a story between two books. A comma is turned into a point when applying, as in Calibre.
-- **Tags** are separated with commas.
-- **Language** as a code, e.g. en, de or en-GB. KOReader uses it for hyphenation.
-- Below the form Bookbench warns about an invalid ISBN, a missing language or title, a number without series and values that do not fit an own field (e.g. letters in a number column).
-- If Calibre or KOReader have a different value, it is shown below the field: **← Calibre: …**. A click on ← puts it into the field ([[metadaten_calibre]]).
-
-The cover panel on the right can be made wider or narrower with the divider between form and cover; the width is remembered, a double-click on the divider restores the default.
-
-The file name is never changed: KOReader keeps reading positions and highlights in a folder named after the file (.sdr), they would be lost.
-
-After saving, KOReader only shows the new values after re-reading the book information (Cover browser > Extract and cache book information).
-
-**Toolbar**: Apply, Discard, From Calibre (only with the Calibre comparison on) and **Complete ▾** for all books: look up all missing blurbs, look up all missing covers, import from a Calibre library ([[calibre_import]]), fill gaps from Calibre.
-
-**Markers** in the list show what a book lacks: speech bubble (blurb), picture (cover), not-equal sign (Calibre), label (language/ISBN) - see [[status]].
-
-**More**
-- [[metadaten_calibre]] - comparing with Calibre and KOReader
-- [[calibre_import]] - taking Calibre's data over once
-- [[metadaten_felder]]
-- [[klappentexte]]
-- [[cover]]
-- [[suche_filter]]
-""")),
-    ("metadaten", "metadaten_calibre", _("Calibre and KOReader"), _("""
-**Calibre**
-If Calibre's **metadata.calibre** is found ([[bibliothek_calibre]]) and the comparison is on ([[einst_calibre]]), Calibre's value is shown below every field where it differs: **← Calibre: …**. A click on **←** puts the value into the field. Matching values are not shown.
-
-- **From Calibre** (toolbar) puts all differing values of this book into the form - check them, then apply.
-- **Complete ▾ > Fill gaps from Calibre** works on all books, but only on fields that are empty in the book. It applies directly (yellow); save afterwards.
-- A **not-equal sign** in the list means title, authors, series or number differ from Calibre. The filter **Differs from Calibre** also counts the other fields.
-- Calibre stores languages as three letters (eng); Bookbench compares them with the two-letter codes of the book (en) and takes over the short form.
-
-**Important:** When Calibre sends a book to the e-reader again, it writes its own values into the file. Change the metadata in Calibre as well, otherwise your changes in Bookbench are overwritten. If you no longer use Calibre, switch the comparison off: [[einst_calibre]].
-
-**KOReader**
-If you edited the book information in KOReader itself (Book information > long-press a field), KOReader keeps it in **custom_metadata.lua** in the .sdr folder next to the book and shows it **instead of** the values in the file. Bookbench shows these values below the fields as **← KOReader: …** (only when the folder with the .sdr folders is opened, e.g. the e-reader directly) and points it out below the form. The filter **Edited in KOReader** lists these books. To make KOReader show the file again, reset the fields in KOReader.
-""")),
-    ("metadaten", "metadaten_felder", _("Own fields"), _("""
-In Calibre you can add columns of your own (Preferences > Add your own columns), e.g. a subtitle with the lookup name **#subtitle**. Bookbench shows such columns as further fields below the usual ones - which ones and with what label, you decide in [[einst_metadaten]]. **From Calibre** there adds all columns found in metadata.calibre at once.
-
-- Bookbench reads and writes the columns the way Calibre stores them in the book: in EPUB 2 one entry per column, in EPUB 3 all own columns together in one entry. Columns you do not show stay untouched.
-- If the book does not have a column yet, Bookbench takes its definition (type, how values are separated) from metadata.calibre, so Calibre recognises it when adding the book again. Without metadata.calibre a plain text column is written.
-- Columns with several values ("Ampersand separated text", "Comma separated text") are shown joined with " & " or ", ". Careful: a text containing **&** is then split into two values, just like in Calibre.
-- Number columns (whole numbers, decimals, rating) only take numbers, yes/no columns yes or no; dates are shown without time.
-- KOReader only knows title, authors, series, language, tags and description; own fields are for Calibre and for you.
-""")),
-    ("metadaten", "calibre_import", _("Import from Calibre"), _("""
-If you want to stop using Calibre, take its metadata over once into the books: **File > Import from Calibre library …** (also in **Complete ▾** in the Metadata area).
-
-1. Choose the folder of your Calibre library, the one with **metadata.db** (in Calibre: right-click the library button > Show folder). Bookbench remembers it. The database is only read, so Calibre may stay open.
-2. Bookbench matches the books of the opened folder with Calibre: by the Calibre ID in the book (UUID), the ISBN, or title and first author. Only unique matches count; books without a match are listed on the tab **Not matched**.
-3. The table shows every field where Calibre has a different value: book, field, value in the book, value from Calibre. Untick rows you do not want (click on the box or press Space). **Only empty fields** shows only fields that are empty in the book. **Blurbs** adds Calibre's descriptions.
-4. If Calibre has own columns (e.g. #subtitle) that are not fields yet, **Add as own fields** adds them ([[metadaten_felder]]); then their values appear in the table too.
-5. **Apply ticked** applies the values (yellow), then save with Ctrl+S.
-
-Afterwards switch the Calibre comparison off ([[einst_calibre]]) if Calibre does not manage the books anymore. Calibre's own fields like date added, rating stars or read status only come along as own columns.
-""")),
-    ("metadaten", "klappentexte", _("Blurb"), _("""
-The blurb is below the form in the Metadata area. The text can be edited directly; the divider between form and blurb can be dragged (a double-click puts it back below the form). If the form no longer fits above it, it gets a scrollbar (the mouse wheel scrolls it too).
-
-- Books without a blurb have a **speech bubble** in the list. If Calibre has a description for the book, the status bar says so when the mouse is over it; the filter **Blurb only in Calibre** lists these books.
-- **Apply** (Ctrl+Enter) applies the text together with the form, **Discard** restores both from the file. An empty field applied = remove the blurb.
-- **Look up** and **From Calibre** are small buttons above the text; **Complete ▾** in the toolbar looks up all missing blurbs.
-- Below the text: where it comes from. This is also saved in the EPUB (meta bookbench:blurb-source) and shown in the Blurb column of the library.
-
-After saving, re-read the book information in KOReader (Cover browser > Extract and cache book information), otherwise Bookshelf still shows the old state.
-
-**More**
-- [[suche_filter]]
-- [[klappentexte_nachschlagen]]
-- [[klappentexte_profile]]
-""")),
-    ("klappentexte", "klappentexte_nachschlagen", _("Looking up blurbs"), _("""
-**Look up** (one book, above the blurb) and **Complete ▾ > Look up all missing blurbs** (all without a blurb, in the background) go through these steps until one has a text:
-- **Google Books**, then **Open Library**: by ISBN, otherwise by title and author; the edition in the book's language is preferred. Free; for Google Books an own key is optional ([[kosten]]).
-- **Claude** with the first source profile that fits the book ([[klappentexte_profile]]): fetches the pages of the profile and copies the publisher blurb word for word. About 1 to 2 cents.
-
-A text that is too short or too long is not taken (limits: [[einst_klappentexte]]). What was found is not applied at once: it is in the text field (red) until you apply it.
-
-**Look up all**
-- Skips books for which Calibre has a description - **From Calibre** is there for those, and it costs nothing.
-- Asks before starting if Claude could be needed, with the maximum cost.
-- Without an API key only the free sources are asked, without an error message.
-
-**When nothing is found**
-The message at the end says per source why, and below the blurb the result of the last look-up stays as long as the book has no text:
-- **daily quota used up (429)**: Google Books without a key shares one daily quota with everyone else and often answers like this. An own key ([[einst_klappentexte]]) gives you your own quota.
-- **book found, but no blurb stored**: the source knows the book but has no description (Open Library often).
-- **book not found**: no matching title and author (or ISBN).
-A quota or network error is not remembered as tried; the next look-up asks that source again.
-
-**Cache**
-What was found and what was already tried is in **blurbs_cache.json** ([[dateien]]). Looking up again costs nothing. If a profile is changed, Claude tries again for the books it covers; the free sources are asked again only after a network error. The cache can be emptied: [[einst_erweitert]].
-
-Claude needs an API key and the package **anthropic** (pip install anthropic): [[einst_klappentexte_claude]].
-""")),
-    ("klappentexte", "klappentexte_profile", _("Source profiles"), _("""
-A source profile tells Claude where to look for a blurb. They are set up under Settings > Books > Blurbs > Source profiles ([[einst_klappentexte_profile]]). The **first active profile that fits** the book is used.
-
-**Fields**
-- **Applies to**: parts of the publisher, series or author, separated by commas, case does not matter; one match is enough. All empty: every book.
-- **Pages to fetch**: addresses with placeholders, one per line, fetched in this order, e.g. https://stormlightarchive.fandom.com/wiki/{title}.
-- **Placeholders**: {title}, {author}, {series} become wiki page names (spaces as _); {title_q} and {author_q} are for search addresses (?q=…); {base} is the title without "Omnibus" (lines with {base} are skipped for other books, lines with {series} for books without a series). Lines with unknown placeholders are skipped.
-- **Further allowed sites**: Claude may only fetch pages from these and the sites of the addresses above.
-- **Section with the blurb**: what the section is usually called there ("Official Description"). A hint for Claude.
-- **Topic**: e.g. "Star Wars"; a hint for Claude.
-- **Web search**: if no page fits, search once in the allowed sites; a profile without any sites searches the whole web (publisher pages first, then big bookshops) and may search twice.
-
-**Included**
-- **Lexicanum (Warhammer 40,000)**: for Black Library / Games Workshop and the Warhammer series. Lexicanum, then the Fandom wiki.
-- **Web search**: for all other books.
-Both can be changed, switched off or deleted; **Defaults** brings them back.
-
-**Tips**
-- A fan wiki for a series ("Fandom") usually has the blurb: one line with {title}, section "Official Description".
-- Put specific profiles above general ones; the web search profile belongs at the bottom.
-""")),
-    ("metadaten", "cover", _("Cover"), _("""
-The cover is shown right of the form, as large as there is room. **Click on the cover** (also the small one in Chapters) shows it as large as the screen allows; a second click on the cover, a click into the window or Esc closes it. Choosing another book closes it too. A right-click opens a menu with all cover actions.
-
-- Below the cover: size in pixels, format, file size and where it is in the EPUB.
-- **From file …**, **Look up**, **Export …** (saves the cover shown as an image file) and **Discard new** are below the cover; **Complete ▾ > Look up all missing covers** is in the toolbar.
-- As long as a new cover is not saved, the old one and the new one are shown next to or below each other.
-- Books without a cover have a **picture**, covers lower than the limit a **small picture** in the list ([[einst_cover]]); the filters **No cover** and **Small cover** list them.
-
-After saving, re-read the book information in KOReader (Cover browser > Extract and cache book information), otherwise the cover browser still shows the old cover.
-
-**More**
-- [[cover_aendern]]
-- [[cover_bild]]
-""")),
-    ("cover", "cover_aendern", _("Changing and looking up covers"), _("""
-- **From file** takes an image file (JPEG, PNG, GIF, WebP).
-- **Look up** searches Open Library and Google Books (free, no key) by ISBN, title and author and shows what was found side by side, with size; a click chooses, OK takes it, a double-click takes it at once. Tiny preview images are left out.
-- **Complete ▾ > Look up all missing covers** does that in the background for all books without a cover and takes the largest image found. Check them afterwards.
-- **Discard** drops the new cover. **Ctrl+S** saves, with a backup as always.
-
-The sources, the smallest height that counts and how many to choose from: [[einst_cover_nachschlagen]].
-
-**Tips**
-- Open Library often has large scans, sometimes of another edition (another cover). Google Books has the publisher's image, usually smaller.
-- In the Edit menu the same actions work from Chapters; the program switches to Metadata with the same book.
-""")),
-    ("cover", "cover_bild", _("What happens to the image"), _("""
-- The new cover keeps the **format** and the **file name** of the old one (a PNG becomes a JPEG if the old cover is a JPEG). That way the manifest and a title page that shows the image stay valid.
-- It is shrunk only if it is higher than the limit in the settings (0 = never); it is never enlarged ([[einst_cover]]). If nothing has to be converted or shrunk, the file goes into the book unchanged, byte for byte.
-- A book without a cover gets cover-bookbench.jpg next to the content.opf, an entry in the manifest (EPUB 3: properties="cover-image") and <meta name="cover"> (EPUB 2; KOReader reads both).
-- Converting and shrinking need **Pillow** (pip install pillow), showing JPEG images too. Without Pillow only an image in the right format can be inserted unchanged.
-- Transparent areas become white when converting to JPEG.
-""")),
-    ("bereiche", "woerterbuch", _("Dictionary"), _("""
-Your own dictionaries for KOReader: read, edit, fill missing terms, build from a wiki, build the files. The dictionary is chosen at the top; Bookbench remembers all that were ever opened or created.
-
-**Types**
-- **from a wiki**: a database like the one of wikidict.py (wikidict.sqlite in the working folder; wh40kdict.sqlite from earlier versions is still recognized). Entries come from wiki articles ([[woerterbuch_aufbau]]), plus your own.
-- **own entries**: a database without a wiki; entries by hand or from Claude, missing terms from the lookup history and from the books (frequent names).
-- **StarDict folder**: a finished dictionary without a database, e.g. a copy on the go, one from the e-reader or from the web. That is enough for reading and editing.
-
-**New …** creates a dictionary (working folder, name in KOReader, file name, topic for Claude, for wiki dictionaries the wiki address and optionally a second site for cross-checking). **Open …** takes a working folder (with wikidict.sqlite) or a folder with an .ifo file; it also searches below (also under .adds), so e.g. the root of an e-reader backup is enough. With several matches you get a choice. **Properties …** changes name, topic, spoilers and the books filter. **Remove from list** only takes it out of the list, the files stay.
-
-**More**
-- [[woerterbuch_anzeigen]]
-- [[woerterbuch_bearbeiten]]
-- [[woerterbuch_aufbau]]
-- [[woerterbuch_unterwegs]]
-""")),
-    ("woerterbuch", "woerterbuch_anzeigen", _("Views and missing terms"), _("""
-- **Entries**: everything in the dictionary. The search also finds other names ("Strider" finds Aragorn).
-- **Missing terms**: names from the books without an entry (from the step Search books) and **words that were looked up in KOReader and are missing** (⚠, first). The lookup history comes from the connected e-reader, otherwise from the newest backup of the KOReader settings ([[kobo_sicherungen]]). Everyday words in lower case are left out.
-- Which looked-up words belong to which dictionary is decided by the searched books and the **books filter** in the properties (parts of title, series or author). Without either, all of them belong.
-- **Ignored and removed**: terms that no longer count as missing, and entries taken out; **Remove** or **Bring back** brings them back.
-- **Steps** (only with a database): [[woerterbuch_aufbau]].
-""")),
-    ("woerterbuch", "woerterbuch_bearbeiten", _("Editing entries and Claude"), _("""
-**Editing**
-- Form: name, category, short description, other names (comma-separated; KOReader also finds the entry under these), sections (a line with **#** is the heading, the text below it). Below that the preview of how the entry looks in KOReader.
-- Entries from other dictionaries that do not have this structure are edited as **HTML** or **text**.
-- **Apply** (Ctrl+Enter) saves your own version (yellow), **Discard** undoes changes in the form (red = not applied). Own versions always win, even if things are summarized again later. **Discard own version (original)** (Dictionary menu) discards them. **New** adds a term by hand.
-
-**Claude ▾** (for the chosen term; the result is always a draft to check; topic and spoilers from the properties)
-- **Search the web**: web search anywhere, text only from the pages found, which are given as the source in the entry. About 2-4 cents.
-- **Summarize from a page**: give an address, Claude reads only that page.
-- **From own knowledge**: without a source; the entry says "unverified", the list shows ⚠.
-- If Claude finds the full name ("Baggins" -> "Bilbo Baggins"), the searched name becomes another name of the entry.
-
-Costs and what is sent: [[kosten]].
-""")),
-    ("woerterbuch", "woerterbuch_aufbau", _("Steps and building"), _("""
-**Steps** (the steps of wikidict.py, with status, options and output; **Cancel** stops at the next intermediate step, what was done so far stays saved)
-- **1. Load titles**: all article titles of the wiki.
-- **2. Search books**: choose the books folder; finds the titles in the books, names without an article become gaps. The book text never leaves the computer.
-- **3. Load articles**: only the ones that occur.
-- **4. Summarize**: Claude writes the entries; batch costs half as much but takes time (minutes to hours). The estimated cost is asked for confirmation first.
-- **5. Cross-check**: compare with the second site and fill gaps from there.
-- **6. Build**.
-Dictionaries without a wiki only have Search books and Build. The packages requests, mwparserfromhell, wordfreq and anthropic are needed.
-
-**Build** writes the dictionary files: for databases into the folder of the last build (you are asked the first time), for StarDict folders into the folder itself, backed up first (backup folder, subfolder Wörterbücher). Then copy them to the e-reader ([[kobo_woerterbuecher]]) and restart KOReader. Green = built since opening.
-
-wikidict.py on the command line also includes your own entries when building.
-""")),
-    ("woerterbuch", "woerterbuch_unterwegs", _("On the go without a database"), _("""
-Open the StarDict folder (e.g. the copy on the e-reader or on a stick) and edit it. Bookbench records the changes in **bookbench.json** in this folder (it does not go to the e-reader).
-
-Back home in the database: Properties > **Take changes from a StarDict folder**, otherwise the next build overwrites them.
-""")),
-    ("bereiche", "kobo", _("E-reader"), _("""
-Shows the connected e-reader with KOReader - Kobo, Kindle or PocketBook: model, drive, firmware, KOReader version, free space.
-
-**Detection**
-- Automatically every few seconds ([[einst_kobo]]), by the folders in the root of a drive ([[kobo_geraete]]). Copies of the e-reader on the hard disk (backups with a .kobo folder and the like) do not count, only the root of a drive.
-- Searched: on Linux /run/media, /media and /mnt, on Windows all drives; also the opened books folder and the folders above it.
-- With several connected e-readers a list appears next to the name.
-
-**Books** opens the whole e-reader in Library, Chapters and Metadata. Then metadata.calibre is found automatically too.
-
-**When connecting** Bookbench opens the books on the e-reader by itself if no other folder is open; otherwise it asks. Can be changed: [[einst_kobo]].
-
-**More**
-- [[kobo_geraete]]
-- [[kobo_sicherungen]]
-- [[kobo_woerterbuecher]]
-- [[kobo_auswerfen]]
-""")),
-    ("kobo", "kobo_geraete", _("Kobo, Kindle, PocketBook"), _("""
-KOReader keeps its settings in its own installation folder. Where that is depends on the device:
-
-- **Kobo** (and tolino from 2024 on, Kobo hardware): folder **.kobo** in the root, KOReader in **.adds/koreader**, extra fonts in **fonts**. Model, serial number and firmware come from .kobo/version; an unknown model shows the number on the type plate (e.g. N428) instead.
-- **Kindle**: folders **documents** and **system** in the root, KOReader in **koreader**, extra fonts in **fonts**.
-- **PocketBook**: folder **applications** (with **koreader** inside) and **system/config**, KOReader in **applications/koreader**, the device's own fonts in **system/fonts**.
-
-Kindle and PocketBook put no readable model data on the drive; the area then only shows the kind of device. For the preview choose the model by hand if needed ([[vorschau_bildschirm]]).
-
-Newer Kindles and Android devices only connect via MTP and do not appear as a drive, so they are not found. On Linux a file manager can still copy their files to a folder on the computer; open that folder or use it as the dictionary source. On Windows there is no way from the program.
-
-Only the Kobo was tested on a real device so far; Kindle and PocketBook follow the KOReader source code.
-""")),
-    ("kobo", "kobo_sicherungen", _("Backups of the KOReader settings"), _("""
-- **Back up** packs the parts ticked on the right into a ZIP file in the subfolder **KOReader** of the backup folder (KOReader_YYYYMMDD_HHMMSS.zip). The newest backups are kept ([[einst_kobo]]).
-- **Restore** (or double-click) writes the ticked parts from the selected backup back. Files with the same name are overwritten, others stay. The current state is backed up first (reason "before restoring").
-- When a backup is selected, the status bar shows its contents, device and KOReader version; backups from another device are pointed out.
-
-**Parts**
-- **Settings**: settings.reader.lua, defaults.custom.lua.
-- **Statistics and plugin data**: folder settings - reading statistics, history, Bookends presets (settings/bookends_presets), Silverfish.
-- **Book data**: the .sdr folders next to the books - reading position, highlights, notes.
-- **Style tweaks and patches**.
-- **Kobo settings**: Kobo eReader.conf of the Kobo software (off by default, only on a Kobo).
-
-A backup notes the kind of device. It can be restored to another kind (e.g. from the Kobo to a Kindle): the KOReader folder then lands where KOReader is on the connected device. Folders stored in the settings (home folder, last book) still point to the old device; KOReader asks for them again if needed.
-
-After restoring, KOReader takes over the files at the next start, i.e. after ejecting. KOReader writes its settings when it closes; changing something on the e-reader without closing KOReader overwrites the restored state.
-
-The preview can take its profile from a backup too ([[vorschau_profil]]).
-""")),
-    ("kobo", "kobo_woerterbuecher", _("Copying dictionaries"), _("""
-- **Choose source**: a folder on the computer somewhere inside which the dictionaries are ([[einst_kobo]]). It is searched up to 8 levels deep (at most 5000 folders; hidden folders like .adds are searched too, so a copy of the e-reader works as well; only large folders without dictionaries like .git, .cache, AppData, Windows and KOReader's plugins, fonts, cache are skipped). A dictionary is a folder with an .ifo file, e.g. My-Dictionary. If there are several folders with the same name, the one with the newest .ifo wins; the column **Folder in the source** shows which one was found.
-- Status of each dictionary: **up to date**, **outdated on the e-reader** or **missing on the e-reader** (both red), **only on the e-reader**.
-- **Dictionary** (toolbar) copies the selected ones, without a selection all that are not up to date, to data/dict/<name>/ in the KOReader folder (Kobo: .adds/koreader/data/dict). Files in the target that no longer exist in the source are deleted there.
-- **Double-click** opens the dictionary in the Dictionary area: the registered one that was built into this folder, otherwise the folder from the source itself. A dictionary that is only on the e-reader is opened there after asking; changes are then saved on the e-reader.
-""")),
-    ("kobo", "kobo_auswerfen", _("Ejecting"), _("""
-**Eject** unmounts the e-reader (Linux: udisksctl, Windows: like "Eject" in Explorer). Then the cable can come off.
-
-If something was written to the e-reader in this session (backup restored, dictionary copied, books saved), the program reminds you when quitting. The reminder can be switched off: [[einst_kobo]].
-
-**Library on the e-reader**
-If the opened library is on the e-reader and has unsaved changes, Bookbench asks before ejecting: save, discard or cancel. After ejecting, the library is closed.
-
-If the e-reader disappears without ejecting (cable pulled), a bar above the areas says so. The library stays visible, but saving is refused until the e-reader is back; the changes stay in memory as long as Bookbench is open. **Close library** in the bar (or in the File menu) or **Reload** discards them.
-
-**If ejecting fails**
-On Linux ejecting fails while a program still has a file or folder on the e-reader open, often the file manager that opened when the e-reader was connected. Bookbench first tries three times (thumbnails or the file search often let go by themselves), then lists these programs and offers **Retry**. Only your own programs can be seen.
-- Dolphin: change to another folder, also in other tabs and in the terminal panel, or close the window.
-- Dolphin's terminal panel (F4) follows the folder shown in Dolphin and keeps running when it is hidden: Bookbench then names the terminal panel in a Dolphin window. Opening another folder in Dolphin moves it away.
-- That KDE opens the file manager when the e-reader is connected can be switched off in the KDE system settings (removable storage / device actions).
-""")),
-    ("bereiche", "vorschau", _("Preview"), _("""
-The **KOReader workbench**: the desktop KOReader runs invisibly in the background with the settings from your e-reader and shows the page or the start screen as it looks on the device - font, margins, headers and footers from Bookends, the shelves of Bookshelf, style tweaks and patches. Only on Linux and macOS; there is no official KOReader for Windows, so the area is missing there.
-
-**Installing KOReader** (optional, only needed for this)
-- Arch/EndeavourOS: **yay -S koreader-bin**
-- Flatpak: **flatpak install flathub rocks.koreader.KOReader**
-- or put the AppImage from github.com/koreader/koreader/releases into ~/Applications or ~/Downloads
-It is searched in this order: own path ([[einst_vorschau]]), koreader in PATH, macOS applications folder, AppImage, Flatpak. Preview menu > **Find KOReader** after installing.
-
-**More**
-- [[vorschau_werkbank]]
-- [[vorschau_lesen]]
-- [[vorschau_patches]]
-- [[vorschau_bookends]]
-- [[vorschau_bookshelf]]
-- [[vorschau_profil]]
-- [[vorschau_rueckweg]]
-- [[vorschau_starten]]
-- [[vorschau_bildschirm]]
-""")),
-    ("vorschau", "vorschau_werkbank", _("Workbench"), _("""
-**View**
-- **Reading page**: the chosen book, opened. ◀ and ▶ turn pages, so does a click into the picture (left third back, otherwise forward, as on the e-reader) and the arrow keys once the picture has the focus.
-- **Start screen**: KOReader without a book - the file browser or Bookshelf, whatever the profile starts with. **With sample books** shows eight sample books with covers; **with the opened library** shows the books of the library opened in Bookbench, with their reading progress (from the book data next to the books) and the most recently read ones first - Bookshelf's top area then shows your current book. The book selected under **Book** counts as the one read last. Nothing is written into the library. The same choice is on the Bookshelf page.
-- Covers: KOReader reads them from the books in the background, the first time for every book. Bookbench keeps KOReader's cover cache between restarts (vorschau/werkbank-cache) and takes new pictures after 1.5, 4, 8 and 15 seconds; **New picture** takes one at any time.
-
-**Tapping in KOReader**
-- On the start screen a click into the picture is a tap at that spot - Bookshelf's shelf buttons (Home, Recent, Series …), its menus, a book. A right-click is a long press.
-- On the reading page a click turns pages; Ctrl+click taps (for example to open KOReader's menus), right-click is a long press.
-- **Swiping**: drag with the left mouse button held down; KOReader gets a swipe in that direction. The **mouse wheel** turns pages on the reading page; on the start screen it swipes up or down (with Shift sideways), for example to scroll Bookshelf's lists.
-- If KOReader does not get to the book within 5 seconds (a question, an unsupported file …), Bookbench says what is on top and shows KOReader's screen; a click taps there, so a dialog can be answered.
-- Books named .kepub (without .epub) are opened as .kepub.epub; KOReader does not know the shorter ending.
-
-**Book**
-- **Sample text** (default): three chapters of Lorem ipsum with title, author and series, enough for the Bookends placeholders.
-- A book of the opened library, or **Other file …** (button below the book selection). Its book data (.sdr) is searched next to the book, on the connected e-reader and in the backup, so font size and margins are those of the e-reader. From the library: right-click on a book > **Open in Preview**.
-
-**How it works**
-KOReader starts without a window (SDL offscreen) at the full resolution of the device ([[vorschau_bildschirm]]); the picture is fitted into the area. Starting takes about a second, every further picture a tenth of a second. Changing the view or the book restarts it; **Restart** does it by hand. Bookbench stops it when closing; if Bookbench crashes, it stops by itself after 30 seconds.
-
-It works on a throw-away copy of the profile (folder vorschau/werkbank), new at every start: reading position, history and settings of the profile stay untouched. Only the plugins Bookends and Bookshelf are loaded - other plugins can lay a full screen over everything. The built-in plugins of KOReader are there as always.
-
-**Open in KOReader** (toolbar) starts the full KOReader in a window as before, for trying out menus: [[vorschau_starten]].
-""")),
-    ("vorschau", "vorschau_lesen", _("Font and margins"), _("""
-Below Preview, **Font and margins** holds KOReader's own general reading settings - what "Set as default" in KOReader's reading menu (the bottom menu while reading) stores in settings.reader.lua. The page appears as soon as there is a profile ([[vorschau_profil]]).
-
-**Font**: the font (the family names of the fonts in the profile and in the desktop KOReader; you can also type a name), size, weight, line spacing, word spacing (scaling and reduction), word expansion, kerning, hinting, contrast (gamma), and whether the book's embedded fonts and style are used.
-**Margins**: left and right, top, bottom, and whether top and bottom stay the same. In KOReader's units. The margins of Bookends are on the Bookends page ([[vorschau_bookends]]).
-
-Empty fields use KOReader's defaults. Changes are a draft until **Save to profile**; KOReader reads these values when it opens a book, so the workbench restarts after a change (about a second) and switches to the reading page.
-
-**Values of the book shown**
-KOReader stores font and margins in the book data (.sdr) of every book it has opened once - all of them, when the book is closed. There they win over the general values, which therefore only apply to books never opened before. The section shows which values the book in the workbench brings along.
-**Ignore the book's own values in the workbench** removes them from the copy of the book data in the workbench, so the general values show. The book data of the book itself stays untouched. The sample text never has book data.
-""")),
-    ("vorschau", "vorschau_sperrbildschirm", _("Sleep screen"), _("""
-Below Preview, **Sleep screen** holds KOReader's sleep screen options (Screen > Sleep screen in KOReader's menu, stored in settings.reader.lua). The page appears as soon as there is a profile ([[vorschau_profil]]).
-
-While the page is open, the workbench shows the sleep screen as the e-reader would when it goes to sleep, without putting KOReader to sleep. **Show again** brings it back (a click into the picture can close it, like a tap on the e-reader); **Back to the page** closes it. Leaving the page closes it as well. KOReader reads these values when it starts, so the workbench restarts after a change (about a second).
-
-**Wallpaper**: cover of the book, a chosen image or book cover, a random image from a folder, reading progress, book status or leave the screen as it is - and for images: border fill, stretch (optionally up to a limit), crop, rotate for best fit, images in order instead of random.
-Paths are the ones on the e-reader (on a Kobo /mnt/onboard/…). **Choose …** takes a file or folder on the connected e-reader. Anything from elsewhere is copied into the profile (folder koreader/screensaver; for a folder only the images directly in it) and goes to the e-reader with **To the e-reader …** ([[vorschau_rueckweg]]). Images elsewhere on the e-reader (outside the KOReader folder) only show in the workbench while it is connected.
-
-**Ignore the book cover**: no cover for books on hold, for finished books, or when the e-reader is locked in the file browser (only with the wallpaper "cover of the book").
-
-**Message**: show a message, its text (empty = KOReader's "Sleeping"), the shape (box or banner across the screen), its height (0 bottom, 50 middle, 100 top), opacity, and the background fill when the screen is left as it is. **Insert** adds placeholders such as %T title, %A author, %S series, %p percent read, %C chapter title, %P chapter percent, %b battery. The placeholders and the shape/height/opacity exist since KOReader 2025.10.
-
-**After waking up**: whether the sleep screen stays after waking (seconds, until a tap, until the "Exit sleep screen" gesture), the message for the gesture, and whether reboot/power-off messages are hidden.
-
-Fields that do nothing with the current choice are greyed out, like in KOReader's menu. Changes are a draft until **Save to profile**.
-""")),
-    ("vorschau", "vorschau_patches", _("Patches"), _("""
-Below Preview, **Patches** lists the user patches of the profile (folder koreader/patches) as KOReader's patch management does (Tools > More tools > Patch management on the e-reader).
-
-- Patches are grouped by when they run: early once after an update (0), early (1), late after the start (2), before quitting (8), when quitting (9) - the first digit of the file name. Files without such a number or without .lua never run and are not listed.
-- ☑ on, ☐ off. Double-click, Space or **On/off** switches. Like KOReader, Bookbench renames the file: off = ".disabled" behind ".lua".
-- **Switch off all patches** is KOReader's main switch (file .patches_disabled). In the workbench Bookbench switches the patches off one by one instead, so its own patch keeps running.
-- ⚠ marks a patch that failed in the workbench; select it to see KOReader's message. Many patches need the e-reader (a Kobo-only function, the frontlight …) and can never run on the computer - that says nothing about the e-reader.
-- **Show …** opens the patch read-only. **Add …** copies a .lua file into the profile (without a number it gets "2-", otherwise KOReader would never run it); **Delete** removes one. Adding and deleting change the profile at once.
-
-**Patches from Bookbench**
-Patches Bookbench brings along, with their state (not in the profile, in the profile, another version) and **Add** or **Update**. They are also attached to every Bookbench release on GitHub, for copying into koreader/patches on the e-reader by hand.
-- **2-bookbench-subtitle**: reads the subtitle and calibre's custom columns straight from each EPUB on the e-reader. Bookshelf gets the token **%subtitle** (top panel, list lines, cover labels, [if:subtitle]); **%calibre{name}** in Bookshelf and Bookends also finds columns stored in the book, without calibre's metadata.calibre (a value in the book wins). Subtitle = the column #subtitle, otherwise the EPUB 3 subtitle. Bookbench writes these columns into the book when you edit them in Metadata. The patch hooks into Bookshelf's and Bookends' insides; if a new version changes them, the values stay empty and nothing else breaks.
-
-Switching on and off is a draft until **Save to profile**. Patches run when KOReader starts, so the workbench restarts after every change. To bring patches onto the e-reader: **To the e-reader …** ([[vorschau_rueckweg]]). Bookbench's internal patches (1-bookbench-desktop, 2-bookbench-workbench) are not listed.
-""")),
-    ("vorschau", "vorschau_bookends", _("Bookends settings"), _("""
-If the profile contains the plugin **Bookends**, the sidebar shows **Bookends** below Preview. Its settings page sits in the left column; the picture stays on the right and shows every change after a short pause (a tenth of a second, KOReader keeps running). The workbench switches to the reading page for this.
-
-The page is divided into sections (Preset, Lines, Selected line, Progress bars, General); a click on the heading folds a section away or opens it. Bookbench remembers which are open.
-
-**Draft and profile**
-- Changes are a draft at first: they only show in the picture. The red line says so.
-- **Save to profile** (toolbar) writes the preset and the switch into the preview profile; **Discard** goes back to what is in the profile.
-- **To the e-reader …** (toolbar) writes the saved changes to the e-reader: [[vorschau_rueckweg]].
-- **From the e-reader** and **From backup** replace the profile; if Bookbench has changed something in it, it asks first.
-
-**Presets**
-- Bookends keeps everything you see in presets (one file each). The **active** preset is the one Bookends uses on the e-reader; another one can be shown and edited, the picture then shows that one. **Make active** marks it, saving makes it active in the profile.
-- **New**, **Duplicate**, **Delete**. Name and description are what Bookends shows in its preset manager.
-
-**Lines**
-- Six positions (top and bottom, each left, centre, right), one line per row. Tokens such as %title, %chap_title or %page_num are filled in by Bookends; **Insert token** lists those of the installed Bookends version, sorted like in Bookends.
-- **Special characters …** opens Bookends' list of symbols (battery, book, arrows, blocks, separators …), sorted in groups as in Bookends. A click inserts at the cursor of the line you used last; "dynamic" symbols insert their token (%batt_icon changes with the battery). The symbols come from KOReader's symbol font (nerdfonts/symbols.ttf); Bookbench shows them in the lines as small pictures and takes the font from the profile (fonts of the e-reader) or from the desktop KOReader.
-- **Extra margin** next to each position moves the whole position away from the edge (↕ top or bottom, ↔ left or right for the corners), in pixels.
-- Click into a line (section **Selected line**) to set its **style** (bold, italic), **size** (empty = the general size), **capitals** and **offset**: ← → and ↑ ↓ in pixels, negative = left or up, **Back to 0** sets both to 0. Inserting or deleting lines keeps the settings with their line.
-- **Show on**: all pages, or only odd or even pages (for example page numbers on the outer side).
-- **Bar in this line**: the token %bar draws a progress bar inside the line. **Insert bar** adds it, **Remove bar** takes it out again. For a line with a bar: chapter or book, chapter ticks (book only), style, fill direction, thickness and unread thickness in pixels (empty thickness = as high as the text).
-- Settings Bookbench does not offer yet (font per line, colours and markers of bars, conditions in the text) are kept unchanged when saving.
-
-**Progress bars**
-Up to eight bars across the page, independent of the lines. Choose a bar in the list (✓ = switched on, with its edge), then: **Switched on**, chapter or book, chapter ticks, style, fill direction, **Edge** (top, bottom, left, right), thickness (diameter for round bars) and unread thickness, distance from the edge and the margins at both ends. A bar set to "Position relative to line text" on the e-reader shows its distance from the line text instead; switching that on or off stays on the e-reader, as do colours and markers.
-
-**General**
-Font size and scale, the four margins, the gap before texts overlap and what is shortened first. Empty fields use Bookends' defaults.
-
-Bookends is a plugin by AndyHazz (github.com/AndyHazz/bookends.koplugin); Bookbench only reads and writes its files. Newer Bookends versions can change the format; unknown parts stay as they are.
-""")),
-    ("vorschau", "vorschau_bookshelf", _("Bookshelf settings"), _("""
-If the profile contains the plugin **Bookshelf**, the sidebar shows **Bookshelf** below Preview. The workbench switches to the start screen for this.
-
-Bookshelf cannot reload its settings while KOReader runs. After a change, the workbench therefore restarts after a short pause (about a second) and then shows the new start screen.
-
-**Draft and profile** work as for Bookends ([[vorschau_bookends]]): first only in the picture, **Save to profile** keeps them, **Discard** goes back.
-
-The page is divided into sections; a click on the heading folds a section away or opens it. Bookbench remembers which are open.
-
-**Theme**
-- **Default theme**: the theme every shelf wears unless it has its own. **Custom theme** is your own look (wallpaper, plank, colours below), **Plain** Bookshelf's plain look, and every theme pack in the profile. A theme is a layer over the custom theme: it replaces only the parts it brings.
-- **Light or dark**: automatic (like KOReader's night mode) or fixed.
-- **Theme per shelf**: each shelf can wear its own theme or follow the default. Only shown if the shelves were changed in Bookshelf at least once (otherwise Bookshelf uses its standard shelves, and there is nothing to write yet).
-- Theme packs are folders in settings/bookshelf/ornaments with a theme/theme.json. New ones come from Bookshelf's theme library on the e-reader; take the profile again afterwards.
-
-**Wallpaper, plank, colours** (of the custom theme)
-- **Wallpaper**: a picture from settings/bookshelf/wallpapers, a second one for full screen shelves, how strongly the panels over it are shaded, transparent buttons, blur under the panels, inverting in night mode. **Add picture …** copies a picture into the profile at once.
-- **Plank**: oak, colour only, or a plank from a theme pack.
-- **Colours**: day and night colour for each part (text, progress bar, plank, menu bar …). Click a field to choose; "-" is the default, ✕ resets day and night. Grey is stored as Bookshelf does (as a grey level).
-
-**Decoration (ornaments)**
-- **How often per shelf**: none, rarely, often (default), always. Ornaments only appear on spine shelves.
-- The list shows all ornaments of the profile (loose files and packs); a double-click switches a piece or a whole pack off and on.
-
-**Top panel**
-- **Shows**: the current book (hero card) or Bookshelf's modules (clock, quote …). Arranging the modules stays in Bookshelf.
-- **Lines of the hero card**: status line, rating, title, author, metadata, description, tags, progress (✓ = shown). For each: **Shown**, the text with tokens (**Insert token** lists Bookshelf's tokens), size, alignment, bold, capitals; **Default** goes back to Bookshelf's default for that line. [if:token]…[/if] shows a part only if the token has a value; an empty text leaves the line out.
-- Rating and tags are buttons, not text: only on/off, size and alignment; for tags also which kinds (authors, series, collections, genres, folder) and how many rows.
-- **Subtitle** puts the book's subtitle into the line ([if:subtitle]%subtitle[/if]; in the metadata line instead of the series). It needs the patch 2-bookbench-subtitle in the profile and on the e-reader ([[vorschau_patches]]).
-
-**Modules in the top panel**
-- The modules shown when the top panel is set to modules, with their position: page, column and row of the top-left cell, width and height in grid cells - or **Place automatically**. The panel has 1 or 2 rows and 2 to 8 columns depending on the screen; Bookshelf moves a module that does not fit or overlaps another.
-- **Add** offers Bookshelf's modules (clock, quote, weather …); modules that need a choice (action, shelf, ornament) are added in Bookshelf. **Up**/**Down** change the order, **Remove** takes one out.
-
-**Start menu**
-- The entries of Bookshelf's start menu as a tree: entries, modules (▣), dividers and folders (one level deep, as in Bookshelf).
-- **Add**: a folder, a divider, a module, or one of Bookshelf's standard entries (reading calendar, Wi-Fi, night mode, sleep …; the name is stored in Bookbench's language). It goes behind the selected entry.
-- **Up**/**Down** within its level, **Folder** moves an entry into a folder or out of it, **Rename …** (or double-click), **Remove**. Other actions and the icons are set in Bookshelf's start menu editor.
-
-**Shelves**
-- The shelves above the books: ☑ shown, ☐ hidden (double-click or **On/off**; one stays shown), order, name, and how a shelf is shown (covers, list, spines, automatic).
-- **Add** brings back a standard shelf that was removed (home, recent, series …). New shelves from collections or folders, sorting and filters are set in Bookshelf.
-- These three only show once Bookshelf has written them (after their first use on the e-reader); before that it uses its defaults, and there is nothing to change yet.
-
-**More settings**
-- A selection of settings that change the look (layout, font sizes, covers and spines, display), with Bookshelf's defaults where the file has no value.
-- **All keys in the file**: everything in settings/bookshelf/settings.lua, also what is not listed above. Double-click (or **Change …**) changes a simple value (number, text, on/off) in its type. Tables - shelves, modules, the start menu - can only be changed in Bookshelf itself or in the sections above (colours, theme and ornaments per shelf, the hero card, modules, start menu, shelves). **Default** removes the key, then Bookshelf's default applies. Changed keys have a ●.
-- Values Bookshelf writes by itself while running (current shelf and page, version notes) are not listed.
-
-Bookshelf is a plugin by AndyHazz (github.com/AndyHazz/bookshelf.koplugin); Bookbench only reads and writes its settings file.
-""")),
-    ("vorschau", "vorschau_profil", _("Profile"), _("""
-The preview runs in its own profile in the settings folder (subfolder vorschau, [[dateien]]). A normal KOReader installation on the computer stays untouched.
-
-- **From the e-reader** rebuilds the profile from the connected e-reader: settings.reader.lua, folder settings (with the Bookends presets), styletweaks, patches, the plugins you installed (the built-in ones come with the desktop KOReader) and the fonts from KOReader's fonts folder and from the font folder of the device ([[kobo_geraete]]).
-- **From backup** takes settings, settings folder, styletweaks and patches from the backup selected in the E-reader area, otherwise from the newest ([[kobo_sicherungen]]). Plugins and fonts are in no backup; they stay as they are. So you have to take the profile from the e-reader at least once.
-- When taking a profile and before every start, these are removed from the settings: **screen_dpi** (it would override the screen size of the preview), plugin paths and the last files/folders on the e-reader. In the profile, book data is always next to the book.
-""")),
-    ("vorschau", "vorschau_rueckweg", _("To the e-reader"), _("""
-**To the e-reader …** (toolbar) writes what you changed in the preview profile to the connected e-reader - the way back after Bookends, Bookshelf, font and margins, patches.
-
-**What is offered**
-- When the profile is taken from the e-reader (or from a backup), Bookbench notes the state of the files it compares (folder vorschau/basis). Offered is what changed in the profile since then: Bookends presets and bookends.lua, Bookshelf's settings, wallpapers and ornaments, patches (also switched off = renamed, added, deleted), style tweaks, and KOReader's settings (settings.reader.lua) key by key.
-- ⚠ **Conflict**: the same file or key was changed on the e-reader too since the profile was taken. Not preselected - transferring it replaces the e-reader's change.
-- What changed only on the e-reader (KOReader writes all the time: positions, statistics) is left alone. Databases (statistics, cover cache) are never transferred.
-- Device-specific settings are never offered: screen DPI, paths and last files, frontlight, Wi-Fi, migration notes and the like. **Never offer** hides further settings for good (it only applies to keys, not files).
-- A profile taken before 1.4-beta6 has no noted state: then profile and e-reader are compared directly, and only areas Bookbench has changed are preselected. Take the profile again to get the exact comparison.
-
-**Transferring**
-- Tick what should go (double-click, Space, **On/off**, **All**, **None**, **Suggestion**) and **Transfer**. Before writing, the KOReader settings of the e-reader are backed up (E-reader area, reason "before writing from the preview").
-- Settings are written key by key into the e-reader's settings.reader.lua; everything else in it stays.
-- Unsaved drafts on the workbench pages are asked about first.
-- Afterwards eject the e-reader; KOReader reads the changes at its next start. If KOReader is running on the e-reader while you transfer (rare over USB), it may overwrite settings.reader.lua when it closes.
-""")),
-    ("vorschau", "vorschau_starten", _("Starting and output"), _("""
-**Open in KOReader** (toolbar, always the first button)
-- Starts the full desktop KOReader in a window, with menus and all plugins of the profile - for trying things out. The workbench keeps running beside it ([[vorschau_werkbank]]).
-- It shows what the workbench shows: the reading page with the selected book, or the start screen (with sample books or the opened library, the selected book as the one read last).
-- Since 1.4-beta6 it works on its own throw-away copy of the profile (vorschau/fenster), with the drafts of the workbench pages. What you change in KOReader's menus there is not kept - change it on the workbench pages and save it to the profile.
-- The selected book (the sample text too) is copied with its book data (.sdr) into that copy and opened there. KOReader writes to the book data while reading; that way the original stays untouched, on the e-reader too.
-- Book data is searched: next to the book, on the connected e-reader (same file name), in the backup. Without book data the general settings apply, so font size and margins may differ.
-- **Other file …** (below the book selection) shows a book that is not in the opened library.
-
-**KOReader output**
-Under **Profile, device and output** (click to unfold) is what KOReader reports at start and while running: the workbench's output (vorschau/werkbank/koreader.log), after **Open in KOReader** that of the window (vorschau/fenster/koreader.log). After it closes, the status bar gives the number of warnings and errors, for example a patch that does not run on the computer because it needs something specific to the e-reader.
-""")),
-    ("vorschau", "vorschau_bildschirm", _("Screen and device"), _("""
-The workbench and the window copy the screen of a device: size in pixels, pixel density, colour or black and white (black and white switches off the colours in KOReader, as on the device). The workbench always uses the full size. Which device it is stands under **Profile, device and output**:
-- **Automatic** (default): the device the profile was taken from (From the e-reader, or the device noted in the backup), otherwise the connected e-reader, otherwise the Libra Colour - then with a ⚠.
-- Kindle and PocketBook note no model, so automatic falls back to the Libra Colour for them; choose **Own size** there.
-- **Settings > Device > Preview**: a fixed Kobo or tolino model, or **Own size** for other e-readers with KOReader (pixels in portrait format and ppi from the data sheet) - [[einst_vorschau]].
-
-For **Open in KOReader** (window) the size is chosen there: a Libra Colour has 1264 × 1680 pixels at 300 dpi; hardly any screen is that tall.
-- **Fitted to the screen** takes the height of the screen and lowers the DPI to match; KOReader sizes fonts and spacing by the DPI, so the page looks the same, only coarser.
-- **Half size**: half the pixels and half the DPI.
-- **Full size** is pixel-exact, but the window then goes beyond the screen.
-A screenshot from KOReader (menu or gesture) always has the full resolution of the window.
-""")),
-    ("", "speichern", _("Saving and backups"), _("""
-**Save** (Ctrl+S) writes all applied changes (yellow) of all books: chapter names and levels, blurbs, series, covers. Changes that were not applied (red) are not saved.
-
-**Backups**
-- Before saving, every affected file is copied to the backup folder: **<name>_YYYYMMDD_HHMMSS.epub**. The newest backups of each book are kept ([[einst_speichern]]).
-- Do not put the backup folder on the e-reader: otherwise KOReader shows the backups as books. The default is a folder in the user directory.
-- To go back: copy the backup over the book (rename it back to the original name).
-
-**What is written**
-- Only the files inside the EPUB that changed (nav.xhtml, toc.ncx, content.opf, the cover image); everything else is copied unchanged. The file "mimetype" stays first and uncompressed, as the EPUB rules require.
-- Saving goes to a temporary file first and replaces the book only when that worked.
-
-After saving, KOReader only shows new metadata after re-reading the book information (Cover browser > Extract and cache book information).
-""")),
-    ("", "einstellungen", _("Settings"), _("""
-File > **Settings …** opens the settings. The tree on the left has groups with pages below them; a group page shows what its pages are for. **Help** (or F1) in the dialog opens the chapter of the page shown here.
-
-**OK** saves, **Cancel** forgets the changes. Most settings apply at once; chapter settings after reloading (F5), the language after the automatic restart.
-
-All settings are in **einstellungen.json** in the settings folder ([[dateien]]). Export, import and resetting: [[einst_erweitert]].
-
-**Pages**
-- General: [[einst_darstellung]], [[einst_oberflaeche]], [[einst_start]]
-- [[einst_speichern]]
-- Books: [[einst_kapitel]], [[einst_klappentexte]] ([[einst_klappentexte_profile]], [[einst_klappentexte_claude]]), [[einst_cover]] ([[einst_cover_nachschlagen]]), [[einst_metadaten]], [[einst_calibre]]
-- Device: [[einst_kobo]], [[einst_vorschau]]
-- [[einst_erweitert]]
-""")),
-    ("einstellungen", "einst_darstellung", _("Language and theme"), _("""
-**Language** (default: automatic)
-- Automatic: German if the system language is German, otherwise English (Windows: language of the interface; Linux: LANGUAGE, LC_ALL, LC_MESSAGES, LANG).
-- When it changes, the program restarts by itself; folder, area, selected book and window stay. If changes are open, it asks first; with No the new language applies at the next start.
-
-**Theme** (default: like the system)
-- Light, dark, or like the system: follows the light/dark setting of Windows or KDE/GNOME, checked at start.
-""")),
-    ("einstellungen", "einst_oberflaeche", _("Interface"), _("""
-- **Status strip next to the lists** (default: on): coloured dots and pictograms ([[status]]). Also under View.
-- **Show tooltips** (default: on) and **Delay** (default: 600 ms): explanations when the mouse stays over a button.
-- **Show cover in Chapters** (default: on) and **Height** (default: 96 px): the small cover next to the book title; a click shows it large. Also under View > Cover.
-- **Double-click on a book opens it in** (default: Chapters): Chapters, Metadata, the Preview (the book is selected there) or KOReader (selects it in the Preview and starts the desktop KOReader). Preview and KOReader only where the Preview exists (not on Windows). A right-click on a book in the library offers all of them.
-- **Sidebar expanded** (default: on): with names and counters, or only symbols. Ctrl+B switches at any time; the last state is remembered.
-
-Which pictograms are shown where: [[einst_marken]].
-""")),
-    ("einst_oberflaeche", "einst_marken", _("Status symbols"), _("""
-One row per pictogram ([[status]]), one column per place:
-- **Sidebar**: the pictograms with numbers next to the areas.
-- **Book lists**: the narrow lists in Chapters and Metadata.
-- **Library**: the column Status in the library.
-
-Default: everything on. A switched-off pictogram is only hidden; the filters (e.g. No cover) and sorting by status still count it. The coloured dot for changed, applied and saved is not affected; the whole strip next to the lists can be switched off under [[einst_oberflaeche]]. **All on** and **All off** set every box.
-
-Dictionary, e-reader and "connected" only exist in the sidebar.
-""")),
-    ("einstellungen", "einst_start", _("Startup"), _("""
-- **Open the last folder** (default: on): the books folder that was open when the program was last closed, if it still exists - for the e-reader only when it is connected. Off: the program starts empty; File > Recently opened still has the folders.
-- **Area at start** (default: Library): always the library, or the area that was shown last.
-
-A folder given on the command line (start.py <folder>) is always opened.
-""")),
-    ("einstellungen", "einst_updates", _("Updates"), _("""
-**This copy** says how Bookbench was installed: with the Windows setup, with install.sh or not at all (source code, e.g. a git clone). Only installed copies can update themselves ([[updates]]). **Check now** looks right away, with the values on this page (also before OK).
-
-**Automatic check** (default: at start, at most once a day): off, at every start, at most once a day or once a week. It runs a few seconds after the start in the background. Only a newer version opens a window; without network there is only a note in the status line. Source code copies never check automatically.
-
-**Skipped version**: shown when a version was skipped in the update window. **Show again** brings its window back at the next check.
-
-**Include pre-releases** (default: off): also releases marked as pre-release on GitHub.
-
-The releases come from github.com/kepfle-git/Bookbench; that is fixed in the program. Without signing in GitHub allows 60 requests per hour, far more than the check needs.
-""")),
-    ("einstellungen", "einst_speichern", _("Saving and backups"), _("""
-- **Backup folder** (default: Bookbench Backups in the user folder): books are copied here before each save ([[speichern]]). The E-reader area uses its subfolder KOReader, the dictionary its subfolder Wörterbücher. Not on the e-reader.
-- **Backups per book** (default: 5): the newest ones are kept, older ones are deleted when saving.
-""")),
-    ("einstellungen", "einst_kapitel", _("Chapters"), _("""
-- **Subtitle lines per chapter** (default: 1): how many lines below a chapter number make up the suggested name. Some books have three (e.g. place, time, person); with 3 all of them are joined with " / ".
-- **Write entries in capitals normally** (default: off): THE SHIRE becomes The Shire, A LONG-EXPECTED PARTY becomes A Long-Expected Party. Small words (a, of, the …) stay lower case except at the start.
-
-Both apply after reloading (F5), because the suggestions are made when reading the books. See also [[kapitel]].
-""")),
-    ("einstellungen", "einst_klappentexte", _("Blurbs"), _("""
-The page shows the order of the sources ([[klappentexte_nachschlagen]]).
-
-- **Ask Google Books and Open Library first** (default: on): free, no key. Off: every look-up goes to Claude straight away.
-- **Own Google Books API key** (default: empty): without a key Google Books often answers "quota exceeded", because everyone without a key shares one daily quota. An own key is free: in the Google Cloud Console create a project, enable the **Books API** and create an **API key** under Credentials. It is also used for looking up covers and is stored in plain text in the settings file. If Google rejects it, the look-up says so.
-- **Shortest blurb** (default: 80 characters): shorter texts from a source are not taken - often only a teaser line or "A novel".
-- **Longest blurb** (default: 4000 characters): longer texts are not taken - usually a plot summary or a whole article.
-The limits apply to all sources (free ones and Claude), not to text you enter yourself.
-""")),
-    ("einst_klappentexte", "einst_klappentexte_profile", _("Source profiles"), _("""
-The list of profiles in the order in which they are checked. The first active one that fits a book is used; what the fields mean: [[klappentexte_profile]].
-
-- **New …** puts a new profile at the top (otherwise the general web search would come first).
-- **Edit …** (or double-click), **Delete**, **Up**, **Down**.
-- **Defaults** puts the included profiles back; your own profiles are removed.
-- "(off)" in front of "Applies to": the profile is switched off and skipped.
-
-Changes count after OK. If a profile changes, Claude looks up again for its books; books it already found stay as they are.
-""")),
-    ("einst_klappentexte", "einst_klappentexte_claude", _("Claude API"), _("""
-- **API key**: from console.anthropic.com (account with credit). Empty: the environment variable ANTHROPIC_API_KEY is used. Stored in plain text in einstellungen.json ([[dateien]]) - keep that in mind when exporting the settings.
-- **Model** (default: claude-haiku-5-5): choose from the list; Haiku is enough for looking things up and is the cheapest. **Load list** asks Anthropic with the API key for the models available right now (newest first). A name can also be typed in.
-- **Estimated cost per book** (default: 0.015 $): only for the question before looking up all missing blurbs; the real cost depends on page length and searches.
-
-Also needed: the package **anthropic** (pip install anthropic). What is sent: [[kosten]].
-""")),
-    ("einstellungen", "einst_cover", _("Covers"), _("""
-**Inserting a new cover** ([[cover_bild]])
-- **Shrink to at most this height** (default: 0 = never): your e-reader shows at most its screen height (e.g. 1680 px on a Libra Colour); larger images only make the file bigger. Images are never enlarged.
-- **JPEG quality** (default: 90): only when an image is converted or shrunk; otherwise it is taken unchanged. 90 is barely distinguishable from the original; below 75 artefacts become visible.
-
-**Marking**
-- **Mark covers below this height** (default: 800 px, 0 = never): ⚠ in the Metadata area and its filter "Small cover".
-""")),
-    ("einst_cover", "einst_cover_nachschlagen", _("Looking up covers"), _("""
-**Sources** (both free, no key needed; Google Books uses your own key if there is one, [[einst_klappentexte]]; [[kosten]])
-- **Open Library** (default: on): often large scans, sometimes of another edition.
-- **Google Books** (default: on): the publisher's image, usually smaller.
-
-**Which images count**
-- **Smallest height** (default: 300 px): smaller images are left out (preview thumbnails, placeholders).
-- **At most this many to choose from** (default: 8): each image is downloaded, so more takes longer. Looking up all missing covers takes at most 3 per book and uses the largest.
-""")),
-    ("einstellungen", "einst_metadaten", _("Metadata"), _("""
-**Own fields** ([[metadaten_felder]])
-- The list holds one Calibre column per row: **lookup name** (as in Calibre, with #, e.g. #subtitle) and the **label** Bookbench shows. Default: none.
-- Select a row to change it below, **Add / change** takes the two fields (an existing lookup name is changed, a new one added). **Delete**, **Up** and **Down** work on the selected row; the order is the order in the form.
-- **From Calibre** adds all own columns found in the metadata.calibre of the opened folder, with Calibre's labels. Delete the ones you do not want.
-""")),
-    ("einstellungen", "einst_calibre", _("Calibre"), _("""
-- **Compare with Calibre** (default: on): Bookbench reads Calibre's metadata.calibre (root of the e-reader, or the opened folder and the folders above it) and shows its values: in [[metadaten_calibre]] for comparing, in the library and in Blurbs for taking over series and blurbs ([[bibliothek_calibre]]).
-- Off: metadata.calibre is ignored, the Calibre buttons disappear from the toolbars, the Calibre entries in the Edit menu only give a hint. Useful once Bookbench has replaced Calibre for you.
-- Switching off applies at once, switching on after reloading (F5).
-- The one-time import from a Calibre library (metadata.db) works independently of this setting: [[calibre_import]].
-""")),
-    ("einstellungen", "einst_kobo", _("E-reader"), _("""
-**Detection**
-- **Look for the e-reader every** (default: 3 seconds): how often the program checks whether an e-reader is connected or unplugged ([[kobo]]).
-- **When an e-reader is connected** (default: open its books, ask if another folder is open): or always ask, or do nothing ([[kobo]]).
-
-**Backups**
-- **Backups of the KOReader settings** (default: 10): this many stay in the subfolder KOReader of the backup folder, including the backup before each restore ([[kobo_sicherungen]]).
-
-**Dictionaries**
-- **Dictionaries (folder on the computer)**: where the dictionaries to copy are ([[kobo_woerterbuecher]]). Also set by Choose source in the E-reader area.
-
-**Ejecting**
-- **Remind me to eject when quitting** (default: on): only if something was written to the e-reader in this session ([[kobo_auswerfen]]).
-""")),
-    ("einstellungen", "einst_vorschau", _("Preview"), _("""
-Only on Linux and macOS.
-
-- **Desktop KOReader** (default: empty = search): only fill in if it is not found by itself ([[vorschau]]). **flatpak** always takes the Flatpak rocks.koreader.KOReader, also when KOReader is installed normally too ([[fehler]]).
-- **Device shown** (default: automatic): automatic, any Kobo or tolino model from the list (with size and ppi), or **Own size** with width, height (pixels in portrait format), ppi and colour screen for other e-readers with KOReader. See [[vorschau_bildschirm]].
-""")),
-    ("einstellungen", "einst_erweitert", _("Advanced"), _("""
-**Files of the program**
-- Shows where settings, chapter decisions and blurb cache are ([[dateien]]); **Open settings folder** opens it in the file manager.
-
-**Blurb cache**
-- Shows how many entries it has. **Empty …** deletes it: afterwards everything is looked up again, and Claude costs again.
-
-**Export and import**
-- **Export settings …** writes all settings to a JSON file, e.g. to take them to another computer. It contains the API key.
-- **Import settings …** replaces the current settings with those from the file (unknown entries are ignored). The language applies at the next start.
-
-**Reset**
-- **Reset all settings …** puts everything back to the defaults. Kept: opened folders, the list of dictionaries, window size, language and the API key.
-""")),
-    ("", "updates", _("Installing and updating"), _("""
-**Installing**
-- **Windows**: Bookbench_Setup_<version>.exe from the release page on GitHub. It installs for the current user without administrator rights (%LOCALAPPDATA%\\Programs\\Bookbench); as administrator "for all users" can be chosen. Start menu entry, desktop shortcut optional. Uninstall in the Windows settings under Apps; the settings in %APPDATA%\\Bookbench stay.
-- **Linux**: download the source code of the release (or clone the repository) and run **./install.sh** in it. It copies the program to ~/.local/share/bookbench/programm, sets up a Python environment there (venv) with the optional packages, a command **bookbench** in ~/.local/bin and a menu entry. **./install.sh --uninstall** removes all that again; the settings in ~/.config/bookbench stay. Needs Python 3.9 or newer with Tkinter (Arch: python and tk; Debian/Ubuntu: python3-tk and python3-venv).
-- Without installing: **python start.py** in the program folder; the optional packages then come from pip (README).
-
-**Updating**
-- **Help > Check for updates …** looks for the newest release on GitHub ([[einst_updates]]). Installed copies also look by themselves at start.
-- A newer version shows its changes (formatted like on GitHub, links open in the browser), with **Install now** for installed copies.
-- **Install now** on Windows: downloads the setup, closes Bookbench, installs the new version over the old one and starts it again.
-- **Install now** on Linux: downloads the new version, replaces the program folder and restarts Bookbench; the Python environment stays.
-- Before closing Bookbench asks about unsaved changes and ejecting, like when quitting. Saying no keeps the download; Install now later uses it.
-- The setup is checked against the file SHA256SUMS of the release; a damaged download is not installed.
-- **Skip this version**: no more window for it at start; the manual check still shows it.
-- A copy running from source code (git clone) is not replaced; update it with git pull.
-
-The **desktop KOReader** for the preview (Linux only) is not part of the installation ([[vorschau]]).
-""")),
-    ("", "fehler", _("Troubleshooting"), _("""
-**KOReader still shows the old chapter names, blurb or cover**
-- KOReader keeps its own copy of the book information. Cover browser > long-press the book or menu > **Extract and cache book information** (or for the whole folder). The table of contents is read anew when the book is opened.
-
-**JPEG covers are not shown**
-- The package **Pillow** is missing: pip install pillow. Without it only PNG and GIF can be shown.
-
-**"No API key" or nothing goes to Claude**
-- Key under [[einst_klappentexte_claude]] or the environment variable ANTHROPIC_API_KEY; package anthropic installed? Without a key only the free sources are asked.
-
-**API error**
-- The status bar shows Anthropic's message: no credit, wrong key, model name unknown, overloaded. The book does not count as tried and is looked up again next time.
-
-**Google Books / Open Library: network error**
-- Behind a proxy or offline nothing can be reached; the book is not marked as tried. Google sometimes limits requests without a key: try again later.
-
-**The e-reader is not found**
-- On the e-reader confirm the connection (KOReader: USB mass storage, or the device's own software: Connect).
-- Newer Kindles and Android devices only connect via MTP, without a drive ([[kobo_geraete]]).
-- Then wait a few seconds or E-reader menu > **Find e-reader**. Is the drive mounted (Linux: file manager)? If needed, open the books folder on the e-reader: then its root counts too.
-
-**Restored settings are gone again**
-- KOReader writes its settings when it closes. Eject first, then start KOReader - do not change anything in a KOReader that was already running.
-
-**A chapter level cannot be changed**
-- nav.xhtml and toc.ncx of this book have a different number of entries; the status bar names the reason ([[kapitel_ebenen]]).
-
-**Preview: window too large or patches fail**
-- Choose "Fitted to the screen" ([[vorschau_bildschirm]]). Patches that need Kobo hardware fail on the computer; the output under **Profile, device and output** says which (workbench: vorschau/werkbank/koreader.log).
-
-**Preview: the workbench shows no picture**
-- The line under ◀ ▶ says what KOReader reports. **Restart** tries again; a profile from the e-reader is needed ([[vorschau_profil]]). If KOReader itself does not start, the same causes as for the window apply (below).
-
-**Preview: KOReader closes at once ("device/kobo/device.lua" in the output)**
-- The desktop KOReader takes the computer for an e-reader: up to at least version 2026.07 it recognizes the device by files such as /usr/bin/hwdetect (Arch/EndeavourOS: package hwdetect), /bin/kobo_config.sh or /proc/usid. KOReader alone does the same.
-- Normally this does not happen in the preview: Bookbench puts a start patch (1-bookbench-desktop.lua) into the profile that hides these files from KOReader. It does not count as one of your patches and never goes to the e-reader. It does not work if patches are switched off in KOReader; then Bookbench says so and which file it is.
-- Way out: KOReader as Flatpak (flatpak install flathub rocks.koreader.KOReader), it does not see these files. Enter **flatpak** under Settings > Device > Preview > Desktop KOReader ([[einst_vorschau]]), so that it is taken even if KOReader is also installed normally. Or remove the file if nothing else needs it.
-
-**Something else**
-- The status bar always has the last message. Backups of all saved books are in the backup folder ([[speichern]]).
-""")),
-]
-
-TITEL = {k: t for __, k, t, __ in THEMEN}
-VERWEIS = re.compile(r"\[\[(\w+)\]\]")
-
-
-def thema(bereich):
-    """Kennung des Hilfethemas zu einem Bereich (wie App._bereich); sonst der Überblick."""
-    return bereich if bereich in TITEL else THEMEN[0][1]
-
-
-def klartext(text):
-    """Text ohne Auszeichnung, Verweise als Titel (für die Suche)."""
-    return VERWEIS.sub(lambda m: TITEL.get(m.group(1), m.group(1)), text).replace("**", "")
-
-
-class HilfeFenster(tk.Toplevel):
-    def __init__(self, app, thema=None):
+class HilfeFenster(QDialog):
+    def __init__(self, app):
         super().__init__(app)
         self.app = app
-        self.title(f"{PROGRAMM} - " + _("Help"))
-        self.geometry("980x620")
-        self.minsize(640, 380)
+        self.setWindowTitle(f"{PROGRAMM} - " + _("Help"))
+        self.setWindowFlag(Qt.WindowMaximizeButtonHint, True)
+        self.setAttribute(Qt.WA_DeleteOnClose)
+        self.resize(980, 620)
+        self.setMinimumSize(640, 380)
+        self.themen = ht.themen()
+        self.titel = {k: t for __, k, t, __ in self.themen}
+        self.eltern = {k: e for e, k, __, __ in self.themen}
         self.verlauf = []
-        links = ttk.Frame(self, padding=(8, 8, 0, 8))
-        links.pack(side="left", fill="y")
-        self.suche = tk.StringVar()
-        z = ttk.Frame(links)
-        z.pack(fill="x", pady=(0, 6))
-        ttk.Label(z, text=_("Search:")).pack(side="left")
-        self.suchfeld = ttk.Entry(z, textvariable=self.suche)
-        self.suchfeld.pack(side="left", fill="x", expand=True, padx=(6, 0))
-        self.suche.trace_add("write", lambda *a: self._suchen())
-        self.suchfeld.bind("<Return>", lambda e: self._erster_treffer())
-        self.suchfeld.bind("<Escape>", lambda e: (self.suche.set(""), "break")[1])
-        rahmen = tk.Frame(links, highlightthickness=1, borderwidth=0)
-        rahmen.pack(fill="both", expand=True)
-        self.baum = ttk.Treeview(rahmen, show="tree", selectmode="browse", height=20)
-        self.baum.column("#0", width=270)
-        sb = ttk.Scrollbar(rahmen, orient="vertical", command=self.baum.yview)
-        self.baum.configure(yscrollcommand=sb.set)
-        sb.pack(side="right", fill="y")
-        self.baum.pack(side="left", fill="both", expand=True)
-        self.treffer_text = ttk.Label(links, text="", style="Hinweis.TLabel")
-        self.treffer_text.pack(anchor="w", pady=(4, 0))
-        rechts = ttk.Frame(self, padding=8)
-        rechts.pack(side="left", fill="both", expand=True)
-        oben = ttk.Frame(rechts)
-        oben.pack(fill="x", pady=(0, 4))
-        self.zurueck_knopf = ttk.Button(oben, text="← " + _("Back"), command=self.zurueck, state="disabled")
-        self.zurueck_knopf.pack(side="left")
-        self.pfad = ttk.Label(oben, text="", style="Hinweis.TLabel")
-        self.pfad.pack(side="left", padx=10)
-        trahmen = tk.Frame(rechts, highlightthickness=1, borderwidth=0)
-        trahmen.pack(fill="both", expand=True)
-        self.text = tk.Text(trahmen, wrap="word", borderwidth=0, highlightthickness=0, padx=12, pady=10,
-                            font=kth.schrift(10), cursor="arrow", spacing1=1, spacing3=2)
-        tsb = ttk.Scrollbar(trahmen, orient="vertical", command=self.text.yview)
-        self.text.configure(yscrollcommand=tsb.set)
-        tsb.pack(side="right", fill="y")
-        self.text.pack(side="left", fill="both", expand=True)
-        self.text.tag_configure("fett", font=kth.schrift(10, fett=True))
-        self.text.tag_configure("titel", font=kth.schrift(13, fett=True), spacing3=8)
-        self.text.tag_configure("punkt", lmargin1=8, lmargin2=26)
-        self.text.tag_configure("verweis", underline=True)
-        self.text.tag_bind("verweis", "<Enter>", lambda e: self.text.configure(cursor="hand2"))
-        self.text.tag_bind("verweis", "<Leave>", lambda e: self.text.configure(cursor="arrow"))
-        self._rahmen = (rahmen, trahmen)
-        self._baum_fuellen()
-        self.baum.bind("<<TreeviewSelect>>", lambda e: self._anzeigen())
-        self.bind("<Escape>", lambda e: self.destroy())
-        self.bind("<Alt-Left>", lambda e: self.zurueck())
-        self.bind("<Control-f>", lambda e: (self.suchfeld.focus_set(), self.suchfeld.select_range(0, "end")))
-        self.farben()
-        self.zeige(thema or THEMEN[0][1])
+        self._aktuell = None
 
+        lay = QHBoxLayout(self)
+        lay.setContentsMargins(8, 8, 8, 8)
+        teiler = QSplitter(Qt.Horizontal)
+        lay.addWidget(teiler)
+
+        links = QWidget()
+        ll = QVBoxLayout(links)
+        ll.setContentsMargins(0, 0, 0, 0)
+        z = QHBoxLayout()
+        z.addWidget(QLabel(_("Search:")))
+        self.suche = QLineEdit()
+        self.suche.setClearButtonEnabled(True)
+        z.addWidget(self.suche, 1)
+        ll.addLayout(z)
+        self.baum = QTreeWidget()
+        self.baum.setHeaderHidden(True)
+        self.baum.setUniformRowHeights(True)
+        ll.addWidget(self.baum, 1)
+        self.treffer_text = QLabel("")
+        self.treffer_text.setProperty("rolle", "hinweis")
+        ll.addWidget(self.treffer_text)
+        teiler.addWidget(links)
+
+        rechts = QWidget()
+        rl = QVBoxLayout(rechts)
+        rl.setContentsMargins(0, 0, 0, 0)
+        oben = QHBoxLayout()
+        self.zurueck_knopf = QPushButton("← " + _("Back"))
+        self.zurueck_knopf.setEnabled(False)
+        self.zurueck_knopf.clicked.connect(self.zurueck)
+        oben.addWidget(self.zurueck_knopf)
+        self.pfad = QLabel("")
+        self.pfad.setProperty("rolle", "hinweis")
+        oben.addWidget(self.pfad, 1)
+        rl.addLayout(oben)
+        self.text = QTextBrowser()
+        self.text.setOpenLinks(False)
+        self.text.anchorClicked.connect(self._link)
+        rl.addWidget(self.text, 1)
+        teiler.addWidget(rechts)
+        teiler.setSizes([290, 690])
+        teiler.setStretchFactor(1, 1)
+
+        self._baum_fuellen()
+        self.baum.currentItemChanged.connect(lambda it, __: self._anzeigen())
+        self.suche.textChanged.connect(self._suchen)
+        self.suche.returnPressed.connect(self._erster_treffer)
+        QShortcut(QKeySequence("Alt+Left"), self, activated=self.zurueck)
+        QShortcut(QKeySequence("Ctrl+F"), self, activated=lambda: (self.suche.setFocus(), self.suche.selectAll()))
+        self.farben()
+
+    # -- Gliederung ---------------------------------------------------------------------------
     def _baum_fuellen(self, nur=None):
-        self.baum.delete(*self.baum.get_children())
-        for eltern, kennung, titel, __ in THEMEN:
-            if nur is not None:
-                if kennung in nur:
-                    self.baum.insert("", "end", iid=kennung, text=titel)
+        self.baum.blockSignals(True)
+        self.baum.clear()
+        self.eintraege = {}
+        for eltern, kennung, titel, __ in self.themen:
+            if nur is not None and kennung not in nur:
                 continue
-            self.baum.insert(eltern if eltern and self.baum.exists(eltern) else "", "end", iid=kennung,
-                             text=titel, open=not eltern)
+            oben = self.eintraege.get(eltern) if nur is None else None
+            it = QTreeWidgetItem(oben or self.baum, [titel])
+            it.setData(0, Qt.UserRole, kennung)
+            self.eintraege[kennung] = it
+            if nur is None and not eltern:
+                it.setExpanded(True)
+        self.baum.blockSignals(False)
 
     def farben(self):
-        p = kth.PALETTE["dunkel" if self.app.dark_mode.get() else "hell"]
-        for r in self._rahmen:
-            r.configure(highlightbackground=p["rahmen"], highlightcolor=p["rahmen"], bg=p["feld"])
-        self.text.configure(bg=p["feld"], fg=p["feld_fg"])
-        self.text.tag_configure("verweis", foreground=p["akzent"])
-        self.text.tag_configure("treffer", background="#f5d76e" if not self.app.dark_mode.get() else "#7a6420",
-                                foreground=p["feld_fg"])
+        f = theme.farben()
+        self.text.document().setDefaultStyleSheet(
+            f"a {{ color: {f['akzent']}; }} h2 {{ margin-bottom: 8px; }} li {{ margin-bottom: 2px; }}")
+        if self._aktuell:
+            self._anzeigen(merken=False)
 
-    # -- Suche ---------------------------------------------------------------------------
+    # -- Suche --------------------------------------------------------------------------------
     def _suchen(self):
-        such = self.suche.get().strip().casefold()
+        such = self.suche.text().strip().casefold()
         if not such:
             self._baum_fuellen()
-            self.treffer_text.configure(text="")
+            self.treffer_text.setText("")
             if self.verlauf:
                 self.zeige(self.verlauf[-1], merken=False)
             return
         woerter = such.split()
-        treffer = [k for __, k, t, x in THEMEN
-                   if all(w in (t + " " + klartext(x)).casefold() for w in woerter)]
+        treffer = [k for __, k, t, x in self.themen
+                   if all(w in (t + " " + ht.klartext(x, self.titel)).casefold() for w in woerter)]
         self._baum_fuellen(set(treffer))
-        self.treffer_text.configure(text=_("{n} topics found").format(n=len(treffer)) if treffer
-                                    else _("Nothing found."))
+        self.treffer_text.setText(ngettext("{n} topic found", "{n} topics found", len(treffer)).format(n=len(treffer))
+                                  if treffer else _("Nothing found."))
         if treffer:
-            sel = self.baum.selection()
-            if not sel or sel[0] not in treffer:
-                self.baum.selection_set(treffer[0])
-            else:
-                self._anzeigen()
+            ziel = self._aktuell if self._aktuell in treffer else treffer[0]
+            self.baum.blockSignals(True)
+            self.baum.setCurrentItem(self.eintraege[ziel])
+            self.baum.blockSignals(False)
+            self._anzeigen(merken=False)
 
     def _erster_treffer(self):
-        kinder = self.baum.get_children()
-        if kinder:
-            self.baum.selection_set(kinder[0])
-            self.baum.focus_set()
+        if self.baum.topLevelItemCount():
+            self.baum.setCurrentItem(self.baum.topLevelItem(0))
+            self.baum.setFocus()
 
-    # -- Anzeige ----------------------------------------------------------------------------
+    # -- Anzeige ------------------------------------------------------------------------------
+    def aktuelles_thema(self):
+        return self._aktuell
+
     def zeige(self, thema, merken=True):
-        if thema not in TITEL:                         # z. B. einst_allgemein: Gruppen ohne eigenes Thema
-            thema = "einstellungen" if thema.startswith("einst_") else THEMEN[0][1]
-        if self.suche.get() and not self.baum.exists(thema):
-            self.suche.set("")
-        if self.baum.exists(thema):
-            self._merken = merken
-            self.baum.selection_set(thema)
-            self.baum.see(thema)
-            self._anzeigen()
-        self.lift()
+        if thema not in self.titel:                      # z. B. einst_allgemein: Gruppen ohne eigenes Thema
+            thema = "einstellungen" if thema.startswith("einst_") else self.themen[0][1]
+        if self.suche.text() and thema not in self.eintraege:
+            self.suche.blockSignals(True)
+            self.suche.clear()
+            self.suche.blockSignals(False)
+            self._baum_fuellen()
+            self.treffer_text.setText("")
+        it = self.eintraege.get(thema)
+        if it is None:
+            return
+        self._merken = merken
+        self.baum.blockSignals(True)
+        self.baum.setCurrentItem(it)
+        self.baum.blockSignals(False)
+        self.baum.scrollToItem(it)
+        self._anzeigen(merken)
 
     def zurueck(self):
         if len(self.verlauf) > 1:
             self.verlauf.pop()
             self.zeige(self.verlauf.pop())
 
+    def _link(self, url: QUrl):
+        if url.scheme() == "thema":
+            self.zeige(url.path())
+
     def _pfad(self, kennung):
-        eltern = {k: e for e, k, __, __ in THEMEN}
-        teile, k = [], eltern.get(kennung)
+        teile, k = [], self.eltern.get(kennung)
         while k:
-            teile.insert(0, TITEL[k])
-            k = eltern.get(k)
+            teile.insert(0, self.titel.get(k, k))
+            k = self.eltern.get(k)
         return " › ".join(teile)
 
-    def _anzeigen(self):
-        sel = self.baum.selection()
-        thema = next((t for t in THEMEN if sel and t[1] == sel[0]), None)
-        if thema is None:
+    def html(self, kennung):
+        """HTML eines Themas (Überschrift, Absätze, Aufzählungen, fett, Verweise)."""
+        thema = next(t for t in self.themen if t[1] == kennung)
+        __, __, titel, text = thema
+        teile, liste = [f"<h2>{html.escape(titel)}</h2>"], False
+        for zeile in text.strip("\n").split("\n"):
+            punkt = zeile.startswith("- ")
+            if punkt and not liste:
+                teile.append("<ul>")
+                liste = True
+            elif not punkt and liste:
+                teile.append("</ul>")
+                liste = False
+            inhalt = self._inline(zeile[2:] if punkt else zeile)
+            if punkt:
+                teile.append(f"<li>{inhalt}</li>")
+            elif zeile.strip():
+                teile.append(f"<p>{inhalt}</p>")
+        if liste:
+            teile.append("</ul>")
+        return "\n".join(teile)
+
+    def _inline(self, zeile):
+        erg = []
+        for i, teil in enumerate(re.split(r"\*\*(.+?)\*\*", zeile)):
+            stuecke = []
+            for j, stueck in enumerate(ht.VERWEIS.split(teil)):
+                if j % 2:
+                    stuecke.append(f'<a href="thema:{stueck}">{html.escape(self.titel.get(stueck, stueck))}</a>')
+                else:
+                    stuecke.append(html.escape(stueck))
+            s = "".join(stuecke)
+            erg.append(f"<b>{s}</b>" if i % 2 else s)
+        return "".join(erg)
+
+    def _anzeigen(self, merken=None):
+        it = self.baum.currentItem()
+        if it is None:
             return
-        __, kennung, titel, text = thema
-        if getattr(self, "_merken", True) and (not self.verlauf or self.verlauf[-1] != kennung):
+        kennung = it.data(0, Qt.UserRole)
+        merken = getattr(self, "_merken", True) if merken is None else merken
+        if merken and (not self.verlauf or self.verlauf[-1] != kennung):
             self.verlauf.append(kennung)
         self._merken = True
-        self.zurueck_knopf.configure(state="normal" if len(self.verlauf) > 1 else "disabled")
-        self.pfad.configure(text=self._pfad(kennung))
-        self.text.configure(state="normal")
-        self.text.delete("1.0", "end")
-        self.text.insert("end", titel + "\n", "titel")
-        for i_zeile, zeile in enumerate(text.strip("\n").split("\n")):
-            tags = ()
-            if zeile.startswith("- "):
-                zeile, tags = "•  " + zeile[2:], ("punkt",)
-            for i, teil in enumerate(re.split(r"\*\*(.+?)\*\*", zeile)):
-                for j, stueck in enumerate(VERWEIS.split(teil)):
-                    if j % 2:                           # Verweis
-                        ziel = stueck
-                        tag = f"v_{ziel}"
-                        self.text.insert("end", TITEL.get(ziel, ziel), tags + ("verweis", tag))
-                        self.text.tag_bind(tag, "<Button-1>", lambda e, z=ziel: self.zeige(z))
-                    elif stueck:
-                        self.text.insert("end", stueck, tags + (("fett",) if i % 2 else ()))
-            self.text.insert("end", "\n", tags)
-        self.text.yview_moveto(0)
+        self._aktuell = kennung
+        self.zurueck_knopf.setEnabled(len(self.verlauf) > 1)
+        self.pfad.setText(self._pfad(kennung))
+        self.text.setHtml(self.html(kennung))
         self._markieren()
-        self.text.configure(state="disabled")
 
     def _markieren(self):
-        self.text.tag_remove("treffer", "1.0", "end")
-        for w in self.suche.get().strip().split():
-            start = "1.0"
+        """Suchwörter gelb hinterlegen (ExtraSelections: ändern den Text nicht) und zum ersten springen."""
+        doc = self.text.document()
+        sel, erster = [], None
+        farbe = TREFFER[theme.modus()]
+        for w in self.suche.text().strip().split():
+            c = QTextCursor(doc)
             while True:
-                pos = self.text.search(w, start, stopindex="end", nocase=True)
-                if not pos:
+                c = doc.find(w, c, QTextDocument.FindFlag(0))
+                if c.isNull():
                     break
-                ende = f"{pos}+{len(w)}c"
-                self.text.tag_add("treffer", pos, ende)
-                start = ende
-        erster = self.text.tag_nextrange("treffer", "1.0")
-        if erster:
-            self.text.see(erster[0])
+                ex = QTextBrowser.ExtraSelection()
+                ex.cursor = c
+                ex.format.setBackground(QColor(farbe))
+                sel.append(ex)
+                if erster is None or c.position() < erster.position():
+                    erster = QTextCursor(c)
+        self.text.setExtraSelections(sel)
+        if erster is not None:
+            erster.clearSelection()                       # sonst überdeckt die Auswahl das Gelb
+            self.text.setTextCursor(erster)
+            self.text.ensureCursorVisible()
+        else:
+            self.text.moveCursor(QTextCursor.Start)

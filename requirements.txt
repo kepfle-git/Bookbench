@@ -1,4 +1,7 @@
-# Optional packages for Bookbench (the program runs without them):
+# Needed since 2.0 (the interface is Qt). On Arch/EndeavourOS prefer the system package
+# (sudo pacman -S pyside6): then Bookbench uses the KDE style and file dialog.
+PySide6-Essentials
+# Optional packages (the program runs without them):
 #   pillow            JPEG covers, editing covers
 #   wordfreq          better synonyms, everyday words in the lookup history
 #   requests, mwparserfromhell   building a dictionary from a wiki

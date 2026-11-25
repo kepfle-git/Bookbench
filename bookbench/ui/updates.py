@@ -4,24 +4,26 @@ updates.py - nach neuen Versionen suchen und sie einspielen (Oberfläche zu core
 
   faellig(e, jetzt)    ist die automatische Suche dran? (Einstellung update_pruefen)
   Updates              hängt an der App: automatisch() beim Start, pruefen() aus dem Menü Hilfe
-  UpdateDialog         neue Version: Änderungen, Installieren, Seite, Überspringen, Später
+  UpdateDialog         neue Version: Änderungen (Markdown), Installieren, Seite, Überspringen, Später
 
-Gesucht wird im Hilfsthread (nicht über app.hintergrund, damit eine laufende Arbeit nicht
-blockiert); Ergebnisse kommen über app._q in den Hauptthread. Installieren: herunterladen
+Gesucht und geladen wird im Hilfsthread (nicht über app.hintergrund, damit eine laufende Arbeit nicht
+blockiert); Ergebnisse kommen über threads.im_hauptthread zurück. Installieren: herunterladen
 (Fortschritt im Dialog), prüfen, dann fragt app.schliessen_ok() nach offenen Änderungen.
 Windows: Installer still starten und beenden; Linux: programm/ tauschen und neu starten.
 """
-import threading
-import tkinter as tk
 import webbrowser
 from datetime import datetime, timedelta
-from tkinter import messagebox, ttk
 
-import keller_theme as kth
+from PySide6.QtCore import Qt
+from PySide6.QtWidgets import (QDialog, QHBoxLayout, QLabel, QProgressBar, QPushButton, QTextBrowser,
+                               QVBoxLayout)
+
 from bookbench.core import updater as ku
 from bookbench.i18n import _
-from bookbench.ui import markdown_view as kmd
-from bookbench.ui.help import PROGRAMM, VERSION
+from bookbench.ui import dialogs
+from bookbench.ui import theme
+from bookbench.ui import threads
+from bookbench.version import PROGRAMM, VERSION
 
 ABSTAND = {"start": timedelta(0), "taeglich": timedelta(days=1), "woechentlich": timedelta(days=7)}
 
@@ -44,10 +46,6 @@ class Updates:
         self.dialog = None
         self.release = None                     # zuletzt gefundene neuere Version
 
-    def _einstellungen(self, e=None):
-        e = e or self.app.e
-        return ku.REPO, bool(e.get("update_vorab"))
-
     def automatisch(self):
         """Beim Start: suchen, wenn die Einstellung es will; nur bei einer neuen, nicht
         übersprungenen Version meldet sich ein Dialog, Fehler stehen still in der Statuszeile.
@@ -63,17 +61,17 @@ class Updates:
         self.laeuft = True
         if von_hand:
             self.app.status.set(_("Checking for updates …"))
-        repo, vorab = self._einstellungen(einstellungen)
+        vorab = bool((einstellungen or self.app.e).get("update_vorab"))
 
         def lauf():
             try:
-                ergebnis, fehler = ku.release_holen(repo, vorab), None
+                ergebnis, fehler = ku.release_holen(ku.REPO, vorab), None
             except ku.UpdateFehler as e:
                 ergebnis, fehler = None, str(e)
             except Exception as e:                       # Meldung statt stillem Abbruch
                 ergebnis, fehler = None, _("Update check failed ({fehler}).").format(fehler=e)
-            self.app._q.put(("rueckruf", lambda: self._geprueft(ergebnis, fehler, von_hand)))
-        threading.Thread(target=lauf, daemon=True).start()
+            threads.im_hauptthread(lambda: self._geprueft(ergebnis, fehler, von_hand))
+        threads.starten(lauf)
 
     def _geprueft(self, release, fehler, von_hand):
         self.laeuft = False
@@ -81,7 +79,7 @@ class Updates:
         if fehler:
             self.app.status.set(fehler)
             if von_hand:
-                messagebox.showwarning(_("Updates"), fehler, parent=self.app)
+                dialogs.warnung(self.app, _("Updates"), fehler)
             return
         e["update_zuletzt"] = datetime.now().isoformat(timespec="seconds")
         if not ku.neuer(release["version"], VERSION):
@@ -89,7 +87,7 @@ class Updates:
             text = _("{programm} {version} is up to date.").format(programm=PROGRAMM, version=VERSION)
             self.app.status.set(text)
             if von_hand:
-                messagebox.showinfo(_("Updates"), text, parent=self.app)
+                dialogs.info(self.app, _("Updates"), text)
             return
         self.release = release
         self.app.status.set(_("New version {version} available (installed: {alt}).").format(
@@ -99,66 +97,70 @@ class Updates:
         self.zeigen()
 
     def zeigen(self):
-        if self.dialog and self.dialog.winfo_exists():
-            self.dialog.lift()
+        if self.dialog is not None and self.dialog.isVisible():
+            self.dialog.raise_()
             return
         if self.release:
             self.dialog = UpdateDialog(self.app, self.release)
+            self.dialog.show()
 
 
-class UpdateDialog(tk.Toplevel):
+class UpdateDialog(QDialog):
     def __init__(self, app, release):
         super().__init__(app)
         self.app, self.r = app, release
         self.art, self.angaben = ku.installation()
         self.download = ku.datei_fuer(release, self.art)
         self._abbrechen = False
-        self.title(_("Update available"))
-        self.transient(app)
-        self.geometry("760x500")                # breit genug für die vier Knöpfe auf Deutsch
-        self.minsize(600, 340)
-        rahmen = ttk.Frame(self, padding=12)
-        rahmen.pack(fill="both", expand=True)
-        ttk.Label(rahmen, text=_("{programm} {version} is available").format(programm=PROGRAMM, version=release["version"]),
-                  style="Ueberschrift.TLabel").pack(anchor="w")
+        self.setWindowTitle(_("Update available"))
+        self.setAttribute(Qt.WA_DeleteOnClose)
+        self.resize(760, 500)
+        self.setMinimumSize(600, 340)
+        lay = QVBoxLayout(self)
+        lay.setContentsMargins(12, 12, 12, 12)
+        kopf = QLabel(_("{programm} {version} is available").format(programm=PROGRAMM, version=release["version"]))
+        kopf.setProperty("rolle", "ueberschrift")
+        lay.addWidget(kopf)
         zeile = _("Installed: {alt}").format(alt=VERSION)
         if release.get("datum"):
             zeile += "  ·  " + _("published {datum}").format(datum=release["datum"])
         if release.get("vorab"):
             zeile += "  ·  " + _("pre-release")
-        ttk.Label(rahmen, text=zeile, style="Hinweis.TLabel").pack(anchor="w", pady=(2, 8))
-
-        unten = ttk.Frame(rahmen)
-        unten.pack(side="bottom", fill="x", pady=(10, 0))
-        self.hinweis = ttk.Label(rahmen, text=self._hinweistext(), style="Hinweis.TLabel", wraplength=720,
-                                 justify="left")
-        self.hinweis.pack(side="bottom", anchor="w", fill="x", pady=(8, 0))
-        self.balken = ttk.Progressbar(rahmen, mode="determinate", maximum=100)
-
-        ttk.Label(rahmen, text=_("Changes")).pack(anchor="w")
-        tf = ttk.Frame(rahmen)
-        tf.pack(fill="both", expand=True)
-        self.text = tk.Text(tf, wrap="word", height=10, relief="flat", borderwidth=1, padx=8, pady=6)
-        sb = ttk.Scrollbar(tf, orient="vertical", command=self.text.yview)
-        self.text.configure(yscrollcommand=sb.set)
-        sb.pack(side="right", fill="y")
-        self.text.pack(side="left", fill="both", expand=True)
-        # GitHub-Releasetext ist Markdown: formatiert zeigen, Links öffnen im Browser
-        modus = "dunkel" if app.dark_mode.get() else "hell"
-        kmd.darstellen(self.text, release.get("text") or _("(no description)"), akzent=kth.PALETTE[modus]["akzent"])
-        self.text.configure(state="disabled")
-
-        self.k_installieren = ttk.Button(unten, text=_("Install now"), command=self.installieren)
-        if self.download:
-            self.k_installieren.pack(side="left")
-        self.k_seite = ttk.Button(unten, text=_("Release page"), command=self.seite)
-        if release.get("seite"):
-            self.k_seite.pack(side="left", padx=(6 if self.download else 0, 0))
-        self.k_spaeter = ttk.Button(unten, text=_("Later"), command=self.schliessen)
-        self.k_spaeter.pack(side="right")
-        self.k_auslassen = ttk.Button(unten, text=_("Skip this version"), command=self.auslassen)
-        self.k_auslassen.pack(side="right", padx=6)
-        self.protocol("WM_DELETE_WINDOW", self.schliessen)
+        z = QLabel(zeile)
+        z.setProperty("rolle", "hinweis")
+        lay.addWidget(z)
+        lay.addSpacing(6)
+        lay.addWidget(QLabel(_("Changes")))
+        self.text = QTextBrowser()
+        self.text.setOpenExternalLinks(True)            # GitHub-Releasetext ist Markdown, Links im Browser
+        self.text.document().setDefaultStyleSheet(f"a {{ color: {theme.farben()['akzent']}; }}")
+        self.text.setMarkdown(release.get("text") or _("(no description)"))
+        lay.addWidget(self.text, 1)
+        self.balken = QProgressBar()
+        self.balken.setRange(0, 100)
+        self.balken.hide()
+        lay.addWidget(self.balken)
+        self.hinweis = QLabel(self._hinweistext())
+        self.hinweis.setProperty("rolle", "hinweis")
+        self.hinweis.setWordWrap(True)
+        lay.addWidget(self.hinweis)
+        unten = QHBoxLayout()
+        self.k_installieren = QPushButton(_("Install now"))
+        self.k_installieren.clicked.connect(self.installieren)
+        self.k_installieren.setVisible(bool(self.download))
+        unten.addWidget(self.k_installieren)
+        self.k_seite = QPushButton(_("Release page"))
+        self.k_seite.clicked.connect(self.seite)
+        self.k_seite.setVisible(bool(release.get("seite")))
+        unten.addWidget(self.k_seite)
+        unten.addStretch(1)
+        self.k_auslassen = QPushButton(_("Skip this version"))
+        self.k_auslassen.clicked.connect(self.auslassen)
+        unten.addWidget(self.k_auslassen)
+        self.k_spaeter = QPushButton(_("Later"))
+        self.k_spaeter.clicked.connect(self.close)
+        unten.addWidget(self.k_spaeter)
+        lay.addLayout(unten)
 
     def _hinweistext(self):
         if self.art == "windows":
@@ -180,25 +182,30 @@ class UpdateDialog(tk.Toplevel):
         self.app.e["update_ausgelassen"] = self.r["version"]
         self.app.status.set(_("Version {version} is skipped; Help > Check for updates still shows it.").format(
             version=self.r["version"]))
-        self.destroy()
+        self.close()
 
-    def schliessen(self):
+    def closeEvent(self, ev):
         self._abbrechen = True
-        self.destroy()
+        super().closeEvent(ev)
 
     # -- Installieren -------------------------------------------------------------------------
     def installieren(self):
         name, url, accept = self.download
         ziel = ku.download_ordner() / name
         for k in (self.k_installieren, self.k_auslassen, self.k_seite):
-            k.state(["disabled"])
-        self.k_spaeter.configure(text=_("Cancel"))
-        self.balken.pack(side="bottom", fill="x", before=self.hinweis)
-        self.hinweis.configure(text=_("Downloading {name} …").format(name=name))
+            k.setEnabled(False)
+        self.k_spaeter.setText(_("Cancel"))
+        self.balken.show()
+        self.hinweis.setText(_("Downloading {name} …").format(name=name))
         self._abbrechen = False
+        offen = [True]
+        self.destroyed.connect(lambda: offen.__setitem__(0, False))
+
+        def im_dialog(fn):
+            threads.im_hauptthread(lambda: fn() if offen[0] else None)
 
         def fortschritt(geladen, gesamt):
-            self.app._q.put(("rueckruf", lambda: self._fortschritt(geladen, gesamt)))
+            im_dialog(lambda: self._fortschritt(geladen, gesamt))
 
         def lauf():
             try:
@@ -219,50 +226,50 @@ class UpdateDialog(tk.Toplevel):
                 fehler = str(e)
             except Exception as e:
                 fehler = _("Download failed ({fehler}).").format(fehler=e)
-            self.app._q.put(("rueckruf", lambda: self._geladen(ziel, fehler)))
-        threading.Thread(target=lauf, daemon=True).start()
+            threads.im_hauptthread(lambda: self._geladen(ziel, fehler, offen[0]))
+        threads.starten(lauf)
 
     def _fortschritt(self, geladen, gesamt):
-        if not self.winfo_exists():
-            return
         if gesamt:
-            self.balken.configure(mode="determinate", value=geladen * 100 / gesamt)
+            self.balken.setRange(0, 100)
+            self.balken.setValue(int(geladen * 100 / gesamt))
         else:
-            self.balken.configure(mode="indeterminate")
-            self.balken.step(5)
-        self.hinweis.configure(text=_("Downloading … {mb:.1f} MB").format(mb=geladen / 1e6))
+            self.balken.setRange(0, 0)                     # unbestimmt: Qt zeigt einen laufenden Balken
+        self.hinweis.setText(_("Downloading … {mb:.1f} MB").format(mb=geladen / 1e6))
 
-    def _geladen(self, ziel, fehler):
+    def _geladen(self, ziel, fehler, offen):
         if fehler:
             self.app.status.set(fehler)
-            if self.winfo_exists():
-                self.balken.pack_forget()
-                self.hinweis.configure(text=fehler)
+            if offen:
+                self.balken.hide()
+                self.hinweis.setText(fehler)
                 for k in (self.k_installieren, self.k_auslassen, self.k_seite):
-                    k.state(["!disabled"])
-                self.k_spaeter.configure(text=_("Later"))
+                    k.setEnabled(True)
+                self.k_spaeter.setText(_("Later"))
             return
-        if self.winfo_exists():
-            self.balken.configure(mode="determinate", value=100)
-            self.hinweis.configure(text=_("Downloaded. Waiting for Bookbench to close …"))
+        if offen:
+            self.balken.setRange(0, 100)
+            self.balken.setValue(100)
+            self.hinweis.setText(_("Downloaded. Waiting for Bookbench to close …"))
         if not self.app.schliessen_ok():
             self.app.status.set(_("Update downloaded; Help > Check for updates > Install now installs it without "
                                   "downloading again."))
-            if self.winfo_exists():
-                self.destroy()
+            if offen:
+                self.close()
             return
         if self.art == "windows":
             self.app._einstellungen_sichern()
             self.app._popen(ku.windows_befehl(ziel))
-            self.app.destroy()
+            self.app._ohne_rueckfrage = True
+            self.app.close()
             return
         try:
             ku.linux_einspielen(ziel, erwartet=self.r["version"])
         except ku.UpdateFehler as e:
             ziel.unlink(missing_ok=True)                 # falsche/kaputte Datei nicht beim nächsten Versuch wieder nehmen
-            messagebox.showerror(_("Updates"), str(e), parent=self.app)
+            dialogs.fehler(self.app, _("Updates"), str(e))
             self.app.status.set(str(e))
-            if self.winfo_exists():
-                self.destroy()
+            if offen:
+                self.close()
             return
         self.app.neu_starten()

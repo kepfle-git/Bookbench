@@ -26,8 +26,10 @@ English and German interface.
 ```
 
 This installs to `~/.local/share/bookbench` with a Python environment for the optional packages,
-adds the command `bookbench` and a menu entry. Needs Python 3.9+ with Tkinter
-(Arch: `python tk`, Debian/Ubuntu: `python3-tk python3-venv`). `./install.sh --uninstall` removes it.
+adds the command `bookbench` and a menu entry. Needs Python 3.9+ and Qt for Python (PySide6). If your
+system has it (Arch: `sudo pacman -S pyside6`), it is used - Bookbench then looks like your other KDE
+programs; otherwise install.sh installs PySide6-Essentials into the environment with pip (Debian/Ubuntu:
+`python3-venv`). `./install.sh --uninstall` removes it.
 For the preview install the desktop KOReader (e.g. AUR `koreader-bin` or Flatpak `rocks.koreader.KOReader`).
 
 **Without installing**: `python3 start.py`; optional packages: `pip install -r requirements.txt`.

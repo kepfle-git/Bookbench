@@ -79,7 +79,7 @@ jobs:
           $version = (python packaging/version.py).Trim()
           $ausTag = $env:TAG -replace '^[vV]', ''
           if ($version -ne $ausTag) {
-            Write-Error "Tag $env:TAG passt nicht zu VERSION = `"$version`" in bookbench/ui/help.py"
+            Write-Error "Tag $env:TAG passt nicht zu VERSION = `"$version`" in bookbench/version.py"
             exit 1
           }
           "VERSION=$version" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8

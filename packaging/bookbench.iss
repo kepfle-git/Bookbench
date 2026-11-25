@@ -2,7 +2,7 @@
 ;  Installer für Bookbench (Inno Setup 6)
 ;
 ;  Normalerweise über  build_windows.bat installer  aufrufen - das baut vorher
-;  das Programm und übergibt die Versionsnummer aus bookbench\ui\help.py.
+;  das Programm und übergibt die Versionsnummer aus bookbench\version.py.
 ;  Von Hand im Ordner packaging:  ISCC.exe /DAppVersion=0.27 bookbench.iss
 ;
 ;  Wie beim Keller-Tool: ohne Administratorrechte in den Benutzerordner

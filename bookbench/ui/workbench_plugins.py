@@ -1009,7 +1009,7 @@ class BookshelfSeite(_SymbolSeite):
             r.toggled.connect(lambda an, w=wert: an and self.bereich.startbuecher_setzen(w))
             self.start_gruppe.addButton(r)
             self.lay.addWidget(r)
-        self.startbuecher_zeigen()
+        self.startbuecher_zeigen(beim_bauen=True)
 
         def gitter(i):
             g = QGridLayout(i)
@@ -1073,8 +1073,8 @@ class BookshelfSeite(_SymbolSeite):
             self._dynamisch_bauen()
             self._formular_fuellen()
 
-    def startbuecher_zeigen(self):
-        if not self.gebaut():
+    def startbuecher_zeigen(self, beim_bauen=False):
+        if not (beim_bauen or self.gebaut()):              # beim Bauen ist rahmen noch nicht gesetzt
             return
         wert = self.app.e.get("werkbank_startbuecher") or "beispiel"
         for w, r in self.start_knopf.items():

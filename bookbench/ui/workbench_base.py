@@ -41,8 +41,16 @@ def zahl_oder_leer(text):
     return int(w) if w.is_integer() else w
 
 
+class _Hinweis(QLabel):
+    """Umbrechender Hinweis mit Höchstbreite, der nie abgeschnitten wird: das Layout fragt die Höhe für die
+    Breite der Zelle ab, das Label bricht aber bei seiner Höchstbreite um (mehr Zeilen)."""
+
+    def heightForWidth(self, breite):
+        return super().heightForWidth(min(breite, self.maximumWidth()))
+
+
 def hinweis(text, breite=None):
-    lab = QLabel(text)
+    lab = _Hinweis(text)
     lab.setProperty("rolle", "hinweis")
     lab.setWordWrap(True)
     if breite:

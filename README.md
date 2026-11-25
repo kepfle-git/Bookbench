@@ -40,3 +40,9 @@ Help > Check for updates. Installed copies look for new releases at start (can b
 Settings > General > Updates) and update themselves.
 
 Settings live in `%APPDATA%\Bookbench` (Windows) or `~/.config/bookbench` (Linux).
+
+## License
+
+Bookbench is free software under the [GNU General Public License v3.0](LICENSE): you may use, share and
+change it; changed versions you pass on must stay under the GPL. Components included in the Windows setup
+keep their own licenses, see [THIRD_PARTY_LICENSES.txt](THIRD_PARTY_LICENSES.txt).

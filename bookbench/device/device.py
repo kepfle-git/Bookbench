@@ -84,20 +84,20 @@ def art_name(art):
 # "{ko}" steht für den KOReader-Ordner der Geräteart, "*.sdr" für alle Buchdaten-Ordner
 # neben den Büchern. Teile in NUR_BEI gibt es nur bei dieser Geräteart.
 TEILE = (
-    ("einstellungen", _("Settings"), "settings.reader.lua, defaults.custom.lua",
+    ("einstellungen", N_("Settings"), "settings.reader.lua, defaults.custom.lua",
      ("{ko}/settings.reader.lua", "{ko}/defaults.custom.lua"), True),
-    ("settings", _("Statistics and plugin data"),
-     _("Folder settings: statistics, history, Bookends, Silverfish …"),
+    ("settings", N_("Statistics and plugin data"),
+     N_("Folder settings: statistics, history, Bookends, Silverfish …"),
      ("{ko}/settings",), True),
-    ("buchdaten", _("Book data"), _("Folders .sdr: reading position, highlights, notes"),
+    ("buchdaten", N_("Book data"), N_("Folders .sdr: reading position, highlights, notes"),
      ("*.sdr", "{ko}/docsettings", "{ko}/hashdocsettings"), True),
-    ("anpassungen", _("Style tweaks and patches"), _("Folders styletweaks and patches"),
+    ("anpassungen", N_("Style tweaks and patches"), N_("Folders styletweaks and patches"),
      ("{ko}/styletweaks", "{ko}/patches"), True),
-    ("kobo", _("Kobo settings"), _("Kobo eReader.conf (only on a Kobo)"),
+    ("kobo", N_("Kobo settings"), N_("Kobo eReader.conf (only on a Kobo)"),
      (".kobo/Kobo/Kobo eReader.conf",), False),
 )
 NUR_BEI = {"kobo": "kobo"}
-TEIL_NAME = {k: n for k, n, *__ in TEILE}
+TEIL_NAME = {k: n for k, n, *__ in TEILE}       # N_()-Texte: bei der Anzeige _() drum
 
 
 def teile(art=STANDARD_ART):

@@ -56,6 +56,12 @@ def frage3(eltern, titel, text):
     return {QMessageBox.Yes: True, QMessageBox.No: False}.get(r)
 
 
+def nochmal(eltern, titel, text):
+    """Warnung mit "Wiederholen" und "Abbrechen"; True = nochmal versuchen."""
+    return _meldung(QMessageBox.Warning, eltern, titel, text, knoepfe=QMessageBox.Retry | QMessageBox.Cancel,
+                    standard=QMessageBox.Retry) == QMessageBox.Retry
+
+
 def speichern_frage(eltern, titel, text):
     r = _meldung(QMessageBox.Warning, eltern, titel, text,
                  knoepfe=QMessageBox.Save | QMessageBox.Discard | QMessageBox.Cancel, standard=QMessageBox.Save)

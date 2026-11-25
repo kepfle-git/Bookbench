@@ -5,8 +5,8 @@
 #  Ergebnis: dist\Bookbench\Bookbench.exe (Ordner, kein onefile: startet schneller,
 #  Windows Defender prüft nicht bei jedem Start ein frisch entpacktes Archiv).
 #
-#  Seit 2.0 Qt (PySide6-Essentials) statt Tk: tkinter und die alte Tk-Oberfläche (bookbench/tk,
-#  bookbench/keller außer keller_icons) kommen nicht mit; von den Qt-Übersetzungen nur Deutsch
+#  Seit 2.0 Qt (PySide6-Essentials) statt Tk: tkinter und die Tk-Bausteine aus bookbench/keller (außer
+#  keller_icons) kommen nicht mit; von den Qt-Übersetzungen nur Deutsch
 #  (Englisch braucht keine), von den Qt-Modulen nur, was Bookbench importiert (QtCore, QtGui, QtWidgets) -
 #  die übrigen der Essentials (Qml, Quick, Designer, Sql …) schließt EXCLUDES ausdrücklich aus.
 #  Zusatzpakete (Pillow, wordfreq, requests, mwparserfromhell, anthropic) kommen mit,
@@ -22,7 +22,7 @@ BOOK = os.path.join(WURZEL, "bookbench")
 
 WORDFREQ_SPRACHEN = {"en"}                         # zipf_frequency(..., "en") in bookbench/dictionary
 QT_SPRACHEN = ("_de.qm",)                          # Qt-eigene Texte (OK, Abbrechen, Dateidialog)
-EXCLUDES = ["tkinter", "_tkinter", "bookbench.tk", "keller_theme", "keller_streifen", "keller_navigation",
+EXCLUDES = ["tkinter", "_tkinter", "keller_theme", "keller_streifen", "keller_navigation",
             "matplotlib", "numpy.tests", "pytest",
             "PySide6.QtQml", "PySide6.QtQuick", "PySide6.QtQuickWidgets", "PySide6.QtQuickControls2",
             "PySide6.QtDesigner", "PySide6.QtUiTools", "PySide6.QtSql", "PySide6.QtTest", "PySide6.QtHelp",
@@ -56,8 +56,8 @@ datas = [
 if _vorhanden("wordfreq"):
     datas += collect_data_files("wordfreq")
 
-# bookbench lädt manches erst bei Bedarf; nicht die alte Tk-Oberfläche (bookbench/tk, nur Vorlage)
-hidden = [m for m in collect_submodules("bookbench", filter=lambda n: not n.startswith("bookbench.tk"))
+# bookbench lädt manches erst bei Bedarf
+hidden = [m for m in collect_submodules("bookbench")
           if not m.startswith(("bookbench.keller.keller_theme", "bookbench.keller.keller_streifen",
                                "bookbench.keller.keller_navigation"))]
 

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-app.py - Hauptfenster von Bookbench (Qt, seit 2.0; die Tk-Fassung bis 1.4 liegt in bookbench/tk/).
+app.py - Hauptfenster von Bookbench (Qt, seit 2.0; bis 1.4 war die Oberfläche in Tk).
 Gestaltung nach dem Designleitfaden des Keller-Nietprogramm-Tools, Seitenleiste nach 5a.
 
   Menüleiste     Datei, (Bereichsmenüs), Ansicht, Hilfe
@@ -36,7 +36,6 @@ from bookbench.core import library as kd
 from bookbench.core import markers as km
 from bookbench.core import settings as kei
 from bookbench.preview import emulator as kv
-from bookbench.ui import area as kar
 from bookbench.ui import area_chapters as kch
 from bookbench.ui import area_library as kbi
 from bookbench.ui import area_device as kdev
@@ -117,12 +116,10 @@ class App(QMainWindow):
         from bookbench.ui import updates as kup
         self.updates = kup.Updates(self)     # Suche nach neuen Versionen (ui/updates.py)
 
-        # Bereiche: leben so lange wie das Fenster; bis sie umgezogen sind, Platzhalter
-        fertig = {"bibliothek": kbi.BibliothekBereich, "kapitel": kch.KapitelBereich,
-                  "metadaten": kme.MetadatenBereich, "woerterbuch": kwo.WoerterbuchBereich,
-                  "kobo": kdev.EReaderBereich, "vorschau": kpv.VorschauBereich}
-        self.bereiche = [fertig[k](self) if k in fertig else kar.Platzhalter(self, k, t, s, beta)
-                         for k, t, s, beta in kar.BEREICHE if k != "vorschau" or kv.verfuegbar()]
+        # Bereiche: leben so lange wie das Fenster (die Vorschau nur, wo es den Desktop-KOReader gibt)
+        arten = (kbi.BibliothekBereich, kch.KapitelBereich, kme.MetadatenBereich, kwo.WoerterbuchBereich,
+                 kdev.EReaderBereich) + ((kpv.VorschauBereich,) if kv.verfuegbar() else ())
+        self.bereiche = [art(self) for art in arten]
         self.bibliothek = self.bereich_obj("bibliothek")
         self.kapitel = self.bereich_obj("kapitel")
         self.metadaten = self.bereich_obj("metadaten")
@@ -701,14 +698,9 @@ class App(QMainWindow):
             if ziel == "koreader":
                 v.starten()
             return
-        obj = hinweis = self.bereich_obj(bereich)
-        if obj is None or isinstance(obj, kar.Platzhalter):
-            obj = self.kapitel
+        obj = self.bereich_obj(bereich) or self.kapitel     # z. B. Ziel Vorschau unter Windows
         self.bereich_zeigen(obj.kennung)
         obj.auswaehlen(b)
-        if isinstance(hinweis, kar.Platzhalter):
-            self.status.set(_("{bereich} moves to the new interface in {version}; opened in Chapters.")
-                            .format(bereich=hinweis.name(), version=hinweis.kommt_in))
 
     def _bereich_mit_buch(self, kennung):
         """In einen Bereich wechseln und dort das gerade gewählte Buch zeigen (Befehle aus dem Menü)."""
@@ -854,9 +846,8 @@ class App(QMainWindow):
         return km.bibliothek(b, self.e)
 
     def _seitenleiste_marken(self, b):
-        """[(kennung, anzahl)] eines Bereichs: die Bereiche liefern sie selbst; Bibliothek und Kapitel
-        hier, solange es sie nur als Platzhalter gibt."""
-        return [] if isinstance(b, kar.Platzhalter) else b.marken()
+        """[(kennung, anzahl)] eines Bereichs (liefern die Bereiche selbst)."""
+        return b.marken()
 
     def _zaehler(self):
         """Seitenleiste (Marken je Bereich) und Fenstertitel."""

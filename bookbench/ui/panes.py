@@ -6,6 +6,7 @@ panes.py - Teiler mit gemerkter Breite (Qt-Gegenstück zu tk/panes.teilen).
       QSplitter mit zwei Seiten; die Breite der festen Seite steht in der Einstellung
       "listenbreiten" {name: px} und gilt nach jedem Neuaufbau wieder. Doppelklick auf den Griff =
       Standardbreite. fest="rechts": die rechte Seite hat die gemerkte Breite (Cover-Tafel).
+      standard darf eine Funktion sein (z. B. Höhe des Formulars im Bereich Metadaten).
 """
 from PySide6.QtCore import Qt, QTimer
 from PySide6.QtWidgets import QSplitter, QSplitterHandle
@@ -27,11 +28,14 @@ class Teiler(QSplitter):
     def createHandle(self):
         return _Griff(self.orientation(), self)
 
+    def standardbreite(self):
+        return self.std() if callable(self.std) else self.std
+
     def gemerkt(self):
         try:
-            return int((self.app.e.get("listenbreiten") or {}).get(self.name) or 0) or self.std
+            return int((self.app.e.get("listenbreiten") or {}).get(self.name) or 0) or self.standardbreite()
         except (TypeError, ValueError):
-            return self.std
+            return self.standardbreite()
 
     def _gesamt(self):
         return self.width() if self.orientation() == Qt.Horizontal else self.height()

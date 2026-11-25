@@ -28,8 +28,8 @@ from bookbench import i18n
 
 from PySide6.QtCore import QEvent, QLibraryInfo, QLocale, QObject, QSize, Qt, QTimer, QTranslator
 from PySide6.QtGui import QAction, QActionGroup, QIcon, QKeySequence, QShortcut
-from PySide6.QtWidgets import (QApplication, QFrame, QHBoxLayout, QLabel, QMainWindow, QMessageBox, QPushButton,
-                               QSizePolicy, QStackedWidget, QToolBar, QVBoxLayout, QWidget)
+from PySide6.QtWidgets import (QApplication, QFrame, QHBoxLayout, QLabel, QMainWindow, QMenu, QMessageBox, QPushButton,
+                               QSizePolicy, QStackedWidget, QToolBar, QToolButton, QVBoxLayout, QWidget)
 
 from bookbench.core import blurbs
 from bookbench.core import library as kd
@@ -39,6 +39,7 @@ from bookbench.preview import emulator as kv
 from bookbench.ui import area as kar
 from bookbench.ui import area_chapters as kch
 from bookbench.ui import area_library as kbi
+from bookbench.ui import area_metadata as kme
 from bookbench.ui import dialogs
 from bookbench.ui import help_topics
 from bookbench.ui import markers as kmk
@@ -114,11 +115,13 @@ class App(QMainWindow):
         self.updates = kup.Updates(self)     # Suche nach neuen Versionen (ui/updates.py)
 
         # Bereiche: leben so lange wie das Fenster; bis sie umgezogen sind, Platzhalter
-        fertig = {"bibliothek": kbi.BibliothekBereich, "kapitel": kch.KapitelBereich}
+        fertig = {"bibliothek": kbi.BibliothekBereich, "kapitel": kch.KapitelBereich,
+                  "metadaten": kme.MetadatenBereich}
         self.bereiche = [fertig[k](self) if k in fertig else kar.Platzhalter(self, k, t, s, beta)
                          for k, t, s, beta in kar.BEREICHE if k != "vorschau" or kv.verfuegbar()]
         self.bibliothek = self.bereich_obj("bibliothek")
         self.kapitel = self.bereich_obj("kapitel")
+        self.metadaten = self.bereich_obj("metadaten")
         self.vorschau = None                 # wie im Tk-Programm: None, wo es keine Vorschau gibt
         self._aktuell = "bibliothek"
 
@@ -222,6 +225,8 @@ class App(QMainWindow):
         m.addSeparator()
         m.addAction(_("Save"), QKeySequence("Ctrl+S"), self.speichern)
         m.addSeparator()
+        m.addAction(_("Import from Calibre library …"), self.calibre_importieren)
+        m.addSeparator()
         m.addAction(_("Settings …"), lambda: self.einstellungen())
         m.addSeparator()
         m.addAction(_("Quit"), self.close)
@@ -236,7 +241,17 @@ class App(QMainWindow):
         b.addAction(_("Chapters: level up") + "\t" + _("Shift+Tab"), lambda: self._kapitel_aktion("ebene", -1))
         b.addAction(_("Chapters: level down") + "\tTab", lambda: self._kapitel_aktion("ebene", 1))
         b.addSeparator()
+        b.addAction(_("Look up blurb"), self.klappentext_nachschlagen)
+        b.addAction(_("Look up all missing blurbs"), self.klappentexte_alle)
+        b.addSeparator()
+        b.addAction(_("Cover from file …"), lambda: self.cover_aktion("aus_datei"))
+        b.addAction(_("Look up cover"), lambda: self.cover_aktion("nachschlagen"))
+        b.addAction(_("Look up all missing covers"), lambda: self.cover_aktion("alle_ohne"))
+        b.addAction(_("Show cover large"), lambda: self.cover_aktion("gross"))
+        b.addSeparator()
         b.addAction(_("Take series and blurbs from Calibre"), self.calibre_uebernehmen)
+        b.addAction(_("Metadata from Calibre (this book)"), lambda: self.metadaten_aktion("alle_von_calibre"))
+        b.addAction(_("Fill metadata gaps from Calibre"), lambda: self.metadaten.luecken_fuellen())
         for b in self.bereiche:
             b.menue(leiste)
         a = leiste.addMenu(_("View"))
@@ -342,12 +357,26 @@ class App(QMainWindow):
                 a = QAction(self.wz)
                 a.setSeparator(True)
             else:
-                symbol, text, fn, tipp = eintrag
+                symbol, text, fn, tipp = eintrag[:4]
                 a = QAction(theme.symbol(symbol), text, self.wz)
                 a.symbol = symbol
                 a.setToolTip(tipp)
-                a.triggered.connect(lambda __=False, fn=fn: fn())
+                if len(eintrag) > 4:                     # Knopf mit Menü (z. B. Ergänzen ▾)
+                    menue = QMenu(self.wz)
+                    for punkt in eintrag[4]:
+                        if punkt is None:
+                            menue.addSeparator()
+                        else:
+                            menue.addAction(punkt[0], punkt[1])
+                    a.setMenu(menue)
+                    a.menue = menue
+                else:
+                    a.triggered.connect(lambda __=False, fn=fn: fn())
             self.wz.insertAction(self._wz_abstand, a)
+            if a.menu() is not None:
+                knopf = self.wz.widgetForAction(a)
+                if knopf is not None:
+                    knopf.setPopupMode(QToolButton.InstantPopup)
             self._wz_bereich.append(a)
 
     def _symbole_auffrischen(self):
@@ -665,6 +694,114 @@ class App(QMainWindow):
             self.status.set(_("{bereich} moves to the new interface in {version}; opened in Chapters.")
                             .format(bereich=hinweis.name(), version=hinweis.kommt_in))
 
+    def _bereich_mit_buch(self, kennung):
+        """In einen Bereich wechseln und dort das gerade gewählte Buch zeigen (Befehle aus dem Menü)."""
+        if self._aktuell != kennung:
+            b = self.gewaehltes_buch()
+            self.bereich_zeigen(kennung)
+            if b:
+                self.bereich_obj(kennung).auswaehlen(b)
+        return self.bereich_obj(kennung)
+
+    def cover_aktion(self, name):
+        """Menü: Cover-Befehl im Bereich Metadaten (mit dem gewählten Buch); alle_ohne ohne Wechsel."""
+        if name == "alle_ohne":
+            if self.metadaten.seite is not None:
+                self.metadaten.cover.alle_ohne()
+            return
+        getattr(self._bereich_mit_buch("metadaten").cover, name)()
+
+    def metadaten_aktion(self, name):
+        getattr(self._bereich_mit_buch("metadaten"), name)()
+
+    # -- Klappentexte nachschlagen (core/blurb_lookup im Hilfsthread) -------------------------
+    def klappentext_nachschlagen(self):
+        b = self.metadaten.buch if self._aktuell == "metadaten" else None
+        if not b:
+            self.status.set(_("Look up: choose a book in the Metadata area."))
+            return
+        self._nachschlagen_starten([b], einzeln=True)
+
+    def klappentexte_alle(self):
+        # Bücher, für die Calibre eine Beschreibung hat, nicht nachschlagen (dafür gibt es "Aus Calibre")
+        offen = [b for b in self.buecher if not km.klappentext_aktuell(b).strip() and not b.fehler
+                 and not (b.calibre and b.calibre.get("comments"))]
+        if not offen:
+            self.status.set(_("All books have a blurb."))
+            return
+        self._nachschlagen_starten(offen)
+
+    def _nachschlagen_starten(self, buecher, einzeln=False):
+        from bookbench.core import blurb_lookup as kbl
+        if self._arbeit:
+            self.status.set(_("Still running: {arbeit}.").format(arbeit=self._arbeit))
+            return
+        plan = kbl.plan(buecher, self.cache, self.e)
+        mit_claude, mit_frei = kbl.zaehlen(plan)
+        client, ohne_schluessel = None, False
+        if mit_claude:
+            client, fehler = kbl.api_client(self.e)
+            if client is None:
+                if not mit_frei:                    # ohne Schlüssel nur meckern, wenn es sonst nichts zu tun gibt
+                    dialogs.fehler(self, _("Look up"), fehler)
+                    return
+                plan, mit_claude, ohne_schluessel = kbl.ohne_claude(plan), 0, True
+        if not einzeln and mit_claude and not dialogs.frage(
+                self, _("Look up all"),
+                ngettext("{n} book without a blurb.", "{n} books without a blurb.", len(plan)).format(n=len(plan))
+                + "\n" + (_("The free sources are asked first; Claude only for what they do not have.") + "\n"
+                          if mit_frei else "")
+                + ngettext("At most {n} book goes to Claude: up to about {kosten} $.",
+                           "At most {n} books go to Claude: up to about {kosten} $.", mit_claude)
+                .format(n=mit_claude, kosten=f"{mit_claude * float(self.e.get('kt_kosten', 0.015)):.2f}")
+                + "\n\n" + _("Start?")):
+            return
+        kbl.einstellungen_anwenden(self.e)
+        e = dict(self.e)
+
+        def melden(text):
+            threads.im_hauptthread(lambda: self.status.set(text))
+
+        def ergebnis(b, schl, eintrag):
+            def im_haupt():
+                if eintrag is not None:
+                    self.cache[schl] = eintrag
+                    kd.json_speichern(kd.KLAPPENTEXT_CACHE, self.cache)
+                self._klappentext_ergebnis(b.schluessel)
+            threads.im_hauptthread(im_haupt)
+
+        self.hintergrund(_("Looking up blurbs"),
+                         lambda: kbl.ausfuehren(plan, client, e, melden, ergebnis, ohne_schluessel))
+
+    def _klappentext_ergebnis(self, schluessel):
+        from bookbench.core import blurb_lookup as kbl
+        b = self.nach_schluessel.get(schluessel)
+        if not b:
+            return
+        treffer = self.cache.get(kbl.schluessel(b)) or {}
+        if treffer.get("blurb"):
+            b.klappentext_entwurf = treffer["blurb"]
+            b.klappentext_quelle = treffer.get("source", "")
+            self.status.set(f"{b.name}: " + _("blurb found ({quelle}), not yet applied.")
+                            .format(quelle=blurbs.source_name(b.klappentext_quelle) or "?"))
+        else:
+            self.status.set(f"{b.name}: " + _("no blurb found.")
+                            + (f" ({b.kt_nachschlag})" if getattr(b, "kt_nachschlag", "") else ""))
+        self.buch_geaendert(b)
+        if b is self.metadaten.buch and self.metadaten.seite is not None:
+            self.metadaten.klappentext.anzeigen()
+            self.metadaten.aktualisieren()
+
+    def calibre_importieren(self):
+        """Einmaliger Import aus einer Calibre-Bibliothek (ui/calibre_import)."""
+        if not self.buecher:
+            self.status.set(_("Open a folder with books first, then import from Calibre."))
+            return None
+        from bookbench.ui import calibre_import as kci
+        d = self._import_dialog = kci.ImportDialog(self)
+        d.show()
+        return d
+
     def _calibre_aus(self):
         """True (mit Hinweis), wenn der Calibre-Abgleich abgeschaltet ist (Einstellungen > Bücher > Calibre)."""
         if self.e.get("calibre_an", True):
@@ -703,11 +840,7 @@ class App(QMainWindow):
     def _seitenleiste_marken(self, b):
         """[(kennung, anzahl)] eines Bereichs: die Bereiche liefern sie selbst; Bibliothek und Kapitel
         hier, solange es sie nur als Platzhalter gibt."""
-        if not isinstance(b, kar.Platzhalter):
-            return b.marken()
-        if b.kennung == "metadaten":                    # bis der Bereich umzieht (2.0-beta3)
-            return [m for m in km.zaehlen(self.buecher, lambda x: km.metadaten(x, self.e)) if m[0] != "unlesbar"]
-        return []
+        return [] if isinstance(b, kar.Platzhalter) else b.marken()
 
     def _zaehler(self):
         """Seitenleiste (Marken je Bereich) und Fenstertitel."""

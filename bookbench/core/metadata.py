@@ -185,7 +185,7 @@ def _spalten_epub2(opf):
 
 def _spalten_epub3(opf):
     """(start, ende, {spalte: definition}) aus <meta property="calibre:user_metadata">, sonst None."""
-    for m in re.finditer(r"<meta\b([^>]*)>(.*?)</meta\s*>", opf, re.S):
+    for m in re.finditer(r"<meta\b([^>]*?)(?<!/)>(.*?)</meta\s*>", opf, re.S):
         if _attribute(m.group(1)).get("property", "").lower() == "calibre:user_metadata":
             try:
                 daten = json.loads(html.unescape(m.group(2)))

@@ -136,12 +136,12 @@ def reihe_aus_opf(opf):
 
     series, idx = meta("calibre:series"), meta("calibre:series_index")
     if not series:                                    # EPUB3-Stil: belongs-to-collection
-        for attrs, text in re.findall(r"<meta\b([^>]*)>(.*?)</meta>", opf, re.S):
+        for attrs, text in re.findall(r"<meta\b([^>]*?)(?<!/)>(.*?)</meta>", opf, re.S):
             if re.search(r"""property=["']belongs-to-collection["']""", attrs):
                 series = clean(text)
                 i = re.search(r"""\bid=["']([^"']+)["']""", attrs)
                 if i:
-                    for a2, t2 in re.findall(r"<meta\b([^>]*)>(.*?)</meta>", opf, re.S):
+                    for a2, t2 in re.findall(r"<meta\b([^>]*?)(?<!/)>(.*?)</meta>", opf, re.S):
                         if (re.search(r"""refines=["']#%s["']""" % re.escape(i.group(1)), a2)
                                 and re.search(r"""property=["']group-position["']""", a2)):
                             idx = clean(t2)

@@ -225,8 +225,7 @@ class EinstellungsDialog(QDialog):
                self._w("tooltip_verzoegerung"), 0, 3000, 100)
         f.abschnitt(_("Covers in the headers"))
         f.schalter("cover", _("Show cover in Chapters"),
-                   _("Small cover next to the book title; a click shows it large. JPEG images need Pillow "
-                     "(pip install pillow)."), self._w("cover"))
+                   _("Small cover next to the book title; a click shows it large."), self._w("cover"))
         f.zahl("cover_kopf_hoehe", _("Height (px):"), _("Default 96."), self._w("cover_kopf_hoehe"), 40, 300, 8)
         f.abschnitt(_("Library"))
         f.text(_("Double-click on a book opens it in:"))

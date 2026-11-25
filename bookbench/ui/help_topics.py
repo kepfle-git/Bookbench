@@ -394,7 +394,7 @@ The sources, the smallest height that counts and how many to choose from: [[eins
 - The new cover keeps the **format** and the **file name** of the old one (a PNG becomes a JPEG if the old cover is a JPEG). That way the manifest and a title page that shows the image stay valid.
 - It is shrunk only if it is higher than the limit in the settings (0 = never); it is never enlarged ([[einst_cover]]). If nothing has to be converted or shrunk, the file goes into the book unchanged, byte for byte.
 - A book without a cover gets cover-bookbench.jpg next to the content.opf, an entry in the manifest (EPUB 3: properties="cover-image") and <meta name="cover"> (EPUB 2; KOReader reads both).
-- Converting and shrinking need **Pillow** (pip install pillow), showing JPEG images too. Without Pillow only an image in the right format can be inserted unchanged.
+- Converting and shrinking need **Pillow** (pip install pillow); showing works without it. Without Pillow only an image in the right format can be inserted unchanged.
 - Transparent areas become white when converting to JPEG.
 """)),
     ("bereiche", "woerterbuch", N_("Dictionary"), N_("""

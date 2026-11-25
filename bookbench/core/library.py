@@ -326,7 +326,7 @@ def opf_mit_reihe(opf, reihe, nummer):
     Leere Reihe: nur entfernen."""
     opf = re.sub(r"""\s*<meta\b[^>]*name=["']calibre:series(_index)?["'][^>]*/?>""", "", opf)
     weg = []
-    for m in re.finditer(r"<meta\b([^>]*)>(.*?)</meta\s*>", opf, re.S):
+    for m in re.finditer(r"<meta\b([^>]*?)(?<!/)>(.*?)</meta\s*>", opf, re.S):
         a = _attribute(m.group(1))
         if a.get("property") == "belongs-to-collection":
             verf = metadata._refines(opf, a.get("id"))

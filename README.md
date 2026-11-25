@@ -41,8 +41,22 @@ Settings > General > Updates) and update themselves.
 
 Settings live in `%APPDATA%\Bookbench` (Windows) or `~/.config/bookbench` (Linux).
 
+## Privacy
+
+No account, no telemetry; the text of your books never leaves the computer. Bookbench only contacts
+Google Books, Open Library or Claude (with your own key) when you look something up, and GitHub for the
+update check (can be turned off). Details: [PRIVACY.md](PRIVACY.md).
+
+## Building
+
+The Windows setup is built by GitHub Actions from each release tag
+([workflow](.github/workflows/windows-setup.yml)). By hand on Windows: `packaging\build_windows.bat installer`
+(needs Python with the packages from `requirements.txt`, PyInstaller and Inno Setup 6).
+Code signing: [CODE_SIGNING.md](CODE_SIGNING.md).
+
 ## License
 
 Bookbench is free software under the [GNU General Public License v3.0](LICENSE): you may use, share and
 change it; changed versions you pass on must stay under the GPL. Components included in the Windows setup
 keep their own licenses, see [THIRD_PARTY_LICENSES.txt](THIRD_PARTY_LICENSES.txt).
+Contributions are welcome; please follow the [code of conduct](CODE_OF_CONDUCT.md).

@@ -148,6 +148,12 @@ jobs:
             # Titel fertiger Versionen: Release-Text beginnt mit "**Titel**" -> "Bookbench 1.3 – Titel"
             $erste = Get-Content -Path $notizen -Encoding utf8 -TotalCount 1
             if ($erste -match '^\*\*(.+?)\*\*') { $titel = "Bookbench $env:VERSION $([char]0x2013) $($Matches[1])" }
+            # Fußzeile (SignPath verlangt den Verweis auf die Code-Signing-Richtlinie auf der Download-Seite)
+            $mit_fuss = "$env:RUNNER_TEMP/notes.md"
+            $fuss = "`n`n---`n[Code signing policy](https://github.com/$env:GITHUB_REPOSITORY/blob/main/CODE_SIGNING.md) " +
+                    "$([char]0x00B7) [Privacy](https://github.com/$env:GITHUB_REPOSITORY/blob/main/PRIVACY.md)"
+            ((Get-Content -Path $notizen -Raw -Encoding utf8).TrimEnd() + $fuss) | Out-File -FilePath $mit_fuss -Encoding utf8
+            $notizen = $mit_fuss
           } else {
             $notizen = "$env:RUNNER_TEMP/notes.md"
             "Windows-Setup und SHA256SUMS automatisch gebaut. Text ergänzen, ggf. *Vorabversion* anhaken, dann veröffentlichen." |

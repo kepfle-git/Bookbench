@@ -105,7 +105,7 @@ Until version 0.23 the two JSON files were next to the program; until 0.24 the f
     ("ueberblick", "kosten", N_("Costs and privacy"), N_("""
 **Free, without a key**
 - Google Books and Open Library: blurbs ([[klappentexte_nachschlagen]]) and covers ([[cover_aendern]]). Sent: ISBN, title and author of the book. Google Books without a key shares one daily quota with everyone else; an own key (also free) gives you your own ([[einst_online]]).
-- Everything else in the program runs on the computer only.
+- Everything else in the program runs on the computer only, apart from the update check (GitHub, can be switched off: [[einst_updates]]), building a dictionary from a wiki (the wiki you enter) and, when you agree, installing a missing package (pypi.org). No telemetry.
 
 **Costs money: Claude (Anthropic API)**
 - Blurbs that the free sources do not have: about 1 to 2 cents per book, with web search about 1 cent more.

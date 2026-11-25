@@ -1,0 +1,54 @@
+Bookbench - third-party components
+==================================
+
+The Windows build of Bookbench (Bookbench_Setup_*.exe) contains the following components.
+On Linux they are not shipped with Bookbench; install.sh takes them from the system or from pip.
+Each keeps its own license; the full texts are at the addresses given.
+
+Qt for Python (PySide6, shiboken6) and Qt 6
+  License: GNU Lesser General Public License v3 (LGPL-3.0)
+  https://www.gnu.org/licenses/lgpl-3.0.html
+  Source: https://code.qt.io/cgit/pyside/pyside-setup.git  and  https://download.qt.io/official_releases/qt/
+  Bookbench uses the unmodified libraries as shipped in the PySide6-Essentials wheel. They are kept as
+  separate files in the program folder (no single-file build), so they can be replaced by another
+  compatible version.
+
+Python
+  License: Python Software Foundation License
+  https://docs.python.org/3/license.html
+
+Pillow (optional, if installed when building)
+  License: MIT-CMU (HPND)
+  https://github.com/python-pillow/Pillow/blob/main/LICENSE
+
+wordfreq (optional)
+  Code: Apache License 2.0; word lists: Creative Commons Attribution-ShareAlike 4.0 (CC BY-SA 4.0),
+  compiled by Robyn Speer from several sources (see the project page)
+  https://github.com/rspeer/wordfreq
+
+requests (optional)
+  License: Apache License 2.0
+  https://github.com/psf/requests
+
+mwparserfromhell (optional)
+  License: MIT
+  https://github.com/earwig/mwparserfromhell
+
+anthropic (optional)
+  License: MIT
+  https://github.com/anthropics/anthropic-sdk-python
+
+These packages bring further dependencies (for example urllib3, certifi, httpx, pydantic, regex,
+jieba); each is under its own open-source license, named on its PyPI page.
+
+PyInstaller (only the start program of the Windows build)
+  License: GPL-2.0 with an exception that allows distributing the built program under any license
+  https://github.com/pyinstaller/pyinstaller/blob/develop/COPYING.txt
+
+Inno Setup (only the installer)
+  License: Inno Setup License
+  https://jrsoftware.org/files/is/license.txt
+
+Not shipped, but used by the Preview area when installed by you: KOReader (AGPL-3.0),
+https://github.com/koreader/koreader. The symbol font in the workbench (symbols.ttf) is read from
+your KOReader installation.

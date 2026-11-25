@@ -72,6 +72,7 @@ Type: filesandordirs; Name: "{app}\_internal"
 
 [Files]
 Source: "dist\Bookbench\*"; DestDir: "{app}"; Flags: recursesubdirs createallsubdirs ignoreversion
+Source: "..\THIRD_PARTY_LICENSES.txt"; DestDir: "{app}"; Flags: ignoreversion
 
 [Icons]
 Name: "{group}\{#AppName}"; Filename: "{app}\{#AppExe}"

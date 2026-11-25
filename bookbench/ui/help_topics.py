@@ -713,7 +713,7 @@ The preview runs in its own profile in the settings folder (subfolder vorschau, 
 - A profile taken before 1.4-beta6 has no noted state: then profile and e-reader are compared directly, and only areas Bookbench has changed are preselected. Take the profile again to get the exact comparison.
 
 **Transferring**
-- Tick what should go (double-click, Space, **On/off**, **All**, **None**, **Suggestion**) and **Transfer**. Before writing, the KOReader settings of the e-reader are backed up (E-reader area, reason "before writing from the preview").
+- Tick what should go (click the box, Space, **On/off**, **All**, **None**, **Suggestion**) and **Transfer**. Before writing, the KOReader settings of the e-reader are backed up (E-reader area, reason "before writing from the preview").
 - Settings are written key by key into the e-reader's settings.reader.lua; everything else in it stays.
 - Unsaved drafts on the workbench pages are asked about first.
 - Afterwards eject the e-reader; KOReader reads the changes at its next start. If KOReader is running on the e-reader while you transfer (rare over USB), it may overwrite settings.reader.lua when it closes.

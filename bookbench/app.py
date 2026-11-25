@@ -40,6 +40,7 @@ from bookbench.ui import area as kar
 from bookbench.ui import area_chapters as kch
 from bookbench.ui import area_library as kbi
 from bookbench.ui import area_device as kdev
+from bookbench.ui import area_preview as kpv
 from bookbench.ui import area_dictionary as kwo
 from bookbench.ui import area_metadata as kme
 from bookbench.ui import dialogs
@@ -119,7 +120,7 @@ class App(QMainWindow):
         # Bereiche: leben so lange wie das Fenster; bis sie umgezogen sind, Platzhalter
         fertig = {"bibliothek": kbi.BibliothekBereich, "kapitel": kch.KapitelBereich,
                   "metadaten": kme.MetadatenBereich, "woerterbuch": kwo.WoerterbuchBereich,
-                  "kobo": kdev.EReaderBereich}
+                  "kobo": kdev.EReaderBereich, "vorschau": kpv.VorschauBereich}
         self.bereiche = [fertig[k](self) if k in fertig else kar.Platzhalter(self, k, t, s, beta)
                          for k, t, s, beta in kar.BEREICHE if k != "vorschau" or kv.verfuegbar()]
         self.bibliothek = self.bereich_obj("bibliothek")
@@ -127,7 +128,7 @@ class App(QMainWindow):
         self.metadaten = self.bereich_obj("metadaten")
         self.woerterbuch = self.bereich_obj("woerterbuch")
         self.kobo = self.bereich_obj("kobo")
-        self.vorschau = None                 # wie im Tk-Programm: None, wo es keine Vorschau gibt
+        self.vorschau = self.bereich_obj("vorschau")     # None, wo es keine Vorschau gibt (Windows)
         self._aktuell = "bibliothek"
 
         self.setWindowIcon(self._programmsymbol())
@@ -448,7 +449,9 @@ class App(QMainWindow):
         self.e["bereich_zuletzt"] = b.kennung
         if b.seite is not None:
             self.stapel.setCurrentWidget(b.seite)
-        self.leiste.waehlen(b.kennung, kind)
+        if kind and hasattr(b, "kind_waehlen"):
+            b.kind_waehlen(kind)
+        self.leiste.waehlen(b.kennung, kind or (b.aktuelles_kind() if hasattr(b, "aktuelles_kind") else None))
         self._wz_bereich_bauen()
         if wechsel or kind:
             b.beim_zeigen()
@@ -690,6 +693,14 @@ class App(QMainWindow):
         (Einstellung buch_oeffnen). Noch nicht umgezogene Bereiche: Kapitel mit Hinweis."""
         ziel = ziel or self.e.get("buch_oeffnen") or "kapitel"
         bereich = "vorschau" if ziel == "koreader" else ziel
+        if bereich == "vorschau" and self.vorschau is not None:
+            v = self.vorschau
+            # läuft die Werkbank schon, gleich mit dem Buch neu starten; sonst startet sie beim Zeigen
+            v.buch_waehlen(b, starten=ziel == "vorschau" and v.werkbank is not None and v.werkbank.laeuft())
+            self.bereich_zeigen("vorschau")
+            if ziel == "koreader":
+                v.starten()
+            return
         obj = hinweis = self.bereich_obj(bereich)
         if obj is None or isinstance(obj, kar.Platzhalter):
             obj = self.kapitel

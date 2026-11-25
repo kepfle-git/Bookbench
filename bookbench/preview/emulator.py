@@ -46,7 +46,7 @@ from pathlib import Path
 
 from bookbench.device import device as kg
 from bookbench.device import models as km
-from bookbench.i18n import _
+from bookbench.i18n import N_, _
 
 KOREADER = kg.KOREADER                        # .adds/koreader (Kobo; andere Arten: kg.ko_ordner)
 FLATPAK_ID = "rocks.koreader.KOReader"
@@ -55,7 +55,7 @@ MARKE_ALT = "kobo-werkstatt-vorschau.json"    # Name bis 0.24
 LOG = "koreader.log"
 
 GROESSEN = ("passend", "halb", "voll")
-GROESSE_TEXT = {"passend": _("fitted to the screen"), "halb": _("half size"), "voll": _("full size")}
+GROESSE_TEXT = {"passend": N_("fitted to the screen"), "halb": N_("half size"), "voll": N_("full size")}   # _() bei der Anzeige
 
 # Plugins, die jeder KOReader mitbringt (frontend/pluginloader.lua, BUILTIN_PLUGINS).
 # Nur die anderen kommen ins Profil, sonst gäbe es sie doppelt.

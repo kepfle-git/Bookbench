@@ -24,7 +24,7 @@ from pathlib import Path
 from PySide6.QtCore import QRect, QSize, Qt
 from PySide6.QtGui import QColor, QFontDatabase
 from PySide6.QtWidgets import (QAbstractItemView, QCheckBox, QComboBox, QDialog, QGridLayout, QHBoxLayout,
-                               QLabel, QLineEdit, QListWidget, QListWidgetItem, QMenu, QPlainTextEdit,
+                               QLabel, QLineEdit, QListWidget, QListWidgetItem, QPlainTextEdit,
                                QPushButton, QRadioButton, QSpinBox, QStackedWidget, QStyle,
                                QStyledItemDelegate, QTextBrowser, QToolTip, QVBoxLayout, QWidget, QButtonGroup)
 

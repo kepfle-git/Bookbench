@@ -6,4 +6,4 @@ core/updater.py): Form `VERSION = "…"` am Zeilenanfang beibehalten. Bis 1.4 st
 bookbench/ui/help.py; der Updater kennt beide Stellen."""
 
 PROGRAMM = "Bookbench"
-VERSION = "2.0-beta5"
+VERSION = "2.0-beta6"

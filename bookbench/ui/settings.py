@@ -48,7 +48,8 @@ class EinstellungsDialog(QDialog):
         ("start", "allgemein", N_("Startup"), N_("What opens when the program starts")),
         ("updates", "allgemein", N_("Updates"), N_("Checking for new versions")),
         ("speichern", "", N_("Saving and backups"), N_("Backup folder, backups of books and of the KOReader settings")),
-        ("buecher", "", N_("Books"), N_("Chapters, blurbs, covers and metadata")),
+        ("buecher", "", N_("Books"), N_("Library and import, chapters, blurbs, covers and metadata")),
+        ("bibliothek", "buecher", N_("Library and import"), N_("Folder scheme for new books, reading cache")),
         ("kapitel", "buecher", N_("Chapters"), N_("How chapter names are taken from the book text")),
         ("klappentexte", "buecher", N_("Blurbs"), N_("Order of the sources, free sources, checks")),
         ("klappentexte_profile", "klappentexte", N_("Source profiles"),
@@ -70,7 +71,7 @@ class EinstellungsDialog(QDialog):
                "cover_max_hoehe", "cover_qualitaet", "cover_klein", "cover_openlibrary", "cover_google",
                "cover_min_hoehe", "cover_anzahl", "kobo_sicherungen_anzahl", "woerterbuch_quelle",
                "auswerfen_erinnern", "kobo_suche_sekunden", "kobo_oeffnen", "koreader_pfad", "update_pruefen",
-               "update_vorab", "calibre_an", "buch_oeffnen")
+               "update_vorab", "calibre_an", "buch_oeffnen", "ordnerschema", "einlese_cache")
     BEHALTEN = ("ordner", "letzte_ordner", "woerterbuecher", "woerterbuch_aktiv", "fenster", "api_key", "google_key",
                 "sprache")
 
@@ -81,6 +82,7 @@ class EinstellungsDialog(QDialog):
         self.resize(900, 620)
         self.setMinimumSize(700, 440)
         self.werte = Werte()
+        self.bib_schema = None                             # Feld Ordnerschema der geöffneten Bibliothek (2.1)
         self.profile = klappentext_profile(app.e)
         self.meta_spalten = [list(x) for x in app.e.get("meta_spalten") or [] if isinstance(x, (list, tuple)) and x]
         aus = app.e.get("marken_aus") or {}
@@ -351,6 +353,83 @@ class EinstellungsDialog(QDialog):
                self._w("kobo_sicherungen_anzahl"), 1, 100)
 
     # -- Bücher --------------------------------------------------------------------------
+    # -- Bibliothek und Import (seit 2.1) ------------------------------------------------
+    def _bibliothek_auf_rechner(self):
+        from bookbench.device import device as kg
+        o = self.app.ordner
+        return bool(o) and not kg.ist_geraet(o)
+
+    def _seite_bibliothek(self, f):
+        from bookbench.core import folder_scheme as fs
+        from bookbench.ui import import_window as kiw
+        f.ueberschrift(_("Library and import"))
+        f.abschnitt(_("Folder scheme"))
+        f.text(_("Where Add books puts new books, relative to the library folder. Placeholders: {title}, {authors}, "
+                 "{author} (first author), {author_sort}, {series}, {series_index}, {publisher}, {language}, "
+                 "{isbn}. {series_index:2} fills up with zeros (3 → 03). A part in [square brackets] is left out "
+                 "when a placeholder in it is empty, e.g. [{series}/] for books without a series. The file "
+                 "extension stays that of the book."))
+        self.bib_schema = None
+        if self._bibliothek_auf_rechner():
+            vorlage, herkunft = kiw.schema_fuer(self.app)
+            self.bib_schema = f.feld("bib_schema", _("This library ({ordner}):").format(ordner=self.app.ordner),
+                                     None, vorlage, 34, knopf=(_("Detect from the books"), self._schema_erkennen))
+            self._bib_herkunft = herkunft
+            self.bib_beispiel = f.hinweis("")
+            self.bib_schema.textChanged.connect(self._schema_beispiel)
+            self._schema_beispiel()
+            f.hinweis(_("Saved in the library folder (.bookbench/library.json), so it travels with the folder, "
+                        "e.g. in a synced folder used on Windows and Linux. Books already in the library are never "
+                        "moved or renamed: KOReader keeps reading positions and highlights next to the file name."))
+        else:
+            f.hinweis(_("Open a library on this computer to set its own scheme. A library opened directly on the "
+                        "e-reader uses the scheme detected from its books."))
+        f.feld("ordnerschema", _("Default for new libraries:"),
+               _("Used when a library has no scheme of its own and none can be detected from its books."),
+               self._w("ordnerschema"), 34,
+               knopf=(_("Reset to Calibre-like default"), lambda: self.werte.setzen("ordnerschema", fs.STANDARD)))
+        f.abschnitt(_("Reading cache"))
+        f.schalter("einlese_cache", _("Remember read books (faster opening)"),
+                   _("Bookbench remembers what it read from each book and only reads changed files again. "
+                     "Stored in the settings folder, per library. Switch off if something looks out of date."),
+                   self._w("einlese_cache"))
+        z = f.zeile()
+        f.knopf(_("Empty reading cache"), self._einlese_cache_leeren, z)
+        z.addStretch(1)
+
+    def _schema_erkennen(self):
+        from bookbench.core import folder_scheme as fs
+        v, n, gesamt = fs.erkennen(self.app.buecher, self.app.ordner)
+        if n:
+            self._bib_herkunft = _("detected: {n} of {gesamt} books are stored like this").format(n=n, gesamt=gesamt)
+            self.bib_schema.setText(v)
+        else:
+            self._bib_herkunft = _("No common scheme found in the books of this library.")
+        self._schema_beispiel()
+
+    def _schema_beispiel(self):
+        from bookbench.core import folder_scheme as fs
+        v = self.bib_schema.text().strip()
+        fehler = fs.pruefen(v)
+        if fehler:
+            texte = {"empty": _("The scheme is empty."), "brackets": _("Square brackets do not match."),
+                     "no-field-in-name": _("The file name (after the last /) needs at least one placeholder.")}
+            t = texte.get(fehler) or _("Unknown placeholder: {name}").format(name=fehler.split(":", 1)[-1])
+            self.bib_beispiel.setText("⚠ " + t)
+            return
+        self.bib_beispiel.setText(self._bib_herkunft + self._beispiel_text(v))
+
+    def _beispiel_text(self, v):
+        from bookbench.core import folder_scheme as fs
+        b = next((x for x in self.app.buecher if not x.fehler and x.reihe), None) or \
+            next((x for x in self.app.buecher if not x.fehler), None)
+        return "\n" + _("Example: {pfad}").format(pfad=fs.ziel(v, b)) if b is not None else ""
+
+    def _einlese_cache_leeren(self):
+        from bookbench.core import scan_cache
+        scan_cache.leeren()
+        self.app.status.set(_("Reading cache emptied; the next opening reads all books again."))
+
     def _seite_kapitel(self, f):
         f.ueberschrift(_("Chapters"))
         f.zahl("max_sub", _("Subtitle lines per chapter:"),
@@ -835,6 +914,9 @@ class EinstellungsDialog(QDialog):
                 e[k] = typ(wert) if typ in (bool, int, float, str) else wert
             except (TypeError, ValueError):            # Unsinn im Feld: alten Wert behalten
                 pass
+        from bookbench.core import folder_scheme as fs
+        if fs.pruefen(e.get("ordnerschema", "")):          # unbrauchbare Vorgabe: Standard
+            e["ordnerschema"] = fs.STANDARD
         e["klappentext_profile"] = self.profile
         e["meta_spalten"] = [list(x) for x in self.meta_spalten]
         e["marken_aus"] = {ort: [k for k in kmk.ORDNUNG if (ort, k) in self.marken and not self.marken[(ort, k)].isChecked()]
@@ -843,6 +925,20 @@ class EinstellungsDialog(QDialog):
             e["vorschau_geraet"] = self.geraet_wahl.currentData() or "auto"
             e["vorschau_eigen"] = [self.eigen["w"].value(), self.eigen["h"].value(), self.eigen["dpi"].value(),
                                    self.eigen["farbe"].isChecked()]
+        if self.bib_schema is not None:                    # Ordnerschema der geöffneten Bibliothek (library.json)
+            from bookbench.core import book_import as bi
+            from bookbench.core import folder_scheme as fs
+            v = self.bib_schema.text().strip()
+            d = bi.bibliothek_lesen(self.app.ordner)
+            if fs.pruefen(v):
+                dialogs.warnung(self, _("Folder scheme"), _("The folder scheme of this library is not valid and "
+                                                            "was not saved: {vorlage}").format(vorlage=v))
+            elif v != d.get("ordnerschema"):
+                d["ordnerschema"] = v
+                try:
+                    bi.bibliothek_schreiben(self.app.ordner, d)
+                except OSError as fehler:
+                    dialogs.warnung(self, _("Folder scheme"), str(fehler))
         alt = e.get("sprache") or "auto"
         e["sprache"] = self.sprachwahl.currentData() or "auto"
         self.accept()

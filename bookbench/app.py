@@ -34,6 +34,7 @@ from PySide6.QtWidgets import (QApplication, QFrame, QHBoxLayout, QLabel, QMainW
 from bookbench.core import blurbs
 from bookbench.core import library as kd
 from bookbench.core import markers as km
+from bookbench.core import scan_cache
 from bookbench.core import settings as kei
 from bookbench.preview import emulator as kv
 from bookbench.ui import area_chapters as kch
@@ -107,6 +108,9 @@ class App(QMainWindow):
         self.nach_schluessel = {}
         self.ordner = None
         self.calibre_wurzel, self.calibre_eintraege = None, []
+        self.nach_import = None              # relative Pfade frisch hinzugefügter Bücher (ui/import_window)
+        self._import_fenster = None
+        self.setAcceptDrops(True)
         self.entscheidungen = kd.json_laden(kd.ENTSCHEIDUNGEN)
         self.cache = kd.json_laden(kd.KLAPPENTEXT_CACHE)
         self._arbeit = None                  # Name der laufenden Hintergrundarbeit
@@ -229,6 +233,8 @@ class App(QMainWindow):
         m.addSeparator()
         m.addAction(_("Save"), QKeySequence("Ctrl+S"), self.speichern)
         m.addSeparator()
+        m.addAction(_("Add books …"), QKeySequence("Ctrl+I"), lambda: self.buecher_hinzufuegen())
+        m.addAction(_("New library from e-reader …"), self.bibliothek_vom_reader)
         m.addAction(_("Import from Calibre library …"), self.calibre_importieren)
         m.addSeparator()
         m.addAction(_("Settings …"), lambda: self.einstellungen())
@@ -516,15 +522,19 @@ class App(QMainWindow):
         self._alles_neu_zeichnen()
         einst = (self.e["max_sub"], self.e["caps"], dict(self.entscheidungen), self.e["sicherungsordner"])
         calibre = bool(self.e.get("calibre_an", True))
+        zwischenspeicher = bool(self.e.get("einlese_cache", True))
 
         def arbeit():
             dateien = kd.buecher_finden(ordner, ausnehmen=[einst[3]])
             ergebnis = []
+            zs = scan_cache.Zwischenspeicher(ordner) if zwischenspeicher else None
             for i, f in enumerate(dateien, 1):
                 if i % 5 == 1:
                     text = _("Reading books … {i}/{n}").format(i=i, n=len(dateien))
                     threads.im_hauptthread(lambda t=text: self.status.set(t))
-                ergebnis.append(kd.buch_laden(f, einst[0], einst[1], einst[2]))
+                ergebnis.append(kd.buch_laden(f, einst[0], einst[1], einst[2], zs))
+            if zs is not None:
+                zs.sichern()
             wurzel, eintraege = kd.calibre_finden(ordner) if calibre else (None, [])
             kd.calibre_zuordnen(ergebnis, wurzel, eintraege)
             threads.im_hauptthread(lambda: self._geladen((ergebnis, wurzel, eintraege)))
@@ -543,6 +553,12 @@ class App(QMainWindow):
         self._arbeit = None
         self._alles_neu_zeichnen()
         self.ordner_pruefen()
+        neu_hinzu, self.nach_import = self.nach_import, None
+        if neu_hinzu:                        # nach "Bücher hinzufügen": erstes neues Buch wählen
+            ziel = str(Path(self.ordner) / neu_hinzu[0])
+            b = next((x for x in buecher if str(x.pfad) == ziel), None)
+            if b:
+                self.bibliothek.auswaehlen(b)
         if self._start_buch:                 # nach einem Neustart (Update): Buch wieder wählen
             b = next((x for x in buecher if str(x.pfad) == str(self._start_buch)), None)
             if b:
@@ -557,7 +573,11 @@ class App(QMainWindow):
         cal_text = " " + ngettext("Calibre data for {n} book ({ordner}).", "Calibre data for {n} books ({ordner}).", cal)\
             .format(n=cal, ordner=self.calibre_wurzel) if cal else \
             (" " + _("metadata.calibre found, but it matches no book.") if self.calibre_eintraege else "")
-        self.status.set(ngettext("{n} book read.", "{n} books read.", len(buecher)).format(n=len(buecher))
+        vorab, self.nach_vom_reader = getattr(self, "nach_vom_reader", None), None
+        self.status.set((vorab + " " if vorab else "")
+                        + (ngettext("{n} book added.", "{n} books added.", len(neu_hinzu)).format(n=len(neu_hinzu)) + " "
+                           if neu_hinzu else "")
+                        + ngettext("{n} book read.", "{n} books read.", len(buecher)).format(n=len(buecher))
                         + (" " + _("{n} not readable.").format(n=fehler) if fehler else "")
                         + cal_text + hinweis)
 
@@ -829,6 +849,97 @@ class App(QMainWindow):
         if b is self.metadaten.buch and self.metadaten.seite is not None:
             self.metadaten.klappentext.anzeigen()
             self.metadaten.aktualisieren()
+
+    # ================================================================ Bücher hinzufügen (seit 2.1)
+    def buecher_hinzufuegen(self, pfade=None):
+        """Fenster "Bücher hinzufügen" (ui/import_window) öffnen bzw. nach vorn holen, pfade gleich hinein."""
+        if not self.ordner:
+            self.status.set(_("Open a library first (File > Open folder) or create one on this computer "
+                              "(File > New library from e-reader …), then add books."))
+            return None
+        if self._arbeit:
+            self.status.set(_("Still running: {arbeit}.").format(arbeit=self._arbeit))
+            return None
+        from bookbench.ui import import_window as kiw
+        f = self._import_fenster
+        if f is None or not f.isVisible():
+            f = self._import_fenster = kiw.ImportFenster(self)
+            f.show()
+        f.raise_()
+        f.activateWindow()
+        if pfade:
+            f.hinzufuegen(pfade)
+        return f
+
+    def dragEnterEvent(self, ev):
+        if ev.mimeData().hasUrls() and any(u.isLocalFile() for u in ev.mimeData().urls()):
+            ev.acceptProposedAction()
+
+    def dropEvent(self, ev):
+        pfade = [u.toLocalFile() for u in ev.mimeData().urls() if u.isLocalFile()]
+        if pfade:
+            ev.acceptProposedAction()
+            self.buecher_hinzufuegen(pfade)
+
+    def bibliothek_vom_reader(self, ziel=None):
+        """Erstbefüllung: alle Bücher des angeschlossenen E-Readers mit gleicher Ordnerstruktur in einen Ordner
+        auf diesem Rechner kopieren, Ordnerschema erkennen, library.json anlegen, die neue Bibliothek öffnen."""
+        from bookbench.core import book_import as bi
+        from bookbench.core import folder_scheme as fs
+        from bookbench.device import device as kg
+        reader = self.kobo.wurzel if self.kobo else None
+        if not reader:
+            dialogs.info(self, _("New library from e-reader"), _(
+                "No e-reader found. Connect it (USB), wait until it shows up in the E-reader area, then try again."))
+            return
+        if ziel is None:
+            ziel = dialogs.ordner(self, _("Folder for the new library (empty, or a library from before)"),
+                                  str(Path.home()))
+            if not ziel:
+                return
+        ziel = Path(ziel)
+        try:
+            ziel.resolve().relative_to(Path(reader).resolve())
+            dialogs.warnung(self, _("New library from e-reader"),
+                            _("Choose a folder on this computer, not on the e-reader."))
+            return
+        except ValueError:
+            pass
+        fremd = [p for p in ziel.iterdir() if p.name != bi.ORDNER] if ziel.is_dir() else []
+        if fremd and not bi.ist_bibliothek(ziel) and not dialogs.frage(self, _("New library from e-reader"), _(
+                "The folder {ordner} is not empty. Copy the books into it anyway? Existing files with the same "
+                "name are only overwritten if they differ.").format(ordner=ziel), standard=False):
+            return
+        if not self._aenderungen_verwerfen_ok():
+            return
+        info = kg.geraet_info(reader)
+        standard = self.e.get("ordnerschema") or fs.STANDARD
+
+        def arbeit():
+            def schritt(i, n, rel):
+                if i % 5 == 1 or i == n:
+                    text = _("Copying books from the e-reader … {i}/{n}").format(i=i, n=n)
+                    threads.im_hauptthread(lambda: self.status.set(text))
+            kopiert, uebersprungen, fehler = bi.vom_reader(reader, ziel, schritt)
+            buecher = [bi.lesen(p) for p in kd.buecher_finden(ziel)]
+            vorlage, treffer, gesamt = fs.erkennen(buecher, ziel)
+            d = bi.bibliothek_lesen(ziel)
+            d.setdefault("ordnerschema", vorlage if treffer else standard)
+            d["reader"] = bi.reader_eintrag(info)
+            bi.bibliothek_schreiben(ziel, d)
+            if fehler:
+                details = "\n".join(f"{r}: {t}" for r, t in fehler)
+                text = ngettext("{n} file could not be copied:", "{n} files could not be copied:",
+                                len(fehler)).format(n=len(fehler))
+                threads.im_hauptthread(lambda: dialogs.warnung(self, _("New library from e-reader"), text, details))
+            self.nach_vom_reader = _(
+                "Library created in {ordner}: {k} copied, {u} already there. Folder scheme: {v} ({t} of {g} books "
+                "match).").format(ordner=ziel, k=kopiert, u=uebersprungen, v=d["ordnerschema"], t=treffer, g=gesamt)
+            return self.nach_vom_reader
+
+        def nachher():
+            self.laden(ziel)
+        self.hintergrund(_("New library from e-reader"), arbeit, nachher)
 
     def calibre_importieren(self):
         """Einmaliger Import aus einer Calibre-Bibliothek (ui/calibre_import)."""

@@ -69,6 +69,7 @@ The strip can be switched off: Settings > General > Interface ([[einst_oberflaec
     ("ueberblick", "tasten", N_("Keyboard shortcuts"), N_("""
 **Everywhere**
 - **Ctrl+O** open a folder, **F5** reload it
+- **Ctrl+I** add books ([[bibliothek_hinzufuegen]])
 - **Ctrl+S** save
 - **Ctrl+Enter** apply (current book, or the dictionary form)
 - **Ctrl+F** search field of the current area (Chapters, Metadata, Dictionary), otherwise of the library; **Esc** in a search field empties it
@@ -89,6 +90,7 @@ The strip can be switched off: Settings > General > Interface ([[einst_oberflaec
 - **tocfix_entscheidungen.json**: applied chapter names, so they are suggested again for other copies of the same book.
 - **blurbs_cache.json**: looked-up blurbs and what was already tried without success.
 - **vorschau/**: the profile of the preview (Linux/macOS).
+- **einlese-cache/**: what was read from the books, per library, so unchanged books open faster ([[einst_bibliothek]]).
 Until version 0.23 the two JSON files were next to the program; until 0.24 the folder was called Kobo-Werkstatt (the old name). Both are copied over once. Settings > Advanced shows the paths and opens the folder ([[einst_erweitert]]).
 
 **Backup folder** (default: Bookbench Backups in your user folder)
@@ -97,7 +99,7 @@ Until version 0.23 the two JSON files were next to the program; until 0.24 the f
 - **Wörterbücher/**: dictionary files before they are built again.
 
 **In the book folder**
-- Nothing is created next to the books. Only the EPUB files themselves change when saving.
+- Nothing is created next to the books; the EPUB files themselves change when saving. A library on this computer ([[bibliothek_rechner]]) gets a hidden folder .bookbench with library.json (folder scheme, e-reader).
 
 **On the e-reader**
 - Only what you copy or restore yourself: KOReader settings (in the KOReader folder, e.g. .adds/koreader on a Kobo, [[kobo_geraete]]), dictionaries (data/dict in the KOReader folder), and the books when the e-reader folder is opened and saved.
@@ -154,6 +156,7 @@ All books of the opened folder (with all subfolders) with series, number, author
 - **Search** filters by title, series and author; the **filter** shows only changed books, unreadable files or books whose series is not in the EPUB. Filters by chapters, blurbs and covers are above the lists of those areas ([[suche_filter]]).
 - **Double-click** opens the book in the Chapters area; under Settings > General > Interface it can be Metadata, the Preview or KOReader instead ([[einst_oberflaeche]]).
 - **Right-click** on a book: open it in Chapters, Metadata, the Preview or start it in KOReader (Preview and KOReader not on Windows). The entry marked "Double-click" is the one the double-click uses.
+- **New books**: File > Add books (Ctrl+I) or drag them onto the window ([[bibliothek_hinzufuegen]]); a library on this computer instead of the e-reader: [[bibliothek_rechner]].
 
 **Columns**
 - **Chapters**: **suggestions** (the book text has chapter names the table of contents lacks), **without names** (only numbers, nothing in the text either), **no names found** (only a few matches - probably coincidence, so nothing is suggested), **ok**, **ok (2 without names)** (almost all have names, single ones only a number, e.g. a prologue).
@@ -164,6 +167,48 @@ All books of the opened folder (with all subfolders) with series, number, author
 - **Status** (left): the coloured dot and the pictograms of each book ([[status]]).
 
 **Filters** All books, Changed (anything not yet saved, or saved since opening), Unreadable files, No series in the EPUB.
+""")),
+    ("bibliothek", "bibliothek_hinzufuegen", N_("Adding books"), N_("""
+File > **Add books …** (Ctrl+I) opens a window for new books. Put EPUB or KEPUB files in with **Add files …**, **Add folder …** (with all subfolders) or simply drag them onto the window or the main window.
+
+**The list**
+- One row per file with title, author, series, number and where it will go (**→** path in the library, following the folder scheme, [[bibliothek_ordnerschema]]).
+- **Action** per book: Add, Skip, Replace existing, Keep both. Several rows at once: select them and use **Set action for selected …**.
+- **⧉ Possible duplicate**: the library already has the book, recognised in this order by the Calibre ID, the ISBN, or title and first author (ignoring case, punctuation and a leading "The"). Duplicates are set to Skip; you decide.
+- **Replace existing** overwrites the existing file **at its path**, so KOReader keeps the reading position and highlights (they are stored next to the file name). A backup is made first ([[speichern]]).
+- **Keep both** adds the new copy next to it; if the path is taken, " (2)" is added to the name.
+- Unreadable files are shown with ⚠ and skipped.
+
+**Checking metadata**
+On the right: title, authors, author sort, series, number and ISBN of the selected book. Changes go into the copy in the library, the original file stays as it is; the target path follows at once. Everything else (blurb, cover, own fields) afterwards in the Metadata area.
+
+**Add n books** copies the books, then the library is read again (only the new books really, thanks to the reading cache, [[einst_bibliothek]]) and the first new book is selected. Unsaved changes in the library must be saved or discarded first.
+
+Bookbench does not convert to KEPUB: EPUB is fine for KOReader, existing KEPUB files are taken as they are.
+""")),
+    ("bibliothek", "bibliothek_ordnerschema", N_("Folder scheme"), N_("""
+The folder scheme says where a new book goes inside the library, e.g. **{author_sort}/[{series}/][{series_index:2} - ]{title}** gives "Abnett, Dan/The Horus Heresy/01 - Horus Rising.epub", and for a book without a series "Abnett, Dan/Ravenor.epub".
+
+- Placeholders like in Calibre: {title}, {authors}, {author} (first author), {author_sort}, {series}, {series_index}, {publisher}, {language}, {isbn}.
+- **{series_index:2}** fills up to two digits with zeros (3 → 03; 1.5 stays 1.5).
+- **[…]**: the part in square brackets is left out when a placeholder in it is empty.
+- Characters that Windows or the e-reader do not allow (: ? * " < > | \\ /) become _.
+
+**Where the scheme comes from**
+1. Saved for this library (Settings > Books > Library and import, [[einst_bibliothek]]).
+2. Otherwise detected from the books: Bookbench puts the metadata of every book into its path and looks for the scheme most books follow. It is used if at least half of the books match, and saved with the first books added.
+3. Otherwise the default from the settings.
+
+Existing books are never moved or renamed - not even when the scheme changes.
+""")),
+    ("bibliothek", "bibliothek_rechner", N_("Library on this computer"), N_("""
+Since 2.1 the main copy of the books can live in a folder on this computer, like in Calibre, and the e-reader gets them from there. Editing directly on the e-reader keeps working as before.
+
+**New library from e-reader** (File menu): copies all books of the connected e-reader into a folder on this computer, with the same folder structure. KOReader's .sdr folders (reading positions, highlights) stay on the e-reader. The folder scheme is detected from the books ([[bibliothek_ordnerschema]]) and the new library is opened. Running it again into the same folder only copies what is missing or different.
+
+**.bookbench folder**: the library folder gets a hidden folder .bookbench with library.json (folder scheme, which e-reader belongs to it). It lies in the library folder on purpose: if the folder moves or is synced between Windows and Linux, this comes along.
+
+Coming in the next betas: removing advert lines (OceanofPDF and the like) and copying new or changed books to the e-reader.
 """)),
     ("bibliothek", "bibliothek_spalten", N_("Columns: sorting, moving, widths"), N_("""
 **Sorting**
@@ -766,7 +811,7 @@ All settings are in **einstellungen.json** in the settings folder ([[dateien]]).
 **Pages**
 - General: [[einst_darstellung]], [[einst_oberflaeche]], [[einst_start]]
 - [[einst_speichern]]
-- Books: [[einst_kapitel]], [[einst_klappentexte]] ([[einst_klappentexte_profile]]), [[einst_cover]] ([[einst_cover_nachschlagen]]), [[einst_metadaten]]
+- Books: [[einst_bibliothek]], [[einst_kapitel]], [[einst_klappentexte]] ([[einst_klappentexte_profile]]), [[einst_cover]] ([[einst_cover_nachschlagen]]), [[einst_metadaten]]
 - Device: [[einst_kobo]], [[einst_vorschau]]
 - [[einst_online]]
 - [[einst_erweitert]]
@@ -822,6 +867,15 @@ The releases come from github.com/kepfle-git/Bookbench; that is fixed in the pro
 - **Backup folder** (default: Bookbench Backups in the user folder): books are copied here before each save ([[speichern]]). The E-reader area uses its subfolder KOReader, the dictionary its subfolder Wörterbücher. Not on the e-reader.
 - **Backups per book** (default: 5): the newest ones are kept, older ones are deleted when saving.
 - **Backups of the KOReader settings** (default: 10): backups made in the E-reader area; this many stay in the subfolder KOReader, including the backup before each restore ([[kobo_sicherungen]]).
+""")),
+    ("einstellungen", "einst_bibliothek", N_("Library and import"), N_("""
+**Folder scheme**
+- **This library**: only when a library on this computer is open. Where Add books puts new books ([[bibliothek_ordnerschema]]). **Detect from the books** looks for the scheme most books follow; the line below shows an example with a book of the library, or what is wrong with the scheme. Saved in the library folder (.bookbench/library.json).
+- **Default for new libraries** (default: {author_sort}/[{series}/][{series_index:2} - ]{title}, like Calibre): used when a library has no scheme of its own and none can be detected. **Reset to Calibre-like default** puts it back.
+
+**Reading cache**
+- **Remember read books** (default: on): Bookbench remembers what it read from each book (table of contents, metadata, cover size) together with size and date of the file, and only reads changed files again. KOReader's book data (.sdr) counts too. Stored per library in the settings folder (einlese-cache), not in the library folder.
+- **Empty reading cache**: the next opening reads all books again.
 """)),
     ("einstellungen", "einst_kapitel", N_("Chapters"), N_("""
 - **Subtitle lines per chapter** (default: 1): how many lines below a chapter number make up the suggested name. Some books have three (e.g. place, time, person); with 3 all of them are joined with " / ".

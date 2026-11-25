@@ -575,8 +575,21 @@ def _schluessel(href, titel):
     return (href, tocfix.norm(titel))
 
 
-def buch_laden(pfad, max_sub=1, caps=False, entscheidungen=None):
-    """Liest ein Buch komplett. Fehler landen in buch.fehler statt als Ausnahme."""
+def buch_laden(pfad, max_sub=1, caps=False, entscheidungen=None, zwischenspeicher=None):
+    """Liest ein Buch komplett. Fehler landen in buch.fehler statt als Ausnahme. Mit zwischenspeicher
+    (core/scan_cache) wird eine unveränderte Datei nicht neu gelesen; die Entscheidungen gelten trotzdem."""
+    b = zwischenspeicher.holen(pfad, max_sub) if zwischenspeicher is not None else None
+    if b is None:
+        b = _buch_roh(pfad, max_sub)
+        if zwischenspeicher is not None:
+            zwischenspeicher.ablegen(pfad, max_sub, b)
+    if not b.fehler:
+        _entscheidungen_anwenden(b, caps, entscheidungen)
+    return b
+
+
+def _buch_roh(pfad, max_sub):
+    """Liest ein Buch ohne die Kapitel-Entscheidungen (so landet es im Zwischenspeicher)."""
     b = Buch(pfad)
     try:
         with zipfile.ZipFile(pfad) as z:
@@ -626,21 +639,24 @@ def buch_laden(pfad, max_sub=1, caps=False, entscheidungen=None):
             i["dkey"] = f"{b.titel or b.pfad.name}|{i['key'][0]}|{i['old']}"
             b.kandidaten[i["key"]] = i
         b.vorschlag = dict(neu)
-        for i in items:                                   # gespeicherte Entscheidungen
-            if entscheidungen and i["dkey"] in entscheidungen:
-                t = entscheidungen[i["dkey"]]
-                if t:
-                    b.vorschlag[i["key"]] = t
-                else:
-                    b.vorschlag.pop(i["key"], None)
-                i["reasons"] = []                         # entschieden = nicht mehr fragwürdig
-        if caps:
-            for __, titel, __, k in b.zeilen:
-                if k not in b.vorschlag and titel.isupper() and len(titel) > 3 and tocfix.nice(titel) != titel:
-                    b.vorschlag[k] = tocfix.nice(titel)
     except Exception as e:                                # kaputte Datei: anzeigen statt abbrechen
         b.fehler = _("not readable ({fehler})").format(fehler=e)
     return b
+
+
+def _entscheidungen_anwenden(b, caps, entscheidungen):
+    for i in b.kandidaten.values():                       # gespeicherte Entscheidungen
+        if entscheidungen and i["dkey"] in entscheidungen:
+            t = entscheidungen[i["dkey"]]
+            if t:
+                b.vorschlag[i["key"]] = t
+            else:
+                b.vorschlag.pop(i["key"], None)
+            i["reasons"] = []                             # entschieden = nicht mehr fragwürdig
+    if caps:
+        for __, titel, __, k in b.zeilen:
+            if k not in b.vorschlag and titel.isupper() and len(titel) > 3 and tocfix.nice(titel) != titel:
+                b.vorschlag[k] = tocfix.nice(titel)
 
 
 def textanfang(buch, href, zeilen=6):

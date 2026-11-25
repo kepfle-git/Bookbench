@@ -48,6 +48,9 @@ STANDARD = {
     # Updates (ui/updates.py): pruefen aus/start/taeglich/woechentlich, zuletzt/ausgelassen ohne Seite
     "update_pruefen": "taeglich", "update_vorab": False,     # Repo fest in core/updater.py (REPO)
     "update_zuletzt": "", "update_ausgelassen": "",
+    # seit 2.1: Zwischenspeicher fürs Einlesen (core/scan_cache.py), Vorgabe-Ordnerschema für neue Bibliotheken
+    "einlese_cache": True, "ordnerschema": "{author_sort}/[{series}/][{series_index:2} - ]{title}",
+    "import_quelle": "",
 }
 
 

@@ -137,6 +137,33 @@ ALLE_AUS = ".patches_disabled"
 EIGENE = ("1-bookbench-desktop.lua", "2-bookbench-workbench.lua")      # schreibt Bookbench selbst
 
 
+# Patches, die Bookbench mitbringt (bookbench/patches, im Release auch als eigene Anhänge; seit 1.4-beta7)
+MITGEBRACHT_ORDNER = Path(__file__).resolve().parent.parent / "patches"
+MITGEBRACHT = {
+    "2-bookbench-subtitle.lua": N_("Subtitle and calibre's custom columns from the EPUB: Bookshelf gets the token "
+                                   "%subtitle (also for the top panel), and %calibre{name} in Bookshelf and "
+                                   "Bookends finds columns stored in the book, without calibre's metadata.calibre."),
+}
+
+
+def mitgebracht(ko):
+    """[{"name", "beschreibung", "stand"}] der mitgebrachten Patches; stand = "fehlt", "aktuell" oder "anders"
+    (im Profil, aber nicht diese Fassung)."""
+    erg = []
+    for name, text in MITGEBRACHT.items():
+        quelle = MITGEBRACHT_ORDNER / name
+        if not quelle.is_file():
+            continue
+        d = patch_ordner(ko)
+        da = next((d / n for n in (name, name + ".disabled") if (d / n).is_file()), None)
+        if da is None:
+            stand = "fehlt"
+        else:
+            stand = "aktuell" if da.read_bytes() == quelle.read_bytes() else "anders"
+        erg.append({"name": name, "beschreibung": text, "stand": stand, "quelle": quelle})
+    return erg
+
+
 def patch_ordner(ko):
     return Path(ko) / "patches"
 

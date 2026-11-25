@@ -165,8 +165,74 @@ class _Wahl:
         self.box.configure(state="readonly" if an else "disabled")
 
 
+class _SymbolText:
+    """Textfelder mit Nerd-Font-Symbolen als Bild (Bookends-Zeilen, Bookshelf-Hero-Zeilen)."""
+
+    # Nerd-Font-Symbole (privater Unicode-Bereich) zeigt Tk mit keiner normalen Schrift. Sie stehen
+    # deshalb als kleines Bild im Textfeld (mit KOReaders symbols.ttf gezeichnet); beim Auslesen wird
+    # das Bild wieder zum Zeichen. Ohne Pillow oder ohne Schrift bleiben es Zeichen (meist Kästchen).
+    def _schrift(self):
+        if not hasattr(self, "_symbolschrift"):
+            self._symbolschrift = kpl.symbolschrift(self.bereich.profil, self.bereich.befund)
+        return self._symbolschrift
+
+    def glyph_bild(self, ch, groesse=15, farbe=None):
+        """PhotoImage für ein Symbol (gecacht) oder None."""
+        farbe = farbe or kth.PALETTE["dunkel" if self.app.dark_mode.get() else "hell"]["feld_fg"]
+        schl = (ch, groesse, farbe)
+        if not hasattr(self, "_glyphen"):
+            self._glyphen, self._bild_zeichen = {}, {}
+        if schl in self._glyphen:
+            return self._glyphen[schl]
+        bild = None
+        pfad = self._schrift()
+        if pfad:
+            try:
+                from PIL import Image, ImageDraw, ImageFont, ImageTk
+                f = ImageFont.truetype(str(pfad), groesse)
+                links, oben, rechts, unten = f.getbbox(ch)
+                w, h = max(1, rechts - links), groesse + 2
+                im = Image.new("RGBA", (w + 2, h), (0, 0, 0, 0))
+                ImageDraw.Draw(im).text((1 - links, (h - (unten - oben)) // 2 - oben), ch, font=f, fill=farbe)
+                bild = ImageTk.PhotoImage(im, master=self.app)
+                self._bild_zeichen[str(bild)] = ch
+            except (ImportError, OSError, ValueError):
+                bild = None
+        self._glyphen[schl] = bild
+        return bild
+
+    def _text_einsetzen(self, t, index, text):
+        """Text einfügen; Symbole als Bild (siehe oben). Über eine Marke mit rechter Schwerkraft, sonst
+        kehrt sich bei einem festen Index wie "1.0" die Reihenfolge der Stücke um."""
+        t.mark_set("bb_einfuegen", index)
+        t.mark_gravity("bb_einfuegen", "right")
+        index = "bb_einfuegen"
+        stueck = ""
+        for ch in text:
+            bild = self.glyph_bild(ch) if kpl.ist_symbol(ch) else None
+            if bild is None:
+                stueck += ch
+                continue
+            if stueck:
+                t.insert(index, stueck)
+                stueck = ""
+            t.image_create(index, image=bild, padx=0)
+        if stueck:
+            t.insert(index, stueck)
+
+    def _text_lesen(self, t):
+        """Inhalt eines Textfelds mit den Symbol-Bildern als Zeichen."""
+        teile = []
+        for art, wert, index in t.dump("1.0", "end-1c", text=True, image=True):
+            if art == "text":
+                teile.append(wert)
+            elif art == "image":
+                teile.append(getattr(self, "_bild_zeichen", {}).get(str(t.image_cget(index, "image")), ""))
+        return "".join(teile)
+
+
 # ====================================================================== Bookends
-class BookendsSeite(_Seite):
+class BookendsSeite(_SymbolText, _Seite):
     plugin = kpl.BOOKENDS
     titel = "Bookends"
 
@@ -512,63 +578,6 @@ class BookendsSeite(_Seite):
             return
         self._text_einsetzen(t, "insert", token)
         t.focus_set()
-
-    # ------------------------------------------------------------------ Symbole in den Textfeldern
-    # Nerd-Font-Symbole (privater Unicode-Bereich) zeigt Tk mit keiner normalen Schrift. Sie stehen
-    # deshalb als kleines Bild im Textfeld (mit KOReaders symbols.ttf gezeichnet); beim Auslesen wird
-    # das Bild wieder zum Zeichen. Ohne Pillow oder ohne Schrift bleiben es Zeichen (meist Kästchen).
-    def _schrift(self):
-        if not hasattr(self, "_symbolschrift"):
-            self._symbolschrift = kpl.symbolschrift(self.bereich.profil, self.bereich.befund)
-        return self._symbolschrift
-
-    def glyph_bild(self, ch, groesse=15, farbe=None):
-        """PhotoImage für ein Symbol (gecacht) oder None."""
-        farbe = farbe or kth.PALETTE["dunkel" if self.app.dark_mode.get() else "hell"]["feld_fg"]
-        schl = (ch, groesse, farbe)
-        if schl in self._glyphen:
-            return self._glyphen[schl]
-        bild = None
-        pfad = self._schrift()
-        if pfad:
-            try:
-                from PIL import Image, ImageDraw, ImageFont, ImageTk
-                f = ImageFont.truetype(str(pfad), groesse)
-                links, oben, rechts, unten = f.getbbox(ch)
-                w, h = max(1, rechts - links), groesse + 2
-                im = Image.new("RGBA", (w + 2, h), (0, 0, 0, 0))
-                ImageDraw.Draw(im).text((1 - links, (h - (unten - oben)) // 2 - oben), ch, font=f, fill=farbe)
-                bild = ImageTk.PhotoImage(im, master=self.app)
-                self._bild_zeichen[str(bild)] = ch
-            except (ImportError, OSError, ValueError):
-                bild = None
-        self._glyphen[schl] = bild
-        return bild
-
-    def _text_einsetzen(self, t, index, text):
-        """Text einfügen; Symbole als Bild (siehe oben)."""
-        stueck = ""
-        for ch in text:
-            bild = self.glyph_bild(ch) if kpl.ist_symbol(ch) else None
-            if bild is None:
-                stueck += ch
-                continue
-            if stueck:
-                t.insert(index, stueck)
-                stueck = ""
-            t.image_create(index, image=bild, padx=0)
-        if stueck:
-            t.insert(index, stueck)
-
-    def _text_lesen(self, t):
-        """Inhalt eines Textfelds mit den Symbol-Bildern als Zeichen."""
-        teile = []
-        for art, wert, index in t.dump("1.0", "end-1c", text=True, image=True):
-            if art == "text":
-                teile.append(wert)
-            elif art == "image":
-                teile.append(self._bild_zeichen.get(str(t.image_cget(index, "image")), ""))
-        return "".join(teile)
 
     def symbole_zeigen(self):
         """Fenster mit den Sonderzeichen aus Bookends' Katalog; Klick fügt ins zuletzt benutzte Feld ein."""
@@ -1063,7 +1072,7 @@ class SymbolFenster(tk.Toplevel):
 
 
 # ====================================================================== Bookshelf
-class BookshelfSeite(_Seite):
+class BookshelfSeite(_SymbolText, _Seite):
     plugin = kpl.BOOKSHELF
     titel = "Bookshelf"
 
@@ -1092,6 +1101,7 @@ class BookshelfSeite(_Seite):
         self.f_brett = self._abschnitt("brett", _("Plank"), offen=False)
         self.f_deko = self._abschnitt("deko", _("Decoration (ornaments)"), offen=False)
         self.f_farben = self._abschnitt("farben", _("Colours"), offen=False)
+        self._hero_bauen(self._abschnitt("hero", _("Top panel"), offen=False))
 
         # -- feste Auswahl ------------------------------------------------------------------
         for gruppe, gtext in kpl.BOOKSHELF_GRUPPEN:
@@ -1144,6 +1154,234 @@ class BookshelfSeite(_Seite):
         ttk.Button(z, text=_("Change …"), style="Klein.TButton",
                    command=self.schluessel_bearbeiten).pack(side="left", padx=(0, 4))
         ttk.Button(z, text=_("Default"), style="Klein.TButton", command=self.schluessel_loeschen).pack(side="left")
+
+    # ------------------------------------------------------------------ Oberer Bereich (Hero-Karte, seit 1.4-beta7)
+    def _hero_bauen(self, i):
+        z = ttk.Frame(i)
+        z.pack(anchor="w", fill="x")
+        ttk.Label(z, text=_("Shows")).pack(side="left")
+        self.hero_modus = _Wahl(z, kpl.HERO_MODUS, self._hero_modus_geaendert, breite=26)
+        self.hero_modus.box.pack(side="left", padx=(4, 0))
+        ttk.Label(i, text=_("Lines of the hero card (the current book):"), style="Hinweis.TLabel").pack(
+            anchor="w", pady=(8, 0))
+        z = ttk.Frame(i)
+        z.pack(anchor="w", fill="x", pady=(2, 0))
+        self.hero_kennung = "metadata"
+        self.hero_wahl = ttk.Combobox(z, state="readonly", width=24)
+        self.hero_wahl.pack(side="left")
+        self.hero_wahl.bind("<<ComboboxSelected>>", lambda e: self._hero_gewaehlt())
+        self.hero_an = tk.BooleanVar()
+        ttk.Checkbutton(z, text=_("Shown"), variable=self.hero_an,
+                        command=self._hero_uebernehmen).pack(side="left", padx=(8, 0))
+        self.hero_text = tk.Text(i, height=2, wrap="word", undo=True, borderwidth=1, relief="solid",
+                                 font=("", 10), highlightthickness=0)
+        self.hero_text.pack(anchor="w", fill="x", pady=(4, 0))
+        self.hero_text.bind("<<Modified>>", self._hero_text_geaendert)
+        z = ttk.Frame(i)
+        z.pack(anchor="w", fill="x", pady=(2, 0))
+        self.hero_token = ttk.Menubutton(z, text=_("Insert token"), style="Klein.TButton")
+        self.hero_token.pack(side="left")
+        self.hero_token_menue = tk.Menu(self.hero_token, tearoff=False)
+        self.hero_token["menu"] = self.hero_token_menue
+        self.hero_untertitel = ttk.Button(z, text=_("Subtitle"), style="Klein.TButton",
+                                          command=self._hero_untertitel)
+        self.hero_untertitel.pack(side="left", padx=(4, 0))
+        ttk.Button(z, text=_("Default"), style="Klein.TButton",
+                   command=self._hero_zuruecksetzen).pack(side="left", padx=(4, 0))
+        g = self.hero_gitter = ttk.Frame(i)
+        g.pack(anchor="w", fill="x", pady=(4, 0))
+        ttk.Label(g, text=_("Size")).grid(row=0, column=0, sticky="w")
+        self.hero_groesse = tk.StringVar()
+        sp = self.hero_groesse_feld = ttk.Spinbox(g, from_=6, to=72, width=4, textvariable=self.hero_groesse,
+                                                  command=self._hero_uebernehmen)
+        sp.grid(row=0, column=1, sticky="w", padx=(4, 10))
+        sp.bind("<KeyRelease>", lambda e: self._hero_uebernehmen())
+        self.hero_ausrichtung = _Wahl(g, kpl.HERO_AUSRICHTUNG, self._hero_uebernehmen, breite=8)
+        self.hero_ausrichtung.box.grid(row=0, column=2, sticky="w")
+        self.hero_fett, self.hero_gross = tk.BooleanVar(), tk.BooleanVar()
+        self.hero_fett_knopf = ttk.Checkbutton(g, text=_("Bold"), variable=self.hero_fett,
+                                               command=self._hero_uebernehmen)
+        self.hero_fett_knopf.grid(row=1, column=0, columnspan=2, sticky="w", pady=(2, 0))
+        self.hero_gross_knopf = ttk.Checkbutton(g, text=_("Capitals"), variable=self.hero_gross,
+                                                command=self._hero_uebernehmen)
+        self.hero_gross_knopf.grid(row=1, column=2, sticky="w", pady=(2, 0))
+        # nur für die Tag-Zeile
+        self.hero_tags_rahmen = ttk.Frame(i)
+        self.hero_tags_var = {}
+        for n, (feld, text) in enumerate(kpl.HERO_TAGS):
+            v = self.hero_tags_var[feld] = tk.BooleanVar()
+            ttk.Checkbutton(self.hero_tags_rahmen, text=_(text), variable=v,
+                            command=self._hero_uebernehmen).grid(row=n // 3, column=n % 3, sticky="w", padx=(0, 8))
+        ttk.Label(self.hero_tags_rahmen, text=_("Rows at most")).grid(row=2, column=0, sticky="w", pady=(2, 0))
+        self.hero_zeilen = tk.StringVar()
+        sp = ttk.Spinbox(self.hero_tags_rahmen, from_=1, to=5, width=3, textvariable=self.hero_zeilen,
+                         command=self._hero_uebernehmen)
+        sp.grid(row=2, column=1, sticky="w", pady=(2, 0))
+        sp.bind("<KeyRelease>", lambda e: self._hero_uebernehmen())
+        self.hero_hinweis = ttk.Label(i, text="", style="Hinweis.TLabel", wraplength=BREITE, justify="left")
+        self.hero_hinweis.pack(anchor="w", fill="x", pady=(4, 0))
+
+    def _hero_werte(self):
+        """Einstellungen mit Entwurf, für hero_zeile()."""
+        return {"hero_regions": self._wert("hero_regions")}
+
+    def _hero_fuellen(self):
+        if not hasattr(self, "hero_wahl"):
+            return
+        alt, self._laden_laeuft = self._laden_laeuft, True
+        try:
+            w = self._hero_werte()
+            self.hero_modus.setzen(self._wert("hero_area_mode", "currently_reading"))
+            namen = []
+            for k, t in kpl.HERO_ZEILEN:
+                namen.append(_(t) + ("" if kpl.hero_zeile(w, k).get("disabled") else "  ✓"))
+            self.hero_wahl.configure(values=namen)
+            kennung = self.hero_kennung
+            self.hero_wahl.current([k for k, __ in kpl.HERO_ZEILEN].index(kennung))
+            z = kpl.hero_zeile(w, kennung)
+            self.hero_an.set(not z.get("disabled"))
+            mit_text = kennung not in kpl.HERO_OHNE_VORLAGE
+            self.hero_text.configure(state="normal")
+            self.hero_text.delete("1.0", "end")
+            if mit_text:
+                self._text_einsetzen(self.hero_text, "1.0", z.get("template") or "")
+            self.hero_text.edit_modified(False)
+            self.hero_text.configure(state="normal" if mit_text else "disabled")
+            for knopf in (self.hero_token, self.hero_untertitel):
+                knopf.configure(state="normal" if mit_text else "disabled")
+            self.hero_groesse.set(str(z.get("font_size", "")))
+            self.hero_ausrichtung.setzen(z.get("alignment", "left"))
+            self.hero_fett.set(bool(z.get("bold")))
+            self.hero_gross.set(bool(z.get("uppercase")))
+            self.hero_fett_knopf.configure(state="normal" if mit_text else "disabled")
+            self.hero_gross_knopf.configure(state="normal" if mit_text and kennung != "description" else "disabled")
+            if kennung == "tags":
+                self.hero_tags_rahmen.pack(anchor="w", fill="x", pady=(4, 0), after=self.hero_gitter)
+                for feld, v in self.hero_tags_var.items():
+                    v.set(z.get(feld, True) is not False)
+                self.hero_zeilen.set(str(z.get("max_rows", 2)))
+            else:
+                self.hero_tags_rahmen.pack_forget()
+            hinweis = {
+                "rating": _("Stars to tap; only on/off, size and alignment."),
+                "tags": _("Buttons for author, series, collections, genres and folder, each can be hidden."),
+                "metadata": _("An extra line between author and description; Bookshelf puts the series here by "
+                              "default. \"Subtitle\" puts the book's subtitle here (needs the Bookbench patch "
+                              "2-bookbench-subtitle, page Patches)."),
+            }.get(kennung, _("Tokens like in Bookshelf's line editor, [if:token]…[/if] shows a part only if the "
+                             "token has a value. Empty = the line is left out."))
+            if mit_text and "%subtitle" in self._hero_text_lesen() and not self._untertitel_patch():
+                hinweis += "\n" + _("⚠ %subtitle needs the patch 2-bookbench-subtitle in the profile (page Patches).")
+            self.hero_hinweis.configure(text=hinweis)
+            self._hero_token_menue_fuellen()
+        finally:
+            self._laden_laeuft = alt
+
+    def _untertitel_patch(self):
+        d = Path(self.ko) / "patches"
+        return (d / "2-bookbench-subtitle.lua").is_file()
+
+    def _hero_token_menue_fuellen(self):
+        m = self.hero_token_menue
+        m.delete(0, "end")
+        gruppen = {}
+        tokens = list(kpl.bookshelf_tokens(self.info["ordner"])) if getattr(self, "info", None) else []
+        tokens.append(("Bookbench", "%subtitle", _("Subtitle from the EPUB (needs the Bookbench patch)")))
+        for gruppe, token, text in tokens:
+            if gruppe not in gruppen:
+                gruppen[gruppe] = tk.Menu(m, tearoff=False)
+                m.add_cascade(label=gruppe, menu=gruppen[gruppe])
+            gruppen[gruppe].add_command(label=f"{token}  –  {text}", command=lambda t=token: self._hero_einfuegen(t))
+
+    def _hero_einfuegen(self, token):
+        if str(self.hero_text.cget("state")) == "disabled":
+            return
+        self._text_einsetzen(self.hero_text, "insert", token)
+        self.hero_text.focus_set()
+
+    def _hero_untertitel(self):
+        """Untertitel in die Zeile setzen (Metadata: ersetzt die Reihe; sonst ans Ende)."""
+        if self.hero_kennung == "metadata":
+            text = kpl.HERO_UNTERTITEL
+        else:
+            text = (self._hero_text_lesen() + " " + kpl.HERO_UNTERTITEL).strip()
+        self.hero_text.delete("1.0", "end")
+        self._text_einsetzen(self.hero_text, "1.0", text)
+
+    def _hero_text_lesen(self):
+        return self._text_lesen(self.hero_text).strip("\n")
+
+    def _hero_text_geaendert(self, e=None):
+        if not self.hero_text.edit_modified():
+            return
+        self.hero_text.edit_modified(False)
+        self._hero_uebernehmen()
+
+    def _hero_gewaehlt(self):
+        self.hero_kennung = kpl.HERO_ZEILEN[self.hero_wahl.current()][0]
+        self._hero_fuellen()
+
+    def _hero_uebernehmen(self):
+        if self._laden_laeuft or self.datei_werte is None:
+            return
+        k = self.hero_kennung
+        felder = {"disabled": None if self.hero_an.get() else True}
+        try:
+            g = _zahl_oder_leer(self.hero_groesse.get())
+        except ValueError:
+            return
+        felder["font_size"] = None if g is None else int(g)
+        felder["alignment"] = self.hero_ausrichtung.wert()
+        if k not in kpl.HERO_OHNE_VORLAGE:
+            felder["template"] = self._hero_text_lesen()
+            felder["bold"] = bool(self.hero_fett.get())
+            if k != "description":
+                felder["uppercase"] = bool(self.hero_gross.get())
+        if k == "tags":
+            for feld, v in self.hero_tags_var.items():
+                felder[feld] = bool(v.get())
+            try:
+                n = _zahl_oder_leer(self.hero_zeilen.get())
+            except ValueError:
+                return
+            felder["max_rows"] = None if n is None else max(1, min(5, int(n)))
+        neu = kpl.hero_aendern(self._hero_werte(), k, **felder)
+        self._hero_setzen(neu)
+
+    def _hero_setzen(self, neu):
+        """hero_regions als Ganzes in den Entwurf (ohne das Formular neu zu bauen, damit das Textfeld
+        beim Tippen den Cursor behält)."""
+        im_profil = (self.datei_werte or {}).get("hero_regions")
+        if _gleich(neu, im_profil):
+            self.aenderungen.pop("hero_regions", None)
+        else:
+            self.aenderungen["hero_regions"] = neu
+        self._hero_fuellen_ausser_text()
+        self.stand_zeigen()
+        self._planen(PAUSE_BOOKSHELF, self.ins_bild)
+
+    def _hero_fuellen_ausser_text(self):
+        w = self._hero_werte()
+        self.hero_wahl.configure(values=[_(t) + ("" if kpl.hero_zeile(w, k).get("disabled") else "  ✓")
+                                         for k, t in kpl.HERO_ZEILEN])
+        self.hero_wahl.current([k for k, __ in kpl.HERO_ZEILEN].index(self.hero_kennung))
+
+    def _hero_zuruecksetzen(self):
+        if self.datei_werte is None:
+            return
+        neu = kpl.hero_zuruecksetzen(self._hero_werte(), self.hero_kennung)
+        im_profil = (self.datei_werte or {}).get("hero_regions")
+        if _gleich(neu, im_profil):
+            self.aenderungen.pop("hero_regions", None)
+        else:
+            self.aenderungen["hero_regions"] = neu
+        self._formular_fuellen()
+        self._planen(PAUSE_BOOKSHELF, self.ins_bild)
+
+    def _hero_modus_geaendert(self):
+        if self._laden_laeuft or self.datei_werte is None:
+            return
+        self._setzen("hero_area_mode", self.hero_modus.wert(), "currently_reading")
 
     # ------------------------------------------------------------------ Theme und Dekoration
     def _wahl(self, eltern, zeile, name, text, optionen, holen, setzen, breite=24):
@@ -1420,6 +1658,7 @@ class BookshelfSeite(_Seite):
                 if schl in self.var:
                     self.var[schl].set(bool(self._wert(schl, False)))
             self._wahlen_fuellen()
+            self._hero_fuellen()
             if hasattr(self, "deko_baum"):
                 self._deko_fuellen()
             self._farben_fuellen()

@@ -594,7 +594,11 @@ Below Preview, **Patches** lists the user patches of the profile (folder koreade
 - ⚠ marks a patch that failed in the workbench; select it to see KOReader's message. Many patches need the e-reader (a Kobo-only function, the frontlight …) and can never run on the computer - that says nothing about the e-reader.
 - **Show …** opens the patch read-only. **Add …** copies a .lua file into the profile (without a number it gets "2-", otherwise KOReader would never run it); **Delete** removes one. Adding and deleting change the profile at once.
 
-Switching on and off is a draft until **Save to profile**. Patches run when KOReader starts, so the workbench restarts after every change. Bookbench's own patches (1-bookbench-desktop, 2-bookbench-workbench) are not listed.
+**Patches from Bookbench**
+Patches Bookbench brings along, with their state (not in the profile, in the profile, another version) and **Add** or **Update**. They are also attached to every Bookbench release on GitHub, for copying into koreader/patches on the e-reader by hand.
+- **2-bookbench-subtitle**: reads the subtitle and calibre's custom columns straight from each EPUB on the e-reader. Bookshelf gets the token **%subtitle** (top panel, list lines, cover labels, [if:subtitle]); **%calibre{name}** in Bookshelf and Bookends also finds columns stored in the book, without calibre's metadata.calibre (a value in the book wins). Subtitle = the column #subtitle, otherwise the EPUB 3 subtitle. Bookbench writes these columns into the book when you edit them in Metadata. The patch hooks into Bookshelf's and Bookends' insides; if a new version changes them, the values stay empty and nothing else breaks.
+
+Switching on and off is a draft until **Save to profile**. Patches run when KOReader starts, so the workbench restarts after every change. To bring patches onto the e-reader: **To the e-reader …** ([[vorschau_rueckweg]]). Bookbench's internal patches (1-bookbench-desktop, 2-bookbench-workbench) are not listed.
 """)),
     ("vorschau", "vorschau_bookends", _("Bookends settings"), _("""
 If the profile contains the plugin **Bookends**, the sidebar shows **Bookends** below Preview. Its settings page sits in the left column; the picture stays on the right and shows every change after a short pause (a tenth of a second, KOReader keeps running). The workbench switches to the reading page for this.
@@ -652,9 +656,15 @@ The page is divided into sections; a click on the heading folds a section away o
 - **How often per shelf**: none, rarely, often (default), always. Ornaments only appear on spine shelves.
 - The list shows all ornaments of the profile (loose files and packs); a double-click switches a piece or a whole pack off and on.
 
+**Top panel**
+- **Shows**: the current book (hero card) or Bookshelf's modules (clock, quote …). Arranging the modules stays in Bookshelf.
+- **Lines of the hero card**: status line, rating, title, author, metadata, description, tags, progress (✓ = shown). For each: **Shown**, the text with tokens (**Insert token** lists Bookshelf's tokens), size, alignment, bold, capitals; **Default** goes back to Bookshelf's default for that line. [if:token]…[/if] shows a part only if the token has a value; an empty text leaves the line out.
+- Rating and tags are buttons, not text: only on/off, size and alignment; for tags also which kinds (authors, series, collections, genres, folder) and how many rows.
+- **Subtitle** puts the book's subtitle into the line ([if:subtitle]%subtitle[/if]; in the metadata line instead of the series). It needs the patch 2-bookbench-subtitle in the profile and on the e-reader ([[vorschau_patches]]).
+
 **More settings**
 - A selection of settings that change the look (layout, font sizes, covers and spines, display), with Bookshelf's defaults where the file has no value.
-- **All keys in the file**: everything in settings/bookshelf/settings.lua, also what is not listed above. Double-click (or **Change …**) changes a simple value (number, text, on/off) in its type. Tables - shelves, modules, the start menu - can only be changed in Bookshelf itself or in the sections above (colours, theme and ornaments per shelf). **Default** removes the key, then Bookshelf's default applies. Changed keys have a ●.
+- **All keys in the file**: everything in settings/bookshelf/settings.lua, also what is not listed above. Double-click (or **Change …**) changes a simple value (number, text, on/off) in its type. Tables - shelves, modules, the start menu - can only be changed in Bookshelf itself or in the sections above (colours, theme and ornaments per shelf, the lines of the hero card). **Default** removes the key, then Bookshelf's default applies. Changed keys have a ●.
 - Values Bookshelf writes by itself while running (current shelf and page, version notes) are not listed.
 
 Bookshelf is a plugin by AndyHazz (github.com/AndyHazz/bookshelf.koplugin); Bookbench only reads and writes its settings file.

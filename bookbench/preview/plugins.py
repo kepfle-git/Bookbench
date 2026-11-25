@@ -464,6 +464,85 @@ BOOKSHELF_INTERN = {"migrated", "active_chip", "active_cursor", "active_page", "
                     "top_panel_rows_taken", "pubdate_reader_version"}
 
 
+# ---- Oberer Bereich / Hero-Karte (seit 1.4-beta7; Bookshelf lib/bookshelf_hero_regions.lua)
+HERO_MODUS = (("currently_reading", N_("Currently reading (hero card)")), ("micro_modules", N_("Modules")))
+HERO_ZEILEN = (("status", N_("Status line")), ("rating", N_("Rating (interactive)")), ("title", N_("Title")),
+               ("author", N_("Author")), ("metadata", N_("Metadata")), ("description", N_("Description")),
+               ("tags", N_("Tags (interactive)")), ("progress", N_("Progress")))
+HERO_OHNE_VORLAGE = ("rating", "tags")         # Knöpfe bzw. Sterne statt Text
+HERO_AUSRICHTUNG = (("left", N_("Left")), ("center", N_("Centre")), ("right", N_("Right")))
+HERO_TAGS = (("show_author", N_("Authors")), ("show_series", N_("Series")), ("show_collections", N_("Collections")),
+             ("show_genres", N_("Genres")), ("show_folder", N_("Folder")))
+# Regions.DEFAULTS (status aus lib/status_line.lua); gelten für Zeilen, die nicht in hero_regions stehen
+HERO_VORGABEN = {
+    "status": {"template": "\uf0a0 %disk[if:batt]  %batt_icon%batt[/if][if:light]  %light_icon%light_pct[/if]"
+                           "  %wifi_icon  %time_12h", "font_size": 14, "bold": False, "uppercase": False,
+               "alignment": "right"},
+    "title": {"template": "%title", "font_size": 26, "bold": True, "uppercase": False, "alignment": "left"},
+    "metadata": {"template": "[if:series]%series_name[if:series_num] / #%series_num[/if][/if]", "font_size": 14,
+                 "bold": True, "uppercase": False, "alignment": "right"},
+    "author": {"template": "%authors_short", "font_size": 16, "bold": False, "uppercase": False, "alignment": "left"},
+    "rating": {"template": "", "font_size": 16, "alignment": "left", "disabled": True},
+    "description": {"template": "[if:rating]%rating \u00b7 [/if]%description", "font_size": 14, "bold": False,
+                    "alignment": "left"},
+    "progress": {"template": "%book_pct  %bar  [if:book_time_left]%book_time_left[/if]", "font_size": 14,
+                 "bold": True, "uppercase": False, "alignment": "left"},
+    "tags": {"template": "", "disabled": True, "show_author": True, "show_series": True, "show_collections": True,
+             "show_genres": True, "show_folder": True, "font_size": 14, "alignment": "left", "max_rows": 2},
+}
+HERO_UNTERTITEL = "[if:subtitle]%subtitle[/if]"
+
+
+def _hero_roh(werte):
+    roh = werte.get("hero_regions")
+    return roh if isinstance(roh, dict) else {}
+
+
+def hero_zeile(werte, kennung):
+    """Eine Zeile der Hero-Karte, wie Bookshelf sie liest: gespeicherte Felder über den Vorgaben."""
+    erg = dict(HERO_VORGABEN.get(kennung, {}))
+    roh = _hero_roh(werte).get(kennung)
+    if isinstance(roh, dict):
+        erg.update({k: v for k, v in roh.items() if v is not None})
+        if not isinstance(erg.get("template"), str):
+            erg["template"] = HERO_VORGABEN.get(kennung, {}).get("template", "")
+    return erg
+
+
+def hero_aendern(werte, kennung, **felder):
+    """Neue Tabelle hero_regions mit geänderten Feldern der Zeile (Kopie; werte bleibt). Bookshelf
+    speichert eine bearbeitete Zeile vollständig; fehlende Felder nimmt es aus den Vorgaben."""
+    neu = {k: (dict(v) if isinstance(v, dict) else v) for k, v in _hero_roh(werte).items()}
+    zeile = neu.get(kennung) if isinstance(neu.get(kennung), dict) else hero_zeile(werte, kennung)
+    zeile = dict(zeile)
+    for k, v in felder.items():
+        if v is None:
+            zeile.pop(k, None)
+        else:
+            zeile[k] = v
+    neu[kennung] = zeile
+    return neu
+
+
+def hero_zuruecksetzen(werte, kennung):
+    """hero_regions ohne die Zeile (= Bookshelfs Vorgabe), als Kopie; None, wenn dann nichts übrig ist."""
+    neu = {k: v for k, v in _hero_roh(werte).items() if k != kennung}
+    return neu or None
+
+
+def bookshelf_tokens(plugin_ordner):
+    """[(Gruppe, Token, Beschreibung)] aus Tokens.CATALOGUE in lib/bookshelf_tokens.lua (englisch)."""
+    try:
+        text = (Path(plugin_ordner) / "lib" / "bookshelf_tokens.lua").read_text(encoding="utf-8")
+    except OSError:
+        return []
+    erg = []
+    for m in re.finditer(r'\{\s*category\s*=\s*"([^"]+)"\s*,\s*token\s*=\s*"((?:[^"\\]|\\.)*)"\s*,\s*'
+                         r'description\s*=\s*_\("((?:[^"\\]|\\.)*)"', text):
+        erg.append((m.group(1), lua_data.lesen('"' + m.group(2) + '"'), lua_data.lesen('"' + m.group(3) + '"')))
+    return erg
+
+
 def bookshelf_lesen(ko):
     return einstellungen_lesen(bookshelf_datei(ko))
 

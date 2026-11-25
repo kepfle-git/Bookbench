@@ -305,6 +305,46 @@ class PatchSeite(_NeustartSeite):
                             "need the e-reader and never run on the computer. Adding and deleting change the profile "
                             "at once; switching on/off is a draft until \"Save to profile\"."),
                   style="Hinweis.TLabel", wraplength=BREITE, justify="left").pack(anchor="w", fill="x", pady=(4, 0))
+        # Patches, die Bookbench mitbringt
+        i = self._abschnitt("bookbench", _("Patches from Bookbench"))
+        self.mit_rahmen = ttk.Frame(i)
+        self.mit_rahmen.pack(anchor="w", fill="x")
+        ttk.Label(i, text=_("They are also attached to every Bookbench release on GitHub, for copying into "
+                            "koreader/patches by hand. To bring them onto the e-reader from here: add, then "
+                            "\"To the e-reader …\"."),
+                  style="Hinweis.TLabel", wraplength=BREITE, justify="left").pack(anchor="w", fill="x", pady=(4, 0))
+
+    def _mitgebracht_zeigen(self):
+        for w in self.mit_rahmen.winfo_children():
+            w.destroy()
+        stand_text = {"fehlt": _("not in the profile"), "aktuell": _("in the profile"),
+                      "anders": _("in the profile, another version")}
+        knopf_text = {"fehlt": _("Add"), "aktuell": None, "anders": _("Update")}
+        for n, m in enumerate(kks.mitgebracht(self.ko)):
+            z = ttk.Frame(self.mit_rahmen)
+            z.pack(anchor="w", fill="x", pady=(0 if n == 0 else 8, 0))
+            kopf = ttk.Frame(z)
+            kopf.pack(anchor="w", fill="x")
+            ttk.Label(kopf, text=m["name"].removesuffix(".lua"), style="Ueberschrift.TLabel").pack(side="left")
+            ttk.Label(kopf, text="  " + stand_text[m["stand"]], style="Hinweis.TLabel").pack(side="left")
+            if knopf_text[m["stand"]]:
+                ttk.Button(kopf, text=knopf_text[m["stand"]], style="Klein.TButton",
+                           command=lambda m=m: self._mitgebracht_hinzufuegen(m)).pack(side="right")
+            ttk.Label(z, text=_(m["beschreibung"]), wraplength=BREITE, justify="left").pack(anchor="w", fill="x")
+
+    def _mitgebracht_hinzufuegen(self, m):
+        ziel = kks.patch_ordner(self.ko)
+        ziel.mkdir(parents=True, exist_ok=True)
+        aus = ziel / (m["name"] + ".disabled")
+        if aus.is_file():                         # ausgeschaltete alte Fassung: ersetzen, Schalter bleibt
+            shutil.copy2(m["quelle"], aus)
+        else:
+            shutil.copy2(m["quelle"], ziel / m["name"])
+        kpl._profil_geaendert(self.bereich.profil, self.plugin)
+        self.app.status.set(_("Patch {name} added to the profile.").format(name=m["name"]))
+        self.liste = kks.patches(self.ko)
+        self._fuellen()
+        self._planen(100, self.ins_bild)
 
     def geladen(self):
         return self.liste is not None
@@ -353,6 +393,7 @@ class PatchSeite(_NeustartSeite):
         if sel and b.exists(sel[0]):
             b.selection_set(sel[0])
         self._auswahl_zeigen()
+        self._mitgebracht_zeigen()
         self.stand_zeigen()
 
     def _gewaehlt(self):

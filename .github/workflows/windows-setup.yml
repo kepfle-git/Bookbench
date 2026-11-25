@@ -112,13 +112,18 @@ jobs:
         working-directory: packaging/dist
         shell: python
         run: |
-          import hashlib, os
-          name = f"Bookbench_Setup_{os.environ['VERSION']}.exe"
-          with open(name, "rb") as f:
-              summe = hashlib.sha256(f.read()).hexdigest()
+          import glob, hashlib, os, shutil
+          # KOReader-Patches von Bookbench (seit 1.4-beta7) liegen als eigene Anhänge im Release
+          patches = sorted(glob.glob(os.path.join(os.environ["GITHUB_WORKSPACE"], "bookbench", "patches", "*.lua")))
+          for p in patches:
+              shutil.copy2(p, os.path.basename(p))
+          namen = [f"Bookbench_Setup_{os.environ['VERSION']}.exe"] + [os.path.basename(p) for p in patches]
           with open("SHA256SUMS", "w", encoding="utf-8", newline="\n") as f:
-              f.write(f"{summe}  {name}\n")
-          print(summe, name)
+              for name in namen:
+                  with open(name, "rb") as d:
+                      summe = hashlib.sha256(d.read()).hexdigest()
+                  f.write(f"{summe}  {name}\n")
+                  print(summe, name)
 
       - name: Als Artefakt ablegen (zum Nachsehen, 14 Tage)
         uses: actions/upload-artifact@v4
@@ -127,6 +132,7 @@ jobs:
           path: |
             packaging/dist/Bookbench_Setup_*.exe
             packaging/dist/SHA256SUMS
+            packaging/dist/*.lua
           retention-days: 14
 
       - name: Release-Entwurf anlegen bzw. Dateien anhängen
@@ -134,6 +140,7 @@ jobs:
         shell: pwsh
         run: |
           $setup = "Bookbench_Setup_$env:VERSION.exe"
+          $patches = @(Get-ChildItem -Name -Filter "*.lua")
           $notizen = "$env:GITHUB_WORKSPACE/.github/release-notes/$env:VERSION.md"
           $titel = "Bookbench $env:VERSION"
           $hat_text = Test-Path $notizen
@@ -148,7 +155,7 @@ jobs:
           }
           gh release view $env:TAG --repo $env:GITHUB_REPOSITORY *> $null
           if ($LASTEXITCODE -eq 0) {
-            gh release upload $env:TAG $setup SHA256SUMS --clobber --repo $env:GITHUB_REPOSITORY
+            gh release upload $env:TAG $setup SHA256SUMS @patches --clobber --repo $env:GITHUB_REPOSITORY
             if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
             # Release schon von Hand angelegt (z. B. über "Draft a new release" mit Tag und Titel):
             # leeren Text durch den Release-Text ersetzen, schlichten Titel durch den mit Versionstitel.
@@ -160,6 +167,6 @@ jobs:
             if ($schlicht -contains "$($info.name)".Trim()) { $aendern += @("--title", $titel) }
             if ($aendern.Count) { gh release edit $env:TAG @aendern --repo $env:GITHUB_REPOSITORY }
           } else {
-            gh release create $env:TAG $setup SHA256SUMS --draft --verify-tag --title $titel --notes-file $notizen --repo $env:GITHUB_REPOSITORY
+            gh release create $env:TAG $setup SHA256SUMS @patches --draft --verify-tag --title $titel --notes-file $notizen --repo $env:GITHUB_REPOSITORY
           }
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }

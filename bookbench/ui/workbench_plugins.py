@@ -22,7 +22,7 @@ from tkinter import messagebox, simpledialog, ttk
 import keller_theme as kth
 from bookbench.ui import panes as kpn
 from bookbench.preview import plugins as kpl
-from bookbench.i18n import _
+from bookbench.i18n import N_, _
 
 PAUSE_BOOKENDS = 350                              # ms nach der letzten Eingabe, dann ins Bild
 PAUSE_BOOKSHELF = 900                             # ms, dann Neustart (länger: kostet ~1,2 s)
@@ -136,6 +136,26 @@ class _Seite:
         else:
             self.stand.configure(text=_("Same as in the profile. \"To the e-reader …\" in the toolbar writes it to "
                                         "the e-reader."), foreground="")
+
+
+# Bookshelfs Standard-Einträge im Startmenü (bookshelf_start_menu_model.lua DEFAULTS, Aktionen ohne Module);
+# zum Wiederherstellen. Die Beschriftung wird in Bookbenchs Sprache gespeichert, wie Bookshelf es auch tut.
+STARTMENUE_STANDARD = (
+    {"type": "action", "label": N_("Reading calendar"), "icon": "\uf073", "action": {"stats_calendar_view": True}},
+    {"type": "action", "label": N_("Bookmark browser"), "icon": "\uf02e", "action": {"bookmark_browser": True}},
+    {"type": "action", "label": N_("Screenshot"), "icon": "\ue7ff", "action": {"screenshot": True}},
+    {"type": "action", "label": N_("Frontlight"), "icon": "\ueca7",
+     "menu_path": [{"id": "setting"}, {"id": "frontlight"}]},
+    {"type": "action", "label": N_("Full screen refresh"), "icon": "\uf0e7", "action": {"full_refresh": True}},
+    {"type": "action", "label": N_("Battery statistics"), "icon": "\ue790", "action": {"battery_statistics": True}},
+    {"type": "action", "label": N_("Wi-Fi connection"), "icon": "\uea5e",
+     "menu_path": [{"id": "setting"}, {"id": "network"}, {"id": "network_wifi"}], "menu_toggle": True},
+    {"type": "action", "label": N_("Night mode"), "icon": "\uea5e",
+     "menu_path": [{"id": "setting"}, {"id": "night_mode"}], "menu_toggle": True},
+    {"type": "action", "label": N_("Close book"), "icon": "\ue905", "menu_path": [{"id": "filemanager"}],
+     "scope": "reader"},
+    {"type": "action", "label": N_("Sleep"), "icon": "\ueb24", "action": {"suspend": True}},
+)
 
 
 class _Wahl:
@@ -1102,6 +1122,9 @@ class BookshelfSeite(_SymbolText, _Seite):
         self.f_deko = self._abschnitt("deko", _("Decoration (ornaments)"), offen=False)
         self.f_farben = self._abschnitt("farben", _("Colours"), offen=False)
         self._hero_bauen(self._abschnitt("hero", _("Top panel"), offen=False))
+        self._module_bauen(self._abschnitt("module", _("Modules in the top panel"), offen=False))
+        self._menue_bauen(self._abschnitt("startmenue", _("Start menu"), offen=False))
+        self._regale_bauen(self._abschnitt("regale", _("Shelves"), offen=False))
 
         # -- feste Auswahl ------------------------------------------------------------------
         for gruppe, gtext in kpl.BOOKSHELF_GRUPPEN:
@@ -1383,6 +1406,425 @@ class BookshelfSeite(_SymbolText, _Seite):
             return
         self._setzen("hero_area_mode", self.hero_modus.wert(), "currently_reading")
 
+    # ------------------------------------------------------------------ Listen: Module, Startmenü, Regale (1.4-beta7)
+    def _liste(self, i, hoehe=8, spalte=None):
+        r = self.app._listenrahmen(i)
+        r.pack(fill="x", pady=(2, 0))
+        baum = ttk.Treeview(r, columns=("b",) if spalte else (), show="tree", height=hoehe, selectmode="browse")
+        if spalte:
+            baum.column("#0", width=200, stretch=True)
+            baum.column("b", width=spalte, stretch=False)
+        sb = ttk.Scrollbar(r, orient="vertical", command=baum.yview)
+        baum.configure(yscrollcommand=sb.set)
+        sb.pack(side="right", fill="y")
+        baum.pack(side="left", fill="x", expand=True)
+        return baum
+
+    def _knoepfe(self, i, knoepfe, spalten=3):
+        z = ttk.Frame(i)
+        z.pack(anchor="w", fill="x", pady=(4, 0))
+        erg = {}
+        for n, (text, befehl) in enumerate(knoepfe):
+            if befehl is None:                    # Menüknopf
+                w = ttk.Menubutton(z, text=text, style="Klein.TButton")
+                w.menue = tk.Menu(w, tearoff=False)     # w["menu"] liefert nur den Namen
+                w["menu"] = w.menue
+            else:
+                w = ttk.Button(z, text=text, style="Klein.TButton", command=befehl)
+            w.grid(row=n // spalten, column=n % spalten, sticky="we", padx=(0, 4), pady=(0, 2))
+            erg[text] = w
+        return erg
+
+    def _gewaehlt_id(self, baum):
+        sel = baum.selection()
+        return sel[0] if sel else None
+
+    def _liste_setzen(self, schl, neu, zaehler=None, waehlen=None):
+        if zaehler is not None:
+            self.aenderungen[zaehler[0]] = zaehler[1]
+        self._setzen(schl, neu)
+        if schl == "tabs":
+            self._dynamisch_bauen()
+            self._formular_fuellen()
+        for baum in (self.mod_baum, self.menue_baum, self.regal_baum):
+            if waehlen and baum.exists(waehlen):
+                baum.selection_set(waehlen)
+                baum.see(waehlen)
+
+    # -- Module im oberen Bereich
+    def _module_bauen(self, i):
+        self.mod_hinweis = ttk.Label(i, text="", style="Hinweis.TLabel", wraplength=BREITE, justify="left")
+        self.mod_hinweis.pack(anchor="w", fill="x")
+        self.mod_baum = self._liste(i, 6, spalte=120)
+        self.mod_baum.bind("<<TreeviewSelect>>", lambda e: self._mod_position_zeigen())
+        k = self._knoepfe(i, ((_("Add"), None), (_("Up"), lambda: self._mod_schieben(-1)),
+                              (_("Down"), lambda: self._mod_schieben(1)), (_("Remove"), self._mod_entfernen)), 3)
+        self.mod_neu = k[_("Add")]
+        pz = ttk.Frame(i)
+        pz.pack(anchor="w", fill="x", pady=(4, 0))
+        self.mod_auto = tk.BooleanVar()
+        self.mod_auto_knopf = ttk.Checkbutton(pz, text=_("Place automatically"), variable=self.mod_auto,
+                                              command=self._mod_position_uebernehmen)
+        self.mod_auto_knopf.grid(row=0, column=0, columnspan=10, sticky="w")
+        self.mod_pos, self.mod_pos_felder = {}, []
+        for n, (feld, text) in enumerate(zip(kpl.POSITION, (_("Page"), _("Column"), _("Row"), _("Width"),
+                                                             _("Height")))):
+            ttk.Label(pz, text=text).grid(row=1 + n // 3, column=(n % 3) * 2, sticky="w", padx=(0 if n % 3 == 0 else 8, 2))
+            v = self.mod_pos[feld] = tk.StringVar()
+            sp = ttk.Spinbox(pz, from_=1, to=12, width=3, textvariable=v, command=self._mod_position_uebernehmen)
+            sp.grid(row=1 + n // 3, column=(n % 3) * 2 + 1, sticky="w", pady=1)
+            sp.bind("<KeyRelease>", lambda e: self._mod_position_uebernehmen())
+            self.mod_pos_felder.append(sp)
+        ttk.Label(i, text=_("Positions in grid cells. The top panel has 1 or 2 rows and 2 to 8 columns, depending on "
+                            "the screen; Bookshelf moves a module that does not fit or overlaps another. Modules "
+                            "that need a choice (action, shelf, ornament) are added in Bookshelf."),
+                  style="Hinweis.TLabel", wraplength=BREITE, justify="left").pack(anchor="w", fill="x", pady=(4, 0))
+
+    def _modulnamen(self):
+        if not hasattr(self, "_mod_namen") and getattr(self, "info", None):
+            self._mod_namen = kpl.micromodule(self.info["ordner"])
+        return getattr(self, "_mod_namen", [])
+
+    def _mod_liste(self):
+        w = self._wert(kpl.MODULE_SCHLUESSEL[0])
+        return w if isinstance(w, list) else None
+
+    def _mod_fuellen(self):
+        liste = self._mod_liste()
+        b = self.mod_baum
+        sel = self._gewaehlt_id(b)
+        b.delete(*b.get_children())
+        titel = {m["key"]: _(m["titel"]) for m in self._modulnamen()}
+        for e in liste or []:
+            if not isinstance(e, dict) or not e.get("id"):
+                continue
+            at = e.get("at")
+            pos = (_("page {seite}: {spalte}/{reihe}, {w}×{h}").format(
+                seite=at.get("page"), spalte=at.get("col"), reihe=at.get("row"), w=at.get("w"), h=at.get("h"))
+                   if isinstance(at, dict) else _("automatic"))
+            b.insert("", "end", iid=e["id"], text=titel.get(e.get("module"), e.get("module", "?")), values=(pos,))
+        if sel and b.exists(sel):
+            b.selection_set(sel)
+        da = liste is not None
+        self.mod_hinweis.configure(text="" if da else _("Bookshelf has not set up the modules yet: open the top "
+                                                         "panel's modules once on the e-reader."))
+        self.mod_neu.configure(state="normal" if da else "disabled")
+        m = self.mod_neu.menue
+        m.delete(0, "end")
+        for mod in self._modulnamen():
+            if mod["key"] in kpl.MODULE_MIT_EINRICHTUNG:
+                continue
+            m.add_command(label=f"{_(mod['titel'])}  –  {_(mod['text'])}" if mod["text"] else _(mod["titel"]),
+                          command=lambda k=mod["key"]: self._mod_hinzufuegen(k))
+        self._mod_position_zeigen()
+
+    def _mod_position_zeigen(self):
+        alt, self._laden_laeuft = self._laden_laeuft, True
+        try:
+            kennung = self._gewaehlt_id(self.mod_baum)
+            l, n = kpl.eintrag_suchen(self._mod_liste() or [], kennung)
+            e = l[n] if l is not None else None
+            at = e.get("at") if e else None
+            self.mod_auto.set(e is not None and not isinstance(at, dict))
+            self.mod_auto_knopf.configure(state="normal" if e else "disabled")
+            for feld, sp in zip(kpl.POSITION, self.mod_pos_felder):
+                self.mod_pos[feld].set(str(at.get(feld, "")) if isinstance(at, dict) else "")
+                sp.configure(state="normal" if isinstance(at, dict) else "disabled")
+        finally:
+            self._laden_laeuft = alt
+
+    def _mod_position_uebernehmen(self):
+        if self._laden_laeuft:
+            return
+        kennung = self._gewaehlt_id(self.mod_baum)
+        liste = self._mod_liste()
+        if not kennung or liste is None:
+            return
+        if self.mod_auto.get():
+            neu = kpl.aendern(liste, kennung, at=None)
+        else:
+            l, n = kpl.eintrag_suchen(liste, kennung)
+            alt = l[n].get("at") if isinstance(l[n].get("at"), dict) else {"page": 1, "col": 1, "row": 1, "w": 2, "h": 1}
+            at = {}
+            for feld in kpl.POSITION:
+                try:
+                    w = int(self.mod_pos[feld].get())
+                except ValueError:
+                    w = alt.get(feld, 1)
+                at[feld] = max(1, min(12, w))
+            neu = kpl.aendern(liste, kennung, at=at)
+        self._liste_setzen(kpl.MODULE_SCHLUESSEL[0], neu, waehlen=kennung)
+
+    def _mod_hinzufuegen(self, modul):
+        liste = self._mod_liste()
+        if liste is None:
+            return
+        werte = dict(self.datei_werte or {})
+        werte.update({k: v for k, v in self.aenderungen.items() if v is not None})
+        kennung, zaehler = kpl.neue_id(werte, kpl.MODULE_SCHLUESSEL[1], kpl.MODULE_SCHLUESSEL[2])
+        neu = copy.deepcopy(liste) + [{"id": kennung, "type": "module", "module": modul}]
+        self._liste_setzen(kpl.MODULE_SCHLUESSEL[0], neu, (kpl.MODULE_SCHLUESSEL[1], zaehler), waehlen=kennung)
+
+    def _mod_schieben(self, schritt):
+        kennung, liste = self._gewaehlt_id(self.mod_baum), self._mod_liste()
+        if kennung and liste is not None:
+            self._liste_setzen(kpl.MODULE_SCHLUESSEL[0], kpl.verschieben(liste, kennung, schritt), waehlen=kennung)
+
+    def _mod_entfernen(self):
+        kennung, liste = self._gewaehlt_id(self.mod_baum), self._mod_liste()
+        if kennung and liste is not None:
+            self._liste_setzen(kpl.MODULE_SCHLUESSEL[0], kpl.entfernen(liste, kennung))
+
+    # -- Startmenü
+    def _menue_bauen(self, i):
+        self.menue_hinweis = ttk.Label(i, text="", style="Hinweis.TLabel", wraplength=BREITE, justify="left")
+        self.menue_hinweis.pack(anchor="w", fill="x")
+        self.menue_baum = self._liste(i, 9)
+        self.menue_baum.bind("<Double-Button-1>", lambda e: self._menue_umbenennen())
+        k = self._knoepfe(i, ((_("Add"), None), (_("Up"), lambda: self._menue_schieben(-1)),
+                              (_("Down"), lambda: self._menue_schieben(1)), (_("Folder"), None),
+                              (_("Rename …"), self._menue_umbenennen), (_("Remove"), self._menue_entfernen)), 3)
+        self.menue_neu, self.menue_ordner = k[_("Add")], k[_("Folder")]
+        ttk.Label(i, text=_("A folder holds entries, one level deep as in Bookshelf. New entries are Bookshelf's "
+                            "standard ones; other actions and icons are set in Bookshelf's start menu editor."),
+                  style="Hinweis.TLabel", wraplength=BREITE, justify="left").pack(anchor="w", fill="x", pady=(4, 0))
+
+    def _menue_liste(self):
+        w = self._wert(kpl.STARTMENUE_SCHLUESSEL[0])
+        return w if isinstance(w, list) else None
+
+    def _menue_text(self, e, titel):
+        art = e.get("type")
+        if art == "divider":
+            return "──────────"
+        if art == "module":
+            return "▣ " + titel.get(e.get("module"), e.get("module", "?"))
+        text = str(e.get("label") or "?")
+        return text                               # Ordner erkennt man am Aufklapp-Zeichen des Baums
+
+    def _menue_fuellen(self):
+        liste = self._menue_liste()
+        b = self.menue_baum
+        sel = self._gewaehlt_id(b)
+        b.delete(*b.get_children())
+        titel = {m["key"]: _(m["titel"]) for m in self._modulnamen()}
+        ordner = []
+        for e in liste or []:
+            if not isinstance(e, dict) or not e.get("id"):
+                continue
+            b.insert("", "end", iid=e["id"], text=self._menue_text(e, titel), open=True)
+            if e.get("type") == "folder":
+                ordner.append(e)
+                for c in e.get("children") or []:
+                    if isinstance(c, dict) and c.get("id"):
+                        b.insert(e["id"], "end", iid=c["id"], text=self._menue_text(c, titel))
+        if sel and b.exists(sel):
+            b.selection_set(sel)
+        da = liste is not None
+        self.menue_hinweis.configure(text="" if da else _("Bookshelf has not set up its start menu yet: open it "
+                                                           "once on the e-reader."))
+        for knopf in (self.menue_neu, self.menue_ordner):
+            knopf.configure(state="normal" if da else "disabled")
+        m = self.menue_neu.menue
+        m.delete(0, "end")
+        m.add_command(label=_("Folder …"), command=self._menue_neuer_ordner)
+        m.add_command(label=_("Divider"), command=lambda: self._menue_neu({"type": "divider"}))
+        mm = tk.Menu(m, tearoff=False)
+        for mod in self._modulnamen():
+            if mod["nur_oben"]:
+                continue
+            mm.add_command(label=_(mod["titel"]), command=lambda k=mod["key"]: self._menue_neu(
+                {"type": "module", "module": k}))
+        m.add_cascade(label=_("Module"), menu=mm)
+        sm = tk.Menu(m, tearoff=False)
+        for vorlage in STARTMENUE_STANDARD:
+            sm.add_command(label=_(vorlage["label"]), command=lambda v=vorlage: self._menue_neu(
+                {**copy.deepcopy(v), "label": _(v["label"])}))
+        m.add_cascade(label=_("Standard entry"), menu=sm)
+        om = self.menue_ordner.menue
+        om.delete(0, "end")
+        for o in ordner:
+            om.add_command(label=_("Into \"{name}\"").format(name=o.get("label", "?")),
+                           command=lambda k=o["id"]: self._menue_in_ordner(k))
+        om.add_command(label=_("Out of the folder"), command=lambda: self._menue_in_ordner(None))
+
+    def _menue_neu(self, eintrag):
+        liste = self._menue_liste()
+        if liste is None:
+            return
+        werte = dict(self.datei_werte or {})
+        werte.update({k: v for k, v in self.aenderungen.items() if v is not None})
+        kennung, zaehler = kpl.neue_id(werte, kpl.STARTMENUE_SCHLUESSEL[1], kpl.STARTMENUE_SCHLUESSEL[2])
+        neu = copy.deepcopy(liste)
+        e = {"id": kennung, **eintrag}
+        sel = self._gewaehlt_id(self.menue_baum)
+        l, n = kpl.eintrag_suchen(neu, sel) if sel else (None, None)
+        if l is not None and (l is neu or e["type"] not in ("folder", "divider")):
+            l.insert(n + 1, e)                    # hinter dem gewählten Eintrag, in seiner Ebene
+        else:
+            neu.append(e)
+        self._liste_setzen(kpl.STARTMENUE_SCHLUESSEL[0], neu, (kpl.STARTMENUE_SCHLUESSEL[1], zaehler), waehlen=kennung)
+
+    def _menue_neuer_ordner(self):
+        name = simpledialog.askstring(_("Start menu"), _("Name of the folder:"), parent=self.app)
+        if name and name.strip():
+            self._menue_neu({"type": "folder", "label": name.strip(), "children": []})
+
+    def _menue_umbenennen(self):
+        kennung, liste = self._gewaehlt_id(self.menue_baum), self._menue_liste()
+        if not kennung or liste is None:
+            return
+        l, n = kpl.eintrag_suchen(liste, kennung)
+        if l is None or l[n].get("type") not in ("action", "folder"):
+            self.app.status.set(_("Only entries and folders have a name."))
+            return
+        name = simpledialog.askstring(_("Start menu"), _("New name:"), initialvalue=l[n].get("label", ""),
+                                      parent=self.app)
+        if name and name.strip():
+            self._liste_setzen(kpl.STARTMENUE_SCHLUESSEL[0], kpl.aendern(liste, kennung, label=name.strip()),
+                               waehlen=kennung)
+
+    def _menue_schieben(self, schritt):
+        kennung, liste = self._gewaehlt_id(self.menue_baum), self._menue_liste()
+        if kennung and liste is not None:
+            self._liste_setzen(kpl.STARTMENUE_SCHLUESSEL[0], kpl.verschieben(liste, kennung, schritt), waehlen=kennung)
+
+    def _menue_in_ordner(self, ordner):
+        kennung, liste = self._gewaehlt_id(self.menue_baum), self._menue_liste()
+        if kennung and liste is not None:
+            neu = kpl.in_ordner(liste, kennung, ordner)
+            if neu == liste:
+                self.app.status.set(_("Folders and dividers stay at the top level."))
+                return
+            self._liste_setzen(kpl.STARTMENUE_SCHLUESSEL[0], neu, waehlen=kennung)
+
+    def _menue_entfernen(self):
+        kennung, liste = self._gewaehlt_id(self.menue_baum), self._menue_liste()
+        if not kennung or liste is None:
+            return
+        l, n = kpl.eintrag_suchen(liste, kennung)
+        if l is not None and l[n].get("type") == "folder" and l[n].get("children") and not messagebox.askyesno(
+                _("Start menu"), _("Remove the folder with its {n} entries?").format(n=len(l[n]["children"])),
+                parent=self.app):
+            return
+        self._liste_setzen(kpl.STARTMENUE_SCHLUESSEL[0], kpl.entfernen(liste, kennung))
+
+    # -- Regale
+    def _regale_bauen(self, i):
+        self.regal_hinweis = ttk.Label(i, text="", style="Hinweis.TLabel", wraplength=BREITE, justify="left")
+        self.regal_hinweis.pack(anchor="w", fill="x")
+        self.regal_baum = self._liste(i, 8, spalte=90)
+        self.regal_baum.bind("<Double-Button-1>", lambda e: self._regal_umschalten())
+        self.regal_baum.bind("<<TreeviewSelect>>", lambda e: self._regal_ansicht_zeigen())
+        k = self._knoepfe(i, ((_("On/off"), self._regal_umschalten), (_("Up"), lambda: self._regal_schieben(-1)),
+                              (_("Down"), lambda: self._regal_schieben(1)), (_("Rename …"), self._regal_umbenennen),
+                              (_("Add"), None), (_("Remove"), self._regal_entfernen)), 3)
+        self.regal_neu = k[_("Add")]
+        self.regal_knoepfe = list(k.values())
+        z = ttk.Frame(i)
+        z.pack(anchor="w", fill="x", pady=(4, 0))
+        ttk.Label(z, text=_("Shown as")).pack(side="left")
+        self.regal_ansicht = _Wahl(z, kpl.ANSICHTEN, self._regal_ansicht_uebernehmen, breite=14)
+        self.regal_ansicht.box.pack(side="left", padx=(4, 0))
+        ttk.Label(i, text=_("☑ shown as a button above the shelf, ☐ hidden. Sorting, filters and new shelves from "
+                            "collections or folders are set in Bookshelf; removed standard shelves can be added "
+                            "again here."),
+                  style="Hinweis.TLabel", wraplength=BREITE, justify="left").pack(anchor="w", fill="x", pady=(4, 0))
+
+    def _regale_fuellen(self):
+        liste = self._wert("tabs")
+        liste = liste if isinstance(liste, list) else None
+        b = self.regal_baum
+        sel = self._gewaehlt_id(b)
+        b.delete(*b.get_children())
+        ansichten = dict(kpl.ANSICHTEN)
+        for e in liste or []:
+            if not isinstance(e, dict) or not e.get("id"):
+                continue
+            text = ("☐ " if e.get("enabled") is False else "☑ ") + str(e.get("label") or e["id"])
+            b.insert("", "end", iid=e["id"], text=text, values=(_(ansichten.get(e.get("view_mode"),
+                                                                                 ansichten[None])),))
+        if sel and b.exists(sel):
+            b.selection_set(sel)
+        da = liste is not None
+        self.regal_hinweis.configure(text="" if da else _("Bookshelf still uses its standard shelves; change them "
+                                                           "once on the e-reader, then they can be edited here."))
+        for knopf in self.regal_knoepfe:
+            knopf.configure(state="normal" if da else "disabled")
+        m = self.regal_neu.menue
+        m.delete(0, "end")
+        vorhanden = {e.get("id") for e in liste or [] if isinstance(e, dict)}
+        fehlend = [r for r in kpl.REGALE_EINGEBAUT if r["id"] not in vorhanden]
+        for r in fehlend:
+            m.add_command(label=_(r["label"]), command=lambda r=r: self._regal_hinzufuegen(r))
+        if not fehlend:
+            m.add_command(label=_("All standard shelves are there."), state="disabled")
+        self._regal_ansicht_zeigen()
+
+    def _regal_liste(self):
+        w = self._wert("tabs")
+        return w if isinstance(w, list) else None
+
+    def _regal_ansicht_zeigen(self):
+        alt, self._laden_laeuft = self._laden_laeuft, True
+        try:
+            kennung, liste = self._gewaehlt_id(self.regal_baum), self._regal_liste()
+            l, n = kpl.eintrag_suchen(liste or [], kennung)
+            self.regal_ansicht.setzen(l[n].get("view_mode") if l is not None else None, aktiv=l is not None)
+        finally:
+            self._laden_laeuft = alt
+
+    def _regal_ansicht_uebernehmen(self):
+        kennung, liste = self._gewaehlt_id(self.regal_baum), self._regal_liste()
+        if self._laden_laeuft or not kennung or liste is None:
+            return
+        self._liste_setzen("tabs", kpl.aendern(liste, kennung, view_mode=self.regal_ansicht.wert()), waehlen=kennung)
+
+    def _regal_umschalten(self):
+        kennung, liste = self._gewaehlt_id(self.regal_baum), self._regal_liste()
+        if not kennung or liste is None:
+            return
+        l, n = kpl.eintrag_suchen(liste, kennung)
+        an = l[n].get("enabled") is not False
+        if an and sum(1 for e in liste if isinstance(e, dict) and e.get("enabled") is not False) <= 1:
+            self.app.status.set(_("At least one shelf stays shown."))
+            return
+        self._liste_setzen("tabs", kpl.aendern(liste, kennung, enabled=not an), waehlen=kennung)
+
+    def _regal_schieben(self, schritt):
+        kennung, liste = self._gewaehlt_id(self.regal_baum), self._regal_liste()
+        if kennung and liste is not None:
+            self._liste_setzen("tabs", kpl.verschieben(liste, kennung, schritt), waehlen=kennung)
+
+    def _regal_umbenennen(self):
+        kennung, liste = self._gewaehlt_id(self.regal_baum), self._regal_liste()
+        if not kennung or liste is None:
+            return
+        l, n = kpl.eintrag_suchen(liste, kennung)
+        name = simpledialog.askstring(_("Shelves"), _("New name:"), initialvalue=l[n].get("label", ""), parent=self.app)
+        if name and name.strip():
+            self._liste_setzen("tabs", kpl.aendern(liste, kennung, label=name.strip()), waehlen=kennung)
+
+    def _regal_hinzufuegen(self, vorlage):
+        liste = self._regal_liste()
+        if liste is None:
+            return
+        neu = copy.deepcopy(liste) + [{**copy.deepcopy(vorlage), "label": _(vorlage["label"]), "enabled": True}]
+        self._liste_setzen("tabs", neu, waehlen=vorlage["id"])
+
+    def _regal_entfernen(self):
+        kennung, liste = self._gewaehlt_id(self.regal_baum), self._regal_liste()
+        if not kennung or liste is None:
+            return
+        if len([e for e in liste if isinstance(e, dict)]) <= 1:
+            self.app.status.set(_("At least one shelf stays shown."))
+            return
+        if not messagebox.askyesno(_("Shelves"), _("Remove the shelf? Standard shelves can be added again; "
+                                                   "your own (collections, folders) only in Bookshelf."),
+                                   parent=self.app):
+            return
+        self._liste_setzen("tabs", kpl.entfernen(liste, kennung))
+
     # ------------------------------------------------------------------ Theme und Dekoration
     def _wahl(self, eltern, zeile, name, text, optionen, holen, setzen, breite=24):
         """Auswahlliste mit Werten: optionen [(wert, text)], holen() liefert den aktuellen Wert."""
@@ -1659,6 +2101,9 @@ class BookshelfSeite(_SymbolText, _Seite):
                     self.var[schl].set(bool(self._wert(schl, False)))
             self._wahlen_fuellen()
             self._hero_fuellen()
+            self._mod_fuellen()
+            self._menue_fuellen()
+            self._regale_fuellen()
             if hasattr(self, "deko_baum"):
                 self._deko_fuellen()
             self._farben_fuellen()

@@ -662,9 +662,23 @@ The page is divided into sections; a click on the heading folds a section away o
 - Rating and tags are buttons, not text: only on/off, size and alignment; for tags also which kinds (authors, series, collections, genres, folder) and how many rows.
 - **Subtitle** puts the book's subtitle into the line ([if:subtitle]%subtitle[/if]; in the metadata line instead of the series). It needs the patch 2-bookbench-subtitle in the profile and on the e-reader ([[vorschau_patches]]).
 
+**Modules in the top panel**
+- The modules shown when the top panel is set to modules, with their position: page, column and row of the top-left cell, width and height in grid cells - or **Place automatically**. The panel has 1 or 2 rows and 2 to 8 columns depending on the screen; Bookshelf moves a module that does not fit or overlaps another.
+- **Add** offers Bookshelf's modules (clock, quote, weather …); modules that need a choice (action, shelf, ornament) are added in Bookshelf. **Up**/**Down** change the order, **Remove** takes one out.
+
+**Start menu**
+- The entries of Bookshelf's start menu as a tree: entries, modules (▣), dividers and folders (one level deep, as in Bookshelf).
+- **Add**: a folder, a divider, a module, or one of Bookshelf's standard entries (reading calendar, Wi-Fi, night mode, sleep …; the name is stored in Bookbench's language). It goes behind the selected entry.
+- **Up**/**Down** within its level, **Folder** moves an entry into a folder or out of it, **Rename …** (or double-click), **Remove**. Other actions and the icons are set in Bookshelf's start menu editor.
+
+**Shelves**
+- The shelves above the books: ☑ shown, ☐ hidden (double-click or **On/off**; one stays shown), order, name, and how a shelf is shown (covers, list, spines, automatic).
+- **Add** brings back a standard shelf that was removed (home, recent, series …). New shelves from collections or folders, sorting and filters are set in Bookshelf.
+- These three only show once Bookshelf has written them (after their first use on the e-reader); before that it uses its defaults, and there is nothing to change yet.
+
 **More settings**
 - A selection of settings that change the look (layout, font sizes, covers and spines, display), with Bookshelf's defaults where the file has no value.
-- **All keys in the file**: everything in settings/bookshelf/settings.lua, also what is not listed above. Double-click (or **Change …**) changes a simple value (number, text, on/off) in its type. Tables - shelves, modules, the start menu - can only be changed in Bookshelf itself or in the sections above (colours, theme and ornaments per shelf, the lines of the hero card). **Default** removes the key, then Bookshelf's default applies. Changed keys have a ●.
+- **All keys in the file**: everything in settings/bookshelf/settings.lua, also what is not listed above. Double-click (or **Change …**) changes a simple value (number, text, on/off) in its type. Tables - shelves, modules, the start menu - can only be changed in Bookshelf itself or in the sections above (colours, theme and ornaments per shelf, the hero card, modules, start menu, shelves). **Default** removes the key, then Bookshelf's default applies. Changed keys have a ●.
 - Values Bookshelf writes by itself while running (current shelf and page, version notes) are not listed.
 
 Bookshelf is a plugin by AndyHazz (github.com/AndyHazz/bookshelf.koplugin); Bookbench only reads and writes its settings file.

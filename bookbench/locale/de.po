@@ -35,11 +35,11 @@ msgstr "Nicht lesbare Dateien"
 msgid "No series in the EPUB"
 msgstr "Ohne Reihe im EPUB"
 
-#: app.py:80 metadata.py:36 plugins.py:469
+#: app.py:80 metadata.py:36 plugins.py:470
 msgid "Title"
 msgstr "Titel"
 
-#: app.py:80 metadata.py:37 plugins.py:474
+#: app.py:80 metadata.py:37 plugins.py:475 plugins.py:562
 msgid "Series"
 msgstr "Reihe"
 
@@ -47,11 +47,11 @@ msgstr "Reihe"
 msgid "No."
 msgstr "Nr."
 
-#: app.py:80 plugins.py:470
+#: app.py:80 plugins.py:471
 msgid "Author"
 msgstr "Autor"
 
-#: app.py:81 app.py:732 app.py:800 app.py:1699 help.py:209 help.py:795
+#: app.py:81 app.py:732 app.py:800 app.py:1699 help.py:209 help.py:809
 msgid "Chapters"
 msgstr "Kapitel"
 
@@ -275,7 +275,7 @@ msgstr "Aufbau (Schritte aus dem Wiki)"
 msgid "Dictionary"
 msgstr "Wörterbuch"
 
-#: app.py:290 area_device.py:42 help.py:461 help.py:856 settings.py:133 settings.py:754
+#: app.py:290 area_device.py:42 help.py:461 help.py:870 settings.py:133 settings.py:754
 msgid "E-reader"
 msgstr "E-Reader"
 
@@ -315,11 +315,11 @@ msgstr "Profilordner öffnen"
 msgid "Preview"
 msgstr "Vorschau"
 
-#: app.py:306 plugins.py:672 settings.py:333
+#: app.py:306 plugins.py:812 settings.py:333
 msgid "Light"
 msgstr "Hell"
 
-#: app.py:306 plugins.py:672 settings.py:333
+#: app.py:306 plugins.py:812 settings.py:333
 msgid "Dark"
 msgstr "Dunkel"
 
@@ -347,7 +347,7 @@ msgstr "Spalten der Bibliothek"
 msgid "View"
 msgstr "Ansicht"
 
-#: app.py:319 app.py:325 app.py:365 help.py:969 settings.py:170
+#: app.py:319 app.py:325 app.py:365 help.py:983 settings.py:170
 msgid "Help"
 msgstr "Hilfe"
 
@@ -430,7 +430,7 @@ msgstr "Alle übernehmen"
 msgid "Apply the suggestions of all books without questionable entries"
 msgstr "Vorschläge aller Bücher ohne fragwürdige Einträge übernehmen"
 
-#: app.py:448 settings.py:506 settings.py:665
+#: app.py:448 settings.py:506 settings.py:665 workbench_plugins.py:1460 workbench_plugins.py:1584 workbench_plugins.py:1719
 msgid "Up"
 msgstr "Höher"
 
@@ -439,7 +439,7 @@ msgid ""
 "Move the selected entries with their sub-entries one level up (Shift+Tab)"
 msgstr "Markierte Einträge samt Untereinträgen eine Ebene höher (Umschalt+Tab)"
 
-#: app.py:450 settings.py:507 settings.py:666
+#: app.py:450 settings.py:507 settings.py:666 workbench_plugins.py:1461 workbench_plugins.py:1585 workbench_plugins.py:1720
 msgid "Down"
 msgstr "Tiefer"
 
@@ -473,7 +473,7 @@ msgstr[1] "{n} Kapitelvorschläge"
 msgid "Library"
 msgstr "Bibliothek"
 
-#: app.py:599 area_dictionary.py:124 help.py:978 list_filter.py:65
+#: app.py:599 area_dictionary.py:124 help.py:992 list_filter.py:65
 msgid "Search:"
 msgstr "Suchen:"
 
@@ -518,7 +518,7 @@ msgstr ""
 msgid "Series from the {quelle} data, not in the EPUB"
 msgstr "Reihe aus den {quelle}-Daten, steht nicht im EPUB"
 
-#: app.py:732 app.py:1701 area_metadata.py:43 help.py:248 help.py:844 plugins.py:470
+#: app.py:732 app.py:1701 area_metadata.py:43 help.py:248 help.py:858 plugins.py:471
 msgid "Metadata"
 msgstr "Metadaten"
 
@@ -546,7 +546,7 @@ msgstr "Bücher:"
 msgid "Entry"
 msgstr "Eintrag"
 
-#: app.py:815 area_covers.py:191 area_dictionary.py:339 workbench_plugins.py:265
+#: app.py:815 area_covers.py:191 area_dictionary.py:339 workbench_plugins.py:285
 msgid "New"
 msgstr "Neu"
 
@@ -1125,7 +1125,7 @@ msgstr "Neues Cover wählen"
 msgid "Images"
 msgstr "Bilder"
 
-#: area_covers.py:265 area_preview.py:822 workbench_plugins.py:1605 workbench_reader.py:462
+#: area_covers.py:265 area_preview.py:822 workbench_plugins.py:2047 workbench_reader.py:462
 msgid "All files"
 msgstr "Alle Dateien"
 
@@ -1155,7 +1155,7 @@ msgstr "Cover von {quelle} übernommen, noch nicht gespeichert (Strg+S)."
 msgid "looking for covers …"
 msgstr "suche Cover …"
 
-#: area_covers.py:307 area_covers.py:347 help.py:835 settings.py:129 settings.py:634
+#: area_covers.py:307 area_covers.py:347 help.py:849 settings.py:129 settings.py:634
 msgid "Looking up covers"
 msgstr "Cover nachschlagen"
 
@@ -1235,7 +1235,7 @@ msgstr "Abbrechen"
 msgid "Click a cover to choose it, double-click takes it at once."
 msgstr "Klick wählt ein Cover, Doppelklick übernimmt es sofort."
 
-#: area_device.py:37 device.py:87 help.py:733 settings.py:151 settings.py:742 settings.py:832
+#: area_device.py:37 device.py:87 help.py:747 settings.py:151 settings.py:742 settings.py:832
 msgid "Settings"
 msgstr "Einstellungen"
 
@@ -1319,7 +1319,7 @@ msgstr "Anlass"
 msgid "Contents"
 msgstr "Inhalt"
 
-#: area_device.py:125 workbench_plugins.py:331 workbench_plugins.py:1193
+#: area_device.py:125 workbench_plugins.py:351 workbench_plugins.py:1216
 msgid "Size"
 msgstr "Größe"
 
@@ -1871,7 +1871,7 @@ msgstr "Claude ▾"
 msgid "Entry from Claude: search the web, from a page, from own knowledge"
 msgstr "Eintrag von Claude: im Web suchen, aus einer Seite, aus eigenem Wissen"
 
-#: area_dictionary.py:343
+#: area_dictionary.py:343 workbench_plugins.py:1461 workbench_plugins.py:1586 workbench_plugins.py:1721
 msgid "Remove"
 msgstr "Entfernen"
 
@@ -2510,7 +2510,7 @@ msgstr "mit Beispielbüchern"
 msgid "with the opened library"
 msgstr "mit der geöffneten Bibliothek"
 
-#: area_preview.py:116 calibre_import.py:88 calibre_import.py:96 plugins.py:277
+#: area_preview.py:116 calibre_import.py:88 calibre_import.py:96 plugins.py:278
 msgid "Book"
 msgstr "Buch"
 
@@ -3084,7 +3084,7 @@ msgstr "Konsole (Terminal)"
 msgid "Baloo (KDE file search)"
 msgstr "Baloo (KDE-Dateisuche)"
 
-#: device.py:608 device.py:608 help.py:850 settings.py:131
+#: device.py:608 device.py:608 help.py:864 settings.py:131
 msgid "Calibre"
 msgstr "Calibre"
 
@@ -4534,7 +4534,7 @@ msgstr ""
 "Claude braucht einen API-Schlüssel und das Paket **anthropic** (pip install "
 "anthropic): [[einst_klappentexte_claude]].\n"
 
-#: help.py:351 help.py:810 settings.py:125 settings.py:488
+#: help.py:351 help.py:824 settings.py:125 settings.py:488
 msgid "Source profiles"
 msgstr "Quellprofile"
 
@@ -5895,6 +5895,37 @@ msgid ""
 "It needs the patch 2-bookbench-subtitle in the profile and on the e-reader "
 "([[vorschau_patches]]).\n"
 "\n"
+"**Modules in the top panel**\n"
+"- The modules shown when the top panel is set to modules, with their "
+"position: page, column and row of the top-left cell, width and height in "
+"grid cells - or **Place automatically**. The panel has 1 or 2 rows and 2 to "
+"8 columns depending on the screen; Bookshelf moves a module that does not "
+"fit or overlaps another.\n"
+"- **Add** offers Bookshelf's modules (clock, quote, weather …); modules "
+"that need a choice (action, shelf, ornament) are added in Bookshelf. "
+"**Up**/**Down** change the order, **Remove** takes one out.\n"
+"\n"
+"**Start menu**\n"
+"- The entries of Bookshelf's start menu as a tree: entries, modules (▣), "
+"dividers and folders (one level deep, as in Bookshelf).\n"
+"- **Add**: a folder, a divider, a module, or one of Bookshelf's standard "
+"entries (reading calendar, Wi-Fi, night mode, sleep …; the name is stored "
+"in Bookbench's language). It goes behind the selected entry.\n"
+"- **Up**/**Down** within its level, **Folder** moves an entry into a folder "
+"or out of it, **Rename …** (or double-click), **Remove**. Other actions and "
+"the icons are set in Bookshelf's start menu editor.\n"
+"\n"
+"**Shelves**\n"
+"- The shelves above the books: ☑ shown, ☐ hidden (double-click or "
+"**On/off**; one stays shown), order, name, and how a shelf is shown "
+"(covers, list, spines, automatic).\n"
+"- **Add** brings back a standard shelf that was removed (home, recent, "
+"series …). New shelves from collections or folders, sorting and filters are "
+"set in Bookshelf.\n"
+"- These three only show once Bookshelf has written them (after their first "
+"use on the e-reader); before that it uses its defaults, and there is "
+"nothing to change yet.\n"
+"\n"
 "**More settings**\n"
 "- A selection of settings that change the look (layout, font sizes, covers "
 "and spines, display), with Bookshelf's defaults where the file has no "
@@ -5903,9 +5934,9 @@ msgid ""
 "also what is not listed above. Double-click (or **Change …**) changes a "
 "simple value (number, text, on/off) in its type. Tables - shelves, modules, "
 "the start menu - can only be changed in Bookshelf itself or in the sections "
-"above (colours, theme and ornaments per shelf, the lines of the hero card). "
-"**Default** removes the key, then Bookshelf's default applies. Changed keys "
-"have a ●.\n"
+"above (colours, theme and ornaments per shelf, the hero card, modules, "
+"start menu, shelves). **Default** removes the key, then Bookshelf's default "
+"applies. Changed keys have a ●.\n"
 "- Values Bookshelf writes by itself while running (current shelf and page, "
 "version notes) are not listed.\n"
 "\n"
@@ -5977,6 +6008,40 @@ msgstr ""
 "Dafür muss der Patch 2-bookbench-subtitle im Profil und auf dem E-Reader "
 "sein ([[vorschau_patches]]).\n"
 "\n"
+"**Module im oberen Bereich**\n"
+"- Die Module, die der obere Bereich zeigt, wenn er auf Module steht, mit "
+"ihrer Position: Seite, Spalte und Reihe der linken oberen Zelle, Breite und "
+"Höhe in Rasterzellen - oder **Automatisch platzieren**. Der Bereich hat je "
+"nach Bildschirm 1 oder 2 Reihen und 2 bis 8 Spalten; ein Modul, das nicht "
+"passt oder ein anderes überdeckt, rückt Bookshelf weiter.\n"
+"- **Hinzufügen** bietet Bookshelfs Module an (Uhr, Zitat, Wetter …); "
+"Module, die eine Auswahl brauchen (Aktion, Regal, Ornament), fügst du in "
+"Bookshelf hinzu. **Höher**/**Tiefer** ändern die Reihenfolge, **Entfernen** "
+"nimmt eins heraus.\n"
+"\n"
+"**Startmenü**\n"
+"- Die Einträge von Bookshelfs Startmenü als Baum: Einträge, Module (▣), "
+"Trennlinien und Ordner (eine Ebene tief, wie in Bookshelf).\n"
+"- **Hinzufügen**: ein Ordner, eine Trennlinie, ein Modul oder einer von "
+"Bookshelfs Standard-Einträgen (Lesekalender, WLAN, Nachtmodus, Ruhezustand "
+"…; der Name wird in Bookbenchs Sprache gespeichert). Er kommt hinter den "
+"gewählten Eintrag.\n"
+"- **Höher**/**Tiefer** innerhalb seiner Ebene, **Ordner** schiebt einen "
+"Eintrag in einen Ordner oder heraus, **Umbenennen …** (oder Doppelklick), "
+"**Entfernen**. Andere Aktionen und die Symbole stellst du in Bookshelfs "
+"Startmenü-Editor ein.\n"
+"\n"
+"**Regale**\n"
+"- Die Regale über den Büchern: ☑ gezeigt, ☐ ausgeblendet (Doppelklick oder "
+"**An/aus**; eins bleibt sichtbar), Reihenfolge, Name und wie ein Regal "
+"zeigt (Cover, Liste, Buchrücken, automatisch).\n"
+"- **Hinzufügen** holt ein entferntes Standard-Regal zurück (Start, Zuletzt, "
+"Reihe …). Neue Regale aus Sammlungen oder Ordnern, Sortierung und Filter "
+"stellst du in Bookshelf ein.\n"
+"- Diese drei erscheinen erst, wenn Bookshelf sie geschrieben hat (nach dem "
+"ersten Benutzen am E-Reader); vorher nimmt es seine Vorgaben, und es gibt "
+"noch nichts zu ändern.\n"
+"\n"
 "**Weitere Einstellungen**\n"
 "- Eine Auswahl der Einstellungen, die das Aussehen ändern (Anordnung, "
 "Schriftgrößen, Cover und Buchrücken, Anzeige), mit Bookshelfs Vorgaben, wo "
@@ -5986,9 +6051,9 @@ msgstr ""
 "**Ändern …**) ändert einen einfachen Wert (Zahl, Text, an/aus) in seinem "
 "Typ. Tabellen - Regale, Module, das Startmenü - lassen sich nur in "
 "Bookshelf selbst oder in den Abschnitten oben ändern (Farben, Theme und "
-"Ornamente je Regal, die Zeilen der Hero-Karte). **Vorgabe** entfernt den "
-"Schlüssel, dann gilt Bookshelfs Vorgabe. Geänderte Schlüssel haben einen "
-"●.\n"
+"Ornamente je Regal, Hero-Karte, Module, Startmenü, Regale). **Vorgabe** "
+"entfernt den Schlüssel, dann gilt Bookshelfs Vorgabe. Geänderte Schlüssel "
+"haben einen ●.\n"
 "- Werte, die Bookshelf im Betrieb selbst schreibt (aktuelles Regal und "
 "Seite, Versionsvermerke), stehen nicht in der Liste.\n"
 "\n"
@@ -5996,11 +6061,11 @@ msgstr ""
 "(github.com/AndyHazz/bookshelf.koplugin); Bookbench liest und schreibt nur "
 "seine Einstellungsdatei.\n"
 
-#: help.py:672 settings.py:497 settings.py:1051 transfer_window.py:39
+#: help.py:686 settings.py:497 settings.py:1051 transfer_window.py:39
 msgid "Profile"
 msgstr "Profil"
 
-#: help.py:672
+#: help.py:686
 msgid ""
 "\n"
 "The preview runs in its own profile in the settings folder (subfolder "
@@ -6041,11 +6106,11 @@ msgstr ""
 "Plugin-Pfade und die letzten Dateien/Ordner auf dem E-Reader. Buchdaten "
 "liegen im Profil immer neben dem Buch.\n"
 
-#: help.py:679 transfer_window.py:26 transfer_window.py:148 transfer_window.py:157 transfer_window.py:176
+#: help.py:693 transfer_window.py:26 transfer_window.py:148 transfer_window.py:157 transfer_window.py:176
 msgid "To the e-reader"
 msgstr "Auf den E-Reader"
 
-#: help.py:679
+#: help.py:693
 msgid ""
 "\n"
 "**To the e-reader …** (toolbar) writes what you changed in the preview "
@@ -6125,11 +6190,11 @@ msgstr ""
 "nächsten Start. Läuft KOReader auf dem E-Reader, während du überträgst "
 "(über USB selten), kann er settings.reader.lua beim Beenden überschreiben.\n"
 
-#: help.py:695
+#: help.py:709
 msgid "Starting and output"
 msgstr "Starten und Ausgabe"
 
-#: help.py:695
+#: help.py:709
 msgid ""
 "\n"
 "**Open in KOReader** (toolbar, always the first button)\n"
@@ -6189,11 +6254,11 @@ msgstr ""
 "Statuszeile die Anzahl der Warnungen und Fehler, etwa ein Patch, der auf "
 "dem Rechner nicht läuft, weil er etwas E-Reader-Eigenes braucht.\n"
 
-#: help.py:707
+#: help.py:721
 msgid "Screen and device"
 msgstr "Bildschirm und Gerät"
 
-#: help.py:707
+#: help.py:721
 msgid ""
 "\n"
 "The workbench and the window copy the screen of a device: size in pixels, "
@@ -6247,11 +6312,11 @@ msgstr ""
 "Ein Bildschirmfoto aus KOReader (Menü oder Geste) hat immer die volle "
 "Auflösung des Fensters.\n"
 
-#: help.py:719 help.py:791 settings.py:121 settings.py:449
+#: help.py:733 help.py:805 settings.py:121 settings.py:449
 msgid "Saving and backups"
 msgstr "Speichern und Sicherungen"
 
-#: help.py:719
+#: help.py:733
 msgid ""
 "\n"
 "**Save** (Ctrl+S) writes all applied changes (yellow) of all books: chapter "
@@ -6303,7 +6368,7 @@ msgstr ""
 "Nach dem Speichern zeigt KOReader neue Metadaten erst nach dem Neueinlesen "
 "der Buchinfos (Cover-Browser > Extract and cache book information).\n"
 
-#: help.py:733
+#: help.py:747
 msgid ""
 "\n"
 "File > **Settings …** opens the settings. The tree on the left has groups "
@@ -6351,11 +6416,11 @@ msgstr ""
 "- Gerät: [[einst_kobo]], [[einst_vorschau]]\n"
 "- [[einst_erweitert]]\n"
 
-#: help.py:747 settings.py:116 settings.py:323
+#: help.py:761 settings.py:116 settings.py:323
 msgid "Language and theme"
 msgstr "Sprache und Farben"
 
-#: help.py:747
+#: help.py:761
 msgid ""
 "\n"
 "**Language** (default: automatic)\n"
@@ -6383,11 +6448,11 @@ msgstr ""
 "- Hell, Dunkel, oder wie das System: richtet sich nach der "
 "Hell/Dunkel-Einstellung von Windows bzw. KDE/GNOME, geprüft beim Start.\n"
 
-#: help.py:755 settings.py:117 settings.py:337
+#: help.py:769 settings.py:117 settings.py:337
 msgid "Interface"
 msgstr "Oberfläche"
 
-#: help.py:755
+#: help.py:769
 msgid ""
 "\n"
 "- **Status strip next to the lists** (default: on): coloured dots and "
@@ -6425,11 +6490,11 @@ msgstr ""
 "\n"
 "Welche Piktogramme wo erscheinen: [[einst_marken]].\n"
 
-#: help.py:764 settings.py:118 settings.py:360
+#: help.py:778 settings.py:118 settings.py:360
 msgid "Status symbols"
 msgstr "Status-Piktogramme"
 
-#: help.py:764
+#: help.py:778
 msgid ""
 "\n"
 "One row per pictogram ([[status]]), one column per place:\n"
@@ -6460,11 +6525,11 @@ msgstr ""
 "Wörterbuch, E-Reader und \"angeschlossen\" gibt es nur in der "
 "Seitenleiste.\n"
 
-#: help.py:774 settings.py:119 settings.py:393
+#: help.py:788 settings.py:119 settings.py:393
 msgid "Startup"
 msgstr "Start"
 
-#: help.py:774
+#: help.py:788
 msgid ""
 "\n"
 "- **Open the last folder** (default: on): the books folder that was open "
@@ -6486,11 +6551,11 @@ msgstr ""
 "\n"
 "Ein Ordner auf der Kommandozeile (start.py <Ordner>) wird immer geöffnet.\n"
 
-#: help.py:780 settings.py:120 settings.py:402 updates.py:84 updates.py:92 updates.py:263
+#: help.py:794 settings.py:120 settings.py:402 updates.py:84 updates.py:92 updates.py:263
 msgid "Updates"
 msgstr "Updates"
 
-#: help.py:780
+#: help.py:794
 msgid ""
 "\n"
 "**This copy** says how Bookbench was installed: with the Windows setup, "
@@ -6538,7 +6603,7 @@ msgstr ""
 "steht fest im Programm. Ohne Anmeldung erlaubt GitHub 60 Anfragen pro "
 "Stunde, weit mehr, als die Suche braucht.\n"
 
-#: help.py:791
+#: help.py:805
 msgid ""
 "\n"
 "- **Backup folder** (default: Bookbench Backups in the user folder): books "
@@ -6556,7 +6621,7 @@ msgstr ""
 "- **Sicherungen je Buch** (Standard: 5): die neuesten bleiben, ältere "
 "werden beim Speichern gelöscht.\n"
 
-#: help.py:795
+#: help.py:809
 msgid ""
 "\n"
 "- **Subtitle lines per chapter** (default: 1): how many lines below a "
@@ -6580,11 +6645,11 @@ msgstr ""
 "Beides gilt nach dem Neu-Einlesen (F5), weil die Vorschläge beim Einlesen "
 "entstehen. Siehe auch [[kapitel]].\n"
 
-#: help.py:801 settings.py:124 settings.py:469
+#: help.py:815 settings.py:124 settings.py:469
 msgid "Blurbs"
 msgstr "Klappentexte"
 
-#: help.py:801
+#: help.py:815
 msgid ""
 "\n"
 "The page shows the order of the sources ([[klappentexte_nachschlagen]]).\n"
@@ -6624,7 +6689,7 @@ msgstr ""
 "Die Grenzen gelten für alle Quellen (kostenlose und Claude), nicht für "
 "selbst eingetragenen Text.\n"
 
-#: help.py:810
+#: help.py:824
 msgid ""
 "\n"
 "The list of profiles in the order in which they are checked. The first "
@@ -6658,11 +6723,11 @@ msgstr ""
 "Änderungen gelten nach OK. Ändert sich ein Profil, schlägt Claude für "
 "dessen Bücher neu nach; schon gefundene bleiben, wie sie sind.\n"
 
-#: help.py:820 settings.py:127 settings.py:514
+#: help.py:834 settings.py:127 settings.py:514
 msgid "Claude API"
 msgstr "Claude-API"
 
-#: help.py:820
+#: help.py:834
 msgid ""
 "\n"
 "- **API key**: from console.anthropic.com (account with credit). Empty: the "
@@ -6696,11 +6761,11 @@ msgstr ""
 "Außerdem nötig: das Paket **anthropic** (pip install anthropic). Was "
 "gesendet wird: [[kosten]].\n"
 
-#: help.py:827 settings.py:128 settings.py:621
+#: help.py:841 plugins.py:552 settings.py:128 settings.py:621
 msgid "Covers"
 msgstr "Cover"
 
-#: help.py:827
+#: help.py:841
 msgid ""
 "\n"
 "**Inserting a new cover** ([[cover_bild]])\n"
@@ -6729,7 +6794,7 @@ msgstr ""
 "- **Cover unter dieser Höhe markieren** (Standard: 800 px, 0 = nie): ⚠ im "
 "Bereich Metadaten und dessen Filter \"Kleines Cover\".\n"
 
-#: help.py:835
+#: help.py:849
 msgid ""
 "\n"
 "**Sources** (both free, no key needed; Google Books uses your own key if "
@@ -6760,7 +6825,7 @@ msgstr ""
 "heruntergeladen, mehr dauert also länger. Das Nachschlagen aller fehlenden "
 "Cover nimmt höchstens 3 je Buch und davon das größte.\n"
 
-#: help.py:844
+#: help.py:858
 msgid ""
 "\n"
 "**Own fields** ([[metadaten_felder]])\n"
@@ -6786,7 +6851,7 @@ msgstr ""
 "geöffneten Ordners dazu, mit den Bezeichnungen aus Calibre. Die "
 "unerwünschten danach löschen.\n"
 
-#: help.py:850
+#: help.py:864
 msgid ""
 "\n"
 "- **Compare with Calibre** (default: on): Bookbench reads Calibre's "
@@ -6815,7 +6880,7 @@ msgstr ""
 "- Der einmalige Import aus einer Calibre-Bibliothek (metadata.db) geht "
 "unabhängig von dieser Einstellung: [[calibre_import]].\n"
 
-#: help.py:856
+#: help.py:870
 msgid ""
 "\n"
 "**Detection**\n"
@@ -6860,7 +6925,7 @@ msgstr ""
 "- **Beim Beenden ans Auswerfen erinnern** (Standard: an): nur, wenn in der "
 "Sitzung etwas auf den E-Reader geschrieben wurde ([[kobo_auswerfen]]).\n"
 
-#: help.py:870
+#: help.py:884
 msgid ""
 "\n"
 "Only on Linux and macOS.\n"
@@ -6886,11 +6951,11 @@ msgstr ""
 "mit Breite, Höhe (Pixel im Hochformat), ppi und Farbbildschirm für andere "
 "E-Reader mit KOReader. Siehe [[vorschau_bildschirm]].\n"
 
-#: help.py:876 settings.py:135 settings.py:827
+#: help.py:890 settings.py:135 settings.py:827
 msgid "Advanced"
 msgstr "Erweitert"
 
-#: help.py:876
+#: help.py:890
 msgid ""
 "\n"
 "**Files of the program**\n"
@@ -6936,11 +7001,11 @@ msgstr ""
 "Bleiben: geöffnete Ordner, die Liste der Wörterbücher, Fenstergröße, "
 "Sprache und der API-Schlüssel.\n"
 
-#: help.py:890
+#: help.py:904
 msgid "Installing and updating"
 msgstr "Installieren und aktualisieren"
 
-#: help.py:890
+#: help.py:904
 msgid ""
 "\n"
 "**Installing**\n"
@@ -7024,11 +7089,11 @@ msgstr ""
 "Der **Desktop-KOReader** für die Vorschau (nur Linux) gehört nicht zur "
 "Installation ([[vorschau]]).\n"
 
-#: help.py:908
+#: help.py:922
 msgid "Troubleshooting"
 msgstr "Fehlerbehebung"
 
-#: help.py:908
+#: help.py:922
 msgid ""
 "\n"
 "**KOReader still shows the old chapter names, blurb or cover**\n"
@@ -7181,19 +7246,19 @@ msgstr ""
 "- Die Statuszeile hat immer die letzte Meldung. Sicherungen aller "
 "gespeicherten Bücher liegen im Sicherungsordner ([[speichern]]).\n"
 
-#: help.py:998
+#: help.py:1012
 msgid "Back"
 msgstr "Zurück"
 
-#: help.py:1057
+#: help.py:1071
 msgid "{n} topics found"
 msgstr "{n} Themen gefunden"
 
-#: help.py:1058
+#: help.py:1072
 msgid "Nothing found."
 msgstr "Nichts gefunden."
 
-#: koreader_settings.py:30 plugins.py:51
+#: koreader_settings.py:30 plugins.py:52
 msgid "Font size"
 msgstr "Schriftgröße"
 
@@ -7221,7 +7286,7 @@ msgstr "Wortdehnung (%)"
 msgid "Kerning"
 msgstr "Kerning"
 
-#: koreader_settings.py:37 koreader_settings.py:38 plugins.py:560 plugins.py:576
+#: koreader_settings.py:37 koreader_settings.py:38 plugins.py:700 plugins.py:716
 msgid "off"
 msgstr "aus"
 
@@ -7265,11 +7330,11 @@ msgstr "Eingebetteter Stil des Buchs"
 msgid "Left and right"
 msgstr "Links und rechts"
 
-#: koreader_settings.py:46 plugins.py:327
+#: koreader_settings.py:46 plugins.py:328
 msgid "Top"
 msgstr "Oben"
 
-#: koreader_settings.py:47 plugins.py:327
+#: koreader_settings.py:47 plugins.py:328
 msgid "Bottom"
 msgstr "Unten"
 
@@ -7529,7 +7594,7 @@ msgstr "Ungespeicherte Änderungen"
 msgid "E-reader connected"
 msgstr "E-Reader angeschlossen"
 
-#: metadata.py:36 plugins.py:474
+#: metadata.py:36 plugins.py:475 plugins.py:565
 msgid "Authors"
 msgstr "Autoren"
 
@@ -7545,7 +7610,7 @@ msgstr "Nummer"
 msgid "ISBN"
 msgstr "ISBN"
 
-#: metadata.py:38
+#: metadata.py:38 plugins.py:569
 msgid "Tags"
 msgstr "Schlagwörter"
 
@@ -7593,479 +7658,507 @@ msgstr "Die Nummer muss eine Zahl sein (z. B. 3, 1.5 oder 0.9)."
 msgid "{feld} must be {art}."
 msgstr "{feld} muss {art} sein."
 
-#: plugins.py:40
+#: plugins.py:41
 msgid "Top left"
 msgstr "Oben links"
 
-#: plugins.py:40
+#: plugins.py:41
 msgid "Top centre"
 msgstr "Oben Mitte"
 
-#: plugins.py:40
+#: plugins.py:41
 msgid "Top right"
 msgstr "Oben rechts"
 
-#: plugins.py:41
+#: plugins.py:42
 msgid "Bottom left"
 msgstr "Unten links"
 
-#: plugins.py:41
+#: plugins.py:42
 msgid "Bottom centre"
 msgstr "Unten Mitte"
 
-#: plugins.py:41
+#: plugins.py:42
 msgid "Bottom right"
 msgstr "Unten rechts"
 
-#: plugins.py:43
+#: plugins.py:44
 msgid "Regular"
 msgstr "Normal"
 
-#: plugins.py:43 workbench_plugins.py:1202
+#: plugins.py:44 workbench_plugins.py:1225
 msgid "Bold"
 msgstr "Fett"
 
-#: plugins.py:43
+#: plugins.py:44
 msgid "Italic"
 msgstr "Kursiv"
 
-#: plugins.py:44
+#: plugins.py:45
 msgid "Bold italic"
 msgstr "Fett kursiv"
 
-#: plugins.py:51
+#: plugins.py:52
 msgid "Font scale (%)"
 msgstr "Schriftskalierung (%)"
 
-#: plugins.py:52 workbench_plugins.py:752
+#: plugins.py:53 workbench_plugins.py:772
 msgid "Margin top"
 msgstr "Rand oben"
 
-#: plugins.py:52
+#: plugins.py:53
 msgid "Margin bottom"
 msgstr "Rand unten"
 
-#: plugins.py:53 workbench_plugins.py:420 workbench_plugins.py:752
+#: plugins.py:54 workbench_plugins.py:440 workbench_plugins.py:772
 msgid "Margin left"
 msgstr "Rand links"
 
-#: plugins.py:53
+#: plugins.py:54
 msgid "Margin right"
 msgstr "Rand rechts"
 
-#: plugins.py:54
+#: plugins.py:55
 msgid "Gap before overlapping (px)"
 msgstr "Abstand vor Überlappung (px)"
 
-#: plugins.py:55
+#: plugins.py:56
 msgid "Shorten the centre first"
 msgstr "Zuerst die Mitte kürzen"
 
-#: plugins.py:55
+#: plugins.py:56
 msgid "Shorten the sides first"
 msgstr "Zuerst die Seiten kürzen"
 
-#: plugins.py:144 plugins.py:153
+#: plugins.py:145 plugins.py:154
 msgid "not a table"
 msgstr "keine Tabelle"
 
-#: plugins.py:276
+#: plugins.py:277
 msgid "All pages"
 msgstr "Alle Seiten"
 
-#: plugins.py:276
+#: plugins.py:277
 msgid "Odd pages only"
 msgstr "Nur ungerade"
 
-#: plugins.py:276
+#: plugins.py:277
 msgid "Even pages only"
 msgstr "Nur gerade"
 
-#: plugins.py:277
+#: plugins.py:278
 msgid "Chapter"
 msgstr "Kapitel"
 
-#: plugins.py:278
+#: plugins.py:279
 msgid "No chapter ticks"
 msgstr "Keine Kapitelstriche"
 
-#: plugins.py:278
+#: plugins.py:279
 msgid "Ticks: top level"
 msgstr "Striche: oberste Ebene"
 
-#: plugins.py:279
+#: plugins.py:280
 msgid "Ticks: top 2 levels"
 msgstr "Striche: oberste 2 Ebenen"
 
-#: plugins.py:279
+#: plugins.py:280
 msgid "Ticks: all levels"
 msgstr "Striche: alle Ebenen"
 
-#: plugins.py:280
+#: plugins.py:281
 msgid "Bordered"
 msgstr "Umrandet"
 
-#: plugins.py:280 plugins.py:673
+#: plugins.py:281 plugins.py:813
 msgid "Solid"
 msgstr "Deckend"
 
-#: plugins.py:280
+#: plugins.py:281
 msgid "Rounded"
 msgstr "Abgerundet"
 
-#: plugins.py:281
+#: plugins.py:282
 msgid "Metro"
 msgstr "Metro"
 
-#: plugins.py:281
+#: plugins.py:282
 msgid "Wave"
 msgstr "Welle"
 
-#: plugins.py:281
+#: plugins.py:282
 msgid "Radial"
 msgstr "Rund"
 
-#: plugins.py:282
+#: plugins.py:283
 msgid "Radial hollow"
 msgstr "Rund, hohl"
 
-#: plugins.py:282
+#: plugins.py:283
 msgid "Pacman"
 msgstr "Pac-Man"
 
-#: plugins.py:283
+#: plugins.py:284
 msgid "Left to right"
 msgstr "Links nach rechts"
 
-#: plugins.py:283
+#: plugins.py:284
 msgid "Right to left"
 msgstr "Rechts nach links"
 
-#: plugins.py:283
+#: plugins.py:284
 msgid "Top to bottom"
 msgstr "Oben nach unten"
 
-#: plugins.py:284
+#: plugins.py:285
 msgid "Bottom to top"
 msgstr "Unten nach oben"
 
-#: plugins.py:327 plugins.py:441 plugins.py:473
+#: plugins.py:328 plugins.py:442 plugins.py:474
 msgid "Left"
 msgstr "Links"
 
-#: plugins.py:327 plugins.py:441 plugins.py:473
+#: plugins.py:328 plugins.py:442 plugins.py:474
 msgid "Right"
 msgstr "Rechts"
 
-#: plugins.py:433
+#: plugins.py:434
 msgid "Layout"
 msgstr "Anordnung"
 
-#: plugins.py:433
+#: plugins.py:434
 msgid "Font sizes (%)"
 msgstr "Schriftgrößen (%)"
 
-#: plugins.py:434
+#: plugins.py:435
 msgid "Covers and spines"
 msgstr "Cover und Buchrücken"
 
-#: plugins.py:434
+#: plugins.py:435
 msgid "Display"
 msgstr "Anzeige"
 
-#: plugins.py:436
+#: plugins.py:437
 msgid "Columns (empty = automatic)"
 msgstr "Spalten (leer = automatisch)"
 
-#: plugins.py:437
+#: plugins.py:438
 msgid "Rows (empty = automatic)"
 msgstr "Zeilen (leer = automatisch)"
 
-#: plugins.py:438
+#: plugins.py:439
 msgid "Footer bar"
 msgstr "Fußleiste"
 
-#: plugins.py:439
+#: plugins.py:440
 msgid "Show"
 msgstr "Zeigen"
 
-#: plugins.py:439
+#: plugins.py:440
 msgid "Hide"
 msgstr "Ausblenden"
 
-#: plugins.py:439
+#: plugins.py:440
 msgid "Invisible buttons"
 msgstr "Unsichtbare Knöpfe"
 
-#: plugins.py:440
+#: plugins.py:441
 msgid "Start menu button"
 msgstr "Knopf Startmenü"
 
-#: plugins.py:441 settings.py:418
+#: plugins.py:442 settings.py:418
 msgid "Off"
 msgstr "Aus"
 
-#: plugins.py:442
+#: plugins.py:443
 msgid "Shelf buttons as wide as their text"
 msgstr "Regal-Knöpfe so breit wie ihr Text"
 
-#: plugins.py:443
+#: plugins.py:444
 msgid "Shelf buttons in capitals"
 msgstr "Regal-Knöpfe in Großbuchstaben"
 
-#: plugins.py:444 settings.py:115 workbench_plugins.py:433
+#: plugins.py:445 settings.py:115 workbench_plugins.py:453
 msgid "General"
 msgstr "Allgemein"
 
-#: plugins.py:445
+#: plugins.py:446 workbench_plugins.py:1126 workbench_plugins.py:1669 workbench_plugins.py:1681 workbench_plugins.py:1707
 msgid "Start menu"
 msgstr "Startmenü"
 
-#: plugins.py:446
+#: plugins.py:447
 msgid "Badges on covers"
 msgstr "Abzeichen auf Covern"
 
-#: plugins.py:447
+#: plugins.py:448 plugins.py:552
 msgid "Spines"
 msgstr "Buchrücken"
 
-#: plugins.py:448
+#: plugins.py:449
 msgid "Stack labels"
 msgstr "Stapel-Beschriftungen"
 
-#: plugins.py:449
+#: plugins.py:450
 msgid "Modules in the hero card"
 msgstr "Module in der Hero-Karte"
 
-#: plugins.py:450 workbench_plugins.py:1467
+#: plugins.py:451 workbench_plugins.py:1909
 msgid "Full screen shelves"
 msgstr "Vollbild-Regale"
 
-#: plugins.py:451
+#: plugins.py:452
 msgid "Covers without shadow"
 msgstr "Cover ohne Schatten"
 
-#: plugins.py:452
+#: plugins.py:453
 msgid "Square cover corners"
 msgstr "Eckige Cover-Ecken"
 
-#: plugins.py:453
+#: plugins.py:454
 msgid "Covers in their real proportions"
 msgstr "Cover in ihren echten Seitenverhältnissen"
 
-#: plugins.py:454
+#: plugins.py:455
 msgid "Spines without shadows"
 msgstr "Buchrücken ohne Schatten"
 
-#: plugins.py:455
+#: plugins.py:456
 msgid "Author on spines"
 msgstr "Autor auf den Buchrücken"
 
-#: plugins.py:456
+#: plugins.py:457
 msgid "No stack for a single book"
 msgstr "Kein Stapel für ein einzelnes Buch"
 
-#: plugins.py:457
+#: plugins.py:458
 msgid "Effect when opening a book"
 msgstr "Effekt beim Öffnen eines Buchs"
 
-#: plugins.py:458
+#: plugins.py:459
 msgid "Dithering on colour screens"
 msgstr "Dithering auf Farbbildschirmen"
 
-#: plugins.py:459
+#: plugins.py:460
 msgid "Full refresh when turning shelf pages"
 msgstr "Voller Bildaufbau beim Blättern im Regal"
 
-#: plugins.py:468
+#: plugins.py:469
 msgid "Currently reading (hero card)"
 msgstr "Aktuelles Buch (Hero-Karte)"
 
-#: plugins.py:468
+#: plugins.py:469
 msgid "Modules"
 msgstr "Module"
 
-#: plugins.py:469
+#: plugins.py:470
 msgid "Status line"
 msgstr "Statuszeile"
 
-#: plugins.py:469
+#: plugins.py:470
 msgid "Rating (interactive)"
 msgstr "Bewertung (antippbar)"
 
-#: plugins.py:470 workbench_plugins.py:275
+#: plugins.py:471 workbench_plugins.py:295
 msgid "Description"
 msgstr "Beschreibung"
 
-#: plugins.py:471
+#: plugins.py:472
 msgid "Tags (interactive)"
 msgstr "Tags (antippbar)"
 
-#: plugins.py:471
+#: plugins.py:472
 msgid "Progress"
 msgstr "Fortschritt"
 
-#: plugins.py:473
+#: plugins.py:474
 msgid "Centre"
 msgstr "Mitte"
 
-#: plugins.py:474
+#: plugins.py:475
 msgid "Collections"
 msgstr "Sammlungen"
 
-#: plugins.py:475
+#: plugins.py:476 plugins.py:567
 msgid "Genres"
 msgstr "Genres"
 
-#: plugins.py:475
+#: plugins.py:476 workbench_plugins.py:1585 workbench_plugins.py:1587
 msgid "Folder"
 msgstr "Ordner"
 
-#: plugins.py:560 plugins.py:574
+#: plugins.py:552
+msgid "List"
+msgstr "Liste"
+
+#: plugins.py:552
+msgid "Automatic"
+msgstr "Automatisch"
+
+#: plugins.py:556
+msgid "Home"
+msgstr "Start"
+
+#: plugins.py:558
+msgid "Recent"
+msgstr "Zuletzt"
+
+#: plugins.py:560
+msgid "Latest"
+msgstr "Neueste"
+
+#: plugins.py:571
+msgid "Languages"
+msgstr "Sprachen"
+
+#: plugins.py:573
+msgid "Favorites"
+msgstr "Favoriten"
+
+#: plugins.py:700 plugins.py:714
 msgid "on"
 msgstr "an"
 
-#: plugins.py:564
+#: plugins.py:704
 msgid "list with {n} entries"
 msgstr "Liste mit {n} Einträgen"
 
-#: plugins.py:566
+#: plugins.py:706
 msgid "table with {n} entries"
 msgstr "Tabelle mit {n} Einträgen"
 
-#: plugins.py:672
+#: plugins.py:812
 msgid "Automatic (like KOReader)"
 msgstr "Automatisch (wie KOReader)"
 
-#: plugins.py:673
+#: plugins.py:813
 msgid "Transparent"
 msgstr "Durchsichtig"
 
-#: plugins.py:673
+#: plugins.py:813
 msgid "Low"
 msgstr "Leicht"
 
-#: plugins.py:673
+#: plugins.py:813
 msgid "Moderate"
 msgstr "Mittel"
 
-#: plugins.py:673
+#: plugins.py:813
 msgid "Heavy"
 msgstr "Stark"
 
-#: plugins.py:674 transfer_window.py:51 workbench_plugins.py:1465
+#: plugins.py:814 transfer_window.py:51 workbench_plugins.py:1907
 msgid "None"
 msgstr "Keine"
 
-#: plugins.py:674
+#: plugins.py:814
 msgid "Rarely"
 msgstr "Selten"
 
-#: plugins.py:674
+#: plugins.py:814
 msgid "Often"
 msgstr "Oft"
 
-#: plugins.py:674
+#: plugins.py:814
 msgid "Always"
 msgstr "Immer"
 
-#: plugins.py:676
+#: plugins.py:816
 msgid "Text"
 msgstr "Text"
 
-#: plugins.py:676
+#: plugins.py:816
 msgid "Progress bar"
 msgstr "Fortschrittsbalken"
 
-#: plugins.py:676
+#: plugins.py:816
 msgid "Progress track"
 msgstr "Fortschrittsspur"
 
-#: plugins.py:677
+#: plugins.py:817
 msgid "Bookmark"
 msgstr "Lesezeichen"
 
-#: plugins.py:677
+#: plugins.py:817
 msgid "Finished bookmark"
 msgstr "Lesezeichen (fertig)"
 
-#: plugins.py:678
+#: plugins.py:818
 msgid "Favourite star"
 msgstr "Favoriten-Stern"
 
-#: plugins.py:678
+#: plugins.py:818
 msgid "Favourite heart"
 msgstr "Favoriten-Herz"
 
-#: plugins.py:679
+#: plugins.py:819
 msgid "Rating stars"
 msgstr "Bewertungssterne"
 
-#: plugins.py:679
+#: plugins.py:819
 msgid "Badge text"
 msgstr "Abzeichen-Text"
 
-#: plugins.py:680
+#: plugins.py:820
 msgid "Badge background"
 msgstr "Abzeichen-Hintergrund"
 
-#: plugins.py:680
+#: plugins.py:820
 msgid "Menu bar"
 msgstr "Menüleiste"
 
-#: plugins.py:680
+#: plugins.py:820
 msgid "Module card"
 msgstr "Modulkarte"
 
-#: plugins.py:681
+#: plugins.py:821
 msgid "Module border"
 msgstr "Modulrahmen"
 
-#: plugins.py:681
+#: plugins.py:821
 msgid "Panel"
 msgstr "Tafel"
 
-#: plugins.py:681
+#: plugins.py:821
 msgid "Panel text"
 msgstr "Tafeltext"
 
-#: plugins.py:682
+#: plugins.py:822
 msgid "Cover border"
 msgstr "Cover-Rahmen"
 
-#: plugins.py:682
+#: plugins.py:822
 msgid "Selection"
 msgstr "Auswahl"
 
-#: plugins.py:683
+#: plugins.py:823
 msgid "Cover shadow"
 msgstr "Cover-Schatten"
 
-#: plugins.py:683 workbench_plugins.py:1101 workbench_plugins.py:1491
+#: plugins.py:823 workbench_plugins.py:1121 workbench_plugins.py:1933
 msgid "Plank"
 msgstr "Brett"
 
-#: plugins.py:684
+#: plugins.py:824
 msgid "Folder label"
 msgstr "Ordner-Schild"
 
-#: plugins.py:684
+#: plugins.py:824
 msgid "Folder text"
 msgstr "Ordner-Text"
 
-#: plugins.py:685
+#: plugins.py:825
 msgid "Selected shelf"
 msgstr "Gewähltes Regal"
 
-#: plugins.py:685
+#: plugins.py:825
 msgid "Selected shelf text"
 msgstr "Gewähltes Regal (Text)"
 
-#: plugins.py:686
+#: plugins.py:826 workbench_plugins.py:1470
 msgid "Page"
 msgstr "Seite"
 
-#: plugins.py:737
+#: plugins.py:877
 msgid "plank"
 msgstr "Brett"
 
@@ -8073,7 +8166,7 @@ msgstr "Brett"
 msgid "Web search"
 msgstr "Websuche"
 
-#: settings.py:98 workbench_plugins.py:1186
+#: settings.py:98 workbench_plugins.py:1209
 msgid "Subtitle"
 msgstr "Untertitel"
 
@@ -8530,7 +8623,7 @@ msgstr "Gilt für"
 msgid "Edit …"
 msgstr "Bearbeiten …"
 
-#: settings.py:506 settings.py:665 workbench_plugins.py:265 workbench_reader.py:299
+#: settings.py:506 settings.py:665 workbench_plugins.py:285 workbench_reader.py:299
 msgid "Delete"
 msgstr "Löschen"
 
@@ -9239,11 +9332,11 @@ msgstr "Buch wird sonst übersprungen ({grund})"
 msgid "no name found, other chapters in the book have one"
 msgstr "kein Name gefunden, andere Kapitel im Buch haben einen"
 
-#: transfer.py:36 workbench_plugins.py:938 workbench_plugins.py:974 workbench_plugins.py:1012
+#: transfer.py:36 workbench_plugins.py:958 workbench_plugins.py:994 workbench_plugins.py:1032
 msgid "Bookends"
 msgstr "Bookends"
 
-#: transfer.py:37 workbench_plugins.py:1711 workbench_plugins.py:1767
+#: transfer.py:37 workbench_plugins.py:2156 workbench_plugins.py:2212
 msgid "Bookshelf"
 msgstr "Bookshelf"
 
@@ -9271,7 +9364,7 @@ msgstr "Eintrag"
 msgid "Change"
 msgstr "Änderung"
 
-#: transfer_window.py:50 workbench_reader.py:298
+#: transfer_window.py:50 workbench_plugins.py:1719 workbench_reader.py:298
 msgid "On/off"
 msgstr "An/aus"
 
@@ -10016,39 +10109,79 @@ msgstr ""
 "Wie im Profil. \"Zum E-Reader …\" in der Werkzeugleiste schreibt es auf den "
 "E-Reader."
 
-#: workbench_plugins.py:255
+#: workbench_plugins.py:144
+msgid "Reading calendar"
+msgstr "Lesekalender"
+
+#: workbench_plugins.py:145
+msgid "Bookmark browser"
+msgstr "Lesezeichen"
+
+#: workbench_plugins.py:146
+msgid "Screenshot"
+msgstr "Bildschirmfoto"
+
+#: workbench_plugins.py:147
+msgid "Frontlight"
+msgstr "Beleuchtung"
+
+#: workbench_plugins.py:149
+msgid "Full screen refresh"
+msgstr "Bildschirm auffrischen"
+
+#: workbench_plugins.py:150
+msgid "Battery statistics"
+msgstr "Akku-Statistik"
+
+#: workbench_plugins.py:151
+msgid "Wi-Fi connection"
+msgstr "WLAN-Verbindung"
+
+#: workbench_plugins.py:153
+msgid "Night mode"
+msgstr "Nachtmodus"
+
+#: workbench_plugins.py:155
+msgid "Close book"
+msgstr "Buch schließen"
+
+#: workbench_plugins.py:157
+msgid "Sleep"
+msgstr "Ruhezustand"
+
+#: workbench_plugins.py:275
 msgid "Preset"
 msgstr "Vorlage"
 
-#: workbench_plugins.py:257
+#: workbench_plugins.py:277
 msgid "Bookends switched on"
 msgstr "Bookends eingeschaltet"
 
-#: workbench_plugins.py:265
+#: workbench_plugins.py:285
 msgid "Duplicate"
 msgstr "Duplizieren"
 
-#: workbench_plugins.py:269
+#: workbench_plugins.py:289
 msgid "Make active"
 msgstr "Aktiv machen"
 
-#: workbench_plugins.py:275
+#: workbench_plugins.py:295
 msgid "Name"
 msgstr "Name"
 
-#: workbench_plugins.py:282
+#: workbench_plugins.py:302
 msgid "Lines"
 msgstr "Zeilen"
 
-#: workbench_plugins.py:285 workbench_plugins.py:1182
+#: workbench_plugins.py:305 workbench_plugins.py:1205
 msgid "Insert token"
 msgstr "Token einfügen"
 
-#: workbench_plugins.py:289
+#: workbench_plugins.py:309
 msgid "Special characters …"
 msgstr "Sonderzeichen …"
 
-#: workbench_plugins.py:292
+#: workbench_plugins.py:312
 msgid ""
 "One line per row; tokens like %title or %page_num are filled in by "
 "Bookends. Extra margin moves the whole position away from the edge (px)."
@@ -10056,55 +10189,55 @@ msgstr ""
 "Eine Zeile je Reihe; Tokens wie %title oder %page_num füllt Bookends aus. "
 "Der Zusatzrand rückt die ganze Position vom Rand weg (px)."
 
-#: workbench_plugins.py:308
+#: workbench_plugins.py:328
 msgid "extra margin"
 msgstr "Zusatzrand"
 
-#: workbench_plugins.py:320
+#: workbench_plugins.py:340
 msgid "Selected line"
 msgstr "Gewählte Zeile"
 
-#: workbench_plugins.py:321 workbench_plugins.py:623
+#: workbench_plugins.py:341 workbench_plugins.py:643
 msgid "Click into a line above."
 msgstr "Oben in eine Zeile klicken."
 
-#: workbench_plugins.py:325
+#: workbench_plugins.py:345
 msgid "Style"
 msgstr "Stil"
 
-#: workbench_plugins.py:341 workbench_plugins.py:1205
+#: workbench_plugins.py:361 workbench_plugins.py:1228
 msgid "Capitals"
 msgstr "Großbuchstaben"
 
-#: workbench_plugins.py:344
+#: workbench_plugins.py:364
 msgid "Show on"
 msgstr "Zeigen auf"
 
-#: workbench_plugins.py:349
+#: workbench_plugins.py:369
 msgid "Offset"
 msgstr "Versatz"
 
-#: workbench_plugins.py:351
+#: workbench_plugins.py:371
 msgid "← →"
 msgstr "← →"
 
-#: workbench_plugins.py:351
+#: workbench_plugins.py:371
 msgid "↑ ↓"
 msgstr "↑ ↓"
 
-#: workbench_plugins.py:358
+#: workbench_plugins.py:378
 msgid "Back to 0"
 msgstr "Auf 0"
 
-#: workbench_plugins.py:379 workbench_plugins.py:418 workbench_plugins.py:749
+#: workbench_plugins.py:399 workbench_plugins.py:438 workbench_plugins.py:769
 msgid "Thickness"
 msgstr "Dicke"
 
-#: workbench_plugins.py:379 workbench_plugins.py:418
+#: workbench_plugins.py:399 workbench_plugins.py:438
 msgid "unread"
 msgstr "ungelesen"
 
-#: workbench_plugins.py:387
+#: workbench_plugins.py:407
 msgid ""
 "Empty size = the general font size. Offset in pixels: negative = left or "
 "up. Empty thickness = as high as the text; empty unread = like read. Font "
@@ -10116,52 +10249,52 @@ msgstr ""
 "wie gelesen. Schrift je Zeile, Farben und Markierungen eines Balkens und "
 "Bedingungen im Text bleiben, wie sie sind."
 
-#: workbench_plugins.py:393
+#: workbench_plugins.py:413
 msgid "Progress bars"
 msgstr "Fortschrittsbalken"
 
-#: workbench_plugins.py:401
+#: workbench_plugins.py:421
 msgid "Switched on"
 msgstr "Eingeschaltet"
 
-#: workbench_plugins.py:413
+#: workbench_plugins.py:433
 msgid "Edge"
 msgstr "Rand"
 
-#: workbench_plugins.py:419 workbench_plugins.py:751
+#: workbench_plugins.py:439 workbench_plugins.py:771
 msgid "Distance from the edge"
 msgstr "Abstand vom Rand"
 
-#: workbench_plugins.py:420 workbench_plugins.py:753
+#: workbench_plugins.py:440 workbench_plugins.py:773
 msgid "right"
 msgstr "rechts"
 
-#: workbench_plugins.py:443 workbench_reader.py:129
+#: workbench_plugins.py:463 workbench_reader.py:129
 msgid "empty = {wert}"
 msgstr "leer = {wert}"
 
-#: workbench_plugins.py:444
+#: workbench_plugins.py:464
 msgid "size of KOReader's status bar"
 msgstr "Größe von KOReaders Statusleiste"
 
-#: workbench_plugins.py:466
+#: workbench_plugins.py:486
 msgid ""
 "Bookends {version} in the profile. Changes show in the picture at once."
 msgstr "Bookends {version} im Profil. Änderungen erscheinen sofort im Bild."
 
-#: workbench_plugins.py:502
+#: workbench_plugins.py:522
 msgid "Preset {datei} could not be read: {fehler}"
 msgstr "Vorlage {datei} ließ sich nicht lesen: {fehler}"
 
-#: workbench_plugins.py:545
+#: workbench_plugins.py:565
 msgid "No preset in the profile. \"New\" makes one."
 msgstr "Keine Vorlage im Profil. \"Neu\" legt eine an."
 
-#: workbench_plugins.py:547
+#: workbench_plugins.py:567
 msgid "This is the active preset (Bookends uses it on the e-reader)."
 msgstr "Das ist die aktive Vorlage (Bookends nimmt sie auf dem E-Reader)."
 
-#: workbench_plugins.py:549
+#: workbench_plugins.py:569
 msgid ""
 "Not active: on the e-reader Bookends uses \"{name}\". The picture shows "
 "this one."
@@ -10169,47 +10302,47 @@ msgstr ""
 "Nicht aktiv: Auf dem E-Reader nimmt Bookends \"{name}\". Das Bild zeigt "
 "diese hier."
 
-#: workbench_plugins.py:589
+#: workbench_plugins.py:609
 msgid "This Bookends version has no list of special characters."
 msgstr "Diese Bookends-Version hat keine Liste mit Sonderzeichen."
 
-#: workbench_plugins.py:636
+#: workbench_plugins.py:656
 msgid "{position}, line {nr}"
 msgstr "{position}, Zeile {nr}"
 
-#: workbench_plugins.py:665
+#: workbench_plugins.py:685
 msgid "Bar in this line"
 msgstr "Balken in dieser Zeile"
 
-#: workbench_plugins.py:666
+#: workbench_plugins.py:686
 msgid "No bar in this line (token %bar)."
 msgstr "Kein Balken in dieser Zeile (Token %bar)."
 
-#: workbench_plugins.py:667
+#: workbench_plugins.py:687
 msgid "Remove bar"
 msgstr "Balken entfernen"
 
-#: workbench_plugins.py:667
+#: workbench_plugins.py:687
 msgid "Insert bar"
 msgstr "Balken einfügen"
 
-#: workbench_plugins.py:731
+#: workbench_plugins.py:751
 msgid "Bar {nr}"
 msgstr "Balken {nr}"
 
-#: workbench_plugins.py:749
+#: workbench_plugins.py:769
 msgid "Diameter"
 msgstr "Durchmesser"
 
-#: workbench_plugins.py:750
+#: workbench_plugins.py:770
 msgid "Distance from the line text"
 msgstr "Abstand zum Zeilentext"
 
-#: workbench_plugins.py:753
+#: workbench_plugins.py:773
 msgid "bottom"
 msgstr "unten"
 
-#: workbench_plugins.py:762
+#: workbench_plugins.py:782
 msgid ""
 "Up to {n} bars across the page. Colours, markers and \"Position relative to "
 "line text\" stay as they are; switch those on the e-reader."
@@ -10218,48 +10351,48 @@ msgstr ""
 "relativ zum Zeilentext“ bleiben, wie sie sind; die stellst du am E-Reader "
 "um."
 
-#: workbench_plugins.py:938
+#: workbench_plugins.py:958
 msgid "The preset \"{name}\" has unsaved changes. Save them in the profile?"
 msgstr ""
 "Die Vorlage \"{name}\" hat ungespeicherte Änderungen. Im Profil speichern?"
 
-#: workbench_plugins.py:950
+#: workbench_plugins.py:970
 msgid "New preset"
 msgstr "Neue Vorlage"
 
-#: workbench_plugins.py:950
+#: workbench_plugins.py:970
 msgid "Name of the new preset:"
 msgstr "Name der neuen Vorlage:"
 
-#: workbench_plugins.py:952
+#: workbench_plugins.py:972
 msgid "{name} (copy)"
 msgstr "{name} (Kopie)"
 
-#: workbench_plugins.py:974
+#: workbench_plugins.py:994
 msgid "Delete the preset \"{name}\" from the profile?"
 msgstr "Die Vorlage \"{name}\" aus dem Profil löschen?"
 
-#: workbench_plugins.py:988
+#: workbench_plugins.py:1008
 msgid "Preset deleted from the profile."
 msgstr "Vorlage aus dem Profil gelöscht."
 
-#: workbench_plugins.py:1006
+#: workbench_plugins.py:1026
 msgid "Bookends preset \"{name}\" saved in the profile."
 msgstr "Bookends-Vorlage \"{name}\" im Profil gespeichert."
 
-#: workbench_plugins.py:1012 workbench_plugins.py:1767 workbench_reader.py:261 workbench_reader.py:544
+#: workbench_plugins.py:1032 workbench_plugins.py:2212 workbench_reader.py:261 workbench_reader.py:544
 msgid "Discard the unsaved changes?"
 msgstr "Die ungespeicherten Änderungen verwerfen?"
 
-#: workbench_plugins.py:1029
+#: workbench_plugins.py:1049
 msgid "Special characters"
 msgstr "Sonderzeichen"
 
-#: workbench_plugins.py:1034
+#: workbench_plugins.py:1054
 msgid "Group"
 msgstr "Gruppe"
 
-#: workbench_plugins.py:1046
+#: workbench_plugins.py:1066
 msgid ""
 "KOReader's symbol font (nerdfonts/symbols.ttf) was not found: symbols show "
 "as names. Take the profile from the e-reader to get its fonts."
@@ -10268,7 +10401,7 @@ msgstr ""
 "Symbole erscheinen als Namen. Das Profil vom E-Reader holen, dann kommen "
 "seine Schriften mit."
 
-#: workbench_plugins.py:1087
+#: workbench_plugins.py:1107
 msgid ""
 "Bookshelf has no way to reload its settings while running: after a change "
 "the workbench restarts on the start screen (about a second)."
@@ -10277,43 +10410,51 @@ msgstr ""
 "Nach einer Änderung startet die Werkbank auf dem Startbildschirm neu (etwa "
 "eine Sekunde)."
 
-#: workbench_plugins.py:1093
+#: workbench_plugins.py:1113
 msgid "Start screen shows:"
 msgstr "Startbildschirm zeigt:"
 
-#: workbench_plugins.py:1094
+#: workbench_plugins.py:1114
 msgid "sample books"
 msgstr "Beispielbücher"
 
-#: workbench_plugins.py:1094
+#: workbench_plugins.py:1114
 msgid "the opened library"
 msgstr "die geöffnete Bibliothek"
 
-#: workbench_plugins.py:1099
+#: workbench_plugins.py:1119
 msgid "Themes"
 msgstr "Themes"
 
-#: workbench_plugins.py:1100
+#: workbench_plugins.py:1120
 msgid "Wallpaper"
 msgstr "Hintergrundbild"
 
-#: workbench_plugins.py:1102
+#: workbench_plugins.py:1122
 msgid "Decoration (ornaments)"
 msgstr "Dekoration (Ornamente)"
 
-#: workbench_plugins.py:1103
+#: workbench_plugins.py:1123
 msgid "Colours"
 msgstr "Farben"
 
-#: workbench_plugins.py:1104
+#: workbench_plugins.py:1124
 msgid "Top panel"
 msgstr "Oberer Bereich"
 
-#: workbench_plugins.py:1135
+#: workbench_plugins.py:1125
+msgid "Modules in the top panel"
+msgstr "Module im oberen Bereich"
+
+#: workbench_plugins.py:1127 workbench_plugins.py:1804 workbench_plugins.py:1822
+msgid "Shelves"
+msgstr "Regale"
+
+#: workbench_plugins.py:1158
 msgid "All keys in the file"
 msgstr "Alle Schlüssel in der Datei"
 
-#: workbench_plugins.py:1136
+#: workbench_plugins.py:1159
 msgid ""
 "For everything not listed above. Double-click a simple value to change it; "
 "tables (shelves, modules) only in the sections above or in Bookshelf "
@@ -10323,43 +10464,43 @@ msgstr ""
 "Tabellen (Regale, Module) nur in den Abschnitten oben oder in Bookshelf "
 "selbst. \"Vorgabe\" entfernt den Schlüssel, dann gilt Bookshelfs Vorgabe."
 
-#: workbench_plugins.py:1143
+#: workbench_plugins.py:1166
 msgid "Key"
 msgstr "Schlüssel"
 
-#: workbench_plugins.py:1144
+#: workbench_plugins.py:1167
 msgid "Value"
 msgstr "Wert"
 
-#: workbench_plugins.py:1154
+#: workbench_plugins.py:1177
 msgid "Change …"
 msgstr "Ändern …"
 
-#: workbench_plugins.py:1156 workbench_plugins.py:1189
+#: workbench_plugins.py:1179 workbench_plugins.py:1212
 msgid "Default"
 msgstr "Vorgabe"
 
-#: workbench_plugins.py:1162
+#: workbench_plugins.py:1185
 msgid "Shows"
 msgstr "Zeigt"
 
-#: workbench_plugins.py:1165
+#: workbench_plugins.py:1188
 msgid "Lines of the hero card (the current book):"
 msgstr "Zeilen der Hero-Karte (das aktuelle Buch):"
 
-#: workbench_plugins.py:1174
+#: workbench_plugins.py:1197
 msgid "Shown"
 msgstr "Gezeigt"
 
-#: workbench_plugins.py:1215
+#: workbench_plugins.py:1238
 msgid "Rows at most"
 msgstr "Höchstens Reihen"
 
-#: workbench_plugins.py:1266
+#: workbench_plugins.py:1289
 msgid "Stars to tap; only on/off, size and alignment."
 msgstr "Sterne zum Antippen; nur an/aus, Größe und Ausrichtung."
 
-#: workbench_plugins.py:1267
+#: workbench_plugins.py:1290
 msgid ""
 "Buttons for author, series, collections, genres and folder, each can be "
 "hidden."
@@ -10367,7 +10508,7 @@ msgstr ""
 "Knöpfe für Autor, Reihe, Sammlungen, Genres und Ordner, jeder lässt sich "
 "ausblenden."
 
-#: workbench_plugins.py:1268
+#: workbench_plugins.py:1291
 msgid ""
 "An extra line between author and description; Bookshelf puts the series "
 "here by default. \"Subtitle\" puts the book's subtitle here (needs the "
@@ -10377,7 +10518,7 @@ msgstr ""
 "hier standardmäßig die Reihe. „Untertitel“ setzt den Untertitel des Buchs "
 "hierher (braucht den Bookbench-Patch 2-bookbench-subtitle, Seite Patches)."
 
-#: workbench_plugins.py:1271
+#: workbench_plugins.py:1294
 msgid ""
 "Tokens like in Bookshelf's line editor, [if:token]…[/if] shows a part only "
 "if the token has a value. Empty = the line is left out."
@@ -10385,7 +10526,7 @@ msgstr ""
 "Tokens wie in Bookshelfs Zeilen-Editor, [if:token]…[/if] zeigt einen Teil "
 "nur, wenn der Token einen Wert hat. Leer = die Zeile entfällt."
 
-#: workbench_plugins.py:1274
+#: workbench_plugins.py:1297
 msgid ""
 "⚠ %subtitle needs the patch 2-bookbench-subtitle in the profile (page "
 "Patches)."
@@ -10393,35 +10534,189 @@ msgstr ""
 "⚠ %subtitle braucht den Patch 2-bookbench-subtitle im Profil (Seite "
 "Patches)."
 
-#: workbench_plugins.py:1289
+#: workbench_plugins.py:1312
 msgid "Subtitle from the EPUB (needs the Bookbench patch)"
 msgstr "Untertitel aus dem EPUB (braucht den Bookbench-Patch)"
 
-#: workbench_plugins.py:1438 workbench_plugins.py:1448
+#: workbench_plugins.py:1460 workbench_plugins.py:1462 workbench_plugins.py:1584 workbench_plugins.py:1587 workbench_plugins.py:1721 workbench_plugins.py:1722
+msgid "Add"
+msgstr "Hinzufügen"
+
+#: workbench_plugins.py:1466
+msgid "Place automatically"
+msgstr "Automatisch platzieren"
+
+#: workbench_plugins.py:1470
+msgid "Column"
+msgstr "Spalte"
+
+#: workbench_plugins.py:1470
+msgid "Row"
+msgstr "Reihe"
+
+#: workbench_plugins.py:1470
+msgid "Width"
+msgstr "Breite"
+
+#: workbench_plugins.py:1471
+msgid "Height"
+msgstr "Höhe"
+
+#: workbench_plugins.py:1478
+msgid ""
+"Positions in grid cells. The top panel has 1 or 2 rows and 2 to 8 columns, "
+"depending on the screen; Bookshelf moves a module that does not fit or "
+"overlaps another. Modules that need a choice (action, shelf, ornament) are "
+"added in Bookshelf."
+msgstr ""
+"Positionen in Rasterzellen. Der obere Bereich hat je nach Bildschirm 1 oder "
+"2 Reihen und 2 bis 8 Spalten; ein Modul, das nicht passt oder ein anderes "
+"überdeckt, rückt Bookshelf weiter. Module, die eine Auswahl brauchen "
+"(Aktion, Regal, Ornament), fügst du in Bookshelf hinzu."
+
+#: workbench_plugins.py:1502
+msgid "page {seite}: {spalte}/{reihe}, {w}×{h}"
+msgstr "Seite {seite}: {spalte}/{reihe}, {w}×{h}"
+
+#: workbench_plugins.py:1504
+msgid "automatic"
+msgstr "automatisch"
+
+#: workbench_plugins.py:1509
+msgid ""
+"Bookshelf has not set up the modules yet: open the top panel's modules once "
+"on the e-reader."
+msgstr ""
+"Bookshelf hat die Module noch nicht angelegt: die Module im oberen Bereich "
+"einmal am E-Reader öffnen."
+
+#: workbench_plugins.py:1586 workbench_plugins.py:1720
+msgid "Rename …"
+msgstr "Umbenennen …"
+
+#: workbench_plugins.py:1588
+msgid ""
+"A folder holds entries, one level deep as in Bookshelf. New entries are "
+"Bookshelf's standard ones; other actions and icons are set in Bookshelf's "
+"start menu editor."
+msgstr ""
+"Ein Ordner enthält Einträge, eine Ebene tief wie in Bookshelf. Neue "
+"Einträge sind Bookshelfs Standard-Einträge; andere Aktionen und Symbole "
+"stellst du in Bookshelfs Startmenü-Editor ein."
+
+#: workbench_plugins.py:1624
+msgid ""
+"Bookshelf has not set up its start menu yet: open it once on the e-reader."
+msgstr ""
+"Bookshelf hat sein Startmenü noch nicht angelegt: einmal am E-Reader öffnen."
+
+#: workbench_plugins.py:1630
+msgid "Folder …"
+msgstr "Ordner …"
+
+#: workbench_plugins.py:1631
+msgid "Divider"
+msgstr "Trennlinie"
+
+#: workbench_plugins.py:1638
+msgid "Module"
+msgstr "Modul"
+
+#: workbench_plugins.py:1643
+msgid "Standard entry"
+msgstr "Standard-Eintrag"
+
+#: workbench_plugins.py:1647
+msgid "Into \"{name}\""
+msgstr "In „{name}“"
+
+#: workbench_plugins.py:1649
+msgid "Out of the folder"
+msgstr "Aus dem Ordner"
+
+#: workbench_plugins.py:1669
+msgid "Name of the folder:"
+msgstr "Name des Ordners:"
+
+#: workbench_plugins.py:1679
+msgid "Only entries and folders have a name."
+msgstr "Nur Einträge und Ordner haben einen Namen."
+
+#: workbench_plugins.py:1681 workbench_plugins.py:1804
+msgid "New name:"
+msgstr "Neuer Name:"
+
+#: workbench_plugins.py:1697
+msgid "Folders and dividers stay at the top level."
+msgstr "Ordner und Trennlinien bleiben auf der obersten Ebene."
+
+#: workbench_plugins.py:1707
+msgid "Remove the folder with its {n} entries?"
+msgstr "Den Ordner mit seinen {n} Einträgen entfernen?"
+
+#: workbench_plugins.py:1726
+msgid "Shown as"
+msgstr "Ansicht"
+
+#: workbench_plugins.py:1729
+msgid ""
+"☑ shown as a button above the shelf, ☐ hidden. Sorting, filters and new "
+"shelves from collections or folders are set in Bookshelf; removed standard "
+"shelves can be added again here."
+msgstr ""
+"☑ als Knopf über dem Regal gezeigt, ☐ ausgeblendet. Sortierung, Filter und "
+"neue Regale aus Sammlungen oder Ordnern stellst du in Bookshelf ein; "
+"entfernte Standard-Regale lassen sich hier wieder hinzufügen."
+
+#: workbench_plugins.py:1750
+msgid ""
+"Bookshelf still uses its standard shelves; change them once on the "
+"e-reader, then they can be edited here."
+msgstr ""
+"Bookshelf nutzt noch seine Standard-Regale; einmal am E-Reader ändern, dann "
+"lassen sie sich hier bearbeiten."
+
+#: workbench_plugins.py:1761
+msgid "All standard shelves are there."
+msgstr "Alle Standard-Regale sind da."
+
+#: workbench_plugins.py:1790 workbench_plugins.py:1820
+msgid "At least one shelf stays shown."
+msgstr "Mindestens ein Regal bleibt sichtbar."
+
+#: workbench_plugins.py:1822
+msgid ""
+"Remove the shelf? Standard shelves can be added again; your own "
+"(collections, folders) only in Bookshelf."
+msgstr ""
+"Das Regal entfernen? Standard-Regale lassen sich wieder hinzufügen, eigene "
+"(Sammlungen, Ordner) nur in Bookshelf."
+
+#: workbench_plugins.py:1880 workbench_plugins.py:1890
 msgid "Custom theme"
 msgstr "Eigenes Theme"
 
-#: workbench_plugins.py:1438 workbench_plugins.py:1448
+#: workbench_plugins.py:1880 workbench_plugins.py:1890
 msgid "Plain"
 msgstr "Schlicht"
 
-#: workbench_plugins.py:1439
+#: workbench_plugins.py:1881
 msgid "Default theme"
 msgstr "Standard-Theme"
 
-#: workbench_plugins.py:1441
+#: workbench_plugins.py:1883
 msgid "Light or dark"
 msgstr "Hell oder dunkel"
 
-#: workbench_plugins.py:1445
+#: workbench_plugins.py:1887
 msgid "Theme per shelf"
 msgstr "Theme je Regal"
 
-#: workbench_plugins.py:1448
+#: workbench_plugins.py:1890
 msgid "Like the default"
 msgstr "Wie Standard"
 
-#: workbench_plugins.py:1454
+#: workbench_plugins.py:1896
 msgid ""
 "Theme packs are folders in settings/bookshelf/ornaments with a "
 "theme/theme.json; new ones come from Bookshelf's theme library. Wallpaper, "
@@ -10433,43 +10728,43 @@ msgstr ""
 "Hintergrundbild, Brett und Farben unten gehören zum eigenen Theme; ein "
 "Theme-Paket legt seine eigenen Teile darüber."
 
-#: workbench_plugins.py:1457
+#: workbench_plugins.py:1899
 msgid "No theme pack in the profile."
 msgstr "Kein Theme-Paket im Profil."
 
-#: workbench_plugins.py:1465
+#: workbench_plugins.py:1907
 msgid "Picture"
 msgstr "Bild"
 
-#: workbench_plugins.py:1467
+#: workbench_plugins.py:1909
 msgid "Same as above"
 msgstr "Wie oben"
 
-#: workbench_plugins.py:1469
+#: workbench_plugins.py:1911
 msgid "Panel shading"
 msgstr "Tafeln abdunkeln"
 
-#: workbench_plugins.py:1472
+#: workbench_plugins.py:1914
 msgid "Transparent buttons"
 msgstr "Durchsichtige Knöpfe"
 
-#: workbench_plugins.py:1473
+#: workbench_plugins.py:1915
 msgid "Blur the picture under panels"
 msgstr "Bild unter Tafeln weichzeichnen"
 
-#: workbench_plugins.py:1474
+#: workbench_plugins.py:1916
 msgid "Invert the picture in night mode"
 msgstr "Bild im Nachtmodus umkehren"
 
-#: workbench_plugins.py:1475
+#: workbench_plugins.py:1917
 msgid "One panel over the whole covers shelf"
 msgstr "Eine Tafel über das ganze Cover-Regal"
 
-#: workbench_plugins.py:1482
+#: workbench_plugins.py:1924
 msgid "Add picture …"
 msgstr "Bild hinzufügen …"
 
-#: workbench_plugins.py:1483
+#: workbench_plugins.py:1925
 msgid ""
 "Pictures are in settings/bookshelf/wallpapers of the profile. \"Add "
 "picture\" copies one there at once (it still has to get to the e-reader)."
@@ -10477,31 +10772,31 @@ msgstr ""
 "Die Bilder liegen in settings/bookshelf/wallpapers im Profil. \"Bild "
 "hinzufügen\" kopiert sofort eins dorthin (auf den E-Reader muss es noch)."
 
-#: workbench_plugins.py:1491
+#: workbench_plugins.py:1933
 msgid "Default (oak, unless you chose a plank colour)"
 msgstr "Vorgabe (Eiche, außer du hast eine Brettfarbe gewählt)"
 
-#: workbench_plugins.py:1492
+#: workbench_plugins.py:1934
 msgid "Oak"
 msgstr "Eiche"
 
-#: workbench_plugins.py:1492
+#: workbench_plugins.py:1934
 msgid "Colour only"
 msgstr "Nur Farbe"
 
-#: workbench_plugins.py:1494
+#: workbench_plugins.py:1936
 msgid "The plank colour is under Colours (Plank)."
 msgstr "Die Brettfarbe steht unter Farben (Brett)."
 
-#: workbench_plugins.py:1502
+#: workbench_plugins.py:1944
 msgid "How often per shelf"
 msgstr "Wie oft je Regal"
 
-#: workbench_plugins.py:1511
+#: workbench_plugins.py:1953
 msgid "Ornaments (double-click switches on/off)"
 msgstr "Ornamente (Doppelklick schaltet an/aus)"
 
-#: workbench_plugins.py:1523
+#: workbench_plugins.py:1965
 msgid ""
 "Ornaments stand in the gaps of spine shelves only. Their files are in "
 "settings/bookshelf/ornaments (one level of packs)."
@@ -10509,19 +10804,19 @@ msgstr ""
 "Ornamente stehen nur in den Lücken von Buchrücken-Regalen. Ihre Dateien "
 "liegen in settings/bookshelf/ornaments (eine Ebene Pakete)."
 
-#: workbench_plugins.py:1525
+#: workbench_plugins.py:1967
 msgid "No ornaments in the profile."
 msgstr "Keine Ornamente im Profil."
 
-#: workbench_plugins.py:1531
+#: workbench_plugins.py:1973
 msgid "Day"
 msgstr "Tag"
 
-#: workbench_plugins.py:1532
+#: workbench_plugins.py:1974
 msgid "Night"
 msgstr "Nacht"
 
-#: workbench_plugins.py:1544
+#: workbench_plugins.py:1986
 msgid ""
 "Click a field to choose a colour; \"-\" = the default. ✕ resets day and "
 "night. Colours belong to the custom theme."
@@ -10529,35 +10824,35 @@ msgstr ""
 "Klick auf ein Feld wählt eine Farbe; \"-\" = Vorgabe. ✕ setzt Tag und Nacht "
 "zurück. Die Farben gehören zum eigenen Theme."
 
-#: workbench_plugins.py:1596
+#: workbench_plugins.py:2038
 msgid "Colour"
 msgstr "Farbe"
 
-#: workbench_plugins.py:1603
+#: workbench_plugins.py:2045
 msgid "Wallpaper for Bookshelf"
 msgstr "Hintergrundbild für Bookshelf"
 
-#: workbench_plugins.py:1604
+#: workbench_plugins.py:2046
 msgid "Pictures"
 msgstr "Bilder"
 
-#: workbench_plugins.py:1638
+#: workbench_plugins.py:2080
 msgid "Bookshelf {version} in the profile ({datei})."
 msgstr "Bookshelf {version} im Profil ({datei})."
 
-#: workbench_plugins.py:1709
+#: workbench_plugins.py:2154
 msgid "{schluessel} is a table: change it in Bookshelf itself."
 msgstr "{schluessel} ist eine Tabelle: in Bookshelf selbst ändern."
 
-#: workbench_plugins.py:1711
+#: workbench_plugins.py:2156
 msgid "New value for {schluessel}:"
 msgstr "Neuer Wert für {schluessel}:"
 
-#: workbench_plugins.py:1719
+#: workbench_plugins.py:2164
 msgid "\"{text}\" does not fit the value ({art})."
 msgstr "\"{text}\" passt nicht zum Wert ({art})."
 
-#: workbench_plugins.py:1760
+#: workbench_plugins.py:2205
 msgid "Bookshelf settings saved in the profile ({n} changed)."
 msgstr "Bookshelf-Einstellungen im Profil gespeichert ({n} geändert)."
 
@@ -10698,10 +10993,6 @@ msgid "in the profile, another version"
 msgstr "im Profil, andere Fassung"
 
 #: workbench_reader.py:322
-msgid "Add"
-msgstr "Hinzufügen"
-
-#: workbench_reader.py:322
 msgid "Update"
 msgstr "Aktualisieren"
 
@@ -10740,63 +11031,6 @@ msgstr "Den Patch {name} aus dem Profil löschen?"
 #: workbench_reader.py:537
 msgid "Patches saved in the profile."
 msgstr "Patches im Profil gespeichert."
-
-#~ msgid ""
-#~ "\n"
-#~ "Below Preview, **Patches** lists the user patches of the profile (folder "
-#~ "koreader/patches) as KOReader's patch management does (Tools > More tools > "
-#~ "Patch management on the e-reader).\n"
-#~ "\n"
-#~ "- Patches are grouped by when they run: early once after an update (0), "
-#~ "early (1), late after the start (2), before quitting (8), when quitting (9) "
-#~ "- the first digit of the file name. Files without such a number or without "
-#~ ".lua never run and are not listed.\n"
-#~ "- ☑ on, ☐ off. Double-click, Space or **On/off** switches. Like KOReader, "
-#~ "Bookbench renames the file: off = \".disabled\" behind \".lua\".\n"
-#~ "- **Switch off all patches** is KOReader's main switch (file "
-#~ ".patches_disabled). In the workbench Bookbench switches the patches off one "
-#~ "by one instead, so its own patch keeps running.\n"
-#~ "- ⚠ marks a patch that failed in the workbench; select it to see KOReader's "
-#~ "message. Many patches need the e-reader (a Kobo-only function, the "
-#~ "frontlight …) and can never run on the computer - that says nothing about "
-#~ "the e-reader.\n"
-#~ "- **Show …** opens the patch read-only. **Add …** copies a .lua file into "
-#~ "the profile (without a number it gets \"2-\", otherwise KOReader would "
-#~ "never run it); **Delete** removes one. Adding and deleting change the "
-#~ "profile at once.\n"
-#~ "\n"
-#~ "Switching on and off is a draft until **Save to profile**. Patches run when "
-#~ "KOReader starts, so the workbench restarts after every change. Bookbench's "
-#~ "own patches (1-bookbench-desktop, 2-bookbench-workbench) are not listed.\n"
-#~ msgstr ""
-#~ "\n"
-#~ "Unter Vorschau listet **Patches** die Userpatches des Profils (Ordner "
-#~ "koreader/patches) so, wie KOReaders Patch-Verwaltung es tut (auf dem "
-#~ "E-Reader: Werkzeuge > Weitere Werkzeuge > Patch-Verwaltung).\n"
-#~ "\n"
-#~ "- Die Patches sind danach gruppiert, wann sie laufen: früh einmal nach "
-#~ "einem Update (0), früh (1), spät nach dem Start (2), vor dem Beenden (8), "
-#~ "beim Beenden (9) - die erste Ziffer des Dateinamens. Dateien ohne solche "
-#~ "Nummer oder ohne .lua laufen nie und stehen nicht in der Liste.\n"
-#~ "- ☑ an, ☐ aus. Doppelklick, Leertaste oder **An/aus** schaltet um. Wie "
-#~ "KOReader benennt Bookbench die Datei um: aus = \".disabled\" hinter "
-#~ "\".lua\".\n"
-#~ "- **Alle Patches ausschalten** ist KOReaders Hauptschalter (Datei "
-#~ ".patches_disabled). In der Werkbank schaltet Bookbench stattdessen die "
-#~ "Patches einzeln aus, damit sein eigener Patch weiterläuft.\n"
-#~ "- ⚠ markiert einen Patch, der in der Werkbank fehlgeschlagen ist; "
-#~ "ausgewählt zeigt er KOReaders Meldung. Viele Patches brauchen den E-Reader "
-#~ "(eine Funktion nur für Kobo, das Frontlicht …) und können am Rechner nie "
-#~ "laufen - über den E-Reader sagt das nichts.\n"
-#~ "- **Anzeigen …** öffnet den Patch nur zum Lesen. **Hinzufügen …** kopiert "
-#~ "eine .lua-Datei ins Profil (ohne Nummer bekommt sie \"2-\", sonst würde "
-#~ "KOReader sie nie ausführen); **Löschen** entfernt einen. Hinzufügen und "
-#~ "Löschen ändern das Profil sofort.\n"
-#~ "\n"
-#~ "An und aus sind ein Entwurf bis **Ins Profil**. Patches laufen beim Start "
-#~ "von KOReader, deshalb startet die Werkbank nach jeder Änderung neu. "
-#~ "Bookbenchs eigene Patches (1-bookbench-desktop, 2-bookbench-workbench) "
-#~ "stehen nicht in der Liste.\n"
 
 #~ msgid ""
 #~ "\n"
@@ -10846,6 +11080,23 @@ msgstr "Patches im Profil gespeichert."
 #~ "- The list shows all ornaments of the profile (loose files and packs); a "
 #~ "double-click switches a piece or a whole pack off and on.\n"
 #~ "\n"
+#~ "**Top panel**\n"
+#~ "- **Shows**: the current book (hero card) or Bookshelf's modules (clock, "
+#~ "quote …). Arranging the modules stays in Bookshelf.\n"
+#~ "- **Lines of the hero card**: status line, rating, title, author, metadata, "
+#~ "description, tags, progress (✓ = shown). For each: **Shown**, the text with "
+#~ "tokens (**Insert token** lists Bookshelf's tokens), size, alignment, bold, "
+#~ "capitals; **Default** goes back to Bookshelf's default for that line. "
+#~ "[if:token]…[/if] shows a part only if the token has a value; an empty text "
+#~ "leaves the line out.\n"
+#~ "- Rating and tags are buttons, not text: only on/off, size and alignment; "
+#~ "for tags also which kinds (authors, series, collections, genres, folder) "
+#~ "and how many rows.\n"
+#~ "- **Subtitle** puts the book's subtitle into the line "
+#~ "([if:subtitle]%subtitle[/if]; in the metadata line instead of the series). "
+#~ "It needs the patch 2-bookbench-subtitle in the profile and on the e-reader "
+#~ "([[vorschau_patches]]).\n"
+#~ "\n"
 #~ "**More settings**\n"
 #~ "- A selection of settings that change the look (layout, font sizes, covers "
 #~ "and spines, display), with Bookshelf's defaults where the file has no "
@@ -10854,8 +11105,9 @@ msgstr "Patches im Profil gespeichert."
 #~ "also what is not listed above. Double-click (or **Change …**) changes a "
 #~ "simple value (number, text, on/off) in its type. Tables - shelves, modules, "
 #~ "the start menu - can only be changed in Bookshelf itself or in the sections "
-#~ "above (colours, theme and ornaments per shelf). **Default** removes the "
-#~ "key, then Bookshelf's default applies. Changed keys have a ●.\n"
+#~ "above (colours, theme and ornaments per shelf, the lines of the hero card). "
+#~ "**Default** removes the key, then Bookshelf's default applies. Changed keys "
+#~ "have a ●.\n"
 #~ "- Values Bookshelf writes by itself while running (current shelf and page, "
 #~ "version notes) are not listed.\n"
 #~ "\n"
@@ -10910,6 +11162,23 @@ msgstr "Patches im Profil gespeichert."
 #~ "- Die Liste zeigt alle Ornamente im Profil (lose Dateien und Pakete); ein "
 #~ "Doppelklick schaltet ein Stück oder ein ganzes Paket aus und an.\n"
 #~ "\n"
+#~ "**Oberer Bereich**\n"
+#~ "- **Zeigt**: das aktuelle Buch (Hero-Karte) oder Bookshelfs Module (Uhr, "
+#~ "Zitat …). Die Module anordnen geht weiter in Bookshelf.\n"
+#~ "- **Zeilen der Hero-Karte**: Statuszeile, Bewertung, Titel, Autor, "
+#~ "Metadaten, Beschreibung, Tags, Fortschritt (✓ = gezeigt). Für jede: "
+#~ "**Gezeigt**, der Text mit Tokens (**Token einfügen** listet Bookshelfs "
+#~ "Tokens), Größe, Ausrichtung, fett, Großbuchstaben; **Vorgabe** stellt die "
+#~ "Zeile auf Bookshelfs Vorgabe zurück. [if:token]…[/if] zeigt einen Teil nur, "
+#~ "wenn der Token einen Wert hat; ein leerer Text lässt die Zeile weg.\n"
+#~ "- Bewertung und Tags sind Knöpfe, kein Text: nur an/aus, Größe und "
+#~ "Ausrichtung; bei den Tags dazu, welche Arten (Autoren, Reihen, Sammlungen, "
+#~ "Genres, Ordner) und wie viele Reihen.\n"
+#~ "- **Untertitel** setzt den Untertitel des Buchs in die Zeile "
+#~ "([if:subtitle]%subtitle[/if]; in der Metadaten-Zeile statt der Reihe). "
+#~ "Dafür muss der Patch 2-bookbench-subtitle im Profil und auf dem E-Reader "
+#~ "sein ([[vorschau_patches]]).\n"
+#~ "\n"
 #~ "**Weitere Einstellungen**\n"
 #~ "- Eine Auswahl der Einstellungen, die das Aussehen ändern (Anordnung, "
 #~ "Schriftgrößen, Cover und Buchrücken, Anzeige), mit Bookshelfs Vorgaben, wo "
@@ -10919,8 +11188,9 @@ msgstr "Patches im Profil gespeichert."
 #~ "**Ändern …**) ändert einen einfachen Wert (Zahl, Text, an/aus) in seinem "
 #~ "Typ. Tabellen - Regale, Module, das Startmenü - lassen sich nur in "
 #~ "Bookshelf selbst oder in den Abschnitten oben ändern (Farben, Theme und "
-#~ "Ornamente je Regal). **Vorgabe** entfernt den Schlüssel, dann gilt "
-#~ "Bookshelfs Vorgabe. Geänderte Schlüssel haben einen ●.\n"
+#~ "Ornamente je Regal, die Zeilen der Hero-Karte). **Vorgabe** entfernt den "
+#~ "Schlüssel, dann gilt Bookshelfs Vorgabe. Geänderte Schlüssel haben einen "
+#~ "●.\n"
 #~ "- Werte, die Bookshelf im Betrieb selbst schreibt (aktuelles Regal und "
 #~ "Seite, Versionsvermerke), stehen nicht in der Liste.\n"
 #~ "\n"

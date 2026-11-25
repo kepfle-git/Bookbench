@@ -27,6 +27,7 @@ Bookshelf
 Entwürfe: Änderungen wirken erst nur in der Werkbank (Wegwerf-Kopie), "Speichern" schreibt sie ins
 Vorschau-Profil. Den Weg zurück auf den E-Reader gibt es ab 1.4-beta4.
 """
+import copy
 import re
 from pathlib import Path
 
@@ -541,6 +542,145 @@ def bookshelf_tokens(plugin_ordner):
                          r'description\s*=\s*_\("((?:[^"\\]|\\.)*)"', text):
         erg.append((m.group(1), lua_data.lesen('"' + m.group(2) + '"'), lua_data.lesen('"' + m.group(3) + '"')))
     return erg
+
+
+# ---- Module, Startmenü, Regale (seit 1.4-beta7; Bookshelf lib/bookshelf_hero_modules_model.lua,
+#      bookshelf_start_menu_model.lua, bookshelf_tab_model.lua, micromodules/*.lua)
+MODULE_SCHLUESSEL = ("hero_module_items", "hero_module_next_id", "hm")
+STARTMENUE_SCHLUESSEL = ("start_menu_items", "start_menu_next_id", "sm")
+MODULE_MIT_EINRICHTUNG = ("action", "shelf", "ornament")   # brauchen eine Auswahl in Bookshelf
+ANSICHTEN = ((None, N_("Covers")), ("list", N_("List")), ("spines", N_("Spines")), ("auto", N_("Automatic")))
+POSITION = ("page", "col", "row", "w", "h")
+# Bookshelfs eingebaute Regale (TabModel.BUILTINS, gekürzt auf Quelle und Sortierung), zum Wiederherstellen
+REGALE_EINGEBAUT = (
+    {"id": "all", "label": N_("Home"), "source": {"kind": "library"}, "filter": {},
+     "sort_priority": [{"key": "added_or_opened", "reverse": True}], "view_mode": "spines"},
+    {"id": "recent", "label": N_("Recent"), "source": {"kind": "recent"}, "filter": {},
+     "sort_priority": [{"key": "last_opened", "reverse": True}], "view_mode": "list"},
+    {"id": "latest", "label": N_("Latest"), "source": {"kind": "latest"}, "filter": {},
+     "sort_priority": [{"key": "date_added", "reverse": True}]},
+    {"id": "series", "label": N_("Series"), "source": {"kind": "series"}, "filter": {},
+     "sort_priority": [{"key": "last_opened", "reverse": True}, {"key": "series_index", "reverse": False}],
+     "group_display": "collage"},
+    {"id": "authors", "label": N_("Authors"), "source": {"kind": "authors"}, "filter": {},
+     "sort_priority": [{"key": "author_surname", "reverse": False}]},
+    {"id": "genres", "label": N_("Genres"), "source": {"kind": "genres"}, "filter": {},
+     "sort_priority": [{"key": "book_count", "reverse": True}], "group_display": "ribbon"},
+    {"id": "tags", "label": N_("Tags"), "source": {"kind": "tags"}, "filter": {},
+     "sort_priority": [{"key": "book_count", "reverse": True}]},
+    {"id": "languages", "label": N_("Languages"), "source": {"kind": "languages"}, "filter": {},
+     "sort_priority": [{"key": "book_count", "reverse": True}]},
+    {"id": "favorites", "label": N_("Favorites"), "source": {"kind": "favorites"}, "filter": {},
+     "sort_priority": [{"key": "date_added", "reverse": True}]},
+)
+
+
+def micromodule(plugin_ordner):
+    """[{"key", "titel", "text", "nur_oben"}] aus micromodules/*.lua (englisch, wie im Plugin)."""
+    erg = []
+    for p in sorted((Path(plugin_ordner) / "micromodules").glob("*.lua")):
+        try:
+            t = p.read_text(encoding="utf-8")
+        except OSError:
+            continue
+        # die Spezifikation: der key, nach dem bis zum title keine Klammer einer anderen Tabelle kommt
+        m = re.search(r'\bkey\s*=\s*"([^"]+)"[^{}]*?\btitle\s*=\s*_\("((?:[^"\\]|\\.)*)"\)', t)
+        if not m:
+            continue
+        rest = t[m.start():]
+        su = re.search(r'\bsummary\s*=\s*_\("((?:[^"\\]|\\.)*)"', rest)
+        erg.append({"key": m.group(1), "titel": lua_data.lesen('"' + m.group(2) + '"'),
+                    "text": lua_data.lesen('"' + su.group(1) + '"') if su else "",
+                    "nur_oben": re.search(r"\bhero_only\s*=\s*true", rest) is not None})
+    return erg
+
+
+def neue_id(werte, zaehler, praefix):
+    """(neue Kennung, neuer Zählerstand) wie Bookshelfs nextId(); vergebene Kennungen werden übersprungen."""
+    n = werte.get(zaehler)
+    n = n if isinstance(n, int) and n > 0 else 1
+    vergeben = set()
+
+    def sammeln(liste):
+        for e in liste if isinstance(liste, list) else []:
+            if isinstance(e, dict):
+                vergeben.add(e.get("id"))
+                sammeln(e.get("children"))
+    for schl in ("hero_module_items", "start_menu_items", "tabs"):
+        sammeln(werte.get(schl))
+    while f"{praefix}{n}" in vergeben:
+        n += 1
+    return f"{praefix}{n}", n + 1
+
+
+def eintrag_suchen(liste, kennung):
+    """(Liste, Index) eines Eintrags mit id, auch in Ordnern (children), sonst (None, None)."""
+    for i, e in enumerate(liste or []):
+        if isinstance(e, dict):
+            if e.get("id") == kennung:
+                return liste, i
+            if isinstance(e.get("children"), list):
+                r = eintrag_suchen(e["children"], kennung)
+                if r[0] is not None:
+                    return r
+    return None, None
+
+
+def verschieben(liste, kennung, schritt):
+    """Eintrag innerhalb seiner Ebene um schritt verschieben (Kopie). Am Rand: unverändert."""
+    neu = copy.deepcopy(liste)
+    l, i = eintrag_suchen(neu, kennung)
+    if l is None or not 0 <= i + schritt < len(l):
+        return neu
+    l[i], l[i + schritt] = l[i + schritt], l[i]
+    return neu
+
+
+def entfernen(liste, kennung):
+    neu = copy.deepcopy(liste)
+    l, i = eintrag_suchen(neu, kennung)
+    if l is not None:
+        del l[i]
+    return neu
+
+
+def aendern(liste, kennung, **felder):
+    """Felder eines Eintrags setzen (None = entfernen), als Kopie."""
+    neu = copy.deepcopy(liste)
+    l, i = eintrag_suchen(neu, kennung)
+    if l is not None:
+        for k, v in felder.items():
+            if v is None:
+                l[i].pop(k, None)
+            else:
+                l[i][k] = v
+    return neu
+
+
+def in_ordner(liste, kennung, ordner):
+    """Startmenü: Eintrag in einen Ordner (ordner = id) bzw. aus dem Ordner nach oben (ordner = None,
+    hinter den Ordner). Ordner und Trennlinien bleiben oben (eine Ebene, wie Bookshelf)."""
+    neu = copy.deepcopy(liste)
+    l, i = eintrag_suchen(neu, kennung)
+    if l is None:
+        return neu
+    e = l[i]
+    if ordner is not None:
+        if e.get("type") in ("folder", "divider"):
+            return copy.deepcopy(liste)
+        ziel = next((x for x in neu if isinstance(x, dict) and x.get("id") == ordner
+                     and x.get("type") == "folder"), None)
+        if ziel is None or ziel is e:
+            return copy.deepcopy(liste)
+        del l[i]
+        ziel.setdefault("children", []).append(e)
+        return neu
+    if l is neu:
+        return neu
+    vater = next((x for x in neu if isinstance(x, dict) and x.get("children") is l), None)
+    del l[i]
+    neu.insert(neu.index(vater) + 1 if vater else len(neu), e)
+    return neu
 
 
 def bookshelf_lesen(ko):

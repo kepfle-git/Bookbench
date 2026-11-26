@@ -321,6 +321,130 @@ def zeilenbalken_setzen(daten, pos, nr, werte):
         zeilenwert_setzen(daten, pos, feld, nr, wert)
 
 
+# ---- Farben, Schrift je Zeile, Balkenfarben und Markierungen (seit 2.2-beta2)
+# Bookends speichert Farben wie Bookshelf: {hex="#RRGGBB"}, {grey=N} (r=g=b) oder false (durchsichtig);
+# farbe_hex/farbe_wert unten lesen und schreiben das. Eine Textfarbe je Zeile gibt es in Bookends nicht:
+# Text-, Symbol- und Hintergrundfarbe gelten für die ganze Vorlage (PRESET_OPTIONAL_KEYS), einzelne Teile
+# einer Zeile färbt [c=#RRGGBB]…[/c] im Text.
+TEXTFARBEN = (("text_color", N_("Text"), N_("book text colour")), ("symbol_color", N_("Symbols"), N_("like the text")))
+HINTERGRUND = ("background_color", "background_color_top", "background_color_bottom")
+# Felder von colors (je Balken) bzw. line_bar_colors[i] (je Zeile); Bookends menu/colours_menu.lua
+BALKEN_FARBEN = (("fill", N_("Read part")), ("bg", N_("Unread part")), ("tick", N_("Chapter ticks")),
+                 ("border", N_("Border")), ("invert", N_("Ticks on the read part")))
+BALKEN_FARBEN_ZAHLEN = (("tick_height_pct", N_("Tick height (%)"), 100), ("tick_width_multiplier", N_("Tick width (×)"), 2),
+                        ("border_thickness", N_("Border thickness (px)"), 1))
+MARKEN_ARTEN = (("off", N_("Off")), ("session", N_("Start of session")), ("book_open", N_("Book opened")),
+                ("bookmarks", N_("Bookmarks")), ("today", N_("Today")))
+MARKEN_STILE = (("chevron", N_("Chevron")), ("solid", N_("Solid")))
+MARKEN_PLAETZE = (("top", N_("Top marker")), ("bottom", N_("Bottom marker")))
+FORMAT_TAGS = (("b", N_("Bold")), ("i", N_("Italic")), ("u", N_("Underlined")))
+SCHRIFT_FAMILIEN = (("ui", N_("UI font")), ("serif", N_("Serif")), ("sans-serif", N_("Sans-serif")),
+                    ("monospace", N_("Monospace")), ("cursive", N_("Cursive")), ("fantasy", N_("Fantasy")))
+LAUFWERK = {"kobo": "/mnt/onboard", "kindle": "/mnt/us", "pocketbook": "/mnt/ext1"}
+SCHRIFTDATEIEN = {".ttf", ".otf", ".ttc", ".cff", ".woff", ".woff2"}
+
+
+def hintergrund(daten, abschnitt):
+    """Füllfarbe hinter oben bzw. unten (eigener Schlüssel, sonst background_color; Colour.backgroundFor)."""
+    eigen = daten.get(f"background_color_{abschnitt}")
+    return eigen if eigen is not None else daten.get("background_color")
+
+
+def hintergrund_setzen(daten, oben, unten):
+    """Wie Colour.storeBackground: gleich (auch beide aus) -> background_color, sonst je Abschnitt."""
+    for k in HINTERGRUND:
+        daten.pop(k, None)
+    if oben == unten:
+        if oben is not None:
+            daten["background_color"] = oben
+    else:
+        if oben is not None:
+            daten["background_color_top"] = oben
+        if unten is not None:
+            daten["background_color_bottom"] = unten
+
+
+def _schrift_wurzeln(profil, art):
+    """[(Ordner im Profil, Präfix auf dem Gerät)]: KOReaders fonts/ heißt auf dem Gerät "./fonts" (FontList
+    sucht relativ zum KOReader-Ordner), die Schriftordner des Geräts (EXT_FONT_DIR) "<Laufwerk>/<ordner>"."""
+    from bookbench.device import device as kg
+    basis = Path(profil) / "share" / "fonts"
+    art = art if art in kg.ARTEN else "kobo"
+    erg = [(basis / "koreader", "./fonts")]
+    for i, rel in enumerate(kg.ARTEN[art]["schriften"]):
+        erg.append((basis / ("geraet" if i == 0 else f"geraet{i + 1}"), f"{LAUFWERK.get(art, '/mnt/onboard')}/{rel}"))
+    return erg
+
+
+def bookends_schriften(profil, art):
+    """[(wert, anzeigename)] für Bookends' Schrift je Zeile: zuerst die Familien (@family:…), dann je
+    Schriftfamilie des Profils die Grunddatei (wie Bookends' Auswahl: Regular vor Fett/Kursiv), als Pfad auf
+    dem Gerät. Braucht Pillow für die Namen; ohne Pillow der Dateiname."""
+    erg = [(f"@family:{k}", None) for k, __ in SCHRIFT_FAMILIEN]
+    try:
+        from PIL import ImageFont
+    except ImportError:
+        ImageFont = None
+    familien = {}
+    for ordner, praefix in _schrift_wurzeln(profil, art):
+        if not ordner.is_dir():
+            continue
+        for p in sorted(ordner.rglob("*")):
+            if p.suffix.lower() not in SCHRIFTDATEIEN or "nerdfonts" in p.parts or p.name.startswith("."):
+                continue
+            name, schnitt = None, ""
+            if ImageFont:
+                try:
+                    name, schnitt = ImageFont.truetype(str(p), 10).getname()
+                except (OSError, ValueError):
+                    name = None
+            if not name:
+                name = re.split(r"[-_](Regular|Bold|Italic|Medium|Light|Book|Roman)", p.stem, flags=re.I)[0]
+            klein = (schnitt or p.stem).lower()
+            rang = 0 if klein in ("regular", "normal", "book", "roman") else (
+                2 if any(w in klein for w in ("bold", "italic", "oblique")) else 1)
+            wert = praefix + "/" + p.relative_to(ordner).as_posix()
+            if name not in familien or rang < familien[name][0]:
+                familien[name] = (rang, wert)
+    erg += [(wert, name) for name, (__, wert) in sorted(familien.items(), key=lambda x: x[0].lower())]
+    return erg
+
+
+def schrift_lokal(wert, profil, art):
+    """Schrift-Pfad vom Gerät -> Datei im Profil (für die Werkbank); Familien und Unbekanntes bleiben."""
+    if not isinstance(wert, str) or wert.startswith("@family:"):
+        return wert
+    for ordner, praefix in _schrift_wurzeln(profil, art):
+        if wert.startswith(praefix + "/"):
+            lokal = ordner / wert[len(praefix) + 1:]
+            if lokal.is_file():
+                return str(lokal)
+    return wert
+
+
+def vorlage_fuer_werkbank(daten, profil, art):
+    """Kopie einer Vorlage mit Schriftpfaden, die der Desktop-KOReader findet."""
+    kopie = copy.deepcopy(daten)
+    for p in (kopie.get("positions") or {}).values():
+        if not isinstance(p, dict) or "line_font_face" not in p:
+            continue
+        faces = p["line_font_face"]
+        if isinstance(faces, dict):
+            p["line_font_face"] = {k: schrift_lokal(v, profil, art) for k, v in faces.items()}
+        elif isinstance(faces, list):
+            p["line_font_face"] = [schrift_lokal(v, profil, art) for v in faces]
+    return kopie
+
+
+def format_einfuegen(text, anfang, ende, tag, farbe=None):
+    """[tag]…[/tag] bzw. [c=#RRGGBB]…[/c] um text[anfang:ende]; gibt (neuer Text, Cursor) zurück (Cursor
+    hinter der Auswahl bzw. zwischen den Tags, wenn nichts gewählt war)."""
+    auf = f"[c={farbe}]" if tag == "c" else f"[{tag}]"
+    zu = f"[/{tag}]"
+    neu = text[:anfang] + auf + text[anfang:ende] + zu + text[ende:]
+    return neu, (ende + len(auf) + len(zu)) if ende > anfang else anfang + len(auf)
+
+
 # ---- Fortschrittsbalken über die ganze Breite (seit 1.4-beta7; Bookends menu/progress_bar_menu.lua)
 BALKEN_ANZAHL = 8                                 # Config.MAX_BARS
 BALKEN_VORGABE = {"enabled": False, "type": "book", "style": "solid", "height": 20, "v_anchor": "bottom",

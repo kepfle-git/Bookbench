@@ -87,9 +87,8 @@ class SperrSeite(_NeustartSeite):
         w = QWidget()
         self._raster(w, kss.PATCH_WERTE)
         pl.addWidget(w)
-        pl.addWidget(hinweis(_("Needs Bookbench's patch {name} (in the profile and on the e-reader). Without it, "
-                               "KOReader lays the message over the picture.").format(name=kss.PATCH.removesuffix(".lua")),
-                             BREITE))
+        self.patch_hinweis = hinweis("", BREITE)
+        pl.addWidget(self.patch_hinweis)
         ml.addWidget(self.patch_rahmen)
         i = self._abschnitt("aufwachen", _("After waking up"), offen=False)
         g = self._raster(i, kss.AUFWACHEN)
@@ -243,7 +242,9 @@ class SperrSeite(_NeustartSeite):
             "screensaver_show_exit_message": geste,
             "screensaver_exit_message": geste and kss.wert(w, "screensaver_show_exit_message"),
         }
-        aktiv["bookbench_screensaver_center"] = bool(kss.wert(w, "bookbench_screensaver_avoid_message"))
+        patch_da = kks.mitgebracht_stand(self.ko, kss.PATCH) in ("aktuell", "anders")    # ohne Patch: weg (2.2-beta2)
+        aktiv["bookbench_screensaver_avoid_message"] = patch_da
+        aktiv["bookbench_screensaver_center"] = patch_da and bool(kss.wert(w, "bookbench_screensaver_avoid_message"))
         for schl, widgets in self.felder.items():         # was zur Wahl nicht passt, verschwindet (2.0.1)
             an = bool(aktiv.get(schl, True))
             for wd in widgets:
@@ -255,7 +256,7 @@ class SperrSeite(_NeustartSeite):
             inhalt.setVisible(typ == "cover" and knopf.isChecked())
 
     def _patch_zeigen(self, passt):
-        """Teil „Bild neben der Meldung“: nur bei Bild + Meldung; ohne Patch im Profil ausgegraut."""
+        """Teil „Bild neben der Meldung“: nur bei Bild + Meldung; ohne Patch im Profil sind die Schalter weg."""
         if not self.gebaut():
             return
         self.patch_rahmen.setVisible(passt)
@@ -263,15 +264,18 @@ class SperrSeite(_NeustartSeite):
         self.patch_stand.setText({"fehlt": _("patch not in the profile"), "aus": _("patch switched off (page Patches)"),
                                   "aktuell": _("patch in the profile"),
                                   "anders": _("patch in the profile, another version")}[stand])
+        name = kss.PATCH.removesuffix(".lua")
+        self.patch_hinweis.setText(
+            _("Bookbench's patch {name} moves the picture into the free space next to the message, so nothing of the "
+              "cover is hidden. Add it here; it goes to the e-reader with \"To the e-reader …\".").format(name=name)
+            if stand == "fehlt" else
+            _("The patch {name} is switched off: switch it on on the page Patches.").format(name=name)
+            if stand == "aus" else
+            _("Needs the patch {name} on the e-reader too (\"To the e-reader …\"). Without it, KOReader lays the "
+              "message over the picture.").format(name=name))
         knopf = {"fehlt": _("Add patch"), "anders": _("Update patch")}.get(stand)
         self.patch_knopf.setVisible(bool(knopf))
         self.patch_knopf.setText(knopf or "")
-        an = stand in ("aktuell", "anders")
-        tipp = "" if an else _("Needs the patch in the profile.")
-        for schl, __, __, __, __ in kss.PATCH_WERTE:
-            for wd in self.felder[schl]:
-                wd.setEnabled(an)
-                wd.setToolTip(tipp)
 
     def patch_einspielen(self):
         kks.mitgebracht_einspielen(self.ko, kss.PATCH)

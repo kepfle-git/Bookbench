@@ -17,18 +17,21 @@ kleine Bilder). Entwurf und Auswahl hängen an der Seite, nicht an den Widgets (
 import copy
 import re
 
-from PySide6.QtCore import QEvent, QObject, QRegularExpression, Qt
-from PySide6.QtGui import QFont, QRegularExpressionValidator, QTextCursor
-from PySide6.QtWidgets import (QButtonGroup, QCheckBox, QComboBox, QDialog, QFrame, QGridLayout, QHBoxLayout,
+from PySide6.QtCore import QEvent, QObject, Qt
+from PySide6.QtGui import QColor, QFont, QTextCursor
+from PySide6.QtWidgets import (QButtonGroup, QCheckBox, QColorDialog, QComboBox, QDialog, QFrame, QGridLayout, QHBoxLayout,
                                QHeaderView, QLabel, QLineEdit, QMenu, QPlainTextEdit, QPushButton, QRadioButton,
                                QScrollArea, QSizePolicy, QSpinBox, QToolButton, QTreeWidget, QTreeWidgetItem,
                                QVBoxLayout, QWidget)
 
 from bookbench.i18n import N_, _
+from bookbench.preview import emulator as kv
+from bookbench.preview import koreader_settings as kks
 from bookbench.preview import plugins as kpl
 from bookbench.ui import dialogs
+from bookbench.ui import workbench_colors as wfa
 from bookbench.ui.workbench_base import (BREITE, Seite, Wahl, gleich, hinweis, mit_symbolen, symbolschrift,
-                                         zahl_oder_leer)
+                                         zahl_oder_leer, zahlfeld, zeile)
 
 PAUSE_BOOKENDS = 350                              # ms nach der letzten Eingabe, dann ins Bild
 PAUSE_BOOKSHELF = 900                             # ms, dann Neustart (länger: kostet ~1,2 s)
@@ -51,28 +54,6 @@ STARTMENUE_STANDARD = (
      "scope": "reader"},
     {"type": "action", "label": N_("Sleep"), "icon": "", "action": {"suspend": True}},
 )
-
-
-def zahlfeld(fn, negativ=False, breite=52):
-    """Zahlenfeld, das leer bleiben darf (leer = Vorgabe); fn bei jeder Eingabe."""
-    e = QLineEdit()
-    e.setValidator(QRegularExpressionValidator(QRegularExpression((r"-?" if negativ else "") + r"\d{0,4}([.,]\d{0,2})?"), e))
-    e.setFixedWidth(breite)
-    e.textEdited.connect(lambda *a: fn())
-    return e
-
-
-def zeile(*widgets, stretch=True):
-    w = QWidget()
-    lay = QHBoxLayout(w)
-    lay.setContentsMargins(0, 0, 0, 0)
-    for x in widgets:
-        if isinstance(x, str):
-            x = QLabel(x)
-        lay.addWidget(x)
-    if stretch:
-        lay.addStretch(1)
-    return w
 
 
 class _Fokus(QObject):
@@ -110,6 +91,7 @@ class BookendsSeite(_SymbolSeite):
         self._zeile = None                        # (pos, nr) für Stil/Größe
         self._fokus_pos = "tc"                    # zuletzt benutztes Textfeld
         self.pos_wahl = None                      # im Schema gewählte Position (seit 2.2)
+        self._schriften = []                      # [(wert, name)] für Schrift je Zeile (seit 2.2-beta2)
         self.balken_nr = 1
         self._laden = False
         self._symbolfenster = None
@@ -143,7 +125,15 @@ class BookendsSeite(_SymbolSeite):
         self.token_knopf.setMenu(self.token_menue)
         sym = QPushButton(_("Special characters …"))
         sym.clicked.connect(self.symbole_zeigen)
-        lay.addWidget(zeile(self.token_knopf, sym))
+        fmt = QToolButton()
+        fmt.setText(_("Format"))
+        fmt.setPopupMode(QToolButton.InstantPopup)
+        fm = QMenu(fmt)
+        for tag, text in kpl.FORMAT_TAGS:
+            fm.addAction(_(text) + f"   [{tag}]…[/{tag}]", lambda t=tag: self.format_einfuegen(t))
+        fm.addAction(_("Colour …") + "   [c=#…]…[/c]", lambda: self.format_einfuegen("c"))
+        fmt.setMenu(fm)
+        lay.addWidget(zeile(self.token_knopf, sym, fmt))
         lay.addWidget(hinweis(_("Choose a position on the page; one line per row, tokens like %title or %page_num "
                                 "are filled in by Bookends. The extra margin moves only this position away from the "
                                 "edge (px), not the whole header or footer."), BREITE))
@@ -193,6 +183,11 @@ class BookendsSeite(_SymbolSeite):
         self.stil.activated.connect(lambda *a: self._zeilenwerte_uebernehmen())
         self.groesse = zahlfeld(self._zeilenwerte_uebernehmen)
         lay.addWidget(zeile(_("Style"), self.stil, _("Size"), self.groesse))
+        self.schrift = QComboBox()
+        self.schrift.setMinimumContentsLength(14)
+        self.schrift.setSizeAdjustPolicy(QComboBox.AdjustToMinimumContentsLengthWithIcon)
+        self.schrift.activated.connect(lambda *a: self._zeilenwerte_uebernehmen())
+        lay.addWidget(zeile(_("Font"), self.schrift))
         self.gross = QCheckBox(_("Capitals"))
         self.gross.toggled.connect(lambda *a: self._zeilenwerte_uebernehmen())
         self.seiten = Wahl(kpl.SEITEN, self._zeilenwerte_uebernehmen)
@@ -226,13 +221,22 @@ class BookendsSeite(_SymbolSeite):
             self.zb_dicke[feld] = zahlfeld(self._zeilenbalken_uebernehmen)
             teile += [text, self.zb_dicke[feld]]
         zl.addWidget(zeile(*teile, hinweis("px")))
+        self.zb_farben = wfa.BalkenFarben(lambda: self._zeilenfeld("line_bar_colors"),
+                                          lambda w: self._zeilenfeld_setzen("line_bar_colors", w))
+        zl.addWidget(self.zb_farben)
+        k = QLabel(_("Markers"))
+        k.setProperty("rolle", "abschnitt")
+        zl.addWidget(k)
+        self.zb_marken = wfa.Markierungen(lambda: self._zeilenfeld("line_bar_markers"),
+                                          lambda w: self._zeilenfeld_setzen("line_bar_markers", w))
+        zl.addWidget(self.zb_marken)
         lay.addWidget(self.zb_rahmen)
         self.zbalken_knopf = QPushButton("")
         self.zbalken_knopf.clicked.connect(self._zeilenbalken_umschalten)
         lay.addWidget(self.zbalken_knopf, 0, Qt.AlignLeft)
-        lay.addWidget(hinweis(_("Empty size = the general font size. Move line in pixels: negative = left or up. Empty "
-                                "thickness = as high as the text; empty unread = like read. Font per line, colours "
-                                "and markers of a bar and conditions in the text stay as they are."), BREITE))
+        lay.addWidget(hinweis(_("Empty size = the general font size, font \"Default\" = Bookends' general font. Move "
+                                "line in pixels: negative = left or up. Empty thickness = as high as the text; empty "
+                                "unread = like read. Conditions in the text stay as they are."), BREITE))
 
         # == Reiter Fortschrittsbalken über die ganze Breite
         self._reiter("balken", _("Progress bars"))
@@ -269,6 +273,15 @@ class BookendsSeite(_SymbolSeite):
                 g.addWidget(self.bb_zahl[feld], r, c * 2 + 1)
         g.setColumnStretch(4, 1)
         bl.addLayout(g)
+        self.bb_farben = wfa.BalkenFarben(lambda: self._balkenfeld("colors"),
+                                          lambda w: self._balkenfeld_setzen("colors", w))
+        bl.addWidget(self.bb_farben)
+        k = QLabel(_("Markers"))
+        k.setProperty("rolle", "abschnitt")
+        bl.addWidget(k)
+        self.bb_marken = wfa.Markierungen(lambda: self._balkenfeld("markers"),
+                                          lambda w: self._balkenfeld_setzen("markers", w))
+        bl.addWidget(self.bb_marken)
         lay.addWidget(self.bb_rahmen)
         self.balken_text = hinweis("", BREITE)
         lay.addWidget(self.balken_text)
@@ -297,6 +310,22 @@ class BookendsSeite(_SymbolSeite):
             f.textEdited.connect(lambda *a: self._kopf_geaendert())
         lay.addLayout(g)
 
+        # -- Farben der Vorlage (seit 2.2-beta2)
+        i = self._abschnitt("farben", _("Colours"))
+        g = QGridLayout(i)
+        g.setContentsMargins(0, 0, 0, 0)
+        self.farb_felder = {}
+        felder = [(k, t, v) for k, t, v in kpl.TEXTFARBEN] + [("bg_top", N_("Background top"), N_("off")),
+                                                              ("bg_bottom", N_("Background bottom"), N_("off"))]
+        for r, (k, text, vorgabe) in enumerate(felder):
+            g.addWidget(QLabel(_(text)), r, 0)
+            self.farb_felder[k] = wfa.FarbFeld(self._farben_geaendert, vorgabe_text=_(vorgabe))
+            g.addWidget(self.farb_felder[k], r, 1, Qt.AlignLeft)
+        g.setColumnStretch(2, 1)
+        g.addWidget(hinweis(_("For all lines of the preset. Parts of a line get their own colour with Format > "
+                              "Colour (tab Lines). On a black-and-white screen Bookends shows colours as grey."),
+                            BREITE), len(felder), 0, 1, 3)
+
         # -- allgemein
         i = self._abschnitt("allgemein", _("General"))
         lay = QVBoxLayout(i)
@@ -321,6 +350,7 @@ class BookendsSeite(_SymbolSeite):
         if self.info:
             self._kopf_zeigen()
             self._tokens_fuellen()
+            self._schriften_fuellen()
         self._formular_fuellen()
 
     # ------------------------------------------------------------------ Positionsschema (seit 2.2)
@@ -423,6 +453,8 @@ class BookendsSeite(_SymbolSeite):
             return
         self._kopf_zeigen()
         self.stand_profil = kpl.bookends_stand(self.ko)
+        self._schriften = kpl.bookends_schriften(self.bereich.profil, self._art())
+        self._schriften_fuellen()
         self.aktiv_neu = None
         self.an = bool(self.stand_profil["an"])
         self._tokens_fuellen()
@@ -485,6 +517,8 @@ class BookendsSeite(_SymbolSeite):
                 w = kpl.positionswert(d, pos, feld)
                 f.setText("" if not w else str(w))
             self.kuerzen.get(kpl.allgemein(d, "truncation_priority") or "center", self.kuerzen["center"]).setChecked(True)
+            for k, f in self.farb_felder.items():
+                f.setzen(kpl.hintergrund(d, k[3:]) if k.startswith("bg_") else d.get(k))
             self._schema_fuellen()
             self._zeile_zeigen()
             self._balken_zeigen()
@@ -593,13 +627,14 @@ class BookendsSeite(_SymbolSeite):
     def _zeile_zeigen(self):
         alt, self._laden = self._laden, True
         try:
-            felder = (self.stil, self.groesse, self.gross, *self.versatz.values())
+            felder = (self.stil, self.groesse, self.gross, self.schrift, *self.versatz.values())
             if not self._zeile:
                 self.zeile_kopf.setText(_("Click into a line above."))
                 for w in felder:
                     w.setEnabled(False)
                 self.stil.setCurrentIndex(-1)
                 self.groesse.clear()
+                self._schrift_zeigen(None)
                 self.gross.setChecked(False)
                 for sp in self.versatz.values():
                     sp.setValue(0)
@@ -617,6 +652,7 @@ class BookendsSeite(_SymbolSeite):
             self.stil.setCurrentIndex(max(0, next((n for n, (k, __) in enumerate(kpl.STILE) if k == stil), 0)))
             g = kpl.zeilenwert(self.daten, pos, "line_font_size", nr)
             self.groesse.setText("" if g is None else str(g))
+            self._schrift_zeigen(kpl.zeilenwert(self.daten, pos, "line_font_face", nr))
             self.gross.setChecked(bool(kpl.zeilenwert(self.daten, pos, "line_uppercase", nr)))
             self.seiten.setzen(kpl.zeilenwert(self.daten, pos, "line_page_filter", nr), aktiv=True)
             self._zeilenbalken_zeigen()
@@ -651,6 +687,9 @@ class BookendsSeite(_SymbolSeite):
                     w = werte.get("dicke")
                 f.setText("" if w is None else str(w))
                 f.setEnabled(mit)
+            if mit:
+                self.zb_farben.fuellen()
+                self.zb_marken.fuellen()
         finally:
             self._laden = alt
 
@@ -734,9 +773,10 @@ class BookendsSeite(_SymbolSeite):
                 f.setEnabled(an)
             for lab in list(self.bb_zahl_text.values()) + [self.bb_kante]:
                 lab.setEnabled(an)
-            self.balken_text.setText(_("Up to {n} bars across the page. Colours, markers and \"Position relative to "
-                                       "line text\" stay as they are; switch those on the e-reader.")
-                                     .format(n=kpl.BALKEN_ANZAHL))
+            self.balken_text.setText(_("Up to {n} bars across the page. \"Position relative to line text\" stays as "
+                                       "it is; switch it on the e-reader.").format(n=kpl.BALKEN_ANZAHL))
+            self.bb_farben.fuellen(an)
+            self.bb_marken.fuellen(an)
         finally:
             self._laden = alt
 
@@ -799,11 +839,97 @@ class BookendsSeite(_SymbolSeite):
         except ValueError:
             return
         kpl.zeilenwert_setzen(self.daten, pos, "line_font_size", nr, g)
+        i = self.schrift.currentIndex()
+        kpl.zeilenwert_setzen(self.daten, pos, "line_font_face", nr, self.schrift.itemData(i) if i > 0 else None)
         kpl.zeilenwert_setzen(self.daten, pos, "line_uppercase", nr, True if self.gross.isChecked() else None)
         for feld, sp in self.versatz.items():
             kpl.zeilenwert_setzen(self.daten, pos, feld, nr, sp.value() or None)    # 0 = kein Eintrag, wie Bookends
         kpl.zeilenwert_setzen(self.daten, pos, "line_page_filter", nr, self.seiten.wert())
         self._geaendert()
+
+    # -- Schrift je Zeile, Balkenfarben, Markierungen, Farben (seit 2.2-beta2)
+    def _art(self):
+        return (kv.profil_stand(self.bereich.profil)["geraet"] or {}).get("art") or "kobo"
+
+    def _schriften_fuellen(self):
+        """Klappliste Schrift: Standard, Familien (mit der Schrift, die KOReader dafür nimmt), Schriften des
+        Profils. Die Werte sind Pfade auf dem Gerät, wie Bookends sie speichert."""
+        if not self.gebaut():
+            return
+        zuordnung = (kks.lesen(self.ko) or {}).get("cre_font_family_fonts") or {} if self.info else {}
+        alt = self.schrift.blockSignals(True)
+        self.schrift.clear()
+        self.schrift.addItem(_("Default"), None)
+        fam = dict(kpl.SCHRIFT_FAMILIEN)
+        for wert, name in self._schriften:
+            if wert.startswith("@family:"):
+                k = wert.split(":", 1)[1]
+                name = _(fam[k]) + (f" ({zuordnung[k]})" if isinstance(zuordnung, dict) and zuordnung.get(k) else "")
+            self.schrift.addItem(name, wert)
+        self.schrift.blockSignals(alt)
+
+    def _schrift_zeigen(self, wert):
+        if wert is None:
+            self.schrift.setCurrentIndex(0)
+            return
+        i = self.schrift.findData(wert)
+        if i < 0:                                         # Schrift nicht im Profil (anderes Gerät): trotzdem zeigen
+            self.schrift.addItem(wert.rsplit("/", 1)[-1] + " ⚠", wert)
+            i = self.schrift.count() - 1
+        self.schrift.setCurrentIndex(i)
+
+    def _zeilenfeld(self, feld):
+        if not self._zeile or self.daten is None:
+            return None
+        return copy.deepcopy(kpl.zeilenwert(self.daten, self._zeile[0], feld, self._zeile[1]))
+
+    def _zeilenfeld_setzen(self, feld, wert):
+        if self._laden or not self._zeile or self.daten is None:
+            return
+        kpl.zeilenwert_setzen(self.daten, self._zeile[0], feld, self._zeile[1], wert)
+        self._geaendert()
+
+    def _balkenfeld(self, feld):
+        if self.daten is None:
+            return None
+        return copy.deepcopy(kpl.balken(self.daten, self.balken_nr).get(feld))
+
+    def _balkenfeld_setzen(self, feld, wert):
+        if self._laden or self.daten is None:
+            return
+        kpl.balken_aendern(self.daten, self.balken_nr, **{feld: wert})
+        self._geaendert()
+
+    def _farben_geaendert(self):
+        if self._laden or self.daten is None:
+            return
+        for k, __, __ in kpl.TEXTFARBEN:
+            w = self.farb_felder[k].wert()
+            if w is None:
+                self.daten.pop(k, None)
+            else:
+                self.daten[k] = w
+        kpl.hintergrund_setzen(self.daten, self.farb_felder["bg_top"].wert(), self.farb_felder["bg_bottom"].wert())
+        self._geaendert()
+
+    def format_einfuegen(self, tag):
+        """[b]/[i]/[u] bzw. [c=#…] um die Auswahl im zuletzt benutzten Textfeld (ohne Auswahl: leeres Paar)."""
+        if self.daten is None or not self.gebaut():
+            return
+        t = self.texte.get(self._fokus_pos) or self.texte["tc"]
+        farbe = None
+        if tag == "c":
+            erg = QColorDialog.getColor(QColor("#404040"), self.app, _("Colour"))
+            if not erg.isValid():
+                return
+            farbe = erg.name().upper()
+        c = t.textCursor()
+        neu, cur = kpl.format_einfuegen(t.toPlainText(), c.selectionStart(), c.selectionEnd(), tag, farbe)
+        t.setPlainText(neu)                               # textChanged übernimmt den Text
+        c = t.textCursor()
+        c.setPosition(cur)
+        t.setTextCursor(c)
+        t.setFocus()
 
     def _versatz_zurueck(self):
         self._laden = True
@@ -861,7 +987,7 @@ class BookendsSeite(_SymbolSeite):
         """Vor dem Start der Werkbank: Entwurf in die Wegwerf-Kopie (Bookends lädt beim Start die aktive Vorlage)."""
         if self.daten is None or not self.datei:
             return
-        kpl.vorlage_schreiben(ko, self.datei, self.daten)
+        kpl.vorlage_schreiben(ko, self.datei, kpl.vorlage_fuer_werkbank(self.daten, self.bereich.profil, self._art()))
         kpl.bookends_setzen(ko, an=self.an, aktiv=self.datei)
 
     def ins_bild(self):
@@ -875,7 +1001,7 @@ class BookendsSeite(_SymbolSeite):
             return
         if not (wb and wb.laeuft() and wb.bereit):
             return                                        # beim nächsten Start über in_kopie()
-        kpl.vorlage_schreiben(wb.ko, self.datei, self.daten)
+        kpl.vorlage_schreiben(wb.ko, self.datei, kpl.vorlage_fuer_werkbank(self.daten, self.bereich.profil, self._art()))
         wb.bookends_an(self.an)
         wb.bookends(self.datei)
         wb.bild()

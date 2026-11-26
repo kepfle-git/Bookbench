@@ -19,9 +19,10 @@ Entwürfe wirken erst nur in der Werkbank (Wegwerf-Kopie des Profils); "Ins Prof
 """
 from PySide6.QtCore import QTimer, Qt
 from PySide6.QtGui import QFont, QFontDatabase
-from PySide6.QtGui import QColor
-from PySide6.QtWidgets import (QComboBox, QFrame, QLabel, QScrollArea, QTabBar, QToolButton, QVBoxLayout,
-                               QWidget)
+from PySide6.QtCore import QRegularExpression
+from PySide6.QtGui import QColor, QRegularExpressionValidator
+from PySide6.QtWidgets import (QComboBox, QFrame, QHBoxLayout, QLabel, QLineEdit, QScrollArea, QTabBar,
+                               QToolButton, QVBoxLayout, QWidget)
 
 from bookbench.i18n import _
 from bookbench.preview import plugins as kpl
@@ -43,6 +44,28 @@ def zahl_oder_leer(text):
         return None
     w = float(text)
     return int(w) if w.is_integer() else w
+
+
+def zahlfeld(fn, negativ=False, breite=52):
+    """Zahlenfeld, das leer bleiben darf (leer = Vorgabe); fn bei jeder Eingabe."""
+    e = QLineEdit()
+    e.setValidator(QRegularExpressionValidator(QRegularExpression((r"-?" if negativ else "") + r"\d{0,4}([.,]\d{0,2})?"), e))
+    e.setFixedWidth(breite)
+    e.textEdited.connect(lambda *a: fn())
+    return e
+
+
+def zeile(*widgets, stretch=True):
+    w = QWidget()
+    lay = QHBoxLayout(w)
+    lay.setContentsMargins(0, 0, 0, 0)
+    for x in widgets:
+        if isinstance(x, str):
+            x = QLabel(x)
+        lay.addWidget(x)
+    if stretch:
+        lay.addStretch(1)
+    return w
 
 
 class _Hinweis(QLabel):

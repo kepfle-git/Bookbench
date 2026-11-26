@@ -56,6 +56,7 @@ Next to the dot small **pictograms** show what is missing or needs a look - each
 - **Label with !** (orange): missing language or an invalid ISBN.
 - **Floppy disk** (yellow, sidebar only): books with changes that are not saved yet.
 - In Dictionary and E-reader: **book** (words looked up without result), **e-reader with !** (dictionaries missing or outdated), **tick** (connected).
+- In Library and E-reader: **two arrows** (blue, books to sync with the e-reader) and **arrows against each other** (orange, changed on the computer and on the e-reader), see [[kobo_abgleich]].
 
 Colours: red = error, orange = check it, grey = missing, blue = information, yellow = not saved. Hovering over the strip or a sidebar entry explains the markers. If the markers of an area do not fit into one line of the sidebar, they move to a second line below the name.
 
@@ -209,7 +210,7 @@ Since 2.1 the main copy of the books can live in a folder on this computer, like
 
 **.bookbench folder**: the library folder gets a hidden folder .bookbench with library.json (folder scheme, which e-reader belongs to it). It lies in the library folder on purpose: if the folder moves or is synced between Windows and Linux, this comes along.
 
-Coming in the next beta: copying new or changed books to the e-reader.
+New or changed books get to the e-reader (and back) with the sync in the E-reader area ([[kobo_abgleich]]).
 """)),
     ("bibliothek", "bibliothek_cleaner", N_("Removing advert text"), N_("""
 Some books carry lines like "OceanofPDF.com" at the end of each chapter. **Edit > Remove advert text …** (in the Library area) searches all books for them, **right-click a book in the library > Remove advert text …** only that book.
@@ -522,15 +523,41 @@ Shows the connected e-reader with KOReader - Kobo, Kindle or PocketBook: model, 
 - Searched: on Linux /run/media, /media and /mnt, on Windows all drives; also the opened books folder and the folders above it.
 - With several connected e-readers a list appears next to the name.
 
+**Books: computer ↔ e-reader** (top): compares the library on this computer with the e-reader and copies changes in both directions ([[kobo_abgleich]]).
+
 **Books** opens the whole e-reader in Library, Chapters and Metadata. Then metadata.calibre is found automatically too.
 
-**When connecting** Bookbench opens the books on the e-reader by itself if no other folder is open; otherwise it asks. Can be changed: [[einst_kobo]].
+**When connecting** Bookbench opens the books on the e-reader by itself if no other folder is open; otherwise it asks. If the e-reader is linked with a library on this computer, that library is opened instead and compared. Can be changed: [[einst_kobo]].
 
 **More**
+- [[kobo_abgleich]]
 - [[kobo_geraete]]
 - [[kobo_sicherungen]]
 - [[kobo_woerterbuecher]]
 - [[kobo_auswerfen]]
+""")),
+    ("kobo", "kobo_abgleich", N_("Syncing books"), N_("""
+At the top of the E-reader area: the books of the library on this computer ([[bibliothek_rechner]]) compared with those on the connected e-reader. You can edit on both sides; the sync brings them together.
+
+**Linking**
+- **New library from e-reader** links the new library with this e-reader at once.
+- Otherwise **Link library …** chooses the folder. The link is remembered per e-reader (serial number; Kindle/PocketBook: kind, model and drive name) and noted in the library's library.json. **Other library …** changes it.
+
+**How changes are found**
+After every sync Bookbench notes for each book its size and date on both sides and a checksum of its content (.bookbench/abgleich.json in the library folder). Next time each side is compared with that note, so it is clear on which side a book changed. A different date alone does not count: the e-reader's file system stores times in local time with a 2-second grid, after the switch to summer time all files can look an hour off. The checksum is only computed when size or date differ, so the e-reader is not read completely every time.
+
+**The list** (only books with something to do)
+- **new on the computer** → to the e-reader (checked). **only on the e-reader** → to the computer (checked).
+- **changed on the computer** / **changed on the e-reader**: copied to the other side (checked).
+- **changed on both sides**: *Leave as it is* by default; choose which side wins. Below the list the differences: title, authors, series and other metadata, chapter names and number, which files in the EPUB differ.
+- **deleted on the e-reader** / **deleted on the computer**: deleting it on the other side is offered, but not checked. Or copy it back.
+- Selecting a row shows what differs or what the state means.
+
+**Sync n books** (also in the toolbar) asks first, then copies. Always to the same path, so KOReader's .sdr folders (reading position, highlights) fit; they are never touched, not even when deleting. A file that is overwritten or deleted goes to the backup folder first ([[einst_speichern]]). Books with unsaved changes in the open library are not overwritten. Afterwards the library is read again and compared once more.
+
+**When it runs**
+- When the e-reader is connected: the linked library is opened instead of the books on the e-reader (or asked, [[einst_kobo]]), then compared. The result goes to the status bar; the sidebar shows **two arrows** (books to sync) and **arrows against each other** (changed on both sides) at Library and E-reader.
+- After saving in the library, and with **Compare**.
 """)),
     ("kobo", "kobo_geraete", N_("Kobo, Kindle, PocketBook"), N_("""
 KOReader keeps its settings in its own installation folder. Where that is depends on the device:
@@ -970,7 +997,7 @@ Also needed: the package **anthropic** (pip install anthropic). What is sent: [[
     ("einstellungen", "einst_kobo", N_("E-reader"), N_("""
 **Detection**
 - **Look for the e-reader every** (default: 3 seconds): how often the program checks whether an e-reader is connected or unplugged ([[kobo]]).
-- **When an e-reader is connected** (default: open its books, ask if another folder is open): or always ask, or do nothing ([[kobo]]).
+- **When an e-reader is connected** (default: open its books, ask if another folder is open): or always ask, or do nothing ([[kobo]]). If the e-reader is linked with a library on this computer, "its books" means that library; it is compared with the e-reader afterwards ([[kobo_abgleich]]).
 
 **Copying dictionaries**
 - **Copy dictionaries from (folder on the computer)**: where the dictionaries to copy are ([[kobo_woerterbuecher]]). Also set by Choose source in the E-reader area.

@@ -30,6 +30,7 @@ from bookbench.device import models as kmo
 from bookbench.i18n import N_, _, ngettext
 from bookbench.ui import dialogs, theme, threads
 from bookbench.ui.area import Bereich
+from bookbench.ui.device_sync import AbgleichTeil
 from bookbench.ui.panes import Teiler
 
 KURZ = {"einstellungen": N_("Settings"), "settings": N_("Statistics/plugins"), "buchdaten": N_("Book data"),
@@ -53,7 +54,7 @@ def _kurz(k):
     return _(KURZ[k]) if k in KURZ else k
 
 
-class EReaderBereich(Bereich):
+class EReaderBereich(AbgleichTeil, Bereich):
     kennung = "kobo"
     titel = N_("E-reader")
     symbol = "kobo"
@@ -70,6 +71,7 @@ class EReaderBereich(Bereich):
         self._neu_angesteckt = None              # Wurzel, für die noch über das Öffnen entschieden wird
         self.sicherung_gewaehlt = None           # Pfad der gewählten Sicherung
         self.dicts_gewaehlt = set()
+        self.abgleich_init()                     # Bücher: Rechner ↔ E-Reader (ui/device_sync.py, seit 2.1)
         self.takt = QTimer()
         self.takt.setSingleShot(True)
         self.takt.timeout.connect(self._regelmaessig)
@@ -97,6 +99,8 @@ class EReaderBereich(Bereich):
         lay.addWidget(self.zeile)
         lay.addSpacing(8)
 
+        aussen = Teiler(self.app, "ereader_abgleich", 250, fest="links", ausrichtung=Qt.Vertical, minimum=150)
+        aussen.addWidget(self.abgleich_bauen())
         oben_unten = Teiler(self.app, "ereader_woerterbuecher", 190, fest="rechts", ausrichtung=Qt.Vertical,
                             minimum=110)
         # -- Sicherungen
@@ -182,7 +186,8 @@ class EReaderBereich(Bereich):
         self.dict_baum.itemDoubleClicked.connect(lambda it, *a: self.woerterbuch_oeffnen(it.text(0)))
         ul.addWidget(self.dict_baum, 1)
         oben_unten.addWidget(unten)
-        lay.addWidget(oben_unten, 1)
+        aussen.addWidget(oben_unten)
+        lay.addWidget(aussen, 1)
         self.seite = s
         self.anzeigen()
         self._teile_zeigen()
@@ -192,6 +197,8 @@ class EReaderBereich(Bereich):
     def werkzeug(self):
         return [("oeffnen", _("Books"), self.buecher_oeffnen,
                  _("Open the books on the e-reader in Library, Chapters and Metadata")),
+                ("abgleichen", _("Sync"), self.abgleichen,
+                 _("Copy the checked books between the library on this computer and the e-reader")),
                 None,
                 ("sichern", _("Back up"), self.sichern,
                  _("Back up the chosen parts of the KOReader settings into a ZIP file")),
@@ -208,6 +215,9 @@ class EReaderBereich(Bereich):
         m = leiste.addMenu(_("E-reader"))
         for eintrag in ((_("Find e-reader"), lambda: self.suchen(still=False)),
                          (_("Open books on the e-reader"), self.buecher_oeffnen), None,
+                         (_("Compare books with the library"), lambda: self.abgleich_vergleichen()),
+                         (_("Sync books"), self.abgleichen),
+                         (_("Link library …"), self.abgleich_verknuepfen), None,
                          (_("Back up KOReader settings"), self.sichern),
                          (_("Restore backup …"), self.zurueckspielen),
                          (_("Copy dictionary"), self.woerterbuch_kopieren), None,
@@ -224,7 +234,7 @@ class EReaderBereich(Bereich):
 
     def marken(self):
         offen = sum(1 for __, st, __ in self._dicts if st in ("veraltet", "fehlt")) if self.wurzel else 0
-        return [m for m in (("ereader", offen), ("verbunden", 1 if self.wurzel else 0)) if m[1]]
+        return self.abgleich_marken() + [m for m in (("ereader", offen), ("verbunden", 1 if self.wurzel else 0)) if m[1]]
 
     def beim_zeigen(self):
         if self.seite is not None:
@@ -270,6 +280,7 @@ class EReaderBereich(Bereich):
         if self.wurzel is None:
             self.info, self.vorhanden, self.groessen = {}, {}, {}
             self._neu_angesteckt = None
+            self.abgleich_reader_neu()
             self.anzeigen()
             if vorher:
                 self.app.status.set(_("E-reader no longer connected."))
@@ -301,6 +312,19 @@ class EReaderBereich(Bereich):
         art = a.e.get("kobo_oeffnen", "auto")
         if art == "nie":
             return
+        if self.ab_bib is not None:                    # verknüpfte Bibliothek auf dem Rechner statt der Reader-Bücher
+            if a.ordner and Path(a.ordner).resolve() == self.ab_bib.resolve():
+                return
+            if a.ordner or art == "fragen":
+                text = _("{modell} connected. Open its library on this computer?").format(
+                    modell=self.info.get("modell") or str(wurzel)) + "\n\n" + str(self.ab_bib)
+                if a.ordner:
+                    text += "\n\n" + _("Currently open: {ordner}").format(ordner=a.ordner)
+                if not dialogs.frage(a, self.name(), text):
+                    return
+            if a._aenderungen_verwerfen_ok():
+                a.laden(str(self.ab_bib))
+            return
         if a.ordner or art == "fragen":
             name = self.info.get("modell") or self.info.get("artname") or str(wurzel)
             text = _("{modell} connected. Open the books on the e-reader?").format(modell=name)
@@ -314,6 +338,7 @@ class EReaderBereich(Bereich):
     def _gewaehlt(self, wurzel):
         self.wurzel = wurzel
         self.info = kg.geraet_info(wurzel)
+        self.abgleich_reader_neu()
         self.anzeigen()
 
         def arbeit():
@@ -386,6 +411,7 @@ class EReaderBereich(Bereich):
         self.wahl.blockSignals(False)
         self.wahl.setVisible(len(self.wurzeln) > 1)
         self.ordner_label.setText(_("Folder: {ordner}").format(ordner=self.sicherungsordner()))
+        self.abgleich_zeigen()
         self._teile_zeigen()
         self._sicherungen_fuellen()
         self._woerterbuecher_fuellen()
@@ -710,6 +736,7 @@ class EReaderBereich(Bereich):
                 self.geschrieben = True
         except (OSError, ValueError):
             pass
+        self.abgleich_nach_speichern(pfad)
 
     def schliessen_ok(self):
         """Erinnerung ans Auswerfen beim Beenden. False: nicht beenden."""

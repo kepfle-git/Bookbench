@@ -16,7 +16,7 @@ Texte und welche Marken ein Buch hat - ohne Oberfläche. Zeichnen: ui/markers.py
 from bookbench.i18n import N_, _, ngettext
 
 ORDNUNG = ("unlesbar", "kapitel", "vorschlag", "klappentext", "cover", "cover_klein", "calibre", "angaben",
-           "woerterbuch", "ereader", "ungespeichert", "verbunden")
+           "woerterbuch", "ereader", "konflikt", "abgleich", "ungespeichert", "verbunden")
 # Stufe, (Einzahl, Mehrzahl) für die Seitenleiste
 ARTEN = {
     "unlesbar": ("fehler", (N_("{n} book cannot be read"), N_("{n} books cannot be read"))),
@@ -31,19 +31,24 @@ ARTEN = {
     "woerterbuch": ("pruefen", (N_("{n} word looked up without result"), N_("{n} words looked up without result"))),
     "ereader": ("pruefen", (N_("{n} dictionary missing or outdated on the e-reader"),
                             N_("{n} dictionaries missing or outdated on the e-reader"))),
+    "konflikt": ("pruefen", (N_("{n} book changed on the computer and on the e-reader"),
+                             N_("{n} books changed on the computer and on the e-reader"))),
+    "abgleich": ("info", (N_("{n} book to sync between computer and e-reader"),
+                          N_("{n} books to sync between computer and e-reader"))),
     "ungespeichert": ("offen", (N_("{n} book with unsaved changes"), N_("{n} books with unsaved changes"))),
     "verbunden": ("info", (N_("connected"), N_("connected"))),
 }
 # Orte, an denen Marken stehen (Einstellungen > Oberfläche > Status-Piktogramme)
 ORTE = (("seitenleiste", N_("Sidebar")), ("listen", N_("Book lists")), ("tabelle", N_("Library")))
-NUR_SEITENLEISTE = {"woerterbuch", "ereader", "verbunden"}      # gibt es nur in der Seitenleiste
+NUR_SEITENLEISTE = {"woerterbuch", "ereader", "verbunden", "abgleich", "konflikt"}      # gibt es nur in der Seitenleiste
 NAMEN = {
     "unlesbar": N_("Book cannot be read"), "kapitel": N_("Questionable chapter names"),
     "vorschlag": N_("Chapter suggestions"), "klappentext": N_("No blurb"), "cover": N_("No cover"),
     "cover_klein": N_("Small cover"), "calibre": N_("Differs from Calibre"),
     "angaben": N_("Language or ISBN missing/invalid"), "woerterbuch": N_("Words without result"),
     "ereader": N_("Dictionaries on the e-reader"), "ungespeichert": N_("Unsaved changes"),
-    "verbunden": N_("E-reader connected"),
+    "verbunden": N_("E-reader connected"), "abgleich": N_("Books to sync with the e-reader"),
+    "konflikt": N_("Changed on both sides (sync)"),
 }
 
 

@@ -13,6 +13,8 @@ area_library.py - Bereich Bibliothek (Qt): Tabelle aller Bücher mit Suche, Filt
 Was Qt hier abnimmt (in Tk ~300 Zeilen table_columns.py): Spalten ziehen und verschieben kann der
 QHeaderView selbst; es bleibt nur, die Statusspalte vorn festzuhalten und alles zu merken.
 """
+from pathlib import Path
+
 from PySide6.QtCore import QAbstractTableModel, QModelIndex, QSize, Qt, QTimer
 from PySide6.QtGui import QAction, QColor, QKeySequence
 from PySide6.QtWidgets import (QAbstractItemView, QComboBox, QHBoxLayout, QHeaderView, QLabel, QLineEdit, QMenu,
@@ -208,7 +210,15 @@ class BibliothekBereich(Bereich):
         return []
 
     def marken(self):
-        return [("unlesbar", sum(1 for b in self.app.buecher if b.fehler)), ("ungespeichert", self.app.offen())]
+        erg = [("unlesbar", sum(1 for b in self.app.buecher if b.fehler)), ("ungespeichert", self.app.offen())]
+        kobo = self.app.bereich_obj("kobo")                # Abgleich mit dem Reader, wenn diese Bibliothek verknüpft ist
+        if self.app.ordner and getattr(kobo, "ab_bib", None) is not None:
+            try:
+                if Path(self.app.ordner).resolve() == kobo.ab_bib.resolve():
+                    erg = kobo.abgleich_marken() + erg
+            except OSError:
+                pass
+        return erg
 
     def zustand(self):
         return {"buch": self.buch}

@@ -955,8 +955,10 @@ class App(QMainWindow):
             vorlage, treffer, gesamt = fs.erkennen(buecher, ziel)
             d = bi.bibliothek_lesen(ziel)
             d.setdefault("ordnerschema", vorlage if treffer else standard)
-            d["reader"] = bi.reader_eintrag(info)
             bi.bibliothek_schreiben(ziel, d)
+            from bookbench.core import sync
+            sync.verknuepfen(self.e, ziel, info, reader)       # Reader ↔ Bibliothek, Basis für den Abgleich
+            sync.basis_setzen(ziel, reader, bi.reader_buecher(reader))
             if fehler:
                 details = "\n".join(f"{r}: {t}" for r, t in fehler)
                 text = ngettext("{n} file could not be copied:", "{n} files could not be copied:",
@@ -969,6 +971,9 @@ class App(QMainWindow):
 
         def nachher():
             self.laden(ziel)
+            kobo = self.bereich_obj("kobo")
+            if hasattr(kobo, "abgleich_reader_neu"):
+                kobo.abgleich_reader_neu()
         self.hintergrund(_("New library from e-reader"), arbeit, nachher)
 
     def calibre_importieren(self):

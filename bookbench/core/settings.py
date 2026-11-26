@@ -51,6 +51,7 @@ STANDARD = {
     # seit 2.1: Zwischenspeicher fürs Einlesen (core/scan_cache.py), Vorgabe-Ordnerschema für neue Bibliotheken
     "einlese_cache": True, "ordnerschema": "{author_sort}/[{series}/][{series_index:2} - ]{title}",
     "import_quelle": "",
+    "bibliotheken": {},                         # seit 2.1: {Reader-Kennung: Bibliotheksordner} (core/sync.py)
     "cleaner_muster": ["OceanofPDF.com"],      # seit 2.1: Werbezeilen (core/cleaner.py), /…/ = Regex
 }
 

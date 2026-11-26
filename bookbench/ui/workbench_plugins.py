@@ -19,17 +19,19 @@ import re
 
 from PySide6.QtCore import QEvent, QObject, Qt
 from PySide6.QtGui import QColor, QFont, QTextCursor
-from PySide6.QtWidgets import (QButtonGroup, QCheckBox, QColorDialog, QComboBox, QDialog, QFrame, QGridLayout, QHBoxLayout,
+from PySide6.QtWidgets import (QButtonGroup, QCheckBox, QColorDialog, QComboBox, QFrame, QGridLayout, QHBoxLayout,
                                QHeaderView, QLabel, QLineEdit, QMenu, QPlainTextEdit, QPushButton, QRadioButton,
-                               QScrollArea, QSizePolicy, QSpinBox, QToolButton, QTreeWidget, QTreeWidgetItem,
+                               QSizePolicy, QSpinBox, QToolButton, QTreeWidget, QTreeWidgetItem,
                                QVBoxLayout, QWidget)
 
 from bookbench.i18n import N_, _
+from bookbench.preview import bookends_conditions as bc
 from bookbench.preview import emulator as kv
 from bookbench.preview import koreader_settings as kks
 from bookbench.preview import plugins as kpl
 from bookbench.ui import dialogs
 from bookbench.ui import workbench_colors as wfa
+from bookbench.ui import workbench_conditions as wbd
 from bookbench.ui.workbench_base import (BREITE, Seite, Wahl, gleich, hinweis, mit_symbolen, symbolschrift,
                                          zahl_oder_leer, zahlfeld, zeile)
 
@@ -69,6 +71,30 @@ class _Fokus(QObject):
         return False
 
 
+class _SchemaKnopf(QToolButton):
+    """Knopf im Positionsschema: wächst mit der Spalte, kürzt den Text auf seine Breite (der Anhang "+n" bleibt)."""
+
+    def __init__(self):
+        super().__init__()
+        self._voll, self._anhang = "", ""
+
+    def voll_setzen(self, text, anhang=""):
+        self._voll, self._anhang = text, anhang
+        self._kuerzen()
+
+    def resizeEvent(self, ev):
+        super().resizeEvent(ev)
+        self._kuerzen()
+
+    def _kuerzen(self):
+        fm = self.fontMetrics()
+        platz = max(20, self.width() - 16 - fm.horizontalAdvance(self._anhang))
+        self.setText(fm.elidedText(self._voll, Qt.ElideRight, platz) + self._anhang)
+
+    def voller_text(self):
+        return self._voll + self._anhang
+
+
 class _SymbolSeite(Seite):
     def symbolfamilie(self):
         return symbolschrift(self.bereich.profil, self.bereich.befund)
@@ -92,9 +118,9 @@ class BookendsSeite(_SymbolSeite):
         self._fokus_pos = "tc"                    # zuletzt benutztes Textfeld
         self.pos_wahl = None                      # im Schema gewählte Position (seit 2.2)
         self._schriften = []                      # [(wert, name)] für Schrift je Zeile (seit 2.2-beta2)
+        self._felder = []                         # Bedingungsfelder aus Bookends' Katalog (seit 2.2-beta3)
         self.balken_nr = 1
         self._laden = False
-        self._symbolfenster = None
 
     # ------------------------------------------------------------------ Aufbau
     def inhalt_bauen(self):
@@ -123,8 +149,11 @@ class BookendsSeite(_SymbolSeite):
         self.token_knopf.setPopupMode(QToolButton.InstantPopup)
         self.token_menue = QMenu(self.token_knopf)
         self.token_knopf.setMenu(self.token_menue)
-        sym = QPushButton(_("Special characters …"))
-        sym.clicked.connect(self.symbole_zeigen)
+        sym = self.sym_knopf = QToolButton()               # seit 2.2-beta3 ein Menü wie die Tokens
+        sym.setText(_("Special characters"))
+        sym.setPopupMode(QToolButton.InstantPopup)
+        self.sym_menue = QMenu(sym)
+        sym.setMenu(self.sym_menue)
         fmt = QToolButton()
         fmt.setText(_("Format"))
         fmt.setPopupMode(QToolButton.InstantPopup)
@@ -132,6 +161,9 @@ class BookendsSeite(_SymbolSeite):
         for tag, text in kpl.FORMAT_TAGS:
             fm.addAction(_(text) + f"   [{tag}]…[/{tag}]", lambda t=tag: self.format_einfuegen(t))
         fm.addAction(_("Colour …") + "   [c=#…]…[/c]", lambda: self.format_einfuegen("c"))
+        fm.addSeparator()
+        fm.addAction(_("Condition …") + "   [if:…]…[/if]", self.bedingung_neu)
+        self.beispiel_menue = fm.addMenu(_("Examples with conditions"))
         fmt.setMenu(fm)
         lay.addWidget(zeile(self.token_knopf, sym, fmt))
         lay.addWidget(hinweis(_("Choose a position on the page; one line per row, tokens like %title or %page_num "
@@ -191,7 +223,26 @@ class BookendsSeite(_SymbolSeite):
         self.gross = QCheckBox(_("Capitals"))
         self.gross.toggled.connect(lambda *a: self._zeilenwerte_uebernehmen())
         self.seiten = Wahl(kpl.SEITEN, self._zeilenwerte_uebernehmen)
-        lay.addWidget(zeile(self.gross, _("Show on"), self.seiten))
+        lay.addWidget(self.gross)
+        lay.addWidget(zeile(_("Show on"), self.seiten))
+        # Bedingungen der Zeile (seit 2.2-beta3)
+        k = QLabel(_("Conditions in this line"))
+        k.setProperty("rolle", "abschnitt")
+        lay.addWidget(k)
+        self.bed_baum = _baum(2, 4)
+        self.bed_baum.setHeaderHidden(False)
+        self.bed_baum.setHeaderLabels([_("Condition"), _("Then / otherwise")])
+        self.bed_baum.setRootIsDecorated(True)
+        self.bed_baum.itemDoubleClicked.connect(lambda *a: self.bedingung_bearbeiten())
+        lay.addWidget(self.bed_baum)
+        self.bed_knoepfe = []
+        for text, fn in ((_("New …"), self.bedingung_neu), (_("Edit …"), self.bedingung_bearbeiten),
+                         (_("Dissolve"), self.bedingung_aufloesen)):
+            b = QPushButton(text)
+            b.clicked.connect(lambda *a, fn=fn: fn())
+            self.bed_knoepfe.append(b)
+        self.bed_knoepfe[2].setToolTip(_("Remove the condition and keep the \"then\" text"))
+        lay.addWidget(zeile(*self.bed_knoepfe))
         self.versatz = {}
         teile = [_("Move line")]
         for feld, text in (("line_h_nudge", _("← →")), ("line_v_nudge", _("↑ ↓"))):
@@ -236,7 +287,7 @@ class BookendsSeite(_SymbolSeite):
         lay.addWidget(self.zbalken_knopf, 0, Qt.AlignLeft)
         lay.addWidget(hinweis(_("Empty size = the general font size, font \"Default\" = Bookends' general font. Move "
                                 "line in pixels: negative = left or up. Empty thickness = as high as the text; empty "
-                                "unread = like read. Conditions in the text stay as they are."), BREITE))
+                                "unread = like read."), BREITE))
 
         # == Reiter Fortschrittsbalken über die ganze Breite
         self._reiter("balken", _("Progress bars"))
@@ -350,6 +401,8 @@ class BookendsSeite(_SymbolSeite):
         if self.info:
             self._kopf_zeigen()
             self._tokens_fuellen()
+            self._symbole_fuellen()
+            self._beispiele_fuellen()
             self._schriften_fuellen()
         self._formular_fuellen()
 
@@ -358,17 +411,17 @@ class BookendsSeite(_SymbolSeite):
         """Kleine Seite mit den sechs Positionen (3 oben, 3 unten); Knopf zeigt die erste Zeile."""
         rahmen = QFrame()
         rahmen.setFrameShape(QFrame.StyledPanel)
-        rahmen.setMaximumWidth(BREITE)
         g = QGridLayout(rahmen)
-        g.setContentsMargins(6, 6, 6, 6)
-        g.setSpacing(4)
+        g.setContentsMargins(8, 8, 8, 8)
+        g.setSpacing(6)
         self.schema_gruppe = QButtonGroup(rahmen)
         self.schema_gruppe.setExclusive(True)
         self.schema_knoepfe = {}
         for n, (pos, name) in enumerate(kpl.POSITIONEN):
-            k = QToolButton()
+            k = _SchemaKnopf()
             k.setCheckable(True)
             k.setSizePolicy(QSizePolicy.Ignored, QSizePolicy.Fixed)
+            k.setMinimumHeight(40)
             k.setToolTip(_(name))
             k.clicked.connect(lambda *a, p=pos: self.position_waehlen(p))
             self.schema_gruppe.addButton(k)
@@ -376,19 +429,18 @@ class BookendsSeite(_SymbolSeite):
             g.addWidget(k, 0 if n < 3 else 2, n % 3)
         mitte = hinweis(_("page text"))
         mitte.setAlignment(Qt.AlignCenter)
-        mitte.setMinimumHeight(34)
+        mitte.setMinimumHeight(56)
         g.addWidget(mitte, 1, 0, 1, 3)
         for c in range(3):
             g.setColumnStretch(c, 1)
         return rahmen
 
     def _schema_text(self, pos):
+        """(erste Zeile, Anhang): Anhang "+n" bleibt beim Kürzen stehen."""
         z = [x for x in kpl.zeilen(self.daten or {}, pos) if x.strip()]
         if not z:
-            return "–"
-        k = self.schema_knoepfe[pos]
-        text = k.fontMetrics().elidedText(z[0].strip(), Qt.ElideRight, max(40, (BREITE - 40) // 3 - 14))
-        return text + (f" +{len(z) - 1}" if len(z) > 1 else "")
+            return "–", ""
+        return z[0].strip(), (f" +{len(z) - 1}" if len(z) > 1 else "")
 
     def _schema_fuellen(self):
         if not self.gebaut():
@@ -396,12 +448,15 @@ class BookendsSeite(_SymbolSeite):
         if self.pos_wahl not in kpl.POS_KENNUNGEN:
             d = self.daten or {}
             self.pos_wahl = next((p for p in kpl.POS_KENNUNGEN if any(x.strip() for x in kpl.zeilen(d, p))), "tc")
+        namen = dict(kpl.POSITIONEN)
         for pos, k in self.schema_knoepfe.items():
-            k.setText(self._schema_text(pos))
             k.setChecked(pos == self.pos_wahl)
             f = k.font()
             f.setBold(pos == self.pos_wahl)
             k.setFont(f)
+            k.voll_setzen(*self._schema_text(pos))
+            z = kpl.zeilen(self.daten or {}, pos)
+            k.setToolTip(_(namen[pos]) + ("\n" + "\n".join(z) if z else ""))
         for pos, r in self.pos_rahmen.items():
             r.setVisible(pos == self.pos_wahl)
 
@@ -458,6 +513,9 @@ class BookendsSeite(_SymbolSeite):
         self.aktiv_neu = None
         self.an = bool(self.stand_profil["an"])
         self._tokens_fuellen()
+        self._symbole_fuellen()
+        self._felder = bc.felder(self.info["ordner"])
+        self._beispiele_fuellen()
         vl = kpl.vorlagen(self.ko)
         self._namen = {}
         for v in vl:
@@ -576,17 +634,32 @@ class BookendsSeite(_SymbolSeite):
         t.insertPlainText(token)
         t.setFocus()
 
-    def symbole_zeigen(self):
-        """Fenster mit den Sonderzeichen aus Bookends' Katalog; Klick fügt ins zuletzt benutzte Feld ein."""
-        if self._symbolfenster is not None and self._symbolfenster.isVisible():
-            self._symbolfenster.raise_()
+    def _symbole_fuellen(self):
+        """Menü Sonderzeichen: Gruppen aus Bookends' Katalog (menu/icons_catalogue.lua) als Untermenüs, je
+        Eintrag Zeichen und Name; ein Klick fügt an der Schreibmarke des zuletzt benutzten Felds ein."""
+        if not self.gebaut():
             return
+        m = self.sym_menue
+        m.clear()
         gruppen = kpl.symbole(self.info["ordner"]) if self.info else []
-        if not gruppen:
-            self.app.status.set(_("This Bookends version has no list of special characters."))
-            return
-        self._symbolfenster = SymbolFenster(self, gruppen)
-        self._symbolfenster.show()
+        familie = self.symbolfamilie()
+        schrift = QFont(m.font())
+        schrift.setPointSize(max(schrift.pointSize(), 11))
+        if familie:
+            schrift.setFamilies(list(schrift.families() or [schrift.family()]) + [familie])
+        else:
+            a = m.addAction(_("KOReader's symbol font (nerdfonts/symbols.ttf) was not found: symbols show as names. "
+                              "Take the profile from the e-reader to get its fonts."))
+            a.setEnabled(False)
+        for gruppe, liste in gruppen:
+            unter = m.addMenu(gruppe)
+            unter.setFont(schrift)
+            for ch, name, einfuegen in liste:
+                zeichen = ch if (familie or not kpl.ist_symbol(ch)) else "·"
+                text = f"{zeichen}    {name}" + (f"  ({einfuegen})" if einfuegen != ch else "")
+                unter.addAction(text, lambda w=einfuegen: self._einfuegen(w))
+        self.sym_knopf.setEnabled(bool(gruppen))
+        self.sym_knopf.setToolTip("" if gruppen else _("This Bookends version has no list of special characters."))
 
     def _text_geaendert(self, pos):
         if self._laden or self.daten is None:
@@ -640,6 +713,7 @@ class BookendsSeite(_SymbolSeite):
                     sp.setValue(0)
                 self.seiten.setzen(None, aktiv=False)
                 self._zeilenbalken_zeigen()
+                self._bed_zeigen()
                 return
             pos, nr = self._zeile
             name = dict(kpl.POSITIONEN)[pos]
@@ -656,6 +730,7 @@ class BookendsSeite(_SymbolSeite):
             self.gross.setChecked(bool(kpl.zeilenwert(self.daten, pos, "line_uppercase", nr)))
             self.seiten.setzen(kpl.zeilenwert(self.daten, pos, "line_page_filter", nr), aktiv=True)
             self._zeilenbalken_zeigen()
+            self._bed_zeigen()
         finally:
             self._laden = alt
 
@@ -931,6 +1006,123 @@ class BookendsSeite(_SymbolSeite):
         t.setTextCursor(c)
         t.setFocus()
 
+    # -- Bedingungen (seit 2.2-beta3; Logik in preview/bookends_conditions.py)
+    def _beispiele_fuellen(self):
+        if not self.gebaut():
+            return
+        m = self.beispiel_menue
+        m.clear()
+        liste = bc.beispiele(self.info["ordner"]) if self.info else []
+        for beschreibung, ausdruck in liste:
+            a = m.addAction(beschreibung, lambda t=ausdruck: self._einfuegen(t))
+            a.setToolTip(ausdruck)
+        m.setToolTipsVisible(True)
+        m.setEnabled(bool(liste))
+
+    def _bed_bloecke(self):
+        return bc.alle(bc.bloecke(self._zeilentext()) or [])
+
+    def _bed_zeigen(self):
+        if not self.gebaut():
+            return
+        b = self.bed_baum
+        b.clear()
+        text = self._zeilentext()
+        liste = bc.bloecke(text)
+        namen = {f: beschr for f, __, __, beschr in self._felder}
+        eltern = {}
+        for n, (blk, tiefe) in enumerate(bc.alle(liste or [])):
+            dann, sonst = blk.dann_text(text), blk.sonst_text(text)
+            it = QTreeWidgetItem([bc.lesbar(blk.ausdruck, namen), dann + (f"  |  {sonst}" if sonst is not None else "")])
+            it.setToolTip(0, f"[if:{blk.ausdruck}]")
+            it.setToolTip(1, text[blk.anfang:blk.ende])
+            it.setData(0, Qt.UserRole, n)
+            vater = next((eltern[id(v)] for v, __ in bc.alle(liste) if blk in v.kinder), None)
+            (vater.addChild(it) if vater else b.addTopLevelItem(it))
+            eltern[id(blk)] = it
+        b.expandAll()
+        if liste is None and self._zeile:
+            b.addTopLevelItem(QTreeWidgetItem([_("[if:…] and [/if] do not match in this line."), ""]))
+        if self._zeile and liste:                 # Block an der Schreibmarke wählen
+            t = self.texte[self._zeile[0]]
+            blk = bc.block_an(text, t.textCursor().positionInBlock())
+            if blk is not None:
+                n = next((i for i, (x, __) in enumerate(bc.alle(liste)) if x.anfang == blk.anfang), None)
+                _waehlen(b, n)
+        an = bool(self._zeile) and self.daten is not None
+        self.bed_baum.setEnabled(an)
+        self.bed_knoepfe[0].setEnabled(an and liste is not None)
+        for k in self.bed_knoepfe[1:]:
+            k.setEnabled(an and bool(liste))
+
+    def _bedingung_fragen(self, ausdruck="", dann="", sonst=None, neu=True):
+        """Fenster öffnen; (ausdruck, dann, sonst) oder None (Tests ersetzen diese Methode)."""
+        f = wbd.BedingungFenster(self.app, self._felder, ausdruck, dann, sonst, self.symbolfamilie(), neu)
+        return f.ergebnis() if f.exec() else None
+
+    def _zeile_text_setzen(self, neu, cursor=None):
+        pos, nr = self._zeile
+        z = kpl.zeilen(self.daten, pos)
+        z[nr - 1] = neu
+        kpl.zeilen_setzen(self.daten, pos, z)
+        t = self.texte[pos]
+        self._laden = True
+        try:
+            t.setPlainText("\n".join(z))
+            c = t.textCursor()
+            c.movePosition(QTextCursor.Start)
+            c.movePosition(QTextCursor.NextBlock, QTextCursor.MoveAnchor, nr - 1)
+            c.movePosition(QTextCursor.Right, QTextCursor.MoveAnchor, min(cursor or 0, len(neu)))
+            t.setTextCursor(c)
+        finally:
+            self._laden = False
+        self._hoehe(t, len(z))
+        self._schema_fuellen()
+        self._zeile_zeigen()
+        self._geaendert()
+
+    def bedingung_neu(self):
+        """Neue Bedingung an der Schreibmarke; gewählter Text der Zeile wird der Dann-Text."""
+        if self.daten is None or not self.gebaut():
+            return
+        if not self._zeile:
+            self.app.status.set(_("Click into a line first."))
+            return
+        t = self.texte[self._zeile[0]]
+        c = t.textCursor()
+        text = self._zeilentext()
+        start = c.block().position()
+        a, e = c.selectionStart() - start, c.selectionEnd() - start
+        if not (0 <= a <= e <= len(text)):
+            a = e = max(0, min(c.positionInBlock(), len(text)))
+        erg = self._bedingung_fragen(dann=text[a:e])
+        if not erg:
+            return
+        block = bc.block_text(*erg)
+        self._zeile_text_setzen(text[:a] + block + text[e:], a + len(block))
+
+    def _bed_gewaehlt(self):
+        n = _gewaehlt_id(self.bed_baum)
+        bl = self._bed_bloecke()
+        return bl[n][0] if n is not None and 0 <= n < len(bl) else None
+
+    def bedingung_bearbeiten(self):
+        blk = self._bed_gewaehlt()
+        if blk is None or self.daten is None:
+            return
+        text = self._zeilentext()
+        erg = self._bedingung_fragen(ausdruck=blk.ausdruck, dann=blk.dann_text(text), sonst=blk.sonst_text(text), neu=False)
+        if not erg:
+            return
+        neu = bc.block_text(*erg)
+        self._zeile_text_setzen(bc.ersetzen(text, blk, neu), blk.anfang)
+
+    def bedingung_aufloesen(self):
+        blk = self._bed_gewaehlt()
+        if blk is None or self.daten is None:
+            return
+        self._zeile_text_setzen(bc.aufloesen(self._zeilentext(), blk), blk.anfang)
+
     def _versatz_zurueck(self):
         self._laden = True
         for sp in self.versatz.values():
@@ -1112,56 +1304,6 @@ class BookendsSeite(_SymbolSeite):
         self.datei = self.daten = None
         self.neu_laden(datei)
         self.ins_bild()
-
-
-class SymbolFenster(QDialog):
-    """Sonderzeichen aus Bookends' Katalog (menu/icons_catalogue.lua), nach Gruppen. Bleibt offen; jeder Klick
-    fügt an der Schreibmarke des zuletzt benutzten Zeilenfelds ein."""
-    SPALTEN = 10
-
-    def __init__(self, seite, gruppen):
-        super().__init__(seite.app)
-        self.seite, self.gruppen = seite, gruppen
-        self.setWindowTitle(_("Special characters"))
-        self.resize(480, 440)
-        lay = QVBoxLayout(self)
-        self.gruppe = QComboBox()
-        self.gruppe.addItems([g for g, __ in gruppen])
-        self.gruppe.currentIndexChanged.connect(lambda *a: self.fuellen())
-        lay.addWidget(zeile(_("Group"), self.gruppe))
-        self.flaeche = QScrollArea()
-        self.flaeche.setWidgetResizable(True)
-        lay.addWidget(self.flaeche, 1)
-        self.familie = seite.symbolfamilie()
-        self.text = hinweis("")
-        if not self.familie:
-            self.text.setText(_("KOReader's symbol font (nerdfonts/symbols.ttf) was not found: symbols show as names. "
-                                "Take the profile from the e-reader to get its fonts."))
-        lay.addWidget(self.text)
-        self.fuellen()
-
-    def fuellen(self):
-        innen = QWidget()
-        g = QGridLayout(innen)
-        g.setSpacing(2)
-        liste = dict(self.gruppen).get(self.gruppe.currentText(), [])
-        schrift = QFont(self.font())
-        schrift.setPointSize(14)
-        if self.familie:
-            schrift.setFamilies(list(schrift.families() or [schrift.family()]) + [self.familie])
-        self.knoepfe = []
-        for n, (ch, name, einfuegen) in enumerate(liste):
-            k = QToolButton()
-            k.setText(ch if (self.familie or not kpl.ist_symbol(ch)) else name[:6])
-            k.setFont(schrift)
-            k.setFixedSize(38, 38)
-            tipp = name + (f"  ({einfuegen})" if einfuegen != ch else "")
-            k.setToolTip(tipp)
-            k.clicked.connect(lambda *a, w=einfuegen, t=tipp: (self.seite._einfuegen(w), self.text.setText(t)))
-            g.addWidget(k, n // self.SPALTEN, n % self.SPALTEN)
-            self.knoepfe.append(k)
-        g.setRowStretch(len(liste) // self.SPALTEN + 1, 1)
-        self.flaeche.setWidget(innen)
 
 
 # ====================================================================== Bookshelf

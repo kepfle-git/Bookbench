@@ -48,8 +48,9 @@ class EinstellungsDialog(QDialog):
         ("start", "allgemein", N_("Startup"), N_("What opens when the program starts")),
         ("updates", "allgemein", N_("Updates"), N_("Checking for new versions")),
         ("speichern", "", N_("Saving and backups"), N_("Backup folder, backups of books and of the KOReader settings")),
-        ("buecher", "", N_("Books"), N_("Library and import, chapters, blurbs, covers and metadata")),
+        ("buecher", "", N_("Books"), N_("Library and import, advert text, chapters, blurbs, covers and metadata")),
         ("bibliothek", "buecher", N_("Library and import"), N_("Folder scheme for new books, reading cache")),
+        ("cleaner", "buecher", N_("Advert text"), N_("Patterns for Remove advert text (OceanofPDF and the like)")),
         ("kapitel", "buecher", N_("Chapters"), N_("How chapter names are taken from the book text")),
         ("klappentexte", "buecher", N_("Blurbs"), N_("Order of the sources, free sources, checks")),
         ("klappentexte_profile", "klappentexte", N_("Source profiles"),
@@ -83,6 +84,7 @@ class EinstellungsDialog(QDialog):
         self.setMinimumSize(700, 440)
         self.werte = Werte()
         self.bib_schema = None                             # Feld Ordnerschema der geöffneten Bibliothek (2.1)
+        self.cleaner_feld = None                           # Muster für Werbezeilen (2.1)
         self.profile = klappentext_profile(app.e)
         self.meta_spalten = [list(x) for x in app.e.get("meta_spalten") or [] if isinstance(x, (list, tuple)) and x]
         aus = app.e.get("marken_aus") or {}
@@ -429,6 +431,36 @@ class EinstellungsDialog(QDialog):
         from bookbench.core import scan_cache
         scan_cache.leeren()
         self.app.status.set(_("Reading cache emptied; the next opening reads all books again."))
+
+    # -- Werbezeilen (seit 2.1) ----------------------------------------------------------
+    def _seite_cleaner(self, f):
+        from PySide6.QtWidgets import QPlainTextEdit
+        f.ueberschrift(_("Advert text"))
+        f.text(_("Edit > Remove advert text … searches the books for these patterns and removes them. One pattern "
+                 "per line, case does not matter. A line in /slashes/ is a regular expression, e.g. "
+                 "/downloaded from \\S+/. If the text stands in a container of its own (div, p, link), the "
+                 "container goes too; otherwise only the text."))
+        self.cleaner_feld = QPlainTextEdit()
+        self.cleaner_feld.setPlainText("\n".join(self.app.e.get("cleaner_muster") or []))
+        self.cleaner_feld.setFixedHeight(150)
+        self.cleaner_feld.textChanged.connect(self._cleaner_pruefen)
+        f.widget(self.cleaner_feld)
+        self.cleaner_hinweis = f.hinweis("")
+        z = f.zeile()
+        f.knopf(_("Reset to default"), lambda: self.cleaner_feld.setPlainText("\n".join(cleaner_standard())), z)
+        z.addStretch(1)
+        self._cleaner_pruefen()
+
+    def _cleaner_zeilen(self):
+        return [z.strip() for z in self.cleaner_feld.toPlainText().splitlines() if z.strip()]
+
+    def _cleaner_pruefen(self):
+        from bookbench.core import cleaner
+        try:
+            n = len(cleaner.muster_kompilieren(self._cleaner_zeilen()))
+            self.cleaner_hinweis.setText(ngettext("{n} pattern.", "{n} patterns.", n).format(n=n))
+        except ValueError as e:
+            self.cleaner_hinweis.setText("⚠ " + _("Pattern not valid: {fehler}").format(fehler=e))
 
     def _seite_kapitel(self, f):
         f.ueberschrift(_("Chapters"))
@@ -925,6 +957,13 @@ class EinstellungsDialog(QDialog):
             e["vorschau_geraet"] = self.geraet_wahl.currentData() or "auto"
             e["vorschau_eigen"] = [self.eigen["w"].value(), self.eigen["h"].value(), self.eigen["dpi"].value(),
                                    self.eigen["farbe"].isChecked()]
+        if self.cleaner_feld is not None:                  # Werbezeilen: nur gültige Muster übernehmen
+            from bookbench.core import cleaner
+            try:
+                cleaner.muster_kompilieren(self._cleaner_zeilen())
+                e["cleaner_muster"] = self._cleaner_zeilen()
+            except ValueError as fehler:
+                dialogs.warnung(self, _("Advert text"), _("The patterns were not saved: {fehler}").format(fehler=fehler))
         if self.bib_schema is not None:                    # Ordnerschema der geöffneten Bibliothek (library.json)
             from bookbench.core import book_import as bi
             from bookbench.core import folder_scheme as fs
@@ -1029,3 +1068,8 @@ class ProfilDialog(QDialog):
             p["id"] = blurbs.profile_id({"name": p["name"]})
         self.ergebnis = p
         self.accept()
+
+
+def cleaner_standard():
+    from bookbench.core import cleaner
+    return list(cleaner.STANDARD)

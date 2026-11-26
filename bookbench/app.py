@@ -267,6 +267,8 @@ class App(QMainWindow):
         eintrag(_("Look up all missing covers"), lambda: self.cover_aktion("alle_ohne"), (M, B))
         eintrag(_("Show cover large"), lambda: self.cover_aktion("gross"), (M,))
         b.addSeparator()
+        eintrag(_("Remove advert text …"), lambda: self.cleaner(), (B,))
+        b.addSeparator()
         eintrag(_("Series and blurbs from Calibre"), self.calibre_uebernehmen, (B,), calibre=True)
         eintrag(_("Metadata from Calibre (this book)"), lambda: self.metadaten_aktion("alle_von_calibre"), (M,),
                 calibre=True)
@@ -849,6 +851,34 @@ class App(QMainWindow):
         if b is self.metadaten.buch and self.metadaten.seite is not None:
             self.metadaten.klappentext.anzeigen()
             self.metadaten.aktualisieren()
+
+    # ================================================================ Werbezeilen entfernen (seit 2.1)
+    def cleaner(self, buecher=None):
+        """Fenster "Werbezeilen entfernen" (ui/cleaner_window) für buecher, sonst alle Bücher."""
+        if not self.buecher:
+            self.status.set(_("Open a library first."))
+            return None
+        from bookbench.ui import cleaner_window as kcw
+        f = kcw.CleanerFenster(self, buecher if buecher else self.buecher)
+        f.setAttribute(Qt.WA_DeleteOnClose)
+        f.show()
+        self._cleaner_fenster = f                       # für Tests
+        return f
+
+    def buch_nachladen(self, b):
+        """Buch nach einer Änderung an der Datei neu einlesen und überall ersetzen (Rückgabe: das neue Buch)."""
+        neu = kd.buch_laden(b.pfad, self.e["max_sub"], self.e["caps"], self.entscheidungen)
+        kd.calibre_zuordnen([neu], self.calibre_wurzel, self.calibre_eintraege)
+        neu.gespeichert = True
+        neu.titel_anzeige = getattr(b, "titel_anzeige", None)
+        if b in self.buecher:
+            self.buecher[self.buecher.index(b)] = neu
+        self.nach_schluessel[neu.schluessel] = neu
+        self._alles_neu_zeichnen()
+        kobo = self.bereich_obj("kobo")
+        if hasattr(kobo, "vermerken"):
+            kobo.vermerken(self.ordner)
+        return neu
 
     # ================================================================ Bücher hinzufügen (seit 2.1)
     def buecher_hinzufuegen(self, pfade=None):

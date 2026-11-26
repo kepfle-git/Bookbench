@@ -300,6 +300,8 @@ class BibliothekBereich(Bereich):
                 f = a.font()
                 f.setBold(True)
                 a.setFont(f)
+        m.addSeparator()
+        m.addAction(_("Remove advert text …"), lambda: self.app.cleaner([b]))
         self._menue_offen = m                                     # für Tests
         m.popup(self.tabelle.viewport().mapToGlobal(pos))
 

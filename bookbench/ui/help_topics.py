@@ -157,6 +157,7 @@ All books of the opened folder (with all subfolders) with series, number, author
 - **Double-click** opens the book in the Chapters area; under Settings > General > Interface it can be Metadata, the Preview or KOReader instead ([[einst_oberflaeche]]).
 - **Right-click** on a book: open it in Chapters, Metadata, the Preview or start it in KOReader (Preview and KOReader not on Windows). The entry marked "Double-click" is the one the double-click uses.
 - **New books**: File > Add books (Ctrl+I) or drag them onto the window ([[bibliothek_hinzufuegen]]); a library on this computer instead of the e-reader: [[bibliothek_rechner]].
+- **Advert lines** like OceanofPDF.com: Edit > Remove advert text … ([[bibliothek_cleaner]]).
 
 **Columns**
 - **Chapters**: **suggestions** (the book text has chapter names the table of contents lacks), **without names** (only numbers, nothing in the text either), **no names found** (only a few matches - probably coincidence, so nothing is suggested), **ok**, **ok (2 without names)** (almost all have names, single ones only a number, e.g. a prologue).
@@ -208,7 +209,19 @@ Since 2.1 the main copy of the books can live in a folder on this computer, like
 
 **.bookbench folder**: the library folder gets a hidden folder .bookbench with library.json (folder scheme, which e-reader belongs to it). It lies in the library folder on purpose: if the folder moves or is synced between Windows and Linux, this comes along.
 
-Coming in the next betas: removing advert lines (OceanofPDF and the like) and copying new or changed books to the e-reader.
+Coming in the next beta: copying new or changed books to the e-reader.
+""")),
+    ("bibliothek", "bibliothek_cleaner", N_("Removing advert text"), N_("""
+Some books carry lines like "OceanofPDF.com" at the end of each chapter. **Edit > Remove advert text …** (in the Library area) searches all books for them, **right-click a book in the library > Remove advert text …** only that book.
+
+**The window**
+- One entry per book with its places, each with the text around it: …before ⟦found⟧ after….
+- **Removes**: *whole <div>* (or p, a …) - the text stands in a container of its own, the container goes too, so no empty line stays behind. *Text only* - the text stands in a paragraph with other content, only the text goes.
+- Everything is checked; untick places or whole books you want to keep.
+- **Remove n places** writes the books right away (a backup is made first, [[speichern]]) and reads them again. Books with unsaved changes are skipped; save or discard first, then **Search again**.
+- **Patterns …** opens the settings ([[einst_cleaner]]).
+
+Text in the head of a file (e.g. the title of a chapter file) is not touched. KOReader may shift a bookmark or the reading position in the same chapter by a line.
 """)),
     ("bibliothek", "bibliothek_spalten", N_("Columns: sorting, moving, widths"), N_("""
 **Sorting**
@@ -811,7 +824,7 @@ All settings are in **einstellungen.json** in the settings folder ([[dateien]]).
 **Pages**
 - General: [[einst_darstellung]], [[einst_oberflaeche]], [[einst_start]]
 - [[einst_speichern]]
-- Books: [[einst_bibliothek]], [[einst_kapitel]], [[einst_klappentexte]] ([[einst_klappentexte_profile]]), [[einst_cover]] ([[einst_cover_nachschlagen]]), [[einst_metadaten]]
+- Books: [[einst_bibliothek]], [[einst_cleaner]], [[einst_kapitel]], [[einst_klappentexte]] ([[einst_klappentexte_profile]]), [[einst_cover]] ([[einst_cover_nachschlagen]]), [[einst_metadaten]]
 - Device: [[einst_kobo]], [[einst_vorschau]]
 - [[einst_online]]
 - [[einst_erweitert]]
@@ -876,6 +889,14 @@ The releases come from github.com/kepfle-git/Bookbench; that is fixed in the pro
 **Reading cache**
 - **Remember read books** (default: on): Bookbench remembers what it read from each book (table of contents, metadata, cover size) together with size and date of the file, and only reads changed files again. KOReader's book data (.sdr) counts too. Stored per library in the settings folder (einlese-cache), not in the library folder.
 - **Empty reading cache**: the next opening reads all books again.
+""")),
+    ("einstellungen", "einst_cleaner", N_("Advert text"), N_("""
+Patterns for Remove advert text ([[bibliothek_cleaner]]).
+
+- One pattern per line, case does not matter (default: OceanofPDF.com).
+- A line in **/slashes/** is a regular expression, e.g. /downloaded from \\S+/ for "Downloaded from" followed by any address.
+- The line below shows how many patterns there are, or what is wrong with a regular expression. Invalid patterns are not saved.
+- **Reset to default** puts back OceanofPDF.com.
 """)),
     ("einstellungen", "einst_kapitel", N_("Chapters"), N_("""
 - **Subtitle lines per chapter** (default: 1): how many lines below a chapter number make up the suggested name. Some books have three (e.g. place, time, person); with 3 all of them are joined with " / ".

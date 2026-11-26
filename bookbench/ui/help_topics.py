@@ -221,6 +221,8 @@ Some books carry lines like "OceanofPDF.com" at the end of each chapter. **Edit 
 - **Remove n places** writes the books right away (a backup is made first, [[speichern]]) and reads them again. Books with unsaved changes are skipped; save or discard first, then **Search again**.
 - **Patterns …** opens the settings ([[einst_cleaner]]).
 
+A **link** whose address matches counts too, however it is labelled: it is shown as label → address (e.g. "Download more books → https://oceanofpdf.com") and removed as a whole. Matches in other attributes (an image file name, a class) do not count.
+
 Text in the head of a file (e.g. the title of a chapter file) is not touched. KOReader may shift a bookmark or the reading position in the same chapter by a line.
 """)),
     ("bibliothek", "bibliothek_spalten", N_("Columns: sorting, moving, widths"), N_("""

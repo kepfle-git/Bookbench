@@ -9,6 +9,9 @@ workbench_colors.py - Bausteine für Farben in der Werkbank (seit 2.2-beta2), vo
   Markierungen    Markierung oben/unten eines Balkens (markers bzw. line_bar_markers[i]): Art, darunter Stil,
                   Größe, Versatz, Farbe (nur bei einer Art)
 
+Auf Geräten ohne Farbbildschirm (grau() liefert True) wird statt einer Farbe ein Grauton in % Schwarz gewählt, wie
+in Bookends' eigenem Menü, und vorhandene Farben erscheinen so grau, wie der Reader sie zeigt (Rec. 601, wie Bookends).
+
 Die Teile kennen die Vorlage nicht: holen() liefert den aktuellen Wert, setzen(wert) schreibt ihn in den
 Entwurf (die Seite plant danach das Bild). fuellen() zeigt holen() an.
 """
@@ -16,17 +19,38 @@ import copy
 
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QColor
-from PySide6.QtWidgets import (QCheckBox, QColorDialog, QGridLayout, QLabel, QMenu, QPushButton, QVBoxLayout,
-                               QWidget)
+from PySide6.QtWidgets import (QCheckBox, QColorDialog, QGridLayout, QInputDialog, QLabel, QMenu, QPushButton,
+                               QVBoxLayout, QWidget)
 
 from bookbench.i18n import _
 from bookbench.preview import plugins as kpl
 from bookbench.ui.workbench_base import Wahl, hinweis, zahl_oder_leer, zahlfeld
 
 
+def grau_hex(h):
+    """#RRGGBB -> Grauton, wie ihn ein Schwarzweiß-Bildschirm zeigt (Rec. 601, wie Bookends' parseColorValue)."""
+    h = h.lstrip("#")
+    r, g, b = int(h[0:2], 16), int(h[2:4], 16), int(h[4:6], 16)
+    l = int(0.299 * r + 0.587 * g + 0.114 * b + 0.5)
+    return f"#{l:02X}{l:02X}{l:02X}"
+
+
+def grau_waehlen(eltern, alt_hex=None):
+    """Grauton als % Schwarz abfragen (0 = weiß, 100 = schwarz); #RRGGBB oder None."""
+    alt = grau_hex(alt_hex) if alt_hex else "#404040"
+    pct = round((255 - int(alt[1:3], 16)) * 100 / 255)
+    wert, ok = QInputDialog.getInt(eltern, _("Grey"), _("% black (0 = white, 100 = black). The e-reader shows greys "
+                                                         "only."), pct, 0, 100, 5)
+    if not ok:
+        return None
+    g = 255 - round(wert * 255 / 100)
+    return f"#{g:02X}{g:02X}{g:02X}"
+
+
 class FarbFeld(QPushButton):
-    def __init__(self, befehl, durchsichtig=False, vorgabe_text=None):
+    def __init__(self, befehl, durchsichtig=False, vorgabe_text=None, grau=None):
         super().__init__("")
+        self._grau = grau or (lambda: False)
         self._wert = None
         self._befehl = befehl
         self._durchsichtig = durchsichtig
@@ -45,9 +69,10 @@ class FarbFeld(QPushButton):
             self.setStyleSheet("")
             self.setToolTip(_("transparent"))
         elif h:
+            zeigen = grau_hex(h) if self._grau() else h
             self.setText("")
-            self.setStyleSheet(f"QPushButton {{ background: {h}; border: 1px solid #888; }}")
-            self.setToolTip(h)
+            self.setStyleSheet(f"QPushButton {{ background: {zeigen}; border: 1px solid #888; }}")
+            self.setToolTip(h if zeigen == h else _("{farbe}, on this e-reader {grau}").format(farbe=h, grau=zeigen))
         else:
             self.setText("-")
             self.setStyleSheet("")
@@ -55,7 +80,7 @@ class FarbFeld(QPushButton):
 
     def _menue(self):
         m = QMenu(self)
-        m.addAction(_("Choose colour …"), self.waehlen)
+        m.addAction(_("Choose grey …") if self._grau() else _("Choose colour …"), self.waehlen)
         m.addAction(_("Default") + (f" ({self._vorgabe_text})" if self._vorgabe_text else ""),
                     lambda: self._neu(None))
         if self._durchsichtig:
@@ -64,6 +89,11 @@ class FarbFeld(QPushButton):
 
     def waehlen(self):
         alt = kpl.farbe_hex(self._wert) if self._wert is not False else None
+        if self._grau():
+            h = grau_waehlen(self.window(), alt)
+            if h:
+                self._neu(kpl.farbe_wert(h))
+            return
         erg = QColorDialog.getColor(QColor(alt or "#808080"), self.window(), _("Colour"))
         if erg.isValid():
             self._neu(kpl.farbe_wert(erg.name()))
@@ -76,7 +106,7 @@ class FarbFeld(QPushButton):
 class BalkenFarben(QWidget):
     """colors-Tabelle eines Balkens; None = Bookends' Farben je Stil."""
 
-    def __init__(self, holen, setzen):
+    def __init__(self, holen, setzen, grau=None):
         super().__init__()
         self.holen, self.setzen_fn = holen, setzen
         self._laden = False
@@ -92,7 +122,7 @@ class BalkenFarben(QWidget):
         r = 0
         for feld, text in kpl.BALKEN_FARBEN:
             g.addWidget(QLabel(_(text)), r, 0)
-            self.farben[feld] = FarbFeld(self._uebernehmen, durchsichtig=True, vorgabe_text=_("per style"))
+            self.farben[feld] = FarbFeld(self._uebernehmen, durchsichtig=True, vorgabe_text=_("per style"), grau=grau)
             g.addWidget(self.farben[feld], r, 1, Qt.AlignLeft)
             r += 1
         self.umkehren = QCheckBox(_("Invert the tick colour on the read part"))
@@ -161,7 +191,7 @@ class BalkenFarben(QWidget):
 class Markierungen(QWidget):
     """markers-Tabelle eines Balkens: {top: {type, style, size, offset, color}, bottom: …}; fehlt = aus."""
 
-    def __init__(self, holen, setzen):
+    def __init__(self, holen, setzen, grau=None):
         super().__init__()
         self.holen, self.setzen_fn = holen, setzen
         self._laden = False
@@ -179,7 +209,7 @@ class Markierungen(QWidget):
             stil = Wahl(kpl.MARKEN_STILE, lambda p=platz: self._uebernehmen(p))
             groesse = zahlfeld(lambda p=platz: self._uebernehmen(p))
             versatz = zahlfeld(lambda p=platz: self._uebernehmen(p), negativ=True)
-            farbe = FarbFeld(lambda p=platz: self._uebernehmen(p), vorgabe_text=_("black"))
+            farbe = FarbFeld(lambda p=platz: self._uebernehmen(p), vorgabe_text=_("black"), grau=grau)
             ul.addWidget(QLabel(_("Style")), 0, 0)
             ul.addWidget(stil, 0, 1, Qt.AlignLeft)
             ul.addWidget(QLabel(_("Colour")), 0, 2)

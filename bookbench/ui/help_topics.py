@@ -737,7 +737,7 @@ Up to eight bars across the page, independent of the lines. Choose a bar in the 
 - **Markers**: a small mark on the bar at a reading position - start of the reading session, where the book was opened, bookmarks, or today's start. One on top, one below; for each the style (chevron or solid), size (%), offset (px) and colour.
 
 **Colours** (tab Preset)
-Text colour (default = the colour of the book text), symbol colour (default = like the text) and the background behind the top and bottom lines (default = none) - for all lines of the preset. On a black-and-white screen Bookends shows colours as grey.
+Text colour (default = the colour of the book text), symbol colour (default = like the text) and the background behind the top and bottom lines (default = none) - for all lines of the preset. On a black-and-white screen Bookends shows colours as grey. If the e-reader of the profile has no colour screen (model table, or the device chosen under View), every colour field - here, for bars, markers and the Grey … button below the text field - asks for a grey in % black instead, as Bookends' own menu does there, and colours set elsewhere show as the grey the e-reader will display.
 
 **General** (tab Preset)
 Font size and scale, the four margins, the gap before texts overlap and what is shortened first. Empty fields use Bookends' defaults.
@@ -762,7 +762,7 @@ The page has five tabs: **Appearance** (theme, wallpaper, plank, decoration, col
 **Wallpaper, plank, colours** (of the custom theme)
 - **Wallpaper**: a picture from settings/bookshelf/wallpapers, a second one for full screen shelves, how strongly the panels over it are shaded, transparent buttons, blur under the panels, inverting in night mode. **Add picture …** copies a picture into the profile at once.
 - **Plank**: oak, colour only, or a plank from a theme pack.
-- **Colours**: day and night colour for each part (text, progress bar, plank, menu bar …). Click a field to choose; "-" is the default, ✕ resets day and night. Grey is stored as Bookshelf does (as a grey level).
+- **Colours**: day and night colour for each part (text, progress bar, plank, menu bar …). Click a field to choose; "-" is the default, ✕ resets day and night. Grey is stored as Bookshelf does (as a grey level). Without a colour screen on the profile's e-reader a click asks for a grey in % black, and colours show as the grey the e-reader will display.
 
 **Decoration (ornaments)**
 - **How often per shelf**: none, rarely, often (default), always. Ornaments only appear on spine shelves.

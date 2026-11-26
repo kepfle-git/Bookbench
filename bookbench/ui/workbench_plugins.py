@@ -277,13 +277,13 @@ class BookendsSeite(_SymbolSeite):
             teile += [text, self.zb_dicke[feld]]
         zl.addWidget(zeile(*teile, hinweis("px")))
         self.zb_farben = wfa.BalkenFarben(lambda: self._zeilenfeld("line_bar_colors"),
-                                          lambda w: self._zeilenfeld_setzen("line_bar_colors", w))
+                                          lambda w: self._zeilenfeld_setzen("line_bar_colors", w), grau=self.nur_grau)
         zl.addWidget(self.zb_farben)
         k = QLabel(_("Markers"))
         k.setProperty("rolle", "abschnitt")
         zl.addWidget(k)
         self.zb_marken = wfa.Markierungen(lambda: self._zeilenfeld("line_bar_markers"),
-                                          lambda w: self._zeilenfeld_setzen("line_bar_markers", w))
+                                          lambda w: self._zeilenfeld_setzen("line_bar_markers", w), grau=self.nur_grau)
         zl.addWidget(self.zb_marken)
         lay.addWidget(self.zb_rahmen)
         self.zbalken_knopf = QPushButton("")
@@ -329,13 +329,13 @@ class BookendsSeite(_SymbolSeite):
         g.setColumnStretch(4, 1)
         bl.addLayout(g)
         self.bb_farben = wfa.BalkenFarben(lambda: self._balkenfeld("colors"),
-                                          lambda w: self._balkenfeld_setzen("colors", w))
+                                          lambda w: self._balkenfeld_setzen("colors", w), grau=self.nur_grau)
         bl.addWidget(self.bb_farben)
         k = QLabel(_("Markers"))
         k.setProperty("rolle", "abschnitt")
         bl.addWidget(k)
         self.bb_marken = wfa.Markierungen(lambda: self._balkenfeld("markers"),
-                                          lambda w: self._balkenfeld_setzen("markers", w))
+                                          lambda w: self._balkenfeld_setzen("markers", w), grau=self.nur_grau)
         bl.addWidget(self.bb_marken)
         lay.addWidget(self.bb_rahmen)
         self.balken_text = hinweis("", BREITE)
@@ -374,13 +374,11 @@ class BookendsSeite(_SymbolSeite):
                                                               ("bg_bottom", N_("Background bottom"), N_("off"))]
         for r, (k, text, vorgabe) in enumerate(felder):
             g.addWidget(QLabel(_(text)), r, 0)
-            self.farb_felder[k] = wfa.FarbFeld(self._farben_geaendert, vorgabe_text=_(vorgabe))
+            self.farb_felder[k] = wfa.FarbFeld(self._farben_geaendert, vorgabe_text=_(vorgabe), grau=self.nur_grau)
             g.addWidget(self.farb_felder[k], r, 1, Qt.AlignLeft)
         g.setColumnStretch(2, 1)
-        g.addWidget(hinweis(_("For all lines of the preset. Parts of a line get their own colour with \"Colour …\" "
-                              "below the text field (tab Lines). On a black-and-white screen Bookends shows colours "
-                              "as grey."),
-                            BREITE), len(felder), 0, 1, 3)
+        self.farben_hinweis = hinweis("", BREITE)
+        g.addWidget(self.farben_hinweis, len(felder), 0, 1, 3)
 
         # -- allgemein
         i = self._abschnitt("allgemein", _("General"))
@@ -582,6 +580,14 @@ class BookendsSeite(_SymbolSeite):
             self.kuerzen.get(kpl.allgemein(d, "truncation_priority") or "center", self.kuerzen["center"]).setChecked(True)
             for k, f in self.farb_felder.items():
                 f.setzen(kpl.hintergrund(d, k[3:]) if k.startswith("bg_") else d.get(k))
+            self.farben_hinweis.setText(
+                _("For all lines of the preset. Your e-reader shows greys only: colours are chosen as % black, and "
+                  "colours set elsewhere show as the grey it will display. Parts of a line get their own grey with "
+                  "\"Grey …\" below the text field (tab Lines).") if self.nur_grau() else
+                _("For all lines of the preset. Parts of a line get their own colour with \"Colour …\" below the "
+                  "text field (tab Lines). On a black-and-white screen Bookends shows colours as grey."))
+            grau = self.nur_grau()
+            self.format_knoepfe["c"].setText(_("Grey …") if grau else _("Colour …"))
             self._schema_fuellen()
             self._zeile_zeigen()
             self._balken_zeigen()
@@ -999,10 +1005,15 @@ class BookendsSeite(_SymbolSeite):
         t = self.texte.get(self._fokus_pos) or self.texte["tc"]
         farbe = None
         if tag == "c":
-            erg = QColorDialog.getColor(QColor("#404040"), self.app, _("Colour"))
-            if not erg.isValid():
-                return
-            farbe = erg.name().upper()
+            if self.nur_grau():                           # Schwarzweiß-Reader: Grauton in % Schwarz (seit 2.2)
+                farbe = wfa.grau_waehlen(self.app)
+                if not farbe:
+                    return
+            else:
+                erg = QColorDialog.getColor(QColor("#404040"), self.app, _("Colour"))
+                if not erg.isValid():
+                    return
+                farbe = erg.name().upper()
         c = t.textCursor()
         neu, cur = kpl.format_einfuegen(t.toPlainText(), c.selectionStart(), c.selectionEnd(), tag, farbe)
         t.setPlainText(neu)                               # textChanged übernimmt den Text
@@ -2373,11 +2384,13 @@ class BookshelfSeite(_SymbolSeite):
         self._setzen(schl, menge or None)
 
     def _farben_fuellen(self):
+        grau = self.nur_grau()
         for k, feld in self.farb_felder.items():
             h = kpl.farbe_hex(self._wert(k))
             if h:
                 feld.setText("")
-                feld.setStyleSheet(f"QPushButton {{ background: {h}; border: 1px solid #888; }}")
+                feld.setStyleSheet(f"QPushButton {{ background: {wfa.grau_hex(h) if grau else h}; "
+                                   "border: 1px solid #888; }")
             else:
                 feld.setText("-")
                 feld.setStyleSheet("")
@@ -2386,6 +2399,11 @@ class BookshelfSeite(_SymbolSeite):
         from PySide6.QtGui import QColor
         from PySide6.QtWidgets import QColorDialog
         alt = kpl.farbe_hex(self._wert(schl))
+        if self.nur_grau():                               # Schwarzweiß-Reader: Grauton in % Schwarz (seit 2.2)
+            h = wfa.grau_waehlen(self.app, alt)
+            if h:
+                self._setzen(schl, kpl.farbe_wert(h))
+            return
         erg = QColorDialog.getColor(QColor(alt or "#808080"), self.app, _("Colour"))
         if erg.isValid():
             self._setzen(schl, kpl.farbe_wert(erg.name()))

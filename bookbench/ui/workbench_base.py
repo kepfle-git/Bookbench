@@ -312,6 +312,13 @@ class Seite:
         if knopf is not None:
             knopf.setChecked(an)
 
+    def nur_grau(self):
+        """True, wenn das nachgebildete Gerät keinen Farbbildschirm hat (Farben dann als % Schwarz, seit 2.2)."""
+        try:
+            return not self.bereich.bildschirm().get("farbe", True)
+        except Exception:                                 # ohne Profil/Gerät: wie Farbe
+            return False
+
     @property
     def ko(self):
         return kpl.ko_ordner(self.bereich.profil)

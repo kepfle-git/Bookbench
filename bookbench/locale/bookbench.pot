@@ -519,7 +519,7 @@ msgstr ""
 msgid "Apply the suggestions of all books without questionable entries"
 msgstr ""
 
-#: area_chapters.py:155 settings.py:499 settings.py:674 workbench_plugins.py:1716 workbench_plugins.py:1906 workbench_plugins.py:2040
+#: area_chapters.py:155 settings.py:499 settings.py:674 workbench_plugins.py:1727 workbench_plugins.py:1917 workbench_plugins.py:2051
 msgid "Up"
 msgstr ""
 
@@ -528,7 +528,7 @@ msgid ""
 "Move the selected entries with their sub-entries one level up (Shift+Tab)"
 msgstr ""
 
-#: area_chapters.py:157 settings.py:500 settings.py:675 workbench_plugins.py:1717 workbench_plugins.py:1907 workbench_plugins.py:2041
+#: area_chapters.py:157 settings.py:500 settings.py:675 workbench_plugins.py:1728 workbench_plugins.py:1918 workbench_plugins.py:2052
 msgid "Down"
 msgstr ""
 
@@ -703,7 +703,7 @@ msgstr ""
 msgid "Contents"
 msgstr ""
 
-#: area_device.py:121 workbench_plugins.py:221 workbench_plugins.py:1508
+#: area_device.py:121 workbench_plugins.py:221 workbench_plugins.py:1519
 msgid "Size"
 msgstr ""
 
@@ -1298,7 +1298,7 @@ msgstr ""
 msgid "From own knowledge (unverified)"
 msgstr ""
 
-#: area_dictionary.py:471 workbench_plugins.py:1717 workbench_plugins.py:1908 workbench_plugins.py:2042
+#: area_dictionary.py:471 workbench_plugins.py:1728 workbench_plugins.py:1919 workbench_plugins.py:2053
 msgid "Remove"
 msgstr ""
 
@@ -2374,7 +2374,7 @@ msgstr ""
 msgid "Book for the preview"
 msgstr ""
 
-#: area_preview.py:993 dialogs.py:73 workbench_plugins.py:2398 workbench_reader.py:519 workbench_sleep.py:359
+#: area_preview.py:993 dialogs.py:73 workbench_plugins.py:2416 workbench_reader.py:519 workbench_sleep.py:359
 msgid "All files"
 msgstr ""
 
@@ -3134,7 +3134,7 @@ msgstr ""
 msgid "Tags"
 msgstr ""
 
-#: device_sync.py:38 settings.py:100 workbench_plugins.py:1501
+#: device_sync.py:38 settings.py:100 workbench_plugins.py:1512
 msgid "Subtitle"
 msgstr ""
 
@@ -5171,7 +5171,11 @@ msgid ""
 "Text colour (default = the colour of the book text), symbol colour (default "
 "= like the text) and the background behind the top and bottom lines "
 "(default = none) - for all lines of the preset. On a black-and-white screen "
-"Bookends shows colours as grey.\n"
+"Bookends shows colours as grey. If the e-reader of the profile has no "
+"colour screen (model table, or the device chosen under View), every colour "
+"field - here, for bars, markers and the Grey … button below the text field "
+"- asks for a grey in % black instead, as Bookends' own menu does there, and "
+"colours set elsewhere show as the grey the e-reader will display.\n"
 "\n"
 "**General** (tab Preset)\n"
 "Font size and scale, the four margins, the gap before texts overlap and "
@@ -5230,7 +5234,9 @@ msgid ""
 "- **Plank**: oak, colour only, or a plank from a theme pack.\n"
 "- **Colours**: day and night colour for each part (text, progress bar, "
 "plank, menu bar …). Click a field to choose; \"-\" is the default, ✕ resets "
-"day and night. Grey is stored as Bookshelf does (as a grey level).\n"
+"day and night. Grey is stored as Bookshelf does (as a grey level). Without "
+"a colour screen on the profile's e-reader a click asks for a grey in % "
+"black, and colours show as the grey the e-reader will display.\n"
 "\n"
 "**Decoration (ornaments)**\n"
 "- **How often per shelf**: none, rarely, often (default), always. Ornaments "
@@ -6046,7 +6052,7 @@ msgid ""
 "are in the backup folder ([[speichern]]).\n"
 msgstr ""
 
-#: import_window.py:26 workbench_plugins.py:1716 workbench_plugins.py:1719 workbench_plugins.py:1906 workbench_plugins.py:1909 workbench_plugins.py:2042
+#: import_window.py:26 workbench_plugins.py:1727 workbench_plugins.py:1730 workbench_plugins.py:1917 workbench_plugins.py:1920 workbench_plugins.py:2053
 msgid "Add"
 msgstr ""
 
@@ -6134,7 +6140,7 @@ msgstr ""
 msgid "Add books"
 msgstr ""
 
-#: import_window.py:69 workbench_plugins.py:1460
+#: import_window.py:69 workbench_plugins.py:1471
 msgid "Change …"
 msgstr ""
 
@@ -6758,7 +6764,7 @@ msgstr ""
 msgid "Regular"
 msgstr ""
 
-#: plugins.py:44 plugins.py:340 workbench_plugins.py:193 workbench_plugins.py:1509
+#: plugins.py:44 plugins.py:340 workbench_plugins.py:193 workbench_plugins.py:1520
 msgid "Bold"
 msgstr ""
 
@@ -6774,7 +6780,7 @@ msgstr ""
 msgid "Font scale (%)"
 msgstr ""
 
-#: plugins.py:53 workbench_plugins.py:843
+#: plugins.py:53 workbench_plugins.py:849
 msgid "Margin top"
 msgstr ""
 
@@ -6782,7 +6788,7 @@ msgstr ""
 msgid "Margin bottom"
 msgstr ""
 
-#: plugins.py:54 workbench_plugins.py:323 workbench_plugins.py:843
+#: plugins.py:54 workbench_plugins.py:323 workbench_plugins.py:849
 msgid "Margin left"
 msgstr ""
 
@@ -7058,11 +7064,11 @@ msgstr ""
 msgid "Shelf buttons in capitals"
 msgstr ""
 
-#: plugins.py:569 settings.py:44 workbench_plugins.py:386
+#: plugins.py:569 settings.py:44 workbench_plugins.py:384
 msgid "General"
 msgstr ""
 
-#: plugins.py:570 workbench_plugins.py:1438 workbench_plugins.py:1986 workbench_plugins.py:1998 workbench_plugins.py:2023
+#: plugins.py:570 workbench_plugins.py:1449 workbench_plugins.py:1997 workbench_plugins.py:2009 workbench_plugins.py:2034
 msgid "Start menu"
 msgstr ""
 
@@ -7082,7 +7088,7 @@ msgstr ""
 msgid "Modules in the hero card"
 msgstr ""
 
-#: plugins.py:575 workbench_plugins.py:2248
+#: plugins.py:575 workbench_plugins.py:2259
 msgid "Full screen shelves"
 msgstr ""
 
@@ -7162,7 +7168,7 @@ msgstr ""
 msgid "Genres"
 msgstr ""
 
-#: plugins.py:626 plugins.py:802 workbench_plugins.py:1907 workbench_plugins.py:1909 workbench_shelves.py:76
+#: plugins.py:626 plugins.py:802 workbench_plugins.py:1918 workbench_plugins.py:1920 workbench_shelves.py:76
 msgid "Folder"
 msgstr ""
 
@@ -7174,7 +7180,7 @@ msgstr ""
 msgid "Automatic"
 msgstr ""
 
-#: plugins.py:706 workbench_plugins.py:1434
+#: plugins.py:706 workbench_plugins.py:1445
 msgid "Home"
 msgstr ""
 
@@ -7314,7 +7320,7 @@ msgstr ""
 msgid "Automatic (like KOReader)"
 msgstr ""
 
-#: plugins.py:1105 workbench_colors.py:62
+#: plugins.py:1105 workbench_colors.py:87
 msgid "Transparent"
 msgstr ""
 
@@ -7330,7 +7336,7 @@ msgstr ""
 msgid "Heavy"
 msgstr ""
 
-#: plugins.py:1106 transfer_window.py:54 workbench_plugins.py:2246
+#: plugins.py:1106 transfer_window.py:54 workbench_plugins.py:2257
 msgid "None"
 msgstr ""
 
@@ -7414,7 +7420,7 @@ msgstr ""
 msgid "Cover shadow"
 msgstr ""
 
-#: plugins.py:1115 workbench_plugins.py:1431 workbench_plugins.py:2269
+#: plugins.py:1115 workbench_plugins.py:1442 workbench_plugins.py:2280
 msgid "Plank"
 msgstr ""
 
@@ -7434,7 +7440,7 @@ msgstr ""
 msgid "Selected shelf text"
 msgstr ""
 
-#: plugins.py:1118 workbench_plugins.py:1725
+#: plugins.py:1118 workbench_plugins.py:1736
 msgid "Page"
 msgstr ""
 
@@ -8502,7 +8508,7 @@ msgstr ""
 msgid "Leave the screen as it is"
 msgstr ""
 
-#: sleep_screen.py:32 workbench_colors.py:182
+#: sleep_screen.py:32 workbench_colors.py:212
 msgid "black"
 msgstr ""
 
@@ -8510,7 +8516,7 @@ msgstr ""
 msgid "white"
 msgstr ""
 
-#: sleep_screen.py:35 workbench_plugins.py:1430 workbench_sleep.py:59
+#: sleep_screen.py:35 workbench_plugins.py:1441 workbench_sleep.py:59
 msgid "Wallpaper"
 msgstr ""
 
@@ -8911,11 +8917,11 @@ msgstr ""
 msgid "KOReader window"
 msgstr ""
 
-#: transfer_window.py:53 workbench_plugins.py:2040 workbench_reader.py:322
+#: transfer_window.py:53 workbench_plugins.py:2051 workbench_reader.py:322
 msgid "On/off"
 msgstr ""
 
-#: transfer_window.py:53 workbench_plugins.py:1447
+#: transfer_window.py:53 workbench_plugins.py:1458
 msgid "All"
 msgstr ""
 
@@ -9584,68 +9590,84 @@ msgstr ""
 msgid "Unsaved changes on this tab"
 msgstr ""
 
-#: workbench_base.py:363
+#: workbench_base.py:370
 msgid ""
 "The {plugin} settings have unsaved changes. Save them in the profile first?"
 msgstr ""
 
-#: workbench_base.py:372
+#: workbench_base.py:379
 msgid "Discard the unsaved changes?"
 msgstr ""
 
-#: workbench_base.py:378
+#: workbench_base.py:385
 msgid ""
 "● Unsaved changes - so far only in the picture. \"Save to profile\" keeps "
 "them."
 msgstr ""
 
-#: workbench_base.py:381
+#: workbench_base.py:388
 msgid ""
 "Same as in the profile. \"To the e-reader …\" in the toolbar writes it to "
 "the e-reader."
 msgstr ""
 
-#: workbench_colors.py:46
+#: workbench_colors.py:42
+msgid "Grey"
+msgstr ""
+
+#: workbench_colors.py:42
+msgid "% black (0 = white, 100 = black). The e-reader shows greys only."
+msgstr ""
+
+#: workbench_colors.py:70
 msgid "transparent"
 msgstr ""
 
-#: workbench_colors.py:54 workbench_colors.py:59 workbench_plugins.py:942 workbench_plugins.py:1460 workbench_plugins.py:1503
+#: workbench_colors.py:75
+msgid "{farbe}, on this e-reader {grau}"
+msgstr ""
+
+#: workbench_colors.py:79 workbench_colors.py:84 workbench_plugins.py:948 workbench_plugins.py:1471 workbench_plugins.py:1514
 msgid "Default"
 msgstr ""
 
-#: workbench_colors.py:58
+#: workbench_colors.py:83
+msgid "Choose grey …"
+msgstr ""
+
+#: workbench_colors.py:83
 msgid "Choose colour …"
 msgstr ""
 
-#: workbench_colors.py:67 workbench_colors.py:185 workbench_plugins.py:1002 workbench_plugins.py:2389
+#: workbench_colors.py:97 workbench_colors.py:215 workbench_plugins.py:1013 workbench_plugins.py:2407
 msgid "Colour"
 msgstr ""
 
-#: workbench_colors.py:85
+#: workbench_colors.py:115
 msgid "Own colours and ticks"
 msgstr ""
 
-#: workbench_colors.py:95
+#: workbench_colors.py:125
 msgid "per style"
 msgstr ""
 
-#: workbench_colors.py:98
+#: workbench_colors.py:128
 msgid "Invert the tick colour on the read part"
 msgstr ""
 
-#: workbench_colors.py:106 workbench_plugins.py:395 workbench_reader.py:141 workbench_sleep.py:128
+#: workbench_colors.py:136 workbench_plugins.py:393 workbench_reader.py:141 workbench_sleep.py:128
 msgid "empty = {wert}"
 msgstr ""
 
-#: workbench_colors.py:183 workbench_plugins.py:221
+#: workbench_colors.py:213 workbench_plugins.py:221
 msgid "Style"
 msgstr ""
 
-#: workbench_colors.py:187
+#: workbench_colors.py:217
 msgid "Size (%)"
 msgstr ""
 
-#: workbench_colors.py:189
+#: workbench_colors.py:219
 msgid "Offset (px)"
 msgstr ""
 
@@ -9741,7 +9763,7 @@ msgstr ""
 msgid "Lines"
 msgstr ""
 
-#: workbench_plugins.py:130 workbench_plugins.py:1500
+#: workbench_plugins.py:130 workbench_plugins.py:1511
 msgid "Insert token"
 msgstr ""
 
@@ -9772,7 +9794,7 @@ msgstr ""
 msgid "Extra right margin"
 msgstr ""
 
-#: workbench_plugins.py:197
+#: workbench_plugins.py:197 workbench_plugins.py:590
 msgid "Colour …"
 msgstr ""
 
@@ -9796,7 +9818,7 @@ msgstr ""
 msgid "Selected line"
 msgstr ""
 
-#: workbench_plugins.py:215 workbench_plugins.py:710
+#: workbench_plugins.py:215 workbench_plugins.py:716
 msgid "Click into a line above."
 msgstr ""
 
@@ -9804,7 +9826,7 @@ msgstr ""
 msgid "Font"
 msgstr ""
 
-#: workbench_plugins.py:227 workbench_plugins.py:1509
+#: workbench_plugins.py:227 workbench_plugins.py:1520
 msgid "Capitals"
 msgstr ""
 
@@ -9848,7 +9870,7 @@ msgstr ""
 msgid "Back to 0"
 msgstr ""
 
-#: workbench_plugins.py:275 workbench_plugins.py:321 workbench_plugins.py:840
+#: workbench_plugins.py:275 workbench_plugins.py:321 workbench_plugins.py:846
 msgid "Thickness"
 msgstr ""
 
@@ -9879,11 +9901,11 @@ msgstr ""
 msgid "Edge"
 msgstr ""
 
-#: workbench_plugins.py:322 workbench_plugins.py:842
+#: workbench_plugins.py:322 workbench_plugins.py:848
 msgid "Distance from the edge"
 msgstr ""
 
-#: workbench_plugins.py:323 workbench_plugins.py:844
+#: workbench_plugins.py:323 workbench_plugins.py:850
 msgid "right"
 msgstr ""
 
@@ -9899,7 +9921,7 @@ msgstr ""
 msgid "Name"
 msgstr ""
 
-#: workbench_plugins.py:369 workbench_plugins.py:1433
+#: workbench_plugins.py:369 workbench_plugins.py:1444
 msgid "Colours"
 msgstr ""
 
@@ -9911,279 +9933,291 @@ msgstr ""
 msgid "Background bottom"
 msgstr ""
 
-#: workbench_plugins.py:380
+#: workbench_plugins.py:394
+msgid "size of KOReader's status bar"
+msgstr ""
+
+#: workbench_plugins.py:433
+msgid "page text"
+msgstr ""
+
+#: workbench_plugins.py:504
+msgid ""
+"Bookends {version} in the profile. Changes show in the picture at once."
+msgstr ""
+
+#: workbench_plugins.py:546
+msgid "Preset {datei} could not be read: {fehler}"
+msgstr ""
+
+#: workbench_plugins.py:584
+msgid ""
+"For all lines of the preset. Your e-reader shows greys only: colours are "
+"chosen as % black, and colours set elsewhere show as the grey it will "
+"display. Parts of a line get their own grey with \"Grey …\" below the text "
+"field (tab Lines)."
+msgstr ""
+
+#: workbench_plugins.py:587
 msgid ""
 "For all lines of the preset. Parts of a line get their own colour with "
 "\"Colour …\" below the text field (tab Lines). On a black-and-white screen "
 "Bookends shows colours as grey."
 msgstr ""
 
-#: workbench_plugins.py:396
-msgid "size of KOReader's status bar"
+#: workbench_plugins.py:590
+msgid "Grey …"
 msgstr ""
 
-#: workbench_plugins.py:435
-msgid "page text"
-msgstr ""
-
-#: workbench_plugins.py:506
-msgid ""
-"Bookends {version} in the profile. Changes show in the picture at once."
-msgstr ""
-
-#: workbench_plugins.py:548
-msgid "Preset {datei} could not be read: {fehler}"
-msgstr ""
-
-#: workbench_plugins.py:598
+#: workbench_plugins.py:604
 msgid "No preset in the profile. \"New\" makes one."
 msgstr ""
 
-#: workbench_plugins.py:600
+#: workbench_plugins.py:606
 msgid "This is the active preset (Bookends uses it on the e-reader)."
 msgstr ""
 
-#: workbench_plugins.py:602
+#: workbench_plugins.py:608
 msgid ""
 "Not active: on the e-reader Bookends uses \"{name}\". The picture shows "
 "this one."
 msgstr ""
 
-#: workbench_plugins.py:656
+#: workbench_plugins.py:662
 msgid ""
 "KOReader's symbol font (nerdfonts/symbols.ttf) was not found: symbols show "
 "as names. Take the profile from the e-reader to get its fonts."
 msgstr ""
 
-#: workbench_plugins.py:667
+#: workbench_plugins.py:673
 msgid "This Bookends version has no list of special characters."
 msgstr ""
 
-#: workbench_plugins.py:725
+#: workbench_plugins.py:731
 msgid "{position}, line {nr}"
 msgstr ""
 
-#: workbench_plugins.py:754
+#: workbench_plugins.py:760
 msgid "Bar in this line"
 msgstr ""
 
-#: workbench_plugins.py:754
+#: workbench_plugins.py:760
 msgid "No bar in this line (token %bar)."
 msgstr ""
 
-#: workbench_plugins.py:755
+#: workbench_plugins.py:761
 msgid "Remove bar"
 msgstr ""
 
-#: workbench_plugins.py:755
+#: workbench_plugins.py:761
 msgid "Insert bar"
 msgstr ""
 
-#: workbench_plugins.py:821
+#: workbench_plugins.py:827
 msgid "Bar {nr}"
 msgstr ""
 
-#: workbench_plugins.py:840
+#: workbench_plugins.py:846
 msgid "Diameter"
 msgstr ""
 
-#: workbench_plugins.py:841
+#: workbench_plugins.py:847
 msgid "Distance from the line text"
 msgstr ""
 
-#: workbench_plugins.py:844
+#: workbench_plugins.py:850
 msgid "bottom"
 msgstr ""
 
-#: workbench_plugins.py:856
+#: workbench_plugins.py:862
 msgid ""
 "Up to {n} bars across the page. \"Position relative to line text\" stays as "
 "it is; switch it on the e-reader."
 msgstr ""
 
-#: workbench_plugins.py:1050
+#: workbench_plugins.py:1061
 msgid "[if:…] and [/if] do not match in this line."
 msgstr ""
 
-#: workbench_plugins.py:1094
+#: workbench_plugins.py:1105
 msgid "Click into a line first."
 msgstr ""
 
-#: workbench_plugins.py:1230
+#: workbench_plugins.py:1241
 msgid "The preset \"{name}\" has unsaved changes. Save them in the profile?"
 msgstr ""
 
-#: workbench_plugins.py:1241
+#: workbench_plugins.py:1252
 msgid "New preset"
 msgstr ""
 
-#: workbench_plugins.py:1241
+#: workbench_plugins.py:1252
 msgid "Name of the new preset:"
 msgstr ""
 
-#: workbench_plugins.py:1242
+#: workbench_plugins.py:1253
 msgid "{name} (copy)"
 msgstr ""
 
-#: workbench_plugins.py:1264
+#: workbench_plugins.py:1275
 msgid "Delete the preset \"{name}\" from the profile?"
 msgstr ""
 
-#: workbench_plugins.py:1278
+#: workbench_plugins.py:1289
 msgid "Preset deleted from the profile."
 msgstr ""
 
-#: workbench_plugins.py:1296
+#: workbench_plugins.py:1307
 msgid "Bookends preset \"{name}\" saved in the profile."
 msgstr ""
 
-#: workbench_plugins.py:1385
+#: workbench_plugins.py:1396
 msgid ""
 "Bookshelf has no way to reload its settings while running: after a change "
 "the workbench restarts on the start screen (about a second)."
 msgstr ""
 
-#: workbench_plugins.py:1387
+#: workbench_plugins.py:1398
 msgid "Start screen shows:"
 msgstr ""
 
-#: workbench_plugins.py:1390
+#: workbench_plugins.py:1401
 msgid "sample books"
 msgstr ""
 
-#: workbench_plugins.py:1390
+#: workbench_plugins.py:1401
 msgid "the opened library"
 msgstr ""
 
-#: workbench_plugins.py:1428
+#: workbench_plugins.py:1439
 msgid "Appearance"
 msgstr ""
 
-#: workbench_plugins.py:1429
+#: workbench_plugins.py:1440
 msgid "Themes"
 msgstr ""
 
-#: workbench_plugins.py:1432
+#: workbench_plugins.py:1443
 msgid "Decoration (ornaments)"
 msgstr ""
 
-#: workbench_plugins.py:1435
+#: workbench_plugins.py:1446
 msgid "Top panel"
 msgstr ""
 
-#: workbench_plugins.py:1436
+#: workbench_plugins.py:1447
 msgid "Modules in the top panel"
 msgstr ""
 
-#: workbench_plugins.py:1437
+#: workbench_plugins.py:1448
 msgid "Navigation"
 msgstr ""
 
-#: workbench_plugins.py:1439 workbench_plugins.py:2123 workbench_plugins.py:2155
+#: workbench_plugins.py:1450 workbench_plugins.py:2134 workbench_plugins.py:2166
 msgid "Shelves"
 msgstr ""
 
-#: workbench_plugins.py:1441
+#: workbench_plugins.py:1452
 msgid "Layout"
 msgstr ""
 
-#: workbench_plugins.py:1451
+#: workbench_plugins.py:1462
 msgid ""
 "For everything not on the other tabs. Double-click a simple value to change "
 "it; tables (shelves, modules) only on the other tabs or in Bookshelf "
 "itself. \"Default\" removes the key, then Bookshelf's default applies."
 msgstr ""
 
-#: workbench_plugins.py:1456
+#: workbench_plugins.py:1467
 msgid "Key"
 msgstr ""
 
-#: workbench_plugins.py:1456
+#: workbench_plugins.py:1467
 msgid "Value"
 msgstr ""
 
-#: workbench_plugins.py:1488
+#: workbench_plugins.py:1499
 msgid "Shows"
 msgstr ""
 
-#: workbench_plugins.py:1489
+#: workbench_plugins.py:1500
 msgid "Lines of the hero card (the current book):"
 msgstr ""
 
-#: workbench_plugins.py:1492
+#: workbench_plugins.py:1503
 msgid "Shown"
 msgstr ""
 
-#: workbench_plugins.py:1522
+#: workbench_plugins.py:1533
 msgid "Rows at most"
 msgstr ""
 
-#: workbench_plugins.py:1567
+#: workbench_plugins.py:1578
 msgid "Stars to tap; only on/off, size and alignment."
 msgstr ""
 
-#: workbench_plugins.py:1568
+#: workbench_plugins.py:1579
 msgid ""
 "Buttons for author, series, collections, genres and folder, each can be "
 "hidden."
 msgstr ""
 
-#: workbench_plugins.py:1569
+#: workbench_plugins.py:1580
 msgid ""
 "An extra line between author and description; Bookshelf puts the series "
 "here by default. \"Subtitle\" puts the book's subtitle here (needs the "
 "Bookbench patch 2-bookbench-subtitle, page Patches)."
 msgstr ""
 
-#: workbench_plugins.py:1572
+#: workbench_plugins.py:1583
 msgid ""
 "Tokens like in Bookshelf's line editor, [if:token]…[/if] shows a part only "
 "if the token has a value. Empty = the line is left out."
 msgstr ""
 
-#: workbench_plugins.py:1575
+#: workbench_plugins.py:1586
 msgid ""
 "⚠ %subtitle needs the patch 2-bookbench-subtitle in the profile (page "
 "Patches)."
 msgstr ""
 
-#: workbench_plugins.py:1589
+#: workbench_plugins.py:1600
 msgid "Subtitle from the EPUB (needs the Bookbench patch)"
 msgstr ""
 
-#: workbench_plugins.py:1712 workbench_plugins.py:1952
+#: workbench_plugins.py:1723 workbench_plugins.py:1963
 msgid "Module"
 msgstr ""
 
-#: workbench_plugins.py:1712
+#: workbench_plugins.py:1723
 msgid "Position"
 msgstr ""
 
-#: workbench_plugins.py:1718 workbench_plugins.py:1719
+#: workbench_plugins.py:1729 workbench_plugins.py:1730
 msgid "Choice"
 msgstr ""
 
-#: workbench_plugins.py:1720
+#: workbench_plugins.py:1731
 msgid "Place automatically"
 msgstr ""
 
-#: workbench_plugins.py:1725
+#: workbench_plugins.py:1736
 msgid "Column"
 msgstr ""
 
-#: workbench_plugins.py:1725
+#: workbench_plugins.py:1736
 msgid "Row"
 msgstr ""
 
-#: workbench_plugins.py:1725
+#: workbench_plugins.py:1736
 msgid "Width"
 msgstr ""
 
-#: workbench_plugins.py:1726
+#: workbench_plugins.py:1737
 msgid "Height"
 msgstr ""
 
-#: workbench_plugins.py:1734
+#: workbench_plugins.py:1745
 msgid ""
 "Positions in grid cells. The top panel has 1 or 2 rows and 2 to 8 columns, "
 "depending on the screen; Bookshelf moves a module that does not fit or "
@@ -10191,140 +10225,140 @@ msgid ""
 "added; \"Choice\" changes it."
 msgstr ""
 
-#: workbench_plugins.py:1757
+#: workbench_plugins.py:1768
 msgid ""
 "Bookshelf's defaults - not in the file yet; the first change here writes "
 "them (with the names in Bookbench's language)."
 msgstr ""
 
-#: workbench_plugins.py:1772
+#: workbench_plugins.py:1783
 msgid "page {seite}: {spalte}/{reihe}, {w}×{h}"
 msgstr ""
 
-#: workbench_plugins.py:1774
+#: workbench_plugins.py:1785
 msgid "automatic"
 msgstr ""
 
-#: workbench_plugins.py:1847
+#: workbench_plugins.py:1858
 msgid "(hidden)"
 msgstr ""
 
-#: workbench_plugins.py:1850
+#: workbench_plugins.py:1861
 msgid "No shelf with books (stacks don't count)."
 msgstr ""
 
-#: workbench_plugins.py:1858 workbench_plugins.py:2299
+#: workbench_plugins.py:1869 workbench_plugins.py:2310
 msgid "No ornaments in the profile."
 msgstr ""
 
-#: workbench_plugins.py:1908 workbench_plugins.py:2041
+#: workbench_plugins.py:1919 workbench_plugins.py:2052
 msgid "Rename …"
 msgstr ""
 
-#: workbench_plugins.py:1910
+#: workbench_plugins.py:1921
 msgid ""
 "A folder holds entries, one level deep as in Bookshelf. New entries are "
 "Bookshelf's standard ones; other actions and icons are set in Bookshelf's "
 "start menu editor."
 msgstr ""
 
-#: workbench_plugins.py:1950
+#: workbench_plugins.py:1961
 msgid "Folder …"
 msgstr ""
 
-#: workbench_plugins.py:1951
+#: workbench_plugins.py:1962
 msgid "Divider"
 msgstr ""
 
-#: workbench_plugins.py:1957
+#: workbench_plugins.py:1968
 msgid "Standard entry"
 msgstr ""
 
-#: workbench_plugins.py:1964
+#: workbench_plugins.py:1975
 msgid "Into \"{name}\""
 msgstr ""
 
-#: workbench_plugins.py:1966
+#: workbench_plugins.py:1977
 msgid "Out of the folder"
 msgstr ""
 
-#: workbench_plugins.py:1986
+#: workbench_plugins.py:1997
 msgid "Name of the folder:"
 msgstr ""
 
-#: workbench_plugins.py:1996
+#: workbench_plugins.py:2007
 msgid "Only entries and folders have a name."
 msgstr ""
 
-#: workbench_plugins.py:1998 workbench_plugins.py:2123
+#: workbench_plugins.py:2009 workbench_plugins.py:2134
 msgid "New name:"
 msgstr ""
 
-#: workbench_plugins.py:2013
+#: workbench_plugins.py:2024
 msgid "Folders and dividers stay at the top level."
 msgstr ""
 
-#: workbench_plugins.py:2023
+#: workbench_plugins.py:2034
 msgid "Remove the folder with its {n} entries?"
 msgstr ""
 
-#: workbench_plugins.py:2035
+#: workbench_plugins.py:2046
 msgid "Shelf"
 msgstr ""
 
-#: workbench_plugins.py:2035 workbench_plugins.py:2046
+#: workbench_plugins.py:2046 workbench_plugins.py:2057
 msgid "Shown as"
 msgstr ""
 
-#: workbench_plugins.py:2047
+#: workbench_plugins.py:2058
 msgid ""
 "☑ shown as a button above the shelf, ☐ hidden. Add > New shelf … makes one "
 "from a folder, a collection, a stack per series and more; removed standard "
 "shelves can be added again. Sorting and filters are set in Bookshelf."
 msgstr ""
 
-#: workbench_plugins.py:2071
+#: workbench_plugins.py:2082
 msgid "New shelf …"
 msgstr ""
 
-#: workbench_plugins.py:2078
+#: workbench_plugins.py:2089
 msgid "All standard shelves are there."
 msgstr ""
 
-#: workbench_plugins.py:2109 workbench_plugins.py:2153
+#: workbench_plugins.py:2120 workbench_plugins.py:2164
 msgid "At least one shelf stays shown."
 msgstr ""
 
-#: workbench_plugins.py:2155
+#: workbench_plugins.py:2166
 msgid ""
 "Remove the shelf? Its settings (sorting, filters) are gone; the books stay."
 msgstr ""
 
-#: workbench_plugins.py:2221 workbench_plugins.py:2232
+#: workbench_plugins.py:2232 workbench_plugins.py:2243
 msgid "Custom theme"
 msgstr ""
 
-#: workbench_plugins.py:2221 workbench_plugins.py:2232
+#: workbench_plugins.py:2232 workbench_plugins.py:2243
 msgid "Plain"
 msgstr ""
 
-#: workbench_plugins.py:2222
+#: workbench_plugins.py:2233
 msgid "Default theme"
 msgstr ""
 
-#: workbench_plugins.py:2224
+#: workbench_plugins.py:2235
 msgid "Light or dark"
 msgstr ""
 
-#: workbench_plugins.py:2228
+#: workbench_plugins.py:2239
 msgid "Theme per shelf"
 msgstr ""
 
-#: workbench_plugins.py:2232
+#: workbench_plugins.py:2243
 msgid "Like the default"
 msgstr ""
 
-#: workbench_plugins.py:2238
+#: workbench_plugins.py:2249
 msgid ""
 "Theme packs are folders in settings/bookshelf/ornaments with a "
 "theme/theme.json; new ones come from Bookshelf's theme library. Wallpaper, "
@@ -10332,117 +10366,117 @@ msgid ""
 "own parts over it."
 msgstr ""
 
-#: workbench_plugins.py:2241
+#: workbench_plugins.py:2252
 msgid "No theme pack in the profile."
 msgstr ""
 
-#: workbench_plugins.py:2246
+#: workbench_plugins.py:2257
 msgid "Picture"
 msgstr ""
 
-#: workbench_plugins.py:2248
+#: workbench_plugins.py:2259
 msgid "Same as above"
 msgstr ""
 
-#: workbench_plugins.py:2250
+#: workbench_plugins.py:2261
 msgid "Panel shading"
 msgstr ""
 
-#: workbench_plugins.py:2253
+#: workbench_plugins.py:2264
 msgid "Transparent buttons"
 msgstr ""
 
-#: workbench_plugins.py:2254
+#: workbench_plugins.py:2265
 msgid "Blur the picture under panels"
 msgstr ""
 
-#: workbench_plugins.py:2255
+#: workbench_plugins.py:2266
 msgid "Invert the picture in night mode"
 msgstr ""
 
-#: workbench_plugins.py:2256
+#: workbench_plugins.py:2267
 msgid "One panel over the whole covers shelf"
 msgstr ""
 
-#: workbench_plugins.py:2261
+#: workbench_plugins.py:2272
 msgid "Add picture …"
 msgstr ""
 
-#: workbench_plugins.py:2264
+#: workbench_plugins.py:2275
 msgid ""
 "Pictures are in settings/bookshelf/wallpapers of the profile. \"Add "
 "picture\" copies one there at once (it still has to get to the e-reader)."
 msgstr ""
 
-#: workbench_plugins.py:2269
+#: workbench_plugins.py:2280
 msgid "Default (oak, unless you chose a plank colour)"
 msgstr ""
 
-#: workbench_plugins.py:2270
+#: workbench_plugins.py:2281
 msgid "Oak"
 msgstr ""
 
-#: workbench_plugins.py:2270
+#: workbench_plugins.py:2281
 msgid "Colour only"
 msgstr ""
 
-#: workbench_plugins.py:2272
+#: workbench_plugins.py:2283
 msgid "The plank colour is under Colours (Plank)."
 msgstr ""
 
-#: workbench_plugins.py:2278
+#: workbench_plugins.py:2289
 msgid "How often per shelf"
 msgstr ""
 
-#: workbench_plugins.py:2288
+#: workbench_plugins.py:2299
 msgid "Ornaments (double-click switches on/off)"
 msgstr ""
 
-#: workbench_plugins.py:2297
+#: workbench_plugins.py:2308
 msgid ""
 "Ornaments stand in the gaps of spine shelves only. Their files are in "
 "settings/bookshelf/ornaments (one level of packs)."
 msgstr ""
 
-#: workbench_plugins.py:2304
+#: workbench_plugins.py:2315
 msgid "Day"
 msgstr ""
 
-#: workbench_plugins.py:2305
+#: workbench_plugins.py:2316
 msgid "Night"
 msgstr ""
 
-#: workbench_plugins.py:2318
+#: workbench_plugins.py:2329
 msgid ""
 "Click a field to choose a colour; \"-\" = the default. ✕ resets day and "
 "night. Colours belong to the custom theme."
 msgstr ""
 
-#: workbench_plugins.py:2396
+#: workbench_plugins.py:2414
 msgid "Wallpaper for Bookshelf"
 msgstr ""
 
-#: workbench_plugins.py:2397
+#: workbench_plugins.py:2415
 msgid "Pictures"
 msgstr ""
 
-#: workbench_plugins.py:2424
+#: workbench_plugins.py:2442
 msgid "Bookshelf {version} in the profile ({datei})."
 msgstr ""
 
-#: workbench_plugins.py:2519
+#: workbench_plugins.py:2537
 msgid "{schluessel} is a table: change it in Bookshelf itself."
 msgstr ""
 
-#: workbench_plugins.py:2521
+#: workbench_plugins.py:2539
 msgid "New value for {schluessel}:"
 msgstr ""
 
-#: workbench_plugins.py:2528
+#: workbench_plugins.py:2546
 msgid "\"{text}\" does not fit the value ({art})."
 msgstr ""
 
-#: workbench_plugins.py:2571
+#: workbench_plugins.py:2589
 msgid "Bookshelf settings saved in the profile ({n} changed)."
 msgstr ""
 

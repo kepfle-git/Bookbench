@@ -16,6 +16,7 @@ kleine Bilder). Entwurf und Auswahl hängen an der Seite, nicht an den Widgets (
 """
 import copy
 import re
+from pathlib import Path
 
 from PySide6.QtCore import QEvent, QObject, Qt
 from PySide6.QtGui import QColor, QFont, QTextCursor
@@ -32,31 +33,12 @@ from bookbench.preview import plugins as kpl
 from bookbench.ui import dialogs
 from bookbench.ui import workbench_colors as wfa
 from bookbench.ui import workbench_conditions as wbd
+from bookbench.ui import workbench_shelves as wsh
 from bookbench.ui.workbench_base import (BREITE, Seite, Wahl, gleich, hinweis, mit_symbolen, symbolschrift,
                                          zahl_oder_leer, zahlfeld, zeile)
 
 PAUSE_BOOKENDS = 350                              # ms nach der letzten Eingabe, dann ins Bild
 PAUSE_BOOKSHELF = 900                             # ms, dann Neustart (länger: kostet ~1,2 s)
-
-# Bookshelfs Standard-Einträge im Startmenü (bookshelf_start_menu_model.lua DEFAULTS, Aktionen ohne Module);
-# zum Wiederherstellen. Die Beschriftung wird in Bookbenchs Sprache gespeichert, wie Bookshelf es auch tut.
-STARTMENUE_STANDARD = (
-    {"type": "action", "label": N_("Reading calendar"), "icon": "", "action": {"stats_calendar_view": True}},
-    {"type": "action", "label": N_("Bookmark browser"), "icon": "", "action": {"bookmark_browser": True}},
-    {"type": "action", "label": N_("Screenshot"), "icon": "", "action": {"screenshot": True}},
-    {"type": "action", "label": N_("Frontlight"), "icon": "",
-     "menu_path": [{"id": "setting"}, {"id": "frontlight"}]},
-    {"type": "action", "label": N_("Full screen refresh"), "icon": "", "action": {"full_refresh": True}},
-    {"type": "action", "label": N_("Battery statistics"), "icon": "", "action": {"battery_statistics": True}},
-    {"type": "action", "label": N_("Wi-Fi connection"), "icon": "",
-     "menu_path": [{"id": "setting"}, {"id": "network"}, {"id": "network_wifi"}], "menu_toggle": True},
-    {"type": "action", "label": N_("Night mode"), "icon": "",
-     "menu_path": [{"id": "setting"}, {"id": "night_mode"}], "menu_toggle": True},
-    {"type": "action", "label": N_("Close book"), "icon": "", "menu_path": [{"id": "filemanager"}],
-     "scope": "reader"},
-    {"type": "action", "label": N_("Sleep"), "icon": "", "action": {"suspend": True}},
-)
-
 
 class _Fokus(QObject):
     """Merkt das zuletzt benutzte Textfeld (Token und Sonderzeichen werden dort eingefügt)."""
@@ -154,18 +136,6 @@ class BookendsSeite(_SymbolSeite):
         sym.setPopupMode(QToolButton.InstantPopup)
         self.sym_menue = QMenu(sym)
         sym.setMenu(self.sym_menue)
-        fmt = QToolButton()
-        fmt.setText(_("Format"))
-        fmt.setPopupMode(QToolButton.InstantPopup)
-        fm = QMenu(fmt)
-        for tag, text in kpl.FORMAT_TAGS:
-            fm.addAction(_(text) + f"   [{tag}]…[/{tag}]", lambda t=tag: self.format_einfuegen(t))
-        fm.addAction(_("Colour …") + "   [c=#…]…[/c]", lambda: self.format_einfuegen("c"))
-        fm.addSeparator()
-        fm.addAction(_("Condition …") + "   [if:…]…[/if]", self.bedingung_neu)
-        self.beispiel_menue = fm.addMenu(_("Examples with conditions"))
-        fmt.setMenu(fm)
-        lay.addWidget(zeile(self.token_knopf, sym, fmt))
         lay.addWidget(hinweis(_("Choose a position on the page; one line per row, tokens like %title or %page_num "
                                 "are filled in by Bookends. The extra margin moves only this position away from the "
                                 "edge (px), not the whole header or footer."), BREITE))
@@ -186,7 +156,9 @@ class BookendsSeite(_SymbolSeite):
                 felder.append(("h_offset", _("Extra left margin") if pos.endswith("l") else _("Extra right margin")))
             for r, (feld, text) in enumerate(felder):
                 g.addWidget(QLabel(text), r, 0)
-                f = self.rand[(pos, feld)] = zahlfeld(lambda p=pos: self._rand_geaendert(p), breite=46)
+                f = self.rand[(pos, feld)] = QSpinBox()            # Pfeile wie „Zeile verschieben“ (2.2-beta4)
+                f.setRange(0, 999)                                  # wie Bookends' Nudge-Dialog, 0 = kein Eintrag
+                f.valueChanged.connect(lambda *a, p=pos: self._rand_geaendert(p))
                 g.addWidget(f, r, 1)
                 g.addWidget(hinweis("px"), r, 2)
             g.setColumnStretch(3, 1)
@@ -203,6 +175,38 @@ class BookendsSeite(_SymbolSeite):
             self.texte[pos] = t
             self.pos_rahmen[pos] = rahmen
             lay.addWidget(rahmen)
+        # Werkzeuge direkt unter dem (sichtbaren) Textfeld (seit 2.2-beta4): Tokens, Sonderzeichen, Format als Knöpfe
+        def knopf(text, tipp, fn, schrift=None):
+            k = QToolButton()
+            k.setText(text)
+            k.setToolTip(tipp)
+            k.setFocusPolicy(Qt.NoFocus)                  # Auswahl im Textfeld bleibt
+            if schrift:
+                f = k.font()
+                schrift(f)
+                k.setFont(f)
+            k.clicked.connect(lambda *a: fn())
+            return k
+        for k in (self.token_knopf, sym):
+            k.setFocusPolicy(Qt.NoFocus)
+        self.format_knoepfe = {
+            "b": knopf("B", _("Bold") + "  [b]…[/b]", lambda: self.format_einfuegen("b"), lambda f: f.setBold(True)),
+            "i": knopf("I", _("Italic") + "  [i]…[/i]", lambda: self.format_einfuegen("i"), lambda f: f.setItalic(True)),
+            "u": knopf("U", _("Underlined") + "  [u]…[/u]", lambda: self.format_einfuegen("u"),
+                       lambda f: f.setUnderline(True)),
+            "c": knopf(_("Colour …"), _("Colour for the selected text") + "  [c=#…]…[/c]",
+                       lambda: self.format_einfuegen("c")),
+            "if": knopf(_("Condition …"), _("New condition") + "  [if:…]…[/if]", self.bedingung_neu),
+        }
+        bsp = self.beispiel_knopf = QToolButton()
+        bsp.setText(_("Examples"))
+        bsp.setToolTip(_("Examples with conditions"))
+        bsp.setPopupMode(QToolButton.InstantPopup)
+        bsp.setFocusPolicy(Qt.NoFocus)
+        self.beispiel_menue = QMenu(bsp)
+        bsp.setMenu(self.beispiel_menue)
+        lay.addWidget(zeile(self.token_knopf, sym))
+        lay.addWidget(zeile(*[self.format_knoepfe[k] for k in ("b", "i", "u", "c", "if")], bsp))
 
         # -- gewählte Zeile
         i = self._abschnitt("zeile", _("Selected line"))
@@ -373,8 +377,9 @@ class BookendsSeite(_SymbolSeite):
             self.farb_felder[k] = wfa.FarbFeld(self._farben_geaendert, vorgabe_text=_(vorgabe))
             g.addWidget(self.farb_felder[k], r, 1, Qt.AlignLeft)
         g.setColumnStretch(2, 1)
-        g.addWidget(hinweis(_("For all lines of the preset. Parts of a line get their own colour with Format > "
-                              "Colour (tab Lines). On a black-and-white screen Bookends shows colours as grey."),
+        g.addWidget(hinweis(_("For all lines of the preset. Parts of a line get their own colour with \"Colour …\" "
+                              "below the text field (tab Lines). On a black-and-white screen Bookends shows colours "
+                              "as grey."),
                             BREITE), len(felder), 0, 1, 3)
 
         # -- allgemein
@@ -573,7 +578,7 @@ class BookendsSeite(_SymbolSeite):
                 f.setText("" if w is None else str(w))
             for (pos, feld), f in self.rand.items():
                 w = kpl.positionswert(d, pos, feld)
-                f.setText("" if not w else str(w))
+                f.setValue(int(w or 0))
             self.kuerzen.get(kpl.allgemein(d, "truncation_priority") or "center", self.kuerzen["center"]).setChecked(True)
             for k, f in self.farb_felder.items():
                 f.setzen(kpl.hintergrund(d, k[3:]) if k.startswith("bg_") else d.get(k))
@@ -1017,7 +1022,7 @@ class BookendsSeite(_SymbolSeite):
             a = m.addAction(beschreibung, lambda t=ausdruck: self._einfuegen(t))
             a.setToolTip(ausdruck)
         m.setToolTipsVisible(True)
-        m.setEnabled(bool(liste))
+        self.beispiel_knopf.setEnabled(bool(liste))
 
     def _bed_bloecke(self):
         return bc.alle(bc.bloecke(self._zeilentext()) or [])
@@ -1134,13 +1139,8 @@ class BookendsSeite(_SymbolSeite):
         if self._laden or self.daten is None:
             return
         for (p, feld), f in self.rand.items():
-            if p != pos:
-                continue
-            try:
-                w = zahl_oder_leer(f.text())
-            except ValueError:
-                return
-            kpl.positionswert_setzen(self.daten, pos, feld, int(w) if w else None)
+            if p == pos:
+                kpl.positionswert_setzen(self.daten, pos, feld, f.value() or None)
         self._geaendert()
 
     def _allgemein_geaendert(self):
@@ -1314,10 +1314,12 @@ def _baum(spalten=1, hoehe=8):
     b.setRootIsDecorated(False)
     b.setMinimumHeight(hoehe * 20 + 6)
     b.setMaximumHeight(hoehe * 24 + 6)
-    if spalten > 1:
-        b.header().setStretchLastSection(False)
-        b.header().setSectionResizeMode(0, QHeaderView.Stretch)
-        b.header().setSectionResizeMode(1, QHeaderView.ResizeToContents)
+    if spalten > 1:                               # Spalten ziehbar wie in Bibliothek/Kapitel (seit 2.2-beta4)
+        h = b.header()
+        h.setSectionResizeMode(QHeaderView.Interactive)
+        h.setStretchLastSection(True)
+        h.setMinimumSectionSize(40)
+        h.resizeSection(0, 210)
     return b
 
 
@@ -1690,6 +1692,10 @@ class BookshelfSeite(_SymbolSeite):
     def _liste_setzen(self, schl, neu, zaehler=None, waehlen=None):
         if zaehler is not None:
             self.aenderungen[zaehler[0]] = zaehler[1]
+        if self._vorgabe(schl):                   # Vorgabe wird zur Liste: Merker wie Bookshelf beim Anlegen
+            for k, v in kpl.VORGABE_MERKER.get(schl, {}).items():
+                if (self.datei_werte or {}).get(k) is None:
+                    self.aenderungen[k] = v
         for name in ("module", "menue", "regale"):
             if waehlen:
                 self.auswahl[name] = waehlen
@@ -1702,12 +1708,15 @@ class BookshelfSeite(_SymbolSeite):
         self.mod_hinweis = hinweis("", BREITE)
         lay.addWidget(self.mod_hinweis)
         self.mod_baum = _baum(2, 6)
+        self.mod_baum.setHeaderHidden(False)
+        self.mod_baum.setHeaderLabels([_("Module"), _("Position")])
         self.mod_baum.currentItemChanged.connect(lambda *a: (self._merken("module", self.mod_baum),
                                                              self._mod_position_zeigen()))
         lay.addWidget(self.mod_baum)
         k = self._knoepfe(lay, ((_("Add"), None), (_("Up"), lambda: self._mod_schieben(-1)),
-                                (_("Down"), lambda: self._mod_schieben(1)), (_("Remove"), self._mod_entfernen)))
-        self.mod_neu = k[_("Add")]
+                                (_("Down"), lambda: self._mod_schieben(1)), (_("Remove"), self._mod_entfernen),
+                                (_("Choice"), None)))
+        self.mod_neu, self.mod_wahl = k[_("Add")], k[_("Choice")]
         self.mod_auto = QCheckBox(_("Place automatically"))
         self.mod_auto.toggled.connect(lambda *a: self._mod_position_uebernehmen())
         lay.addWidget(self.mod_auto)
@@ -1723,17 +1732,33 @@ class BookshelfSeite(_SymbolSeite):
         g.setColumnStretch(6, 1)
         lay.addLayout(g)
         lay.addWidget(hinweis(_("Positions in grid cells. The top panel has 1 or 2 rows and 2 to 8 columns, depending "
-                                "on the screen; Bookshelf moves a module that does not fit or overlaps another. Modules "
-                                "that need a choice (action, shelf, ornament) are added in Bookshelf."), BREITE))
+                                "on the screen; Bookshelf moves a module that does not fit or overlaps another. Action, "
+                                "shelf and ornament ask for their choice when added; \"Choice\" changes it."), BREITE))
 
     def _modulnamen(self):
         if not hasattr(self, "_mod_namen") and self.info:
             self._mod_namen = kpl.micromodule(self.info["ordner"])
         return getattr(self, "_mod_namen", [])
 
+    def _vorgabe(self, schl):
+        """True, solange die Liste nicht in der Datei (oder im Entwurf) steht: dann gilt Bookshelfs Vorgabe."""
+        return not isinstance(self._wert(schl), list)
+
+    def _liste(self, schl):
+        """Liste aus Datei/Entwurf, sonst Bookshelfs Vorgabe (seit 2.2-beta4)."""
+        w = self._wert(schl)
+        if isinstance(w, list):
+            return w
+        werte = dict(self.datei_werte or {})
+        werte.update({k: v for k, v in self.aenderungen.items() if v is not None})
+        return kpl.liste_vorgabe(schl, werte)
+
+    def _vorgabe_hinweis(self, schl):
+        return _("Bookshelf's defaults - not in the file yet; the first change here writes them (with the names in "
+                 "Bookbench's language).") if self._vorgabe(schl) else ""
+
     def _mod_liste(self):
-        w = self._wert(kpl.MODULE_SCHLUESSEL[0])
-        return w if isinstance(w, list) else None
+        return self._liste(kpl.MODULE_SCHLUESSEL[0])
 
     def _mod_fuellen(self):
         liste = self._mod_liste()
@@ -1747,21 +1772,23 @@ class BookshelfSeite(_SymbolSeite):
             pos = (_("page {seite}: {spalte}/{reihe}, {w}×{h}").format(
                 seite=at.get("page"), spalte=at.get("col"), reihe=at.get("row"), w=at.get("w"), h=at.get("h"))
                    if isinstance(at, dict) else _("automatic"))
-            it = QTreeWidgetItem([titel.get(e.get("module"), e.get("module", "?")), pos])
+            name = titel.get(e.get("module"), e.get("module", "?"))
+            detail = self._einrichtung_text(e)
+            it = QTreeWidgetItem([name + (f": {detail}" if detail else ""), pos])
             it.setData(0, Qt.UserRole, e["id"])
             b.addTopLevelItem(it)
         _waehlen(b, self.auswahl.get("module"))
-        da = liste is not None
-        self.mod_hinweis.setText("" if da else _("Bookshelf has not set up the modules yet: open the top panel's "
-                                                 "modules once on the e-reader."))
-        self.mod_neu.setEnabled(da)
+        self.mod_hinweis.setText(self._vorgabe_hinweis(kpl.MODULE_SCHLUESSEL[0]))
+        self.mod_hinweis.setVisible(bool(self.mod_hinweis.text()))
         m = self.mod_neu.menu()
         m.clear()
         for mod in self._modulnamen():
-            if mod["key"] in kpl.MODULE_MIT_EINRICHTUNG:
-                continue
-            m.addAction(f"{_(mod['titel'])}  –  {_(mod['text'])}" if mod["text"] else _(mod["titel"]),
-                        lambda k=mod["key"]: self._mod_hinzufuegen(k))
+            text = f"{_(mod['titel'])}  –  {_(mod['text'])}" if mod["text"] else _(mod["titel"])
+            if mod["key"] in kpl.MODULE_MIT_EINRICHTUNG:          # mit Auswahl als Untermenü (seit 2.2-beta4)
+                self._einrichtung_menue(m.addMenu(text), mod["key"],
+                                        lambda felder, k=mod["key"]: self._mod_hinzufuegen(k, felder))
+            else:
+                m.addAction(text, lambda k=mod["key"]: self._mod_hinzufuegen(k))
         self._mod_position_zeigen()
 
     def _mod_position_zeigen(self):
@@ -1772,6 +1799,12 @@ class BookshelfSeite(_SymbolSeite):
             at = e.get("at") if e else None
             self.mod_auto.setChecked(e is not None and not isinstance(at, dict))
             self.mod_auto.setEnabled(e is not None)
+            art = e.get("module") if e else None
+            self.mod_wahl.setEnabled(art in kpl.MODULE_MIT_EINRICHTUNG)
+            self.mod_wahl.menu().clear()
+            if art in kpl.MODULE_MIT_EINRICHTUNG:
+                self._einrichtung_menue(self.mod_wahl.menu(), art,
+                                        lambda felder, k=e["id"]: self._mod_einrichten(k, felder))
             for feld, sp in self.mod_pos.items():
                 sp.setValue(int(at.get(feld, 1)) if isinstance(at, dict) else 1)
                 sp.setEnabled(isinstance(at, dict))
@@ -1791,15 +1824,63 @@ class BookshelfSeite(_SymbolSeite):
             neu = kpl.aendern(liste, kennung, at={feld: max(1, min(12, sp.value())) for feld, sp in self.mod_pos.items()})
         self._liste_setzen(kpl.MODULE_SCHLUESSEL[0], neu, waehlen=kennung)
 
-    def _mod_hinzufuegen(self, modul):
+    def _mod_hinzufuegen(self, modul, felder=None):
         liste = self._mod_liste()
-        if liste is None:
-            return
         werte = dict(self.datei_werte or {})
         werte.update({k: v for k, v in self.aenderungen.items() if v is not None})
         kennung, zaehler = kpl.neue_id(werte, kpl.MODULE_SCHLUESSEL[1], kpl.MODULE_SCHLUESSEL[2])
-        neu = copy.deepcopy(liste) + [{"id": kennung, "type": "module", "module": modul}]
+        neu = copy.deepcopy(liste) + [{"id": kennung, "type": "module", "module": modul, **(felder or {})}]
         self._liste_setzen(kpl.MODULE_SCHLUESSEL[0], neu, (kpl.MODULE_SCHLUESSEL[1], zaehler), waehlen=kennung)
+
+    # Module mit Auswahl (seit 2.2-beta4; Bookshelf micromodules/action|shelf|ornament.lua on_add)
+    def _einrichtung_menue(self, m, art, fn):
+        """Untermenü mit den Möglichkeiten für Aktion (Bookshelfs Standard-Aktionen), Regal (Regale mit Büchern) oder
+        Ornament (Stücke des Profils); fn(felder) mit den Feldern, die Bookshelf am Eintrag speichert."""
+        if art == "action":
+            for v in kpl.startmenue_aktionen():
+                felder = {k: copy.deepcopy(w) for k, w in v.items() if k not in ("type", "scope")}
+                felder["label"] = _(v["label"])
+                m.addAction(_(v["label"]), lambda f=felder: fn(f))
+        elif art == "shelf":
+            regale = [t for t in self._regale() if kpl.ist_buchregal(t)]
+            for t in regale:
+                m.addAction(kpl.regal_name(t) + ("" if t.get("enabled") is not False else " " + _("(hidden)")),
+                            lambda k=t["id"]: fn({"tab_id": k}))
+            if not regale:
+                m.addAction(_("No shelf with books (stacks don't count).")).setEnabled(False)
+        elif art == "ornament":
+            deko = kpl.dekoration(self.ko)
+            for paket, teile in deko.items():
+                ziel = m.addMenu(paket) if paket else m
+                for teil in teile:
+                    ziel.addAction(teil.rsplit("/", 1)[-1].rsplit(".", 1)[0], lambda t=teil: fn({"ornament": t}))
+            if not deko:
+                m.addAction(_("No ornaments in the profile.")).setEnabled(False)
+
+    def _einrichtung_text(self, e):
+        art = e.get("module")
+        if art == "action":
+            return str(e.get("label") or "")
+        if art == "shelf":
+            t = next((t for t in self._regale() if isinstance(t, dict) and t.get("id") == e.get("tab_id")), None)
+            return kpl.regal_name(t) if t else (str(e.get("tab_id")) + " ⚠" if e.get("tab_id") else "")
+        if art == "ornament":
+            return str(e.get("ornament") or "").rsplit("/", 1)[-1].rsplit(".", 1)[0]
+        return ""
+
+    def _mod_einrichten(self, kennung, felder):
+        liste = self._mod_liste()
+        l, n = kpl.eintrag_suchen(liste, kennung)
+        if l is None:
+            return
+        neu = copy.deepcopy(liste)
+        l2, n2 = kpl.eintrag_suchen(neu, kennung)
+        e = l2[n2]
+        for k in ("label", "icon", "action", "menu_path", "menu_toggle", "plugin", "internal"):
+            if "label" in felder or "action" in felder or "menu_path" in felder:
+                e.pop(k, None)
+        e.update(copy.deepcopy(felder))
+        self._liste_setzen(kpl.MODULE_SCHLUESSEL[0], neu, waehlen=kennung)
 
     def _mod_schieben(self, schritt):
         kennung, liste = _gewaehlt_id(self.mod_baum), self._mod_liste()
@@ -1831,8 +1912,7 @@ class BookshelfSeite(_SymbolSeite):
                               BREITE))
 
     def _menue_liste(self):
-        w = self._wert(kpl.STARTMENUE_SCHLUESSEL[0])
-        return w if isinstance(w, list) else None
+        return self._liste(kpl.STARTMENUE_SCHLUESSEL[0])
 
     def _menue_text(self, e, titel):
         art = e.get("type")
@@ -1863,11 +1943,8 @@ class BookshelfSeite(_SymbolSeite):
                         it.addChild(ci)
                 it.setExpanded(True)
         _waehlen(b, self.auswahl.get("menue"))
-        da = liste is not None
-        self.menue_hinweis.setText("" if da else _("Bookshelf has not set up its start menu yet: open it once on the "
-                                                   "e-reader."))
-        for knopf in (self.menue_neu, self.menue_ordner):
-            knopf.setEnabled(da)
+        self.menue_hinweis.setText(self._vorgabe_hinweis(kpl.STARTMENUE_SCHLUESSEL[0]))
+        self.menue_hinweis.setVisible(bool(self.menue_hinweis.text()))
         m = self.menue_neu.menu()
         m.clear()
         m.addAction(_("Folder …"), self._menue_neuer_ordner)
@@ -1878,7 +1955,7 @@ class BookshelfSeite(_SymbolSeite):
                 continue
             mm.addAction(_(mod["titel"]), lambda k=mod["key"]: self._menue_neu({"type": "module", "module": k}))
         sm = m.addMenu(_("Standard entry"))
-        for vorlage in STARTMENUE_STANDARD:
+        for vorlage in kpl.startmenue_aktionen():
             sm.addAction(_(vorlage["label"]), lambda v=vorlage: self._menue_neu({**copy.deepcopy(v),
                                                                                 "label": _(v["label"])}))
         om = self.menue_ordner.menu()
@@ -1954,6 +2031,8 @@ class BookshelfSeite(_SymbolSeite):
         self.regal_hinweis = hinweis("", BREITE)
         lay.addWidget(self.regal_hinweis)
         self.regal_baum = _baum(2, 8)
+        self.regal_baum.setHeaderHidden(False)
+        self.regal_baum.setHeaderLabels([_("Shelf"), _("Shown as")])
         self.regal_baum.itemDoubleClicked.connect(lambda *a: self._regal_umschalten())
         self.regal_baum.currentItemChanged.connect(lambda *a: (self._merken("regale", self.regal_baum),
                                                                self._regal_ansicht_zeigen()))
@@ -1965,13 +2044,12 @@ class BookshelfSeite(_SymbolSeite):
         self.regal_knoepfe = list(k.values())
         self.regal_ansicht = Wahl(kpl.ANSICHTEN, self._regal_ansicht_uebernehmen)
         lay.addWidget(zeile(_("Shown as"), self.regal_ansicht))
-        lay.addWidget(hinweis(_("☑ shown as a button above the shelf, ☐ hidden. Sorting, filters and new shelves from "
-                                "collections or folders are set in Bookshelf; removed standard shelves can be added "
-                                "again here."), BREITE))
+        lay.addWidget(hinweis(_("☑ shown as a button above the shelf, ☐ hidden. Add > New shelf … makes one from a "
+                                "folder, a collection, a stack per series and more; removed standard shelves can be "
+                                "added again. Sorting and filters are set in Bookshelf."), BREITE))
 
     def _regal_liste(self):
-        w = self._wert("tabs")
-        return w if isinstance(w, list) else None
+        return self._liste("tabs")
 
     def _regale_fuellen(self):
         liste = self._regal_liste()
@@ -1986,19 +2064,25 @@ class BookshelfSeite(_SymbolSeite):
             it.setData(0, Qt.UserRole, e["id"])
             b.addTopLevelItem(it)
         _waehlen(b, self.auswahl.get("regale"))
-        da = liste is not None
-        self.regal_hinweis.setText("" if da else _("Bookshelf still uses its standard shelves; change them once on the "
-                                                   "e-reader, then they can be edited here."))
-        for knopf in self.regal_knoepfe:
-            knopf.setEnabled(da)
+        self.regal_hinweis.setText(self._vorgabe_hinweis("tabs"))
+        self.regal_hinweis.setVisible(bool(self.regal_hinweis.text()))
         m = self.regal_neu.menu()
         m.clear()
+        m.addAction(_("New shelf …"), self.regal_neu_anlegen)
+        m.addSeparator()
         vorhanden = {e.get("id") for e in liste or [] if isinstance(e, dict)}
         fehlend = [r for r in kpl.REGALE_EINGEBAUT if r["id"] not in vorhanden]
         for r in fehlend:
             m.addAction(_(r["label"]), lambda r=r: self._regal_hinzufuegen(r))
         if not fehlend:
             m.addAction(_("All standard shelves are there.")).setEnabled(False)
+        quellen = {k: _(t) for k, t, __ in kpl.REGAL_QUELLEN}
+        for i in range(b.topLevelItemCount()):                # Quelle als Tooltip
+            it = b.topLevelItem(i)
+            l, n = kpl.eintrag_suchen(liste, it.data(0, Qt.UserRole))
+            q = (l[n].get("source") or {}) if l is not None else {}
+            it.setToolTip(0, quellen.get(q.get("kind"), str(q.get("kind") or "?")) +
+                          (f": {q['id']}" if q.get("id") else ""))
         self._regal_ansicht_zeigen()
 
     def _regal_ansicht_zeigen(self):
@@ -2040,10 +2124,24 @@ class BookshelfSeite(_SymbolSeite):
         if name and name.strip():
             self._liste_setzen("tabs", kpl.aendern(liste, kennung, label=name.strip()), waehlen=kennung)
 
+    def regal_neu_anlegen(self, ergebnis=None):
+        """Fenster „Neues Regal“ (ergebnis: fertiges Regal statt des Fensters, für Tests)."""
+        liste = self._regal_liste()
+        if ergebnis is None:
+            k = getattr(self.app, "kobo", None)
+            wurzel = getattr(k, "wurzel", None)
+            ordner = []
+            if wurzel and Path(wurzel).is_dir():
+                from bookbench.device import device as kg
+                ordner = kpl.ordner_vom_reader(wurzel, kg.art_von(wurzel))
+            f = wsh.RegalFenster(self.app, ordner, kpl.sammlungen(self.ko))
+            if not f.exec():
+                return
+            ergebnis = f.ergebnis(liste)
+        self._liste_setzen("tabs", copy.deepcopy(liste) + [ergebnis], waehlen=ergebnis["id"])
+
     def _regal_hinzufuegen(self, vorlage):
         liste = self._regal_liste()
-        if liste is None:
-            return
         neu = copy.deepcopy(liste) + [{**copy.deepcopy(vorlage), "label": _(vorlage["label"]), "enabled": True}]
         self._liste_setzen("tabs", neu, waehlen=vorlage["id"])
 
@@ -2054,8 +2152,8 @@ class BookshelfSeite(_SymbolSeite):
         if len([e for e in liste if isinstance(e, dict)]) <= 1:
             self.app.status.set(_("At least one shelf stays shown."))
             return
-        if not dialogs.frage(self.app, _("Shelves"), _("Remove the shelf? Standard shelves can be added again; your own "
-                                                       "(collections, folders) only in Bookshelf.")):
+        if not dialogs.frage(self.app, _("Shelves"), _("Remove the shelf? Its settings (sorting, filters) are gone; "
+                                                       "the books stay.")):
             return
         self._liste_setzen("tabs", kpl.entfernen(liste, kennung))
 
@@ -2090,10 +2188,15 @@ class BookshelfSeite(_SymbolSeite):
                 cb.setCurrentIndex(i)
 
     def _regale(self):
-        tabs = self._wert("tabs")
-        return tabs if isinstance(tabs, list) else []
+        return self._liste("tabs")
+
+    def _regal_nr(self, n):
+        r = self._regale()
+        return r[n] if 0 <= n < len(r) and isinstance(r[n], dict) else {}
 
     def _regal_setzen(self, nr, feld, wert):
+        if self._vorgabe("tabs"):
+            self._liste_setzen("tabs", self._regale())
         tabs = copy.deepcopy(self._regale())
         if not (0 <= nr < len(tabs)) or not isinstance(tabs[nr], dict):
             return
@@ -2129,7 +2232,7 @@ class BookshelfSeite(_SymbolSeite):
             je = [(None, _("Like the default")), ("mine", _("Custom theme")), (kpl.THEME_SCHLICHT, _("Plain"))] + themes
             for n, tab in enumerate(regale):
                 self._wahl(g, r, f"regal_theme_{n}", kpl.regal_name(tab), je,
-                           lambda n=n: (self._regale()[n] or {}).get("theme"),
+                           lambda n=n: self._regal_nr(n).get("theme"),
                            lambda w, n=n: self._regal_setzen(n, "theme", w))
                 r += 1
         g.addWidget(hinweis(_("Theme packs are folders in settings/bookshelf/ornaments with a theme/theme.json; new ones "
@@ -2179,7 +2282,7 @@ class BookshelfSeite(_SymbolSeite):
             stufen = [(k, _(t)) for k, t in kpl.HAEUFIGKEIT]
             for n, tab in enumerate(regale):
                 self._wahl(g, r, f"deko_{n}", kpl.regal_name(tab), stufen,
-                           lambda n=n: (self._regale()[n] or {}).get("ornament_frequency", kpl.HAEUFIGKEIT_VORGABE),
+                           lambda n=n: self._regal_nr(n).get("ornament_frequency", kpl.HAEUFIGKEIT_VORGABE),
                            lambda w, n=n: self._regal_setzen(n, "ornament_frequency", w))
                 r += 1
         lab = QLabel(_("Ornaments (double-click switches on/off)"))

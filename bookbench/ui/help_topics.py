@@ -719,7 +719,7 @@ At the top: the preset shown and **Bookends switched on**. Below them the page h
 
 **Lines**
 - Six positions (top and bottom, each left, centre, right), shown as a small page that grows with the column: a click on one shows its lines below (the button shows the first line, +n for more lines, – for an empty position). One line per row. Tokens such as %title, %chap_title or %page_num are filled in by Bookends; **Insert token** lists those of the installed Bookends version, sorted like in Bookends.
-- **Format** puts tags around the selected text of the line you used last (without a selection an empty pair at the cursor): [b]bold[/b], [i]italic[/i], [u]underlined[/u], and **Colour …** [c=#RRGGBB]…[/c] for a colour of your choice; **Condition …** and **Examples with conditions** see below. That is how a part of a line gets its own colour; the colour of all lines is set on the tab Preset.
+- Below the text field: **Insert token**, **Special characters**, then **B**, **I**, **U** and **Colour …**, which put tags around the selected text of the line you used last (without a selection an empty pair at the cursor): [b]bold[/b], [i]italic[/i], [u]underlined[/u], [c=#RRGGBB]…[/c] for a colour of your choice; **Condition …** and **Examples** see below. That is how a part of a line gets its own colour; the colour of all lines is set on the tab Preset.
 - **Special characters** is a menu with Bookends' symbols (battery, book, arrows, blocks, separators …), in groups as in Bookends. A click inserts at the cursor of the line you used last; "dynamic" symbols insert their token (%batt_icon changes with the battery). The symbols come from KOReader's symbol font (nerdfonts/symbols.ttf); Bookbench shows them in the lines as small pictures and takes the font from the profile (fonts of the e-reader) or from the desktop KOReader.
 - **Extra top/bottom margin** (and **extra left/right margin** for the corners) moves only this position away from the edge, in pixels - not the whole header or footer. Bookends calls it the same.
 - Click into a line (section **Selected line**) to set its **style** (bold, italic), **size** (empty = the general size), **font**, **capitals** and **move line**: ← → and ↑ ↓ in pixels, negative = left or up, **Back to 0** sets both to 0. Inserting or deleting lines keeps the settings with their line.
@@ -727,9 +727,9 @@ At the top: the preset shown and **Bookends switched on**. Below them the page h
 - **Show on**: all pages, or only odd or even pages (for example page numbers on the outer side).
 - **Bar in this line**: the token %bar draws a progress bar inside the line. **Insert bar** adds it, **Remove bar** takes it out again. Only for a line with a bar the bar fields appear: chapter or book, chapter ticks (book only), style, fill direction, thickness and unread thickness in pixels (empty thickness = as high as the text), then colours and markers as for the progress bars (below).
 - **Conditions in this line**: Bookends shows a part of a line only under a condition, written into the text as [if:condition]then[else]otherwise[/if] - for example [if:batt<20]LOW %batt_icon[/if] or [if:page=odd]%title[else]%chap_title[/if]. The list shows the conditions of the selected line (nested ones below their outer one; the one at the cursor is selected).
-- **New …** (or Format > Condition …) opens a window: one or more parts, each with **not**, a field from Bookends' list (battery, Wi-Fi, page odd/even, book %, time, weekday, series …; **Other field …** for anything else, such as calibre{mood}), a comparison (=, ≠, <, >, ≤, ≥ or "has a value") and a value; joined by **and** or **or**. Below: the finished condition, the **then** text and optionally an **otherwise** text. Selected text of the line becomes the then text.
+- **New …** (or **Condition …** below the text field) opens a window: one or more parts, each with **not**, a field from Bookends' list (battery, Wi-Fi, page odd/even, book %, time, weekday, series …; **Other field …** for anything else, such as calibre{mood}), a comparison (=, ≠, <, >, ≤, ≥ or "has a value") and a value; joined by **and** or **or**. Below: the finished condition, the **then** text and optionally an **otherwise** text. Selected text of the line becomes the then text.
 - **Edit …** (or double-click) opens the same window for the selected condition. Conditions with brackets or a mix of and/or are edited as text (**Edit as text**). **Dissolve** removes a condition and keeps its then text.
-- **Format > Examples with conditions** inserts Bookends' ready-made lines (Kindle-style time left, battery bars, weekend …).
+- **Examples** (below the text field) inserts Bookends' ready-made lines (Kindle-style time left, battery bars, weekend …).
 
 **Progress bars**
 Up to eight bars across the page, independent of the lines. Choose a bar in the list (✓ = switched on, with its edge), then **Switched on**; only a switched-on bar shows its fields: chapter or book, chapter ticks, style, fill direction, **Edge** (top, bottom, left, right), thickness (diameter for round bars) and unread thickness, distance from the edge and the margins at both ends. A bar set to "Position relative to line text" on the e-reader shows its distance from the line text instead; switching that on or off stays on the e-reader.
@@ -756,7 +756,7 @@ The page has five tabs: **Appearance** (theme, wallpaper, plank, decoration, col
 **Theme**
 - **Default theme**: the theme every shelf wears unless it has its own. **Custom theme** is your own look (wallpaper, plank, colours below), **Plain** Bookshelf's plain look, and every theme pack in the profile. A theme is a layer over the custom theme: it replaces only the parts it brings.
 - **Light or dark**: automatic (like KOReader's night mode) or fixed.
-- **Theme per shelf**: each shelf can wear its own theme or follow the default. Only shown if the shelves were changed in Bookshelf at least once (otherwise Bookshelf uses its standard shelves, and there is nothing to write yet).
+- **Theme per shelf**: each shelf can wear its own theme or follow the default.
 - Theme packs are folders in settings/bookshelf/ornaments with a theme/theme.json. New ones come from Bookshelf's theme library on the e-reader; take the profile again afterwards.
 
 **Wallpaper, plank, colours** (of the custom theme)
@@ -776,7 +776,7 @@ The page has five tabs: **Appearance** (theme, wallpaper, plank, decoration, col
 
 **Modules in the top panel**
 - The modules shown when the top panel is set to modules, with their position: page, column and row of the top-left cell, width and height in grid cells - or **Place automatically**. The panel has 1 or 2 rows and 2 to 8 columns depending on the screen; Bookshelf moves a module that does not fit or overlaps another.
-- **Add** offers Bookshelf's modules (clock, quote, weather …); modules that need a choice (action, shelf, ornament) are added in Bookshelf. **Up**/**Down** change the order, **Remove** takes one out.
+- **Add** offers Bookshelf's modules (clock, quote, weather …). Three ask for a choice in a submenu: **Action** (one of Bookshelf's standard actions: reading calendar, Wi-Fi, night mode, sleep …), **Shelf** (a shelf with books, not a stack) and **Ornament** (a piece from the profile). **Choice** changes it for the selected module; the list shows it after the module's name. **Up**/**Down** change the order, **Remove** takes one out.
 
 **Start menu**
 - The entries of Bookshelf's start menu as a tree: entries, modules (▣), dividers and folders (one level deep, as in Bookshelf).
@@ -785,8 +785,8 @@ The page has five tabs: **Appearance** (theme, wallpaper, plank, decoration, col
 
 **Shelves**
 - The shelves above the books: ☑ shown, ☐ hidden (double-click or **On/off**; one stays shown), order, name, and how a shelf is shown (covers, list, spines, automatic).
-- **Add** brings back a standard shelf that was removed (home, recent, series …). New shelves from collections or folders, sorting and filters are set in Bookshelf.
-- These three only show once Bookshelf has written them (after their first use on the e-reader); before that it uses its defaults, and there is nothing to change yet.
+- **Add > New shelf …** makes a shelf: the source (whole library, recently read, latest added, favourites, your own collection, a folder of the e-reader - as folders or flattened -, a stack for each series, author, genre … or a shelf of shelves), the name (follows the source until you change it) and how it is shown. Sorting starts as Bookshelf sets it for a new shelf; sorting and filters are changed in Bookshelf. **Add** also brings back a standard shelf that was removed (home, recent, series …).
+- As long as Bookshelf has not written modules, start menu or shelves into its file, it uses its defaults: Bookbench shows these (with a note) and writes them with the first change, with the names in Bookbench's language - as Bookshelf does in its own.
 
 **More settings**
 - A selection of settings that change the look (footer and buttons on the tab Navigation; columns and rows, font sizes, covers and spines, display on the tab Layout), with Bookshelf's defaults where the file has no value.

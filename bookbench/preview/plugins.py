@@ -698,13 +698,14 @@ def bookshelf_tokens(plugin_ordner):
 #      bookshelf_start_menu_model.lua, bookshelf_tab_model.lua, micromodules/*.lua)
 MODULE_SCHLUESSEL = ("hero_module_items", "hero_module_next_id", "hm")
 STARTMENUE_SCHLUESSEL = ("start_menu_items", "start_menu_next_id", "sm")
-MODULE_MIT_EINRICHTUNG = ("action", "shelf", "ornament")   # brauchen eine Auswahl in Bookshelf
+MODULE_MIT_EINRICHTUNG = ("action", "shelf", "ornament")   # brauchen eine Auswahl (seit 2.2-beta4 hier)
 ANSICHTEN = ((None, N_("Covers")), ("list", N_("List")), ("spines", N_("Spines")), ("auto", N_("Automatic")))
 POSITION = ("page", "col", "row", "w", "h")
 # Bookshelfs eingebaute Regale (TabModel.BUILTINS, gekürzt auf Quelle und Sortierung), zum Wiederherstellen
 REGALE_EINGEBAUT = (
     {"id": "all", "label": N_("Home"), "source": {"kind": "library"}, "filter": {},
-     "sort_priority": [{"key": "added_or_opened", "reverse": True}], "view_mode": "spines"},
+     "sort_priority": [{"key": "added_or_opened", "reverse": True}], "view_mode": "spines", "ornament_frequency": 2,
+     "spine_face_out": {"favorites": True, "reading": True, "recent": 5}},
     {"id": "recent", "label": N_("Recent"), "source": {"kind": "recent"}, "filter": {},
      "sort_priority": [{"key": "last_opened", "reverse": True}], "view_mode": "list"},
     {"id": "latest", "label": N_("Latest"), "source": {"kind": "latest"}, "filter": {},
@@ -723,6 +724,147 @@ REGALE_EINGEBAUT = (
     {"id": "favorites", "label": N_("Favorites"), "source": {"kind": "favorites"}, "filter": {},
      "sort_priority": [{"key": "date_added", "reverse": True}]},
 )
+
+
+# ---- Bookshelfs Vorgaben, solange eine Liste nicht in der Datei steht (seit 2.2-beta4)
+# lib/bookshelf_start_menu_model.lua / bookshelf_hero_modules_model.lua / bookshelf_tab_model.lua (6.6.1):
+# fehlt der Schlüssel, nimmt Bookshelf DEFAULTS() (beim Start-/Obermenü nur, solange *_seeded nicht gesetzt ist).
+STARTMENUE_VORGABE = (
+    {"id": "sm_streak", "type": "module", "module": "reading_streak"},
+    {"id": "sm_cal", "type": "action", "label": N_("Reading calendar"), "icon": "\uf073",
+     "action": {"stats_calendar_view": True}},
+    {"id": "sm_bookmarks", "type": "action", "label": N_("Bookmark browser"), "icon": "\uf02e",
+     "action": {"bookmark_browser": True}},
+    {"id": "sm_tools", "type": "folder", "label": N_("Tools"), "children": [
+        {"id": "sm_screenshot", "type": "action", "label": N_("Screenshot"), "icon": "\ue7ff",
+         "action": {"screenshot": True}},
+        {"id": "sm_frontlight", "type": "action", "label": N_("Frontlight"), "icon": "\ueca7",
+         "menu_path": [{"id": "setting"}, {"id": "frontlight"}]},
+        {"id": "sm_refresh", "type": "action", "label": N_("Full screen refresh"), "icon": "\uf0e7",
+         "action": {"full_refresh": True}},
+        {"id": "sm_battery", "type": "action", "label": N_("Battery statistics"), "icon": "\ue790",
+         "action": {"battery_statistics": True}}]},
+    {"id": "sm_wifi", "type": "action", "label": N_("Wi-Fi connection"), "icon": "\uea5e",
+     "menu_path": [{"id": "setting"}, {"id": "network"}, {"id": "network_wifi"}], "menu_toggle": True},
+    {"id": "sm_night", "type": "action", "label": N_("Night mode"), "icon": "\uea5e",
+     "menu_path": [{"id": "setting"}, {"id": "night_mode"}], "menu_toggle": True},
+    {"id": "sm_div1", "type": "divider"},
+    {"id": "sm_reader_home", "type": "action", "label": N_("Close book"), "icon": "\ue905",
+     "menu_path": [{"id": "filemanager"}], "scope": "reader"},
+    {"id": "sm_sleep", "type": "action", "label": N_("Sleep"), "icon": "\ueb24", "action": {"suspend": True}},
+)
+MODULE_VORGABE = (
+    {"id": "hm_clock", "type": "module", "module": "analogue_clock", "at": {"page": 1, "col": 1, "row": 1, "w": 2, "h": 2}},
+    {"id": "hm_quote", "type": "module", "module": "quote_of_day", "at": {"page": 1, "col": 3, "row": 1, "w": 8, "h": 2}},
+)
+REGALE_VORGABE = ("all", "recent", "series", "genres")        # TabModel.DEFAULTS: die eingeschalteten BUILTINS
+# Was Bookshelf beim Anlegen einer Vorgabe-Liste mitschreibt
+VORGABE_MERKER = {"start_menu_items": {"start_menu_seeded": True},
+                  "hero_module_items": {"hero_modules_seeded": True, "module_grid_migrated_hero": True}}
+
+
+def _uebersetzt(eintrag):
+    e = copy.deepcopy(eintrag)
+    if isinstance(e.get("label"), str):
+        e["label"] = _(e["label"])
+    if isinstance(e.get("children"), list):
+        e["children"] = [_uebersetzt(k) for k in e["children"]]
+    return e
+
+
+def liste_vorgabe(schluessel, werte):
+    """Bookshelfs Vorgabe für start_menu_items / hero_module_items / tabs (Beschriftung in Bookbenchs Sprache,
+    wie Bookshelf sie beim Anlegen in seiner Sprache speichert)."""
+    if schluessel == "tabs":
+        return [{**_uebersetzt(r), "enabled": True} for r in REGALE_EINGEBAUT if r["id"] in REGALE_VORGABE]
+    merker = next(iter(VORGABE_MERKER.get(schluessel, {})), None)
+    if merker and werte.get(merker) is True:
+        return []                                 # Bookshelf hat die Liste schon einmal angelegt und sie wurde geleert
+    vorgabe = STARTMENUE_VORGABE if schluessel == "start_menu_items" else MODULE_VORGABE
+    return [_uebersetzt(e) for e in vorgabe]
+
+
+def startmenue_aktionen():
+    """Die Aktionen aus Bookshelfs Vorgabe-Startmenü (ohne id), flach: zum Hinzufügen und für Aktions-Module."""
+    erg = []
+    for e in STARTMENUE_VORGABE:
+        for x in (e.get("children") or [e]):
+            if x.get("type") == "action":
+                erg.append({k: copy.deepcopy(v) for k, v in x.items() if k != "id"})
+    return erg
+
+
+# Quellen für neue Regale (chip_editor _pickSource) und ihre Sortierung (SOURCE_SORT_DEFAULTS); art: None, "ordner"
+# (id = Pfad auf dem Gerät ohne / am Ende) oder "sammlung" (id = Name einer KOReader-Sammlung)
+REGAL_QUELLEN = (("library", N_("Whole library"), None), ("all", N_("Whole library, flattened"), None),
+                 ("recent", N_("Recently read"), None), ("latest", N_("Latest added"), None),
+                 ("favorites", N_("Favorites"), None), ("collection", N_("Your own collection"), "sammlung"),
+                 ("folder", N_("Folder"), "ordner"), ("folder_flat", N_("Folder, flattened"), "ordner"),
+                 ("series", N_("A stack for each series"), None), ("authors", N_("A stack for each author"), None),
+                 ("genres", N_("A stack for each genre"), None), ("tags", N_("A stack for each collection"), None),
+                 ("formats", N_("A stack for each format"), None), ("ratings", N_("A stack for each rating"), None),
+                 ("languages", N_("A stack for each language"), None), ("decades", N_("A stack for each decade"), None),
+                 ("shelves", N_("Shelf of shelves"), None))
+_SORT = lambda *x: [{"key": k, "reverse": r} for k, r in x]  # noqa: E731
+REGAL_SORTIERUNG = {
+    "all": _SORT(("filename", False)), "library": _SORT(("author_surname", False), ("series_name", False), ("series_index", False)),
+    "recent": _SORT(("last_opened", True)), "latest": _SORT(("date_added", True)), "favorites": _SORT(("last_opened", True)),
+    "folder": _SORT(("filename", False)),
+    "folder_flat": _SORT(("author_surname", False), ("series_name", False), ("series_index", False)),
+    "collection": _SORT(("collection_order", False), ("last_opened", True)),
+    "series": _SORT(("last_opened", True), ("series_index", False)),
+    "authors": _SORT(("author_surname", False), ("series_name", False), ("series_index", False)),
+    "genres": _SORT(("book_count", True), ("series_name", False), ("series_index", False)),
+    "tags": _SORT(("book_count", True), ("title", False)), "formats": _SORT(("book_count", True), ("title", False)),
+    "languages": _SORT(("book_count", True), ("series_name", False), ("series_index", False)),
+    "decades": _SORT(("published", True), ("published", True)),
+    "ratings": _SORT(("rating", True), ("series_name", False), ("series_index", False), ("title", False)),
+}
+GRUPPEN_QUELLEN = {"series", "authors", "genres", "tags", "formats", "ratings", "languages", "shelves", "opds"}
+
+
+def neues_regal(tabs, label, art, kennung=None):
+    """Neues Regal wie TabModel.newTab + _applySourceDefaults (id custom_<n>)."""
+    vergeben = {t.get("id") for t in tabs or [] if isinstance(t, dict)}
+    n = 1
+    while f"custom_{n}" in vergeben:
+        n += 1
+    quelle = {"kind": art}
+    if kennung:
+        quelle["id"] = kennung
+    return {"id": f"custom_{n}", "label": label, "source": quelle, "filter": {},
+            "sort_priority": copy.deepcopy(REGAL_SORTIERUNG.get(art, _SORT(("title", False)))), "enabled": True}
+
+
+def ist_buchregal(tab):
+    """Regal mit Büchern (für das Modul „Regal“): keine Stapel, nicht nur für ein Modul angelegt."""
+    q = tab.get("source") if isinstance(tab, dict) else None
+    return isinstance(q, dict) and q.get("kind") not in GRUPPEN_QUELLEN and not tab.get("card_only")
+
+
+def sammlungen(ko):
+    """Namen der KOReader-Sammlungen im Profil (settings/collection.lua; ohne Favoriten)."""
+    werte = einstellungen_lesen(Path(ko) / "settings" / "collection.lua")
+    return sorted((k for k in werte if isinstance(k, str) and k != "favorites"), key=str.lower)
+
+
+def ordner_vom_reader(wurzel, art):
+    """[Pfad auf dem Gerät] aller Ordner des angeschlossenen E-Readers, in denen (auch tiefer) Bücher liegen."""
+    from bookbench.device import device as kg
+    wurzel = Path(wurzel)
+    ko = kg.ko_ordner(art) if art in kg.ARTEN else ".adds/koreader"
+    erg = set()
+    for p in wurzel.rglob("*"):
+        if p.suffix.lower() not in (".epub", ".kepub", ".pdf", ".cbz", ".mobi", ".azw3", ".fb2") or not p.is_file():
+            continue
+        rel = p.parent.relative_to(wurzel)
+        if rel.parts and (rel.parts[0].startswith(".") or rel.as_posix().startswith(ko)):
+            continue
+        while rel.parts:
+            erg.add(rel.as_posix())
+            rel = rel.parent
+    laufwerk = LAUFWERK.get(art, "/mnt/onboard")
+    return sorted(f"{laufwerk}/{r}" for r in erg)
 
 
 def micromodule(plugin_ordner):

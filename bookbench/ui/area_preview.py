@@ -31,9 +31,10 @@ from PySide6.QtWidgets import (QButtonGroup, QComboBox, QFrame, QHBoxLayout, QLa
 from bookbench.core import listing
 from bookbench.core import settings as kei
 from bookbench.device import device as kg
-from bookbench.i18n import N_, _
+from bookbench.i18n import N_, _, ngettext
 from bookbench.preview import emulator as kv
 from bookbench.preview import plugins as kpl
+from bookbench.preview import transfer as ktr
 from bookbench.preview import workbench as kwb
 from bookbench.ui import dialogs, theme
 from bookbench.ui.area import Bereich
@@ -474,7 +475,9 @@ class VorschauBereich(Bereich):
 
     def menue(self, leiste):
         m = leiste.addMenu(_("Preview"))
-        for eintrag in ((_("Open in KOReader"), self.starten), (_("Restart the workbench"), self.werkbank_starten),
+        for eintrag in ((_("Open in KOReader"), self.starten),
+                        (_("Changes from the KOReader window …"), self.fenster_aenderungen),
+                        (_("Restart the workbench"), self.werkbank_starten),
                         None, (_("Take profile from the e-reader"), self.vom_kobo),
                         (_("Take profile from a backup"), self.aus_sicherung), (_("Other file …"), self.datei_waehlen),
                         None, (_("Find KOReader"), self.koreader_suchen_menue),
@@ -508,6 +511,36 @@ class VorschauBereich(Bereich):
             self._rueckweg.close()
         self._rueckweg = ktw.TransferFenster(self)
         self._rueckweg.show()
+
+    # -- Änderungen aus dem KOReader-Fenster ins Profil (seit 2.2-beta5; Logik preview/transfer.fenster_*)
+    def fenster_arbeit(self):
+        return kwb.arbeitsordner(self.profil, kwb.FENSTER)
+
+    def fenster_aenderungen(self, still=False):
+        """Fenster mit den Änderungen aus „In KOReader öffnen“; still: nur öffnen, wenn es welche gibt."""
+        a = self.app
+        if self.laeuft():
+            a.status.set(_("KOReader is still open. Close its window first."))
+            return
+        if not ktr.hat_fensterstand(self.fenster_arbeit()):
+            if not still:
+                a.status.set(_("KOReader has not been opened from Bookbench yet (\"Open in KOReader\")."))
+            return
+        if still and not ktr.fenster_vergleichen(self.profil, self.fenster_arbeit(), a.e.get("rueckweg_nie") or ()):
+            return
+        from bookbench.ui import transfer_window as ktw
+        if self._rueckweg is not None:
+            self._rueckweg.close()
+        self._rueckweg = ktw.TransferFenster(self, "fenster")
+        self._rueckweg.show()
+
+    def fenster_uebernehmen(self, auswahl):
+        if not self.entwuerfe_fragen():
+            return
+        n = ktr.fenster_uebernehmen(self.profil, self.fenster_arbeit(), auswahl)
+        self.app.status.set(ngettext("{n} change from the KOReader window taken into the profile.",
+                                     "{n} changes from the KOReader window taken into the profile.", n).format(n=n))
+        self._profil_neu()
 
     def koreader_suchen_menue(self):
         self.koreader_suchen()
@@ -1062,5 +1095,7 @@ class VorschauBereich(Bereich):
             text += ", " + _("{n} warnings/errors in the output (Preview > Profile, device and output)").format(n=n)
         self.app.status.set(text + ".")
         grund = kv.absturz_grund(self._protokoll_ordner or self.profil, self.befund) if code else None
+        if not grund:
+            self.fenster_aenderungen(still=True)         # Menü-Änderungen anbieten (2.2-beta5)
         if grund:                                       # Desktop-KOReader hält den Rechner für einen E-Reader
             dialogs.warnung(self.app, self.name(), grund)

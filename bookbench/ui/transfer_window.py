@@ -7,6 +7,9 @@ Haken je Datei bzw. Einstellung, und schreibt das Gewählte nach einer Sicherung
   Haken      übertragen ja/nein (Klick in den Haken, Leertaste, "An/aus")
   ⚠          Konflikt: auch auf dem E-Reader seit dem Holen geändert - nicht vorausgewählt
   Nie        gewählte Einstellungen nie mehr anbieten (Einstellung rueckweg_nie)
+
+Seit 2.2-beta5 auch für die Gegenrichtung (modus="fenster"): was im KOReader-Fenster („In KOReader öffnen“)
+geändert wurde, ins Vorschau-Profil übernehmen (preview/transfer.fenster_*).
 """
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import (QAbstractItemView, QDialog, QHBoxLayout, QHeaderView, QLabel, QPushButton,
@@ -21,11 +24,13 @@ STATUS = {"neu": N_("new"), "geaendert": N_("changed"), "entfernt": N_("removed"
 
 
 class TransferFenster(QDialog):
-    def __init__(self, bereich):
+    def __init__(self, bereich, modus="reader"):
         app = bereich.app
         super().__init__(app)
         self.bereich, self.app = bereich, app
-        self.setWindowTitle(_("To the e-reader"))
+        self.modus = modus
+        self.fenster = modus == "fenster"
+        self.setWindowTitle(_("Changes from KOReader") if self.fenster else _("To the e-reader"))
         self.resize(900, 560)
         self.eintraege = []
         lay = QVBoxLayout(self)
@@ -33,7 +38,8 @@ class TransferFenster(QDialog):
         self.kopf.setWordWrap(True)
         lay.addWidget(self.kopf)
         self.baum = QTreeWidget()
-        self.baum.setHeaderLabels([_("Item"), _("Change"), _("Profile"), _("E-reader")])
+        self.baum.setHeaderLabels([_("Item"), _("Change"), _("Profile"),
+                                   _("KOReader window") if self.fenster else _("E-reader")])
         self.baum.setSelectionMode(QAbstractItemView.ExtendedSelection)
         k = self.baum.header()
         k.setSectionResizeMode(0, QHeaderView.Stretch)
@@ -73,7 +79,10 @@ class TransferFenster(QDialog):
     def laden(self):
         b = self.bereich
         self.wurzel = self.app.kobo.wurzel
-        self.eintraege = ktr.vergleichen(b.profil, self.wurzel, self.app.e.get("rueckweg_nie") or ())
+        if self.fenster:
+            self.eintraege = ktr.fenster_vergleichen(b.profil, b.fenster_arbeit(), self.app.e.get("rueckweg_nie") or ())
+        else:
+            self.eintraege = ktr.vergleichen(b.profil, self.wurzel, self.app.e.get("rueckweg_nie") or ())
         self.items = []
         self._still = True
         self.baum.clear()
@@ -93,6 +102,9 @@ class TransferFenster(QDialog):
             self.items.append(it)
         self._still = False
         self._zaehlen()
+        if self.fenster:
+            self._kopf_fenster()
+            return
         if not ktr.hat_basis(b.profil):
             basis = _("The profile was taken before 1.4-beta6, so Bookbench does not know what was on the e-reader "
                       "then: profile and e-reader are compared directly. Check every item; only areas Bookbench has "
@@ -110,12 +122,26 @@ class TransferFenster(QDialog):
                                "backups). KOReader reads the files at its next start - eject the e-reader afterwards. "
                                "Device-specific settings (screen, Wi-Fi, frontlight, paths) are never offered."))
 
+    def _kopf_fenster(self):
+        if not self.eintraege:
+            self.kopf.setText(_("Nothing to take over: KOReader changed nothing in the menus covered here."))
+        else:
+            self.kopf.setText(ngettext("{n} change in the KOReader window since it was opened.",
+                                       "{n} changes in the KOReader window since it was opened.",
+                                       len(self.eintraege)).format(n=len(self.eintraege)) + "\n" +
+                              _("Take over what you set on purpose; the rest is lost when KOReader is opened again. "
+                                "⚠ = also changed in the profile meanwhile - not preselected."))
+        self.hinweis.setText(_("Covered: KOReader settings (key by key), Bookends (presets and switches), Bookshelf, "
+                               "patches, style tweaks, sleep screen images. Values KOReader and the plugins write by "
+                               "themselves (positions, caches, window size) are left out. Taken over is a change of "
+                               "the profile; \"To the e-reader …\" brings it to the e-reader."))
+
     def _an(self):
         return [self.eintraege[it.data(0, Qt.UserRole)] for it in self.items if it.checkState(0) == Qt.Checked]
 
     def _zaehlen(self):
         n = len(self._an())
-        self.knopf.setText(_("Transfer ({n})").format(n=n))
+        self.knopf.setText((_("Take over ({n})") if self.fenster else _("Transfer ({n})")).format(n=n))
         self.knopf.setEnabled(bool(n))
 
     def _haken(self, *a):
@@ -154,8 +180,8 @@ class TransferFenster(QDialog):
         self._zaehlen()
 
     def nie(self):
-        namen = [self.eintraege[it.data(0, Qt.UserRole)]["name"] for it in self._gewaehlt()
-                 if self.eintraege[it.data(0, Qt.UserRole)]["art"] == "schluessel"]
+        namen = [self.eintraege[it.data(0, Qt.UserRole)].get("schluessel") or self.eintraege[it.data(0, Qt.UserRole)]["name"]
+                 for it in self._gewaehlt() if self.eintraege[it.data(0, Qt.UserRole)]["art"] == "schluessel"]
         if not namen:
             self.app.status.set(_("\"Never offer\" works for KOReader settings (keys), not for files."))
             return
@@ -166,6 +192,10 @@ class TransferFenster(QDialog):
     def uebertragen(self):
         auswahl = self._an()
         if not auswahl:
+            return
+        if self.fenster:
+            self.bereich.fenster_uebernehmen(auswahl)
+            self.accept()
             return
         wurzel = self.app.kobo.wurzel
         if not wurzel or not wurzel.exists():

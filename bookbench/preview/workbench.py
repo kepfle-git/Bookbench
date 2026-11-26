@@ -462,6 +462,9 @@ class Werkbank:
                             if (bibliothek and buecher) or zuerst else 0)
         if anpassen:                                  # nach dem Buch: Buchdaten können mit angepasst werden
             anpassen(arbeit / "koreader")
+        if self.fenster:                              # Stand vor dem Start: was danach anders ist, kam aus den Menüs
+            from bookbench.preview import transfer
+            transfer.start_merken(arbeit)
         variablen = kv.umgebung(arbeit, w, h, dpi, sw)
         variablen["XDG_DATA_HOME"] = str(self.profil / "share")
         if not self.fenster:

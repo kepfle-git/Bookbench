@@ -4,7 +4,7 @@ sidebar.py - Seitenleiste links (Designleitfaden 5a des Keller-Tools, nachgebaut
 
 Ein einziges Widget, das alles selbst zeichnet (wie keller_navigation, nur ohne ein Widget je Zeile):
 oben ☰ zum Ein-/Ausklappen, darunter je Bereich Symbol, Name und rechts die Marken (Piktogramm und
-Anzahl, ui/markers). Passen die Marken nicht in die Zeile, kommen sie in eine zweite Zeile unter den
+Anzahl, ui/markers; ein Text-Zähler wie die Bücherzahl der Bibliothek steht grau davor). Passen die Marken nicht in die Zeile, kommen sie in eine zweite Zeile unter den
 Namen; die Leiste wird so breit wie nötig, höchstens MAX_BREIT. Eingeklappt bleiben nur die Symbole,
 ein Punkt zeigt die schwerste Marke. Bereiche mit Unterseiten (Vorschau) zeigen diese darunter, wenn
 der Bereich gewählt oder aufgeklappt ist (Pfeil ▸/▾).
@@ -114,6 +114,12 @@ class Seitenleiste(QWidget):
                 continue
             name = SCHMAL + fm_fett.horizontalAdvance(b["name"]) + 18 + (16 if b.get("kinder") else 0)
             mb = self._markenbreite(b["marken"])
+            if b.get("zaehler"):                      # Zähler steht neben den Marken (Bücher der Bibliothek, 2.2-beta5)
+                zb = QFontMetrics(self.klein).horizontalAdvance(b["zaehler"]) + 8
+                if name + mb + zb > MAX_BREIT:
+                    name += zb                        # zweizeilig: Zähler bleibt in der ersten Zeile
+                else:
+                    mb += zb
             if name + mb <= MAX_BREIT:
                 noetig = max(noetig, name + mb)
             else:
@@ -210,6 +216,9 @@ class Seitenleiste(QWidget):
                     m.setPen(QColor(f))
                     m.drawText(QRect(x, y, 40, 16), Qt.AlignVCenter | Qt.AlignLeft, str(n))
                     x += fm.horizontalAdvance(str(n)) + 7
+            if b.get("zaehler"):
+                m.setPen(QColor(p["hinweis"]))
+                m.drawText(QRect(0, oben.y(), rechts, ZEILE_H), Qt.AlignVCenter | Qt.AlignRight, b["zaehler"])
         elif marken:
             x = rechts
             for k, n in reversed(marken):
@@ -221,6 +230,9 @@ class Seitenleiste(QWidget):
                     x -= w + 2
                 m.drawPixmap(x - 14, oben.center().y() - 7, mk.bild(k, f))
                 x -= 14 + 7
+            if b.get("zaehler"):
+                m.setPen(QColor(p["hinweis"]))
+                m.drawText(QRect(0, oben.y(), x - 1, ZEILE_H), Qt.AlignVCenter | Qt.AlignRight, b["zaehler"])
         elif b.get("zaehler"):
             m.setPen(QColor(theme.WARN[theme.modus()] if "⚠" in b["zaehler"] else p["hinweis"]))
             m.drawText(QRect(0, oben.y(), rechts, ZEILE_H), Qt.AlignVCenter | Qt.AlignRight, b["zaehler"])

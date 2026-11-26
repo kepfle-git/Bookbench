@@ -220,6 +220,11 @@ class BibliothekBereich(Bereich):
                 pass
         return erg
 
+    def zaehler(self):
+        """Anzahl der Bücher in der Seitenleiste (bis 1.4 nur ohne Marken, seit 2.2-beta5 immer, grau vor den Marken)."""
+        n = len(self.app.buecher)
+        return str(n) if n else ""
+
     def zustand(self):
         return {"buch": self.buch}
 

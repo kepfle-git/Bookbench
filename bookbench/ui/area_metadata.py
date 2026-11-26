@@ -218,7 +218,9 @@ class _Ergaenzer(QCompleter):
             self.setCompletionPrefix(self.splitPath(obj.text())[0])
             self.complete()
             return True
-        return False
+        # Rest an QCompleter: dessen eventFilter sitzt auf der aufgeklappten Liste und reicht die Tasten ans
+        # Feld weiter. Mit "return False" kamen unter Windows (Liste hat dort die Tastatur) keine Buchstaben an.
+        return super().eventFilter(obj, ev)
 
 
 class MetadatenBereich(Bereich):

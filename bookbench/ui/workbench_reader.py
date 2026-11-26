@@ -378,18 +378,18 @@ class PatchSeite(_NeustartSeite):
             self.mit_rahmen.addWidget(z)
 
     def _mitgebracht_hinzufuegen(self, m):
-        ziel = kks.patch_ordner(self.ko)
-        ziel.mkdir(parents=True, exist_ok=True)
-        aus = ziel / (m["name"] + ".disabled")
-        if aus.is_file():                         # ausgeschaltete alte Fassung: ersetzen, Schalter bleibt
-            shutil.copy2(m["quelle"], aus)
-        else:
-            shutil.copy2(m["quelle"], ziel / m["name"])
+        kks.mitgebracht_einspielen(self.ko, m["name"])     # ausgeschaltete alte Fassung: ersetzen, Schalter bleibt
         kpl._profil_geaendert(self.bereich.profil, self.plugin)
         self.app.status.set(_("Patch {name} added to the profile.").format(name=m["name"]))
+        self.liste_neu()
+        self._planen(100, self.ins_bild)
+
+    def liste_neu(self):
+        """Liste neu lesen (z. B. nachdem eine andere Seite einen Patch hinzugefügt hat); Entwurf bleibt."""
+        if self.liste is None:
+            return
         self.liste = kks.patches(self.ko)
         self._fuellen()
-        self._planen(100, self.ins_bild)
 
     def geladen(self):
         return self.liste is not None

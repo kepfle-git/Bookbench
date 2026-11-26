@@ -431,17 +431,17 @@ def bookshelf_datei(ko):
 # Gepflegte Auswahl (Schlüssel, Gruppe, Text, Art, Vorgabe, Auswahl). Art: "an" (an/aus), "zahl"
 # (leer = Vorgabe), "wahl". Vorgaben aus Bookshelf 6.6 (Store.read/isTrue/nilOrTrue); fehlt ein
 # Schlüssel in der Datei, gilt die Vorgabe. Alles andere steht unter "Alle Schlüssel".
-BOOKSHELF_GRUPPEN = (("anordnung", N_("Layout")), ("schrift", N_("Font sizes (%)")),
-                     ("cover", N_("Covers and spines")), ("anzeige", N_("Display")))
+BOOKSHELF_GRUPPEN = (("leisten", N_("Footer and buttons")), ("anordnung", N_("Columns and rows")),
+                     ("schrift", N_("Font sizes (%)")), ("cover", N_("Covers and spines")), ("anzeige", N_("Display")))
 BOOKSHELF_WERTE = (
     ("bookshelf_columns", "anordnung", N_("Columns (empty = automatic)"), "zahl", None, None),
     ("bookshelf_rows", "anordnung", N_("Rows (empty = automatic)"), "zahl", None, None),
-    ("footer_bar", "anordnung", N_("Footer bar"), "wahl", "show",
+    ("footer_bar", "leisten", N_("Footer bar"), "wahl", "show",
      (("show", N_("Show")), ("hide", N_("Hide")), ("invisible", N_("Invisible buttons")))),
-    ("start_menu_position", "anordnung", N_("Start menu button"), "wahl", "left",
+    ("start_menu_position", "leisten", N_("Start menu button"), "wahl", "left",
      (("left", N_("Left")), ("right", N_("Right")), ("off", N_("Off")))),
-    ("chip_flex_widths", "anordnung", N_("Shelf buttons as wide as their text"), "an", False, None),
-    ("chip_uppercase_labels", "anordnung", N_("Shelf buttons in capitals"), "an", True, None),
+    ("chip_flex_widths", "leisten", N_("Shelf buttons as wide as their text"), "an", False, None),
+    ("chip_uppercase_labels", "leisten", N_("Shelf buttons in capitals"), "an", True, None),
     ("font_scale", "schrift", N_("General"), "zahl", 100, None),
     ("start_menu_font_scale", "schrift", N_("Start menu"), "zahl", 100, None),
     ("cover_badge_font_scale", "schrift", N_("Badges on covers"), "zahl", 100, None),
@@ -459,6 +459,32 @@ BOOKSHELF_WERTE = (
     ("color_panel_dithering", "anzeige", N_("Dithering on colour screens"), "an", True, None),
     ("shelf_full_refresh", "anzeige", N_("Full refresh when turning shelf pages"), "an", False, None),
 )
+# Reiter der Bookshelf-Seite (seit 2.2) und welche Gruppe der festen Auswahl wohin gehört
+BOOKSHELF_REITER_GRUPPE = {"leisten": "navigation", "anordnung": "anordnung", "schrift": "anordnung",
+                           "cover": "anordnung", "anzeige": "anordnung"}
+
+
+def bookshelf_reiter(schl):
+    """Reiter(n) der Bookshelf-Seite, auf denen ein Schlüssel bearbeitet wird (für den Änderungspunkt).
+    Unbekannte Schlüssel gehören zu „Alle Schlüssel“."""
+    gruppe = next((gr for k, gr, *__ in BOOKSHELF_WERTE if k == schl), None)
+    if gruppe:
+        return {BOOKSHELF_REITER_GRUPPE[gruppe]}
+    basis = schl[:-len("_night")] if schl.endswith("_night") else schl
+    if basis in {k for k, __ in FARBEN}:
+        return {"aussehen"}
+    if schl == "tabs":                            # Regale; Theme und Dekoration je Regal stehen auch darin
+        return {"navigation", "aussehen"}
+    if schl.startswith("hero_"):
+        return {"start"}
+    if schl.startswith("start_menu_"):
+        return {"navigation"}
+    if schl in ("library_theme", "shelf_theme", "covers_full_panel", "ornaments_off", "ornament_packs_off") or \
+            schl.startswith(("wallpaper_", "theme_")):
+        return {"aussehen"}
+    return {"alle"}
+
+
 # Schlüssel, die Bookshelf selbst laufend schreibt (Stand, Zwischenspeicher, Updater): nicht anbieten
 BOOKSHELF_INTERN = {"migrated", "active_chip", "active_cursor", "active_page", "drill_path", "orn_resume",
                     "home_expanded", "last_run_version", "dev_branch", "last_install_source", "check_updates",

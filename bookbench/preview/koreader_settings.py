@@ -19,6 +19,7 @@ selbst hängt ".disabled" an) ist aus. Stufe: 0 früh einmalig, 1 früh, 2 spät
 9 beim Beenden. Die Datei ".patches_disabled" schaltet alle aus.
 """
 import re
+import shutil
 from pathlib import Path
 
 from bookbench.core import lua_data
@@ -143,6 +144,9 @@ MITGEBRACHT = {
     "2-bookbench-subtitle.lua": N_("Subtitle and calibre's custom columns from the EPUB: Bookshelf gets the token "
                                    "%subtitle (also for the top panel), and %calibre{name} in Bookshelf and "
                                    "Bookends finds columns stored in the book, without calibre's metadata.calibre."),
+    "2-bookbench-screensaver.lua": N_("Sleep screen with a picture and a message: the picture moves into the free "
+                                      "space next to the message instead of lying under it (switch and options on "
+                                      "the page Sleep screen)."),
 }
 
 
@@ -162,6 +166,26 @@ def mitgebracht(ko):
             stand = "aktuell" if da.read_bytes() == quelle.read_bytes() else "anders"
         erg.append({"name": name, "beschreibung": text, "stand": stand, "quelle": quelle})
     return erg
+
+
+def mitgebracht_einspielen(ko, name):
+    """Mitgebrachten Patch ins Profil kopieren (neu oder neuere Fassung). Eine ausgeschaltete alte Fassung
+    (.disabled) wird ersetzt und bleibt aus."""
+    quelle = MITGEBRACHT_ORDNER / name
+    ziel = patch_ordner(ko)
+    ziel.mkdir(parents=True, exist_ok=True)
+    aus = ziel / (name + ".disabled")
+    shutil.copy2(quelle, aus if aus.is_file() else ziel / name)
+
+
+def mitgebracht_stand(ko, name):
+    """"fehlt", "aus" (nur .disabled), "aktuell" oder "anders" für einen mitgebrachten Patch."""
+    m = next((m for m in mitgebracht(ko) if m["name"] == name), None)
+    if m is None or m["stand"] == "fehlt":
+        return "fehlt"
+    if not (patch_ordner(ko) / name).is_file():
+        return "aus"
+    return m["stand"]
 
 
 def patch_ordner(ko):

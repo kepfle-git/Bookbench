@@ -64,7 +64,13 @@ AUFWACHEN = (
     ("screensaver_exit_message", N_("'Exit sleep screen' message"), "text", None, None),
     ("screensaver_hide_fallback_msg", N_("No message when rebooting or powering off"), "an", False, None),
 )
-ALLE = BILD + AUSNAHMEN + MELDUNG + AUFWACHEN
+# Bookbench-Patch 2-bookbench-screensaver (seit 2.2): Bild neben die Meldung statt darunter
+PATCH = "2-bookbench-screensaver.lua"
+PATCH_WERTE = (
+    ("bookbench_screensaver_avoid_message", N_("Keep the picture clear of the message"), "an_falsch", True, None),
+    ("bookbench_screensaver_center", N_("Keep the picture in the middle (smaller)"), "an", False, None),
+)
+ALLE = BILD + AUSNAHMEN + MELDUNG + AUFWACHEN + PATCH_WERTE
 PFADE = ("screensaver_document_cover", "screensaver_dir")
 STANDARD_MELDUNG = "Sleeping"                      # KOReaders default_screensaver_message (englisch)
 

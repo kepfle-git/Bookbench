@@ -64,7 +64,33 @@ class SperrSeite(_NeustartSeite):
         i = self._abschnitt("ausnahmen", _("Ignore the book cover"), offen=False)
         self._raster(i, kss.AUSNAHMEN)
         i = self._abschnitt("meldung", _("Message"))
-        self._raster(i, kss.MELDUNG)
+        ml = QVBoxLayout(i)
+        ml.setContentsMargins(0, 0, 0, 0)
+        w = QWidget()
+        self._raster(w, kss.MELDUNG)
+        ml.addWidget(w)
+        # Bookbench-Patch: Bild neben die Meldung (seit 2.2)
+        self.patch_rahmen = QWidget()
+        pl = QVBoxLayout(self.patch_rahmen)
+        pl.setContentsMargins(0, 8, 0, 0)
+        kopf = QHBoxLayout()
+        t = QLabel(_("Picture next to the message"))
+        t.setProperty("rolle", "abschnitt")
+        kopf.addWidget(t)
+        self.patch_stand = hinweis("")
+        kopf.addWidget(self.patch_stand)
+        kopf.addStretch(1)
+        self.patch_knopf = QPushButton("")
+        self.patch_knopf.clicked.connect(self.patch_einspielen)
+        kopf.addWidget(self.patch_knopf)
+        pl.addLayout(kopf)
+        w = QWidget()
+        self._raster(w, kss.PATCH_WERTE)
+        pl.addWidget(w)
+        pl.addWidget(hinweis(_("Needs Bookbench's patch {name} (in the profile and on the e-reader). Without it, "
+                               "KOReader lays the message over the picture.").format(name=kss.PATCH.removesuffix(".lua")),
+                             BREITE))
+        ml.addWidget(self.patch_rahmen)
         i = self._abschnitt("aufwachen", _("After waking up"), offen=False)
         g = self._raster(i, kss.AUFWACHEN)
         g.addWidget(hinweis(_("The gesture is set in KOReader under Taps and gestures (Device: Exit sleep screen)."),
@@ -217,14 +243,45 @@ class SperrSeite(_NeustartSeite):
             "screensaver_show_exit_message": geste,
             "screensaver_exit_message": geste and kss.wert(w, "screensaver_show_exit_message"),
         }
+        aktiv["bookbench_screensaver_center"] = bool(kss.wert(w, "bookbench_screensaver_avoid_message"))
         for schl, widgets in self.felder.items():         # was zur Wahl nicht passt, verschwindet (2.0.1)
             an = bool(aktiv.get(schl, True))
             for wd in widgets:
                 wd.setVisible(an)
+        self._patch_zeigen(bild and meldung)
         if "ausnahmen" in self.abschnitte:                 # Buchcover auslassen gibt es nur beim Buchcover
             knopf, inhalt = self.abschnitte["ausnahmen"]
             knopf.setVisible(typ == "cover")
             inhalt.setVisible(typ == "cover" and knopf.isChecked())
+
+    def _patch_zeigen(self, passt):
+        """Teil „Bild neben der Meldung“: nur bei Bild + Meldung; ohne Patch im Profil ausgegraut."""
+        if not self.gebaut():
+            return
+        self.patch_rahmen.setVisible(passt)
+        stand = kks.mitgebracht_stand(self.ko, kss.PATCH)
+        self.patch_stand.setText({"fehlt": _("patch not in the profile"), "aus": _("patch switched off (page Patches)"),
+                                  "aktuell": _("patch in the profile"),
+                                  "anders": _("patch in the profile, another version")}[stand])
+        knopf = {"fehlt": _("Add patch"), "anders": _("Update patch")}.get(stand)
+        self.patch_knopf.setVisible(bool(knopf))
+        self.patch_knopf.setText(knopf or "")
+        an = stand in ("aktuell", "anders")
+        tipp = "" if an else _("Needs the patch in the profile.")
+        for schl, __, __, __, __ in kss.PATCH_WERTE:
+            for wd in self.felder[schl]:
+                wd.setEnabled(an)
+                wd.setToolTip(tipp)
+
+    def patch_einspielen(self):
+        kks.mitgebracht_einspielen(self.ko, kss.PATCH)
+        kpl._profil_geaendert(self.bereich.profil, "patches")
+        self.app.status.set(_("Patch {name} added to the profile.").format(name=kss.PATCH))
+        seite = self.bereich.plugin_seiten.get("patches")
+        if seite is not None:
+            seite.liste_neu()
+        self._ausgrauen()
+        self.ins_bild()
 
     def _geaendert(self, schl):
         if self._laden or self.datei_werte is None:

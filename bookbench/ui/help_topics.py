@@ -682,6 +682,8 @@ Paths are the ones on the e-reader (on a Kobo /mnt/onboard/…). **Choose …** 
 
 **After waking up**: whether the sleep screen stays after waking (seconds, until a tap, until the "Exit sleep screen" gesture), the message for the gesture, and whether reboot/power-off messages are hidden.
 
+**Picture next to the message** (with a picture and a message): KOReader lays the message over the picture. Bookbench's patch 2-bookbench-screensaver moves the picture into the free space next to the message instead, so nothing of the cover is hidden ([[vorschau_patches]]). **Add patch** copies it into the profile; with **To the e-reader …** it goes onto the e-reader like any patch. **Keep the picture clear of the message** switches it on and off (on by default once the patch is there); **Keep the picture in the middle** keeps the same gap above and below (smaller picture) instead of using the larger free space. If there is too little room (message in the middle with "middle"), KOReader draws as usual. Without the patch in the profile both are greyed out.
+
 Fields that do nothing with the current choice are hidden (KOReader's menu greys them out); **Ignore the book cover** only appears with the book cover as wallpaper. Changes are a draft until **Save to profile**.
 """)),
     ("vorschau", "vorschau_patches", N_("Patches"), N_("""
@@ -696,13 +698,14 @@ Below Preview, **Patches** lists the user patches of the profile (folder koreade
 **Patches from Bookbench**
 Patches Bookbench brings along, with their state (not in the profile, in the profile, another version) and **Add** or **Update**. They are also attached to every Bookbench release on GitHub, for copying into koreader/patches on the e-reader by hand.
 - **2-bookbench-subtitle**: reads the subtitle and calibre's custom columns straight from each EPUB on the e-reader. Bookshelf gets the token **%subtitle** (top panel, list lines, cover labels, [if:subtitle]); **%calibre{name}** in Bookshelf and Bookends also finds columns stored in the book, without calibre's metadata.calibre (a value in the book wins). Subtitle = the column #subtitle, otherwise the EPUB 3 subtitle. Bookbench writes these columns into the book when you edit them in Metadata. The patch hooks into Bookshelf's and Bookends' insides; if a new version changes them, the values stay empty and nothing else breaks.
+- **2-bookbench-screensaver**: sleep screen with a picture and a message - the picture moves into the free space next to the message instead of lying under it. Switch and options on the page Sleep screen ([[vorschau_sperrbildschirm]]). It only adjusts how KOReader puts picture and message together; if KOReader changes that, the sleep screen looks as without the patch.
 
 Switching on and off is a draft until **Save to profile**. Patches run when KOReader starts, so the workbench restarts after every change. To bring patches onto the e-reader: **To the e-reader …** ([[vorschau_rueckweg]]). Bookbench's internal patches (1-bookbench-desktop, 2-bookbench-workbench) are not listed.
 """)),
     ("vorschau", "vorschau_bookends", N_("Bookends settings"), N_("""
 If the profile contains the plugin **Bookends**, the sidebar shows **Bookends** below Preview. Its settings page sits in the left column; the picture stays on the right and shows every change after a short pause (a tenth of a second, KOReader keeps running). The workbench switches to the reading page for this.
 
-The page is divided into sections (Preset, Lines, Selected line, Progress bars, General); a click on the heading folds a section away or opens it. Bookbench remembers which are open.
+At the top: the preset shown and **Bookends switched on**. Below them the page has three tabs: **Lines**, **Progress bars** and **Preset** (managing presets, general values). A tab with unsaved changes has a red ●. Within a tab, a click on a bold heading folds a section away or opens it. Bookbench remembers the tab and which sections are open.
 
 **Draft and profile**
 - Changes are a draft at first: they only show in the picture. The red line says so.
@@ -710,15 +713,15 @@ The page is divided into sections (Preset, Lines, Selected line, Progress bars, 
 - **To the e-reader …** (toolbar) writes the saved changes to the e-reader: [[vorschau_rueckweg]].
 - **From the e-reader** and **From backup** replace the profile; if Bookbench has changed something in it, it asks first.
 
-**Presets**
+**Presets** (tab Preset)
 - Bookends keeps everything you see in presets (one file each). The **active** preset is the one Bookends uses on the e-reader; another one can be shown and edited, the picture then shows that one. **Make active** marks it, saving makes it active in the profile.
 - **New**, **Duplicate**, **Delete**. Name and description are what Bookends shows in its preset manager.
 
 **Lines**
-- Six positions (top and bottom, each left, centre, right), one line per row. Tokens such as %title, %chap_title or %page_num are filled in by Bookends; **Insert token** lists those of the installed Bookends version, sorted like in Bookends.
+- Six positions (top and bottom, each left, centre, right), shown as a small page: a click on one shows its lines below (the button shows the first line, +n for more lines, – for an empty position). One line per row. Tokens such as %title, %chap_title or %page_num are filled in by Bookends; **Insert token** lists those of the installed Bookends version, sorted like in Bookends.
 - **Special characters …** opens Bookends' list of symbols (battery, book, arrows, blocks, separators …), sorted in groups as in Bookends. A click inserts at the cursor of the line you used last; "dynamic" symbols insert their token (%batt_icon changes with the battery). The symbols come from KOReader's symbol font (nerdfonts/symbols.ttf); Bookbench shows them in the lines as small pictures and takes the font from the profile (fonts of the e-reader) or from the desktop KOReader.
-- **Extra margin** next to each position moves the whole position away from the edge (↕ top or bottom, ↔ left or right for the corners), in pixels.
-- Click into a line (section **Selected line**) to set its **style** (bold, italic), **size** (empty = the general size), **capitals** and **offset**: ← → and ↑ ↓ in pixels, negative = left or up, **Back to 0** sets both to 0. Inserting or deleting lines keeps the settings with their line.
+- **Extra top/bottom margin** (and **extra left/right margin** for the corners) moves only this position away from the edge, in pixels - not the whole header or footer. Bookends calls it the same.
+- Click into a line (section **Selected line**) to set its **style** (bold, italic), **size** (empty = the general size), **capitals** and **move line**: ← → and ↑ ↓ in pixels, negative = left or up, **Back to 0** sets both to 0. Inserting or deleting lines keeps the settings with their line.
 - **Show on**: all pages, or only odd or even pages (for example page numbers on the outer side).
 - **Bar in this line**: the token %bar draws a progress bar inside the line. **Insert bar** adds it, **Remove bar** takes it out again. Only for a line with a bar the bar fields appear: chapter or book, chapter ticks (book only), style, fill direction, thickness and unread thickness in pixels (empty thickness = as high as the text).
 - Settings Bookbench does not offer yet (font per line, colours and markers of bars, conditions in the text) are kept unchanged when saving.
@@ -726,7 +729,7 @@ The page is divided into sections (Preset, Lines, Selected line, Progress bars, 
 **Progress bars**
 Up to eight bars across the page, independent of the lines. Choose a bar in the list (✓ = switched on, with its edge), then **Switched on**; only a switched-on bar shows its fields: chapter or book, chapter ticks, style, fill direction, **Edge** (top, bottom, left, right), thickness (diameter for round bars) and unread thickness, distance from the edge and the margins at both ends. A bar set to "Position relative to line text" on the e-reader shows its distance from the line text instead; switching that on or off stays on the e-reader, as do colours and markers.
 
-**General**
+**General** (tab Preset)
 Font size and scale, the four margins, the gap before texts overlap and what is shortened first. Empty fields use Bookends' defaults.
 
 Bookends is a plugin by AndyHazz (github.com/AndyHazz/bookends.koplugin); Bookbench only reads and writes its files. Newer Bookends versions can change the format; unknown parts stay as they are.
@@ -738,7 +741,7 @@ Bookshelf cannot reload its settings while KOReader runs. After a change, the wo
 
 **Draft and profile** work as for Bookends ([[vorschau_bookends]]): first only in the picture, **Save to profile** keeps them, **Discard** goes back.
 
-The page is divided into sections; a click on the heading folds a section away or opens it. Bookbench remembers which are open.
+The page has five tabs: **Appearance** (theme, wallpaper, plank, decoration, colours), **Home** (top panel and its modules), **Navigation** (start menu, shelves, footer and buttons), **Layout** (columns and rows, font sizes, covers and spines, display) and **All** (all keys in the file). A tab with unsaved changes has a red ●. Within a tab, a click on a bold heading folds a section away or opens it. Bookbench remembers the tab and which sections are open.
 
 **Theme**
 - **Default theme**: the theme every shelf wears unless it has its own. **Custom theme** is your own look (wallpaper, plank, colours below), **Plain** Bookshelf's plain look, and every theme pack in the profile. A theme is a layer over the custom theme: it replaces only the parts it brings.
@@ -776,8 +779,8 @@ The page is divided into sections; a click on the heading folds a section away o
 - These three only show once Bookshelf has written them (after their first use on the e-reader); before that it uses its defaults, and there is nothing to change yet.
 
 **More settings**
-- A selection of settings that change the look (layout, font sizes, covers and spines, display), with Bookshelf's defaults where the file has no value.
-- **All keys in the file**: everything in settings/bookshelf/settings.lua, also what is not listed above. Double-click (or **Change …**) changes a simple value (number, text, on/off) in its type. Tables - shelves, modules, the start menu - can only be changed in Bookshelf itself or in the sections above (colours, theme and ornaments per shelf, the hero card, modules, start menu, shelves). **Default** removes the key, then Bookshelf's default applies. Changed keys have a ●.
+- A selection of settings that change the look (footer and buttons on the tab Navigation; columns and rows, font sizes, covers and spines, display on the tab Layout), with Bookshelf's defaults where the file has no value.
+- **All** (all keys in the file): everything in settings/bookshelf/settings.lua, also what is not on the other tabs. Double-click (or **Change …**) changes a simple value (number, text, on/off) in its type. Tables - shelves, modules, the start menu - can only be changed in Bookshelf itself or on the other tabs (colours, theme and ornaments per shelf, the hero card, modules, start menu, shelves). **Default** removes the key, then Bookshelf's default applies. Changed keys have a ●.
 - Values Bookshelf writes by itself while running (current shelf and page, version notes) are not listed.
 
 Bookshelf is a plugin by AndyHazz (github.com/AndyHazz/bookshelf.koplugin); Bookbench only reads and writes its settings file.

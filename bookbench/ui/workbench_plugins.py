@@ -19,9 +19,10 @@ import re
 
 from PySide6.QtCore import QEvent, QObject, QRegularExpression, Qt
 from PySide6.QtGui import QFont, QRegularExpressionValidator, QTextCursor
-from PySide6.QtWidgets import (QButtonGroup, QCheckBox, QComboBox, QDialog, QGridLayout, QHBoxLayout, QHeaderView,
-                               QLabel, QLineEdit, QMenu, QPlainTextEdit, QPushButton, QRadioButton, QScrollArea,
-                               QSpinBox, QToolButton, QTreeWidget, QTreeWidgetItem, QVBoxLayout, QWidget)
+from PySide6.QtWidgets import (QButtonGroup, QCheckBox, QComboBox, QDialog, QFrame, QGridLayout, QHBoxLayout,
+                               QHeaderView, QLabel, QLineEdit, QMenu, QPlainTextEdit, QPushButton, QRadioButton,
+                               QScrollArea, QSizePolicy, QSpinBox, QToolButton, QTreeWidget, QTreeWidgetItem,
+                               QVBoxLayout, QWidget)
 
 from bookbench.i18n import N_, _
 from bookbench.preview import plugins as kpl
@@ -108,6 +109,7 @@ class BookendsSeite(_SymbolSeite):
         self._namen = {}                          # Anzeigename -> Datei
         self._zeile = None                        # (pos, nr) für Stil/Größe
         self._fokus_pos = "tc"                    # zuletzt benutztes Textfeld
+        self.pos_wahl = None                      # im Schema gewählte Position (seit 2.2)
         self.balken_nr = 1
         self._laden = False
         self._symbolfenster = None
@@ -116,37 +118,22 @@ class BookendsSeite(_SymbolSeite):
     def inhalt_bauen(self):
         familie = self.symbolfamilie()
         self._fokus_filter = _Fokus(self._fokus_gesetzt)
-        # -- Vorlage
-        i = self._abschnitt("vorlage", _("Preset"))
-        lay = QVBoxLayout(i)
-        lay.setContentsMargins(0, 0, 0, 0)
-        self.an_knopf = QCheckBox(_("Bookends switched on"))
-        self.an_knopf.toggled.connect(self._an_geaendert)
-        lay.addWidget(self.an_knopf)
+        # -- über den Reitern: Vorlage und an/aus (gilt für alle Reiter)
+        oben = QWidget()
+        ol = QHBoxLayout(oben)
+        ol.setContentsMargins(0, 0, 0, 0)
+        ol.addWidget(QLabel(_("Preset")))
         self.wahl = QComboBox()
         self.wahl.activated.connect(lambda *a: self._wahl_gewechselt())
-        lay.addWidget(self.wahl)
-        knoepfe = []
-        for text, fn in ((_("New"), self.neu), (_("Duplicate"), self.duplizieren), (_("Delete"), self.loeschen)):
-            k = QPushButton(text)
-            k.clicked.connect(lambda *a, fn=fn: fn())
-            knoepfe.append(k)
-        lay.addWidget(zeile(*knoepfe))
-        self.aktiv_text = hinweis("", BREITE)
-        lay.addWidget(self.aktiv_text)
-        self.aktiv_knopf = QPushButton(_("Make active"))
-        self.aktiv_knopf.clicked.connect(self.aktiv_machen)
-        lay.addWidget(self.aktiv_knopf, 0, Qt.AlignLeft)
-        g = QGridLayout()
-        self.name_feld, self.beschr_feld = QLineEdit(), QLineEdit()
-        for r, (text, f) in enumerate(((_("Name"), self.name_feld), (_("Description"), self.beschr_feld))):
-            g.addWidget(QLabel(text), r, 0)
-            g.addWidget(f, r, 1)
-            f.textEdited.connect(lambda *a: self._kopf_geaendert())
-        lay.addLayout(g)
+        ol.addWidget(self.wahl, 1)
+        self.an_knopf = QCheckBox(_("Bookends switched on"))
+        self.an_knopf.toggled.connect(self._an_geaendert)
+        ol.addWidget(self.an_knopf)
+        self.lay.addWidget(oben)
 
-        # -- Zeilen
-        i = self._abschnitt("zeilen", _("Lines"))
+        # == Reiter Zeilen
+        self._reiter("zeilen", _("Lines"))
+        i = self._flaeche("zeilen")
         lay = QVBoxLayout(i)
         lay.setContentsMargins(0, 0, 0, 0)
         self.token_knopf = QToolButton()
@@ -157,22 +144,31 @@ class BookendsSeite(_SymbolSeite):
         sym = QPushButton(_("Special characters …"))
         sym.clicked.connect(self.symbole_zeigen)
         lay.addWidget(zeile(self.token_knopf, sym))
-        lay.addWidget(hinweis(_("One line per row; tokens like %title or %page_num are filled in by Bookends. Extra "
-                                "margin moves the whole position away from the edge (px)."), BREITE))
-        self.texte, self.rand = {}, {}
+        lay.addWidget(hinweis(_("Choose a position on the page; one line per row, tokens like %title or %page_num "
+                                "are filled in by Bookends. The extra margin moves only this position away from the "
+                                "edge (px), not the whole header or footer."), BREITE))
+        lay.addWidget(self._schema_bauen())
+        self.texte, self.rand, self.pos_rahmen = {}, {}, {}
         for pos, name in kpl.POSITIONEN:
-            kz = QWidget()
-            kl = QHBoxLayout(kz)
-            kl.setContentsMargins(0, 4, 0, 0)
-            kl.addWidget(QLabel(_(name)))
-            kl.addStretch(1)
-            kl.addWidget(hinweis(_("extra margin")))
-            felder = (("v_offset", "↕"),) + ((("h_offset", "↔"),) if kpl.mit_seitenrand(pos) else ())
-            for feld, zeichen in felder:
-                kl.addWidget(QLabel(zeichen))
+            rahmen = QWidget()
+            rl = QVBoxLayout(rahmen)
+            rl.setContentsMargins(0, 4, 0, 0)
+            rl.setSpacing(lay.spacing())
+            kopf = QLabel(_(name))
+            kopf.setProperty("rolle", "abschnitt")
+            rl.addWidget(kopf)
+            g = QGridLayout()
+            oben_ = pos.startswith("t")
+            felder = [("v_offset", _("Extra top margin") if oben_ else _("Extra bottom margin"))]
+            if kpl.mit_seitenrand(pos):
+                felder.append(("h_offset", _("Extra left margin") if pos.endswith("l") else _("Extra right margin")))
+            for r, (feld, text) in enumerate(felder):
+                g.addWidget(QLabel(text), r, 0)
                 f = self.rand[(pos, feld)] = zahlfeld(lambda p=pos: self._rand_geaendert(p), breite=46)
-                kl.addWidget(f)
-            lay.addWidget(kz)
+                g.addWidget(f, r, 1)
+                g.addWidget(hinweis("px"), r, 2)
+            g.setColumnStretch(3, 1)
+            rl.addLayout(g)
             t = QPlainTextEdit()
             t.setLineWrapMode(QPlainTextEdit.NoWrap)
             mit_symbolen(t, familie)
@@ -181,8 +177,10 @@ class BookendsSeite(_SymbolSeite):
             t.installEventFilter(self._fokus_filter)
             t.setProperty("position", pos)
             self._hoehe(t, 1)
-            lay.addWidget(t)
+            rl.addWidget(t)
             self.texte[pos] = t
+            self.pos_rahmen[pos] = rahmen
+            lay.addWidget(rahmen)
 
         # -- gewählte Zeile
         i = self._abschnitt("zeile", _("Selected line"))
@@ -200,7 +198,7 @@ class BookendsSeite(_SymbolSeite):
         self.seiten = Wahl(kpl.SEITEN, self._zeilenwerte_uebernehmen)
         lay.addWidget(zeile(self.gross, _("Show on"), self.seiten))
         self.versatz = {}
-        teile = [_("Offset")]
+        teile = [_("Move line")]
         for feld, text in (("line_h_nudge", _("← →")), ("line_v_nudge", _("↑ ↓"))):
             sp = self.versatz[feld] = QSpinBox()
             sp.setRange(-999, 999)
@@ -232,12 +230,13 @@ class BookendsSeite(_SymbolSeite):
         self.zbalken_knopf = QPushButton("")
         self.zbalken_knopf.clicked.connect(self._zeilenbalken_umschalten)
         lay.addWidget(self.zbalken_knopf, 0, Qt.AlignLeft)
-        lay.addWidget(hinweis(_("Empty size = the general font size. Offset in pixels: negative = left or up. Empty "
+        lay.addWidget(hinweis(_("Empty size = the general font size. Move line in pixels: negative = left or up. Empty "
                                 "thickness = as high as the text; empty unread = like read. Font per line, colours "
                                 "and markers of a bar and conditions in the text stay as they are."), BREITE))
 
-        # -- Fortschrittsbalken über die ganze Breite
-        i = self._abschnitt("balken", _("Progress bars"), offen=False)
+        # == Reiter Fortschrittsbalken über die ganze Breite
+        self._reiter("balken", _("Progress bars"))
+        i = self._flaeche("balken")
         lay = QVBoxLayout(i)
         lay.setContentsMargins(0, 0, 0, 0)
         self.balken_wahl = QComboBox()
@@ -274,8 +273,32 @@ class BookendsSeite(_SymbolSeite):
         self.balken_text = hinweis("", BREITE)
         lay.addWidget(self.balken_text)
 
+        # == Reiter Vorlage: verwalten, Name, allgemeine Werte
+        self._reiter("vorlage", _("Preset"))
+        i = self._abschnitt("vorlage", _("Preset"))
+        lay = QVBoxLayout(i)
+        lay.setContentsMargins(0, 0, 0, 0)
+        knoepfe = []
+        for text, fn in ((_("New"), self.neu), (_("Duplicate"), self.duplizieren), (_("Delete"), self.loeschen)):
+            k = QPushButton(text)
+            k.clicked.connect(lambda *a, fn=fn: fn())
+            knoepfe.append(k)
+        lay.addWidget(zeile(*knoepfe))
+        self.aktiv_text = hinweis("", BREITE)
+        lay.addWidget(self.aktiv_text)
+        self.aktiv_knopf = QPushButton(_("Make active"))
+        self.aktiv_knopf.clicked.connect(self.aktiv_machen)
+        lay.addWidget(self.aktiv_knopf, 0, Qt.AlignLeft)
+        g = QGridLayout()
+        self.name_feld, self.beschr_feld = QLineEdit(), QLineEdit()
+        for r, (text, f) in enumerate(((_("Name"), self.name_feld), (_("Description"), self.beschr_feld))):
+            g.addWidget(QLabel(text), r, 0)
+            g.addWidget(f, r, 1)
+            f.textEdited.connect(lambda *a: self._kopf_geaendert())
+        lay.addLayout(g)
+
         # -- allgemein
-        i = self._abschnitt("allgemein", _("General"), offen=False)
+        i = self._abschnitt("allgemein", _("General"))
         lay = QVBoxLayout(i)
         lay.setContentsMargins(0, 0, 0, 0)
         g = QGridLayout()
@@ -299,6 +322,80 @@ class BookendsSeite(_SymbolSeite):
             self._kopf_zeigen()
             self._tokens_fuellen()
         self._formular_fuellen()
+
+    # ------------------------------------------------------------------ Positionsschema (seit 2.2)
+    def _schema_bauen(self):
+        """Kleine Seite mit den sechs Positionen (3 oben, 3 unten); Knopf zeigt die erste Zeile."""
+        rahmen = QFrame()
+        rahmen.setFrameShape(QFrame.StyledPanel)
+        rahmen.setMaximumWidth(BREITE)
+        g = QGridLayout(rahmen)
+        g.setContentsMargins(6, 6, 6, 6)
+        g.setSpacing(4)
+        self.schema_gruppe = QButtonGroup(rahmen)
+        self.schema_gruppe.setExclusive(True)
+        self.schema_knoepfe = {}
+        for n, (pos, name) in enumerate(kpl.POSITIONEN):
+            k = QToolButton()
+            k.setCheckable(True)
+            k.setSizePolicy(QSizePolicy.Ignored, QSizePolicy.Fixed)
+            k.setToolTip(_(name))
+            k.clicked.connect(lambda *a, p=pos: self.position_waehlen(p))
+            self.schema_gruppe.addButton(k)
+            self.schema_knoepfe[pos] = k
+            g.addWidget(k, 0 if n < 3 else 2, n % 3)
+        mitte = hinweis(_("page text"))
+        mitte.setAlignment(Qt.AlignCenter)
+        mitte.setMinimumHeight(34)
+        g.addWidget(mitte, 1, 0, 1, 3)
+        for c in range(3):
+            g.setColumnStretch(c, 1)
+        return rahmen
+
+    def _schema_text(self, pos):
+        z = [x for x in kpl.zeilen(self.daten or {}, pos) if x.strip()]
+        if not z:
+            return "–"
+        k = self.schema_knoepfe[pos]
+        text = k.fontMetrics().elidedText(z[0].strip(), Qt.ElideRight, max(40, (BREITE - 40) // 3 - 14))
+        return text + (f" +{len(z) - 1}" if len(z) > 1 else "")
+
+    def _schema_fuellen(self):
+        if not self.gebaut():
+            return
+        if self.pos_wahl not in kpl.POS_KENNUNGEN:
+            d = self.daten or {}
+            self.pos_wahl = next((p for p in kpl.POS_KENNUNGEN if any(x.strip() for x in kpl.zeilen(d, p))), "tc")
+        for pos, k in self.schema_knoepfe.items():
+            k.setText(self._schema_text(pos))
+            k.setChecked(pos == self.pos_wahl)
+            f = k.font()
+            f.setBold(pos == self.pos_wahl)
+            k.setFont(f)
+        for pos, r in self.pos_rahmen.items():
+            r.setVisible(pos == self.pos_wahl)
+
+    def position_waehlen(self, pos):
+        """Position im Schema wählen: nur ihr Text und Rand sind zu sehen; die Zeile unter dem Cursor gilt."""
+        self.pos_wahl = pos
+        self._fokus_pos = pos
+        self._schema_fuellen()
+        if self.gebaut():
+            self._zeile_gewaehlt(pos)
+
+    def reiter_geaendert(self):
+        if self.daten is None:
+            return set()
+        d, g = self.daten, self.gespeichert or {}
+        erg = set()
+        if (d.get("positions") or {}) != (g.get("positions") or {}):
+            erg.add("zeilen")
+        if kpl.balken_liste(d) != kpl.balken_liste(g):
+            erg.add("balken")
+        rest = {k for k in set(d) | set(g) if k not in ("positions", "progress_bars") and d.get(k) != g.get(k)}
+        if rest or self.gespeichert is None or self.an != bool(self.stand_profil["an"]) or self.aktiv_neu:
+            erg.add("vorlage")
+        return erg
 
     def _hoehe(self, t, zeilen):
         z = max(2, min(6, zeilen + 1))
@@ -388,6 +485,7 @@ class BookendsSeite(_SymbolSeite):
                 w = kpl.positionswert(d, pos, feld)
                 f.setText("" if not w else str(w))
             self.kuerzen.get(kpl.allgemein(d, "truncation_priority") or "center", self.kuerzen["center"]).setChecked(True)
+            self._schema_fuellen()
             self._zeile_zeigen()
             self._balken_zeigen()
         finally:
@@ -466,6 +564,7 @@ class BookendsSeite(_SymbolSeite):
         if z != kpl.zeilen(self.daten, pos):
             kpl.zeilen_setzen(self.daten, pos, z)
             self._hoehe(t, len(z))
+            self._schema_fuellen()
             self._zeile_gewaehlt(pos, neu_zeigen=True)
             self._geaendert()
 
@@ -482,6 +581,8 @@ class BookendsSeite(_SymbolSeite):
 
     def zeile_waehlen(self, pos, nr):
         """Zeile wählen wie mit einem Klick hinein (Tests)."""
+        if pos != self.pos_wahl:
+            self.position_waehlen(pos)
         t = self.texte[pos]
         c = t.textCursor()
         c.movePosition(QTextCursor.Start)
@@ -571,6 +672,7 @@ class BookendsSeite(_SymbolSeite):
             self.texte[pos].setPlainText("\n".join(z))
         finally:
             self._laden = False
+        self._schema_fuellen()
         self._zeilenbalken_zeigen()
         self._geaendert()
 
@@ -1028,19 +1130,9 @@ class BookshelfSeite(_SymbolSeite):
             g.setContentsMargins(0, 0, 0, 0)
             g.setColumnStretch(1, 1)
             return g
-        self.g_theme = gitter(self._abschnitt("theme", _("Themes")))
-        self.g_hintergrund = gitter(self._abschnitt("hintergrund", _("Wallpaper"), offen=False))
-        self.g_brett = gitter(self._abschnitt("brett", _("Plank"), offen=False))
-        self.g_deko = gitter(self._abschnitt("deko", _("Decoration (ornaments)"), offen=False))
-        self._farben_bauen(gitter(self._abschnitt("farben", _("Colours"), offen=False)))
-        self._hero_bauen(self._abschnitt("hero", _("Top panel"), offen=False))
-        self._module_bauen(self._abschnitt("module", _("Modules in the top panel"), offen=False))
-        self._menue_bauen(self._abschnitt("startmenue", _("Start menu"), offen=False))
-        self._regale_bauen(self._abschnitt("regale", _("Shelves"), offen=False))
-
-        # -- feste Auswahl
-        for gruppe, gtext in kpl.BOOKSHELF_GRUPPEN:
-            g = gitter(self._abschnitt(gruppe, _(gtext), offen=(gruppe == "anordnung")))
+        def feste(gruppe, offen=False):
+            gtext = dict(kpl.BOOKSHELF_GRUPPEN)[gruppe]
+            g = gitter(self._abschnitt(gruppe, _(gtext), offen=offen))
             r = 0
             for schl, gr, text, art, vorgabe, wahl in kpl.BOOKSHELF_WERTE:
                 if gr != gruppe:
@@ -1062,12 +1154,32 @@ class BookshelfSeite(_SymbolSeite):
                 self.felder[schl] = w
                 r += 1
 
+        # == Reiter (seit 2.2)
+        self._reiter("aussehen", _("Appearance"))
+        self.g_theme = gitter(self._abschnitt("theme", _("Themes")))
+        self.g_hintergrund = gitter(self._abschnitt("hintergrund", _("Wallpaper"), offen=False))
+        self.g_brett = gitter(self._abschnitt("brett", _("Plank"), offen=False))
+        self.g_deko = gitter(self._abschnitt("deko", _("Decoration (ornaments)"), offen=False))
+        self._farben_bauen(gitter(self._abschnitt("farben", _("Colours"), offen=False)))
+        self._reiter("start", _("Home"))
+        self._hero_bauen(self._abschnitt("hero", _("Top panel")))
+        self._module_bauen(self._abschnitt("module", _("Modules in the top panel"), offen=False))
+        self._reiter("navigation", _("Navigation"))
+        self._menue_bauen(self._abschnitt("startmenue", _("Start menu")))
+        self._regale_bauen(self._abschnitt("regale", _("Shelves"), offen=False))
+        feste("leisten")
+        self._reiter("anordnung", _("Layout"))
+        feste("anordnung", offen=True)
+        for gruppe in ("schrift", "cover", "anzeige"):
+            feste(gruppe)
+
         # -- alle Schlüssel
-        i = self._abschnitt("alle", _("All keys in the file"), offen=False)
+        self._reiter("alle", _("All"))
+        i = self._flaeche("alle")
         lay = QVBoxLayout(i)
         lay.setContentsMargins(0, 0, 0, 0)
-        lay.addWidget(hinweis(_("For everything not listed above. Double-click a simple value to change it; tables "
-                                "(shelves, modules) only in the sections above or in Bookshelf itself. \"Default\" "
+        lay.addWidget(hinweis(_("For everything not on the other tabs. Double-click a simple value to change it; tables "
+                                "(shelves, modules) only on the other tabs or in Bookshelf itself. \"Default\" "
                                 "removes the key, then Bookshelf's default applies."), BREITE))
         self.baum = _baum(2, 10)
         self.baum.setHeaderHidden(False)
@@ -2053,6 +2165,12 @@ class BookshelfSeite(_SymbolSeite):
 
     def ungespeichert(self):
         return bool(self.aenderungen)
+
+    def reiter_geaendert(self):
+        erg = set()
+        for schl in self.aenderungen:
+            erg |= kpl.bookshelf_reiter(schl)
+        return erg
 
     # ------------------------------------------------------------------ Werkbank
     def in_kopie(self, ko):

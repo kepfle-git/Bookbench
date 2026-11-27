@@ -54,6 +54,7 @@ Next to the dot small **pictograms** show what is missing or needs a look - each
 - **Picture** (grey): no cover. **Small picture with corners** (orange): cover lower than the limit ([[einst_cover]]).
 - **Not-equal sign** (orange): title, authors, series or number differ from Calibre.
 - **Label with !** (orange): missing language or an invalid ISBN.
+- **Two books with a dashed gap** (orange, sidebar and Book series only): series with missing numbers ([[reihen]]).
 - **Floppy disk** (yellow, sidebar only): books with changes that are not saved yet.
 - In Dictionary and E-reader: **book** (words looked up without result), **e-reader with !** (dictionaries missing or outdated), **tick** (connected).
 - In Library and E-reader: **two arrows** (blue, books to sync with the e-reader) and **arrows against each other** (orange, changed on the computer and on the e-reader), see [[kobo_abgleich]].
@@ -73,9 +74,9 @@ The strip can be switched off: Settings > General > Interface ([[einst_oberflaec
 - **Ctrl+I** add books ([[bibliothek_hinzufuegen]])
 - **Ctrl+S** save
 - **Ctrl+Enter** apply (current book, or the dictionary form)
-- **Ctrl+F** search field of the current area (Chapters, Metadata, Dictionary), otherwise of the library; **Esc** in a search field empties it
+- **Ctrl+F** search field of the current area (Chapters, Metadata, Book series, Dictionary), otherwise of the library; **Esc** in a search field empties it
 - **Ctrl+B** collapse and expand the sidebar
-- **Ctrl+1 … 6** choose an area in the order of the sidebar (6: Preview, Linux/macOS only)
+- **Ctrl+1 … 7** choose an area in the order of the sidebar (7: Preview, Linux/macOS only)
 - **F1** help for the current area; in the settings: help for the page shown
 
 **Chapter table**
@@ -122,15 +123,16 @@ Until version 0.23 the two JSON files were next to the program; until 0.24 the f
 - Look up all only asks Claude for books the free sources do not know, and asks before it starts.
 """)),
     ("", "bereiche", N_("Areas"), N_("""
-The sidebar on the left switches between the areas (Ctrl+1 … 6):
+The sidebar on the left switches between the areas (Ctrl+1 … 7):
 - [[bibliothek]] - all books in a table
 - [[kapitel]] - chapter names and levels
 - [[metadaten]] - title, authors, series, publisher, language, ISBN, tags, own fields, blurb and cover
+- [[reihen]] - all series with their books, missing numbers and reading state
 - [[woerterbuch]] - your own dictionaries
 - [[kobo]] - the connected e-reader: backups, dictionaries, ejecting
 - [[vorschau]] - a book in the desktop KOReader (Linux/macOS)
 
-The toolbar has the buttons of the current area on the left; on the right, separated, Open, Reload and Save (only in Library, Chapters and Metadata - the areas with the books of the folder) and Help. [[speichern]] applies to all book areas together. The **Edit** menu only holds the commands of the area shown; Dictionary, E-reader and Preview have menus of their own.
+The toolbar has the buttons of the current area on the left; on the right, separated, Open, Reload and Save (only in Library, Chapters, Metadata and Book series - the areas with the books of the folder) and Help. [[speichern]] applies to all book areas together. The **Edit** menu only holds the commands of the area shown; Dictionary, E-reader and Preview have menus of their own.
 
 The **book lists** on the left of Chapters and Metadata (and the list of the dictionary; in the Preview the left column) can be made wider or narrower by dragging the divider to their right; the width is remembered, a double-click on the divider restores the default. A name that does not fit is shown completely in a tooltip when the mouse is over it, together with what its pictograms mean.
 """)),
@@ -156,7 +158,7 @@ All books of the opened folder (with all subfolders) with series, number, author
 - A click on a column header sorts (▲ ascending, ▼ descending), a second click reverses. Moving, hiding and widths of the columns: [[bibliothek_spalten]].
 - **Search** filters by title, series and author; the **filter** shows only changed books, unreadable files or books whose series is not in the EPUB. Filters by chapters, blurbs and covers are above the lists of those areas ([[suche_filter]]).
 - **Double-click** opens the book in the Chapters area; under Settings > General > Interface it can be Metadata, the Preview or KOReader instead ([[einst_oberflaeche]]).
-- **Right-click** on a book: open it in Chapters, Metadata, the Preview or start it in KOReader (Preview and KOReader not on Windows). The entry marked "Double-click" is the one the double-click uses.
+- **Right-click** on a book: open it in Chapters, Metadata, the Preview or start it in KOReader (Preview and KOReader not on Windows). The entry marked "Double-click" is the one the double-click uses. **Show series** jumps to the book in [[reihen]].
 - **Several books**: Ctrl+click and Shift+click select more than one; right-click > **Edit metadata of n books** takes them to the Metadata area for editing together ([[metadaten_mehrere]]), **Remove advert text from n books** works on just those; **Look up metadata …** opens the look-up window for the selected books ([[metadaten_nachschlagen]]).
 - **New books**: File > Add books (Ctrl+I) or drag them onto the window ([[bibliothek_hinzufuegen]]); a library on this computer instead of the e-reader: [[bibliothek_rechner]].
 - **Advert lines** like OceanofPDF.com: Edit > Remove advert text … ([[bibliothek_cleaner]]).
@@ -517,6 +519,27 @@ The sources, the smallest height that counts and how many to choose from: [[eins
 - A book without a cover gets cover-bookbench.jpg next to the content.opf, an entry in the manifest (EPUB 3: properties="cover-image") and <meta name="cover"> (EPUB 2; KOReader reads both).
 - Converting and shrinking need **Pillow** (pip install pillow); showing works without it. Without Pillow only an image in the right format can be inserted unchanged.
 - Transparent areas become white when converting to JPEG.
+""")),
+    ("bereiche", "reihen", N_("Book series"), N_("""
+All series of the opened folder in one list, each with its books below it (click the arrow or **Expand all**). Books in the same series are found by the series name; upper/lower case and extra spaces do not matter.
+
+**Columns of a series**
+- **No.**: lowest and highest number.
+- **Author**: the authors of its books (all of them in the tooltip).
+- **Read status**: how many books are finished, from KOReader's reading state ([[bibliothek_lesestand]]). Empty as long as Bookbench knows nothing about your reading.
+- **Next**: the book you are reading (the one with the lowest number if several), otherwise the first unread one. Books on hold are skipped. In the list of books it is in **bold**.
+- **Missing**: missing numbers, numbers that appear twice and books without a number.
+
+**Missing numbers** are the whole numbers from 1 to the highest number that no book has. They are shown in grey between the books where they are missing (e.g. "missing (4)" at 3–6). Numbers with decimals like 0.9 or 1.5 (novellas, short stories between two novels) never count as missing, and they do not fill a gap either: with 0.9, 1.5 and 2, number 1 is missing. A series that starts at 0 is fine. Series numbered above 999 (years and the like) are not checked. A series with missing numbers gets the gap pictogram, in the list and in the sidebar ([[status]]).
+
+**Search and filter**: the search looks in the series name and in titles and authors of its books. Filters: All series, With gaps, Numbers to check (duplicates, books without number), Started not finished, Not started, Finished, and **Books without series** (a plain list of the books that have no series yet).
+
+**Commands**
+- **Number series …** (toolbar, or right-click on a series): selects the books of the series in the [[metadaten]] area in the order of their numbers and opens Number series there ([[metadaten_mehrere]]). After the preview the new numbers are applied (yellow) and shown here right away; **Save** (Ctrl+S) writes them.
+- Right-click on a series: **Edit metadata of n books** (all books of the series in the Metadata area) and **Show series in Library** (library search set to the series name).
+- Double-click (or Enter) on a book opens it like in the library ([[einst_oberflaeche]]); right-click offers the other places and **Show in Library**. In the library, right-click > **Show series** jumps here.
+
+Series and numbers that are applied but not yet saved already count here.
 """)),
     ("bereiche", "woerterbuch", N_("Dictionary"), N_("""
 Your own dictionaries for KOReader: read, edit, fill missing terms, build from a wiki, build the files. The dictionary is chosen at the top; Bookbench remembers all that were ever opened or created.
@@ -957,12 +980,12 @@ Which pictograms are shown where: [[einst_marken]].
     ("einst_oberflaeche", "einst_marken", N_("Status symbols"), N_("""
 One row per pictogram ([[status]]), one column per place:
 - **Sidebar**: the pictograms with numbers next to the areas.
-- **Book lists**: the narrow lists in Chapters and Metadata.
+- **Book lists**: the narrow lists in Chapters and Metadata, and the list of Book series.
 - **Library**: the column Status in the library.
 
 Default: everything on. A switched-off pictogram is only hidden; the filters (e.g. No cover) and sorting by status still count it. The coloured dot for changed, applied and saved is not affected; the whole strip next to the lists can be switched off under [[einst_oberflaeche]]. **All on** and **All off** set every box.
 
-Dictionary, e-reader and "connected" only exist in the sidebar.
+Dictionary, e-reader and "connected" only exist in the sidebar; gaps in a series only in the sidebar and in Book series.
 """)),
     ("einstellungen", "einst_start", N_("Startup"), N_("""
 - **Open the last folder** (default: on): the books folder that was open when the program was last closed, if it still exists - for the e-reader only when it is connected. Off: the program starts empty; File > Recently opened still has the folders.

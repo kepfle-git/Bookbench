@@ -262,7 +262,7 @@ class EinstellungsDialog(QDialog):
         n = len(kmk.ORTE)
         for zeile, k in enumerate(kmk.ORDNUNG, 1):
             for spalte, (ort, __) in enumerate(kmk.ORTE):
-                if ort != "seitenleiste" and k in kmk.NUR_SEITENLEISTE:
+                if ort != "seitenleiste" and k in kmk.NUR_SEITENLEISTE or ort == "tabelle" and k in kmk.NICHT_TABELLE:
                     continue
                 cb = QCheckBox()
                 cb.setChecked(k not in (self._marken_aus.get(ort) or []))

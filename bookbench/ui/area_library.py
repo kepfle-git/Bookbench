@@ -333,6 +333,8 @@ class BibliothekBereich(Bereich):
                 f = a.font()
                 f.setBold(True)
                 a.setFont(f)
+        if (b.reihe or "").strip():                 # seit 2.4-beta1: Reihe im Bereich Reihen zeigen
+            m.addAction(_("Show series"), lambda: (self.app.bereich_zeigen("reihen"), self.app.reihen.auswaehlen(b)))
         m.addSeparator()
         m.addAction(ngettext("Look up metadata …", "Look up metadata of {n} books …", len(auswahl))
                     .format(n=len(auswahl)), lambda: self.app.metadaten_nachschlagen(auswahl))

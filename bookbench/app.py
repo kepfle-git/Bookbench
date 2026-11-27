@@ -43,6 +43,7 @@ from bookbench.ui import area_device as kdev
 from bookbench.ui import area_preview as kpv
 from bookbench.ui import area_dictionary as kwo
 from bookbench.ui import area_metadata as kme
+from bookbench.ui import area_series as kse
 from bookbench.ui import dialogs
 from bookbench.ui import help_topics
 from bookbench.ui import markers as kmk
@@ -52,7 +53,7 @@ from bookbench.ui import threads
 from bookbench.version import PROGRAMM, VERSION
 
 DARSTELLUNGEN = (("hell", N_("Light")), ("dunkel", N_("Dark")), ("system", N_("Like the system")))
-BUCH_BEREICHE = ("bibliothek", "kapitel", "metadaten")      # Bereiche mit den Büchern des Ordners (Öffnen/Speichern)
+BUCH_BEREICHE = ("bibliothek", "kapitel", "metadaten", "reihen")      # Bereiche mit den Büchern des Ordners (Öffnen/Speichern)
 
 
 class StatusText:
@@ -122,12 +123,13 @@ class App(QMainWindow):
         self.updates = kup.Updates(self)     # Suche nach neuen Versionen (ui/updates.py)
 
         # Bereiche: leben so lange wie das Fenster (die Vorschau nur, wo es den Desktop-KOReader gibt)
-        arten = (kbi.BibliothekBereich, kch.KapitelBereich, kme.MetadatenBereich, kwo.WoerterbuchBereich,
-                 kdev.EReaderBereich) + ((kpv.VorschauBereich,) if kv.verfuegbar() else ())
+        arten = (kbi.BibliothekBereich, kch.KapitelBereich, kme.MetadatenBereich, kse.ReihenBereich,
+                 kwo.WoerterbuchBereich, kdev.EReaderBereich) + ((kpv.VorschauBereich,) if kv.verfuegbar() else ())
         self.bereiche = [art(self) for art in arten]
         self.bibliothek = self.bereich_obj("bibliothek")
         self.kapitel = self.bereich_obj("kapitel")
         self.metadaten = self.bereich_obj("metadaten")
+        self.reihen = self.bereich_obj("reihen")
         self.woerterbuch = self.bereich_obj("woerterbuch")
         self.kobo = self.bereich_obj("kobo")
         self.vorschau = self.bereich_obj("vorschau")     # None, wo es keine Vorschau gibt (Windows)

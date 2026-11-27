@@ -187,5 +187,66 @@ FILTER = (("alle", N_("All series"), None),
 
 
 def passt(r, such):
-    """Suchtext (casefold) im Namen der Reihe, in Titeln oder Autoren ihrer Bücher."""
-    return not such or such in r.name.casefold() or any(listing.such_passt(b, such) for b in r.buecher)
+    """Suchtext (casefold) im Namen der Reihe, in Titeln oder Autoren ihrer Bücher (bzw. Namen ihrer Sammlungen)."""
+    if not such or such in r.name.casefold():
+        return True
+    if getattr(r, "ist_sammlung", False):
+        return any(such in s["name"].casefold() for s in r.buecher)
+    return any(listing.such_passt(b, such) for b in r.buecher)
+
+
+# ------------------------------------------------------------------------------- Sammlungsreihen (seit 2.4-beta5)
+class SammlungsReihe:
+    """Reihe aus Sammlungen (Omnibusse mit Reihe und Nummer, core/book_collections meta). Gleiche Felder wie Reihe,
+    damit Filter und Anzeige beide nehmen: buecher = die Sammlungen (nach Nummer), luecken, doppelt, ohne_nummer,
+    spanne, fertig (Sammlungen ganz gelesen), gelesen_bekannt, angefangen, naechstes (Sammlung)."""
+    ist_sammlung = True
+
+    def __init__(self, name, sammlungen, fortschritt):
+        """fortschritt(sammlung) -> (gelesen, gesamt, bekannt) aus dem Lesestand ihrer Bücher/Geschichten."""
+        self.name = name
+        self.autoren = []
+
+        def nr(s):
+            return (s.get("meta") or {}).get("nummer", "")
+        self.buecher = sorted(sammlungen, key=lambda s: (listing.nr(nr(s)), s["name"].casefold()))
+        zahlen = [_zahl(nr(s)) for s in self.buecher]
+        self.luecken = luecken(zahlen)
+        zaehl = Counter(z for z in zahlen if z is not None)
+        self.doppelt = [nummer_text(z) for z in sorted(zaehl) if zaehl[z] > 1]
+        self.ohne_nummer = [s for s, z in zip(self.buecher, zahlen) if z is None]
+        nummeriert = [z for z in zahlen if z is not None]
+        self.hoechste = max(nummeriert) if nummeriert else None
+        if nummeriert:
+            a, z = nummer_text(min(nummeriert)), nummer_text(max(nummeriert))
+            self.spanne = a if a == z else f"{a}–{z}"
+        else:
+            self.spanne = ""
+        self.stand = {s["name"]: fortschritt(s) for s in self.buecher}
+        self.gelesen_bekannt = any(st[2] for st in self.stand.values())
+        self.fertig = sum(1 for g, n, __ in self.stand.values() if n and g == n)
+        self.angefangen = any(g for g, __, __ in self.stand.values())
+        self.naechstes = next((s for s in self.buecher if self.stand[s["name"]][1]
+                               and self.stand[s["name"]][0] < self.stand[s["name"]][1]), None) \
+            if self.gelesen_bekannt else None
+
+    @staticmethod
+    def nummer_von(s):
+        return (s.get("meta") or {}).get("nummer", "")
+
+    @property
+    def probleme(self):
+        return bool(self.luecken or self.doppelt or self.ohne_nummer)
+
+    def fehlend(self):
+        return sum(b - a + 1 for a, b in self.luecken)
+
+
+def sammlungsreihen(sammlungen, fortschritt):
+    """[SammlungsReihe] der Sammlungen mit einer Reihe (meta.reihe), alphabetisch."""
+    gruppen = {}
+    for s in sammlungen:
+        r = ((s.get("meta") or {}).get("reihe") or "").strip()
+        if r:
+            gruppen.setdefault(_schluessel(r), (r, []))[1].append(s)
+    return sorted((SammlungsReihe(n, ss, fortschritt) for n, ss in gruppen.values()), key=lambda r: r.name.casefold())

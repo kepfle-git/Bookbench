@@ -13,7 +13,7 @@ bzw. des E-Readers bearbeiten. Logik: core/book_collections.py.
 from pathlib import Path
 
 from PySide6.QtCore import Qt
-from PySide6.QtGui import QAction, QBrush, QColor, QKeySequence, QPixmap
+from PySide6.QtGui import QAction, QBrush, QColor, QKeySequence
 from PySide6.QtWidgets import (QAbstractItemView, QComboBox, QDialog, QGridLayout, QHBoxLayout, QLabel,
                                QListWidget, QListWidgetItem, QMenu, QPlainTextEdit, QPushButton, QTreeWidget,
                                QTreeWidgetItem, QVBoxLayout, QWidget)
@@ -87,6 +87,9 @@ class SammlungenBereich(Bereich):
         kobo = self.app.bereich_obj("kobo")
         if self.ort == "bibliothek" and kobo is not None and hasattr(kobo, "abgleich_nach_speichern"):
             kobo.abgleich_nach_speichern(self.app.ordner)
+        reihen = self.app.bereich_obj("reihen")
+        if reihen is not None:
+            reihen._neu_noetig = True                   # Sammlungsreihen in der Reihen-Übersicht
         self.app._zaehler()
         return True
 
@@ -135,7 +138,17 @@ class SammlungenBereich(Bereich):
         self.k_patch.clicked.connect(self.patch_installieren)
         zo.addWidget(self.k_patch)
         rl.addLayout(zo)
-        rl.addWidget(self._meta_bauen())
+        # seit 2.4-beta6: Cover-Tafel rechts (wie im Bereich Metadaten), Metadaten/Einträge mit Teiler
+        koerper = Teiler(self.app, "sammlung_cover", 230, fest="rechts", minimum=140)
+        mitte = QWidget()
+        ml = QVBoxLayout(mitte)
+        ml.setContentsMargins(0, 0, 6, 0)
+        oben_unten = Teiler(self.app, "sammlung_meta", lambda: self.meta_kasten.sizeHint().height() + 6,
+                            ausrichtung=Qt.Vertical, minimum=70)
+        oben_unten.addWidget(self._meta_bauen())
+        unten = QWidget()
+        ul = QVBoxLayout(unten)
+        ul.setContentsMargins(0, 0, 0, 0)
         b = self.baum = _Eintraege()
         b.setHeaderLabels([_("No."), _("Title"), _("Series"), _("Read status")])
         b.setRootIsDecorated(False)
@@ -157,7 +170,7 @@ class SammlungenBereich(Bereich):
         weg.setShortcutContext(Qt.WidgetShortcut)
         weg.triggered.connect(self.entfernen)
         b.addAction(weg)
-        rl.addWidget(b, 1)
+        ul.addWidget(b, 1)
         z = QHBoxLayout()
         self.k_hoch = QPushButton(_("Move up"))
         self.k_hoch.clicked.connect(lambda: self.verschieben(-1))
@@ -178,13 +191,22 @@ class SammlungenBereich(Bereich):
         for k in (self.k_dazu, self.k_geschichte, self.k_zuordnen, self.k_weg):
             z.addWidget(k)
         z.addStretch(1)
-        rl.addLayout(z)
+        ul.addLayout(z)
         z2 = QHBoxLayout()
         for k in (self.k_hoch, self.k_runter):
             z2.addWidget(k)
         z2.addStretch(1)
         z2.addWidget(self.k_sortieren)
-        rl.addLayout(z2)
+        ul.addLayout(z2)
+        oben_unten.addWidget(unten)
+        oben_unten.setStretchFactor(1, 1)
+        ml.addWidget(oben_unten, 1)
+        koerper.addWidget(mitte)
+        from bookbench.ui.collection_cover import SammlungCover
+        self.cover = SammlungCover(self)
+        koerper.addWidget(self.cover)
+        koerper.setStretchFactor(0, 1)
+        rl.addWidget(koerper, 1)
         teiler.addWidget(rechts)
         self.seite = teiler
         self._fuellen()
@@ -196,12 +218,6 @@ class SammlungenBereich(Bereich):
         kasten = QWidget()
         lay = QHBoxLayout(kasten)
         lay.setContentsMargins(0, 4, 0, 4)
-        self.m_cover = QLabel()
-        self.m_cover.setFixedSize(64, 96)
-        self.m_cover.setAlignment(Qt.AlignCenter)
-        self.m_cover.setProperty("rolle", "hinweis")
-        self.m_cover.setStyleSheet("border: 1px solid palette(mid);")
-        lay.addWidget(self.m_cover, 0, Qt.AlignTop)
         g = QGridLayout()
         g.setHorizontalSpacing(6)
         g.setVerticalSpacing(4)
@@ -218,19 +234,13 @@ class SammlungenBereich(Bereich):
         g.addWidget(self.m_nummer, 0, 3)
         g.addWidget(QLabel(_("Blurb:")), 1, 0, Qt.AlignTop)
         self.m_text = QPlainTextEdit()
-        self.m_text.setFixedHeight(64)
+        self.m_text.setMinimumHeight(48)
         self.m_text.setPlaceholderText(_("Shown in KOReader under “About this collection” (patch needed)"))
         g.addWidget(self.m_text, 1, 1, 1, 3)
+        g.setRowStretch(1, 1)
         g.setColumnStretch(1, 1)
         lay.addLayout(g, 1)
         k = QVBoxLayout()
-        self.k_cover = QPushButton(_("Cover …"))
-        menue = QMenu(self.k_cover)
-        menue.addAction(_("From a file …"), self.cover_aus_datei)
-        menue.addAction(_("From a book of the collection …"), self.cover_vom_buch)
-        menue.addAction(_("Remove cover"), lambda: self._cover_setzen(None))
-        self.k_cover.setMenu(menue)
-        k.addWidget(self.k_cover)
         self.k_meta = QPushButton(_("Apply"))
         self.k_meta.setToolTip(_("Save series, number and blurb of this collection"))
         self.k_meta.clicked.connect(self.meta_uebernehmen)
@@ -252,15 +262,16 @@ class SammlungenBereich(Bereich):
         self.m_reihe.blockSignals(False)
         self.m_nummer.setText(m.get("nummer", ""))
         self.m_text.setPlainText(m.get("klappentext", ""))
-        pfad = self._cover_pfad(m)
-        pm = QPixmap(str(pfad)) if pfad else QPixmap()
-        if not pm.isNull():
-            self.m_cover.setPixmap(pm.scaled(64, 96, Qt.KeepAspectRatio, Qt.SmoothTransformation))
-            self.m_cover.setToolTip(str(pfad))
-        else:
-            self.m_cover.setPixmap(QPixmap())
-            self.m_cover.setText(_("no cover"))
-            self.m_cover.setToolTip("")
+        if hasattr(self, "cover"):
+            self.cover.anzeigen()
+
+    def cover_pfad(self):
+        """Pfad des Covers der gewählten Sammlung oder None (für die Cover-Tafel)."""
+        s = self._sammlung()
+        return self._cover_pfad((s or {}).get("meta") or {}) if s else None
+
+    def cover_setzen(self, daten):
+        self._cover_setzen(daten)
 
     def _cover_pfad(self, m):
         if not m.get("cover") or self.ort is None:
@@ -306,15 +317,6 @@ class SammlungenBereich(Bereich):
             s.pop("meta")
         self._speichern([s["name"]])
         self._meta_zeigen()
-
-    def cover_aus_datei(self):
-        p = dialogs.datei_oeffnen(self.app, _("Cover of the collection"), "",
-                                  [(_("Images"), "*.jpg *.jpeg *.png")])
-        if p:
-            try:
-                self._cover_setzen(Path(p).read_bytes())
-            except OSError as ex:
-                dialogs.fehler(self.app, self.name(), _("The file could not be read."), str(ex))
 
     def cover_vom_buch(self):
         s = self._sammlung()
@@ -475,6 +477,25 @@ class SammlungenBereich(Bereich):
 
     def _braucht_patch(self):
         return any(s.get("meta") or any(kco.geschichte(e) for e in s["eintraege"]) for s in self.sammlungen)
+
+    def fortschritt(self, s):
+        """(gelesen, gesamt, bekannt) einer Sammlung aus dem Lesestand ihrer Bücher und Geschichten (Reihen-Übersicht)."""
+        buecher = self._buch_von()
+        gelesen = gesamt = 0
+        bekannt = False
+        for e in s["eintraege"]:
+            if kco.geschichte(e):
+                gesamt += 1
+                st = self._geschichte_stand(e)
+                bekannt = bekannt or bool(st) or self.ort == "reader"
+                gelesen += st == _("finished")
+            elif e.get("rel") in buecher:
+                gesamt += 1
+                le = getattr(buecher[e["rel"]], "lesen", None)
+                if le is not None:
+                    bekannt = True
+                    gelesen += le.get("status") == "complete"
+        return gelesen, gesamt, bekannt
 
     def _patch_da(self):
         if self.ort != "reader":

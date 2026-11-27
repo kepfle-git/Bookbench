@@ -554,6 +554,8 @@ All series of the opened folder in one list, each with its books below it (click
 
 **Collections (omnibus)**: a book with a range in Metadata (number 1, to 3) covers 1, 2 and 3. It shows "1–3", and below it the books it contains, named after the top entries of its table of contents when there are enough of them (otherwise "in this collection"). Having book 2 on its own as well does not count as a duplicate.
 
+**Series of collections**: collections with a series ([[sammlungen_metadaten]], e.g. 21 omnibuses) appear here too, with "n collections" in the Author column. Their collections stand below by number, missing numbers in grey as for books, and the read status counts the books (and stories) of each collection. A double-click or Enter opens a collection in the Collections area; right-click > Show in Collections.
+
 Series and numbers that are applied but not yet saved already count here.
 """)),
     ("bereiche", "sammlungen", N_("Collections"), N_("""
@@ -583,8 +585,8 @@ Every change is saved at once (no Save needed).
 KOReader itself only knows the name of a collection. Bookbench adds a **series** with a **number**, a **blurb** and a **cover** - e.g. 21 omnibuses as the series "Horus Heresy Omnibus", #1 to #21. KOReader shows them with Bookbench's patch **2-bookbench-collections** on the e-reader.
 
 **In Bookbench** (Collections area, above the entries of the selected collection):
-- **Series** (pick one of the series of your other collections or type a new one) and **Number** (decimals allowed). **Blurb**: any text. **Apply** saves the three.
-- **Cover …**: **From a file …** (JPG or PNG), **From a book of the collection …** (its cover image), **Remove cover**. Saved at once. The picture is stored in the library (.bookbench/covers) or on the e-reader (settings/bookbench_covers); the sync copies it along.
+- **Series** (pick one of the series of your other collections or type a new one) and **Number** (decimals allowed). **Blurb**: any text. **Apply** saves the three. The divider between these fields and the entries can be dragged.
+- **Cover** on the right, used like the cover in Metadata: a click shows it as large as the screen allows (a second click closes it), right-click opens the menu, a picture can be dropped onto it. Below: size and format, **From file …** (JPG or PNG), **From a book …** (the cover of a book of the collection), **Export …**, **Remove cover**. There is no looking up (a collection you made yourself is nowhere online), and the cover is saved at once, like everything in collections. The panel can be made wider or narrower with the divider. The picture is stored in the library (.bookbench/covers) or on the e-reader (settings/bookbench_covers); the sync copies it along.
 - The list of collections shows the series and number after the name.
 
 **In KOReader** (with the patch):

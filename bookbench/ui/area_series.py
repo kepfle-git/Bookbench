@@ -112,11 +112,23 @@ class ReihenBereich(Bereich):
         return [("nummern", _("Number series …"), self.durchnummerieren,
                  _("Number the books of the selected series again (with preview, in the Metadata area)"))]
 
+    def alle_reihen(self):
+        """Buchreihen und (seit 2.4-beta5) Reihen aus Sammlungen (Omnibusse), alphabetisch."""
+        sa = getattr(self.app, "sammlungen", None)
+        sammlungsreihen = []
+        if sa is not None:
+            try:
+                sa._aktuell()
+                sammlungsreihen = kse.sammlungsreihen(sa.sammlungen, sa.fortschritt)
+            except Exception:
+                sammlungsreihen = []
+        return sorted(kse.reihen(self.app.buecher) + sammlungsreihen, key=lambda r: r.name.casefold())
+
     def marken(self):
-        return [("luecke", sum(1 for r in kse.reihen(self.app.buecher) if r.luecken))]
+        return [("luecke", sum(1 for r in self.alle_reihen() if r.luecken))]
 
     def zaehler(self):
-        n = len(kse.reihen(self.app.buecher))
+        n = len(self.alle_reihen())
         return str(n) if n else ""
 
     def zustand(self):
@@ -155,7 +167,7 @@ class ReihenBereich(Bereich):
         b = self.baum
         b.blockSignals(True)
         b.clear()
-        alle = kse.reihen(self.app.buecher)
+        alle = self.alle_reihen()
         if self.filter_kennung == "ohne_reihe":
             from bookbench.core import listing
             self.liste = [x for x in kse.ohne_reihe(self.app.buecher) if listing.such_passt(x, such)]
@@ -188,7 +200,8 @@ class ReihenBereich(Bereich):
 
     def _reihe_zeile(self, r):
         it = QTreeWidgetItem()
-        schl = kse._schluessel(r.name)
+        sammlung = getattr(r, "ist_sammlung", False)
+        schl = ("s:" if sammlung else "") + kse._schluessel(r.name)
         it.setData(0, ROLLE, ("reihe", schl))
         it.reihe = r
         it.setText(0, r.name)
@@ -198,13 +211,17 @@ class ReihenBereich(Bereich):
         it.setToolTip(0, r.name)
         it.setText(1, r.spanne)
         it.setTextAlignment(1, int(Qt.AlignRight | Qt.AlignVCenter))
-        it.setText(2, ", ".join(r.autoren[:2]) + (" …" if len(r.autoren) > 2 else ""))
-        it.setToolTip(2, " & ".join(r.autoren))
+        if sammlung:
+            it.setText(2, ngettext("{n} collection", "{n} collections", len(r.buecher)).format(n=len(r.buecher)))
+            it.setToolTip(2, _("A series of collections (Collections area)"))
+        else:
+            it.setText(2, ", ".join(r.autoren[:2]) + (" …" if len(r.autoren) > 2 else ""))
+            it.setToolTip(2, " & ".join(r.autoren))
         it.setText(3, self._gelesen_reihe(r))
         if r.naechstes is not None:
-            nr = kse.reihe_nummer(r.naechstes)[1]
+            nr = r.nummer_von(r.naechstes) if sammlung else kse.reihe_nummer(r.naechstes)[1]
             nr = f"{nr}: " if nr else ""
-            it.setText(4, nr + r.naechstes.titel)
+            it.setText(4, nr + (r.naechstes["name"] if sammlung else r.naechstes.titel))
             it.setToolTip(4, it.text(4))
         it.setText(5, self._fehlt_text(r))
         it.setToolTip(5, self._fehlt_text(r, lang=True))
@@ -218,13 +235,48 @@ class ReihenBereich(Bereich):
         """Zeilen der Bücher, dazwischen grau die fehlenden Nummern (an der Stelle, wo sie fehlen)."""
         from bookbench.core import listing
         zeilen, offen = [], list(r.luecken)
+        sammlung = getattr(r, "ist_sammlung", False)
         for x in r.buecher:
-            z = listing.nr(kse.reihe_nummer(x)[1])
+            z = listing.nr(r.nummer_von(x) if sammlung else kse.reihe_nummer(x)[1])
             while offen and offen[0][0] < z:
                 zeilen.append(self._luecke_zeile(*offen.pop(0)))
-            zeilen.append(self._buch_zeile(x, r))
+            zeilen.append(self._sammlung_zeile(x, r) if sammlung else self._buch_zeile(x, r))
         zeilen += [self._luecke_zeile(*l) for l in offen]
         return zeilen
+
+    def _sammlung_zeile(self, s, r):
+        """Zeile einer Sammlung in einer Sammlungsreihe; Doppelklick öffnet sie im Bereich Sammlungen."""
+        from bookbench.ui.area_collections import anzeigename
+        it = QTreeWidgetItem()
+        it.setData(0, ROLLE, ("sammlung", s["name"]))
+        it.sammlung = s["name"]
+        it.setText(0, anzeigename(s["name"]))
+        nummer = r.nummer_von(s)
+        it.setText(1, nummer or "–")
+        it.setTextAlignment(1, int(Qt.AlignRight | Qt.AlignVCenter))
+        it.setText(2, ngettext("{n} entry", "{n} entries", len(s["eintraege"])).format(n=len(s["eintraege"])))
+        gelesen, gesamt, bekannt = r.stand[s["name"]]
+        if bekannt:
+            it.setText(3, _("{n} of {gesamt} finished").format(n=gelesen, gesamt=gesamt))
+        hinweis = []
+        if not nummer:
+            hinweis.append(_("no number"))
+        elif kse._zahl(nummer) is not None and kse.nummer_text(kse._zahl(nummer)) in r.doppelt:
+            hinweis.append(_("number twice"))
+        it.setText(5, ", ".join(hinweis))
+        if r.naechstes is s:
+            it.setText(4, _("next"))
+            for sp in range(len(SPALTEN)):
+                f = it.font(sp)
+                f.setBold(True)
+                it.setFont(sp, f)
+        return it
+
+    def in_sammlungen(self, name):
+        sa = self.app.sammlungen
+        self.app.bereich_zeigen("sammlungen")
+        sa.gewaehlt = name
+        sa._fuellen()
 
     def _buch_zeile(self, x, r):
         it = QTreeWidgetItem()
@@ -349,8 +401,12 @@ class ReihenBereich(Bereich):
                 teile.append(reading.beschreibung(x.lesen))
             self.app.status.set(" - ".join(t for t in teile if t))
         elif r is not None:
-            text = ngettext("{name}: {n} book", "{name}: {n} books", len(r.buecher)).format(name=r.name,
-                                                                                          n=len(r.buecher))
+            if getattr(r, "ist_sammlung", False):
+                text = ngettext("{name}: {n} collection", "{name}: {n} collections", len(r.buecher)).format(
+                    name=r.name, n=len(r.buecher))
+            else:
+                text = ngettext("{name}: {n} book", "{name}: {n} books", len(r.buecher)).format(name=r.name,
+                                                                                              n=len(r.buecher))
             fehlt = self._fehlt_text(r)
             self.app.status.set(text + (f" - {fehlt}" if fehlt else ""))
 
@@ -366,6 +422,8 @@ class ReihenBereich(Bereich):
     def _doppelklick(self, it, __):
         if getattr(it, "buch", None) is not None:
             self.app.buch_oeffnen(it.buch)
+        elif getattr(it, "sammlung", None) is not None:
+            self.in_sammlungen(it.sammlung)
 
     def _eingabe(self):
         it = self.baum.currentItem()
@@ -373,6 +431,8 @@ class ReihenBereich(Bereich):
             return
         if getattr(it, "buch", None) is not None:
             self.app.buch_oeffnen(it.buch)
+        elif getattr(it, "sammlung", None) is not None:
+            self.in_sammlungen(it.sammlung)
         else:
             it.setExpanded(not it.isExpanded())
 
@@ -381,7 +441,8 @@ class ReihenBereich(Bereich):
         erg = []
         for it in self.baum.selectedItems():
             for x in ([it.buch] if getattr(it, "buch", None) is not None else
-                      list(it.reihe.buecher) if hasattr(it, "reihe") else []):
+                      list(it.reihe.buecher) if hasattr(it, "reihe") and not getattr(it.reihe, "ist_sammlung", False)
+                      else []):
                 if x not in erg:
                     erg.append(x)
         return erg
@@ -418,6 +479,13 @@ class ReihenBereich(Bereich):
             self.app.sammlungen.menue_hinzufuegen(m, [x])
             m.addSeparator()
         r = self.reihe_von(it)
+        if r is not None and getattr(r, "ist_sammlung", False):        # Reihe aus Sammlungen
+            name = getattr(it, "sammlung", None) or (r.buecher[0]["name"] if r.buecher else None)
+            if name:
+                m.addAction(_("Show in Collections"), lambda: self.in_sammlungen(name))
+            self._menue_offen = m
+            m.popup(self.baum.viewport().mapToGlobal(pos))
+            return
         if r is not None:
             m.addAction(_("Number series …"), lambda: self.durchnummerieren(r))
             m.addAction(ngettext("Edit metadata of {n} book", "Edit metadata of {n} books", len(r.buecher))
@@ -435,8 +503,8 @@ class ReihenBereich(Bereich):
         """Bücher der Reihe in der Reihenfolge ihrer Nummern im Bereich Metadaten wählen und dort
         „Reihe durchnummerieren“ öffnen (Vorschau, dann gelb; gespeichert wird mit Strg+S)."""
         r = r or self.gewaehlte_reihe()
-        if r is None:
-            self.app.status.set(_("Choose a series first."))
+        if r is None or getattr(r, "ist_sammlung", False):
+            self.app.status.set(_("Choose a series of books first."))
             return
         if len(r.buecher) < 2:
             self.app.status.set(_("This series has only one book."))

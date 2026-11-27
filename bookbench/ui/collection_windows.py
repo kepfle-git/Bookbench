@@ -130,11 +130,14 @@ class LeseordnungFenster(QDialog):
         gefunden = geschichten = fehlt = 0
         for i, (e, z, b) in enumerate(self._erg, 1):
             von = z["titel"] + (f" ({z['kuerzel']})" if z["kuerzel"] else "") + (f" - {z['autor']}" if z["autor"] else "")
-            if b is not None:
+            if b is not None and e.get("toc"):
+                ziel = _("story “{toc}” in {buch}").format(toc=e["toc"], buch=b.titel or b.name)
+                gefunden += 1
+            elif b is not None:
                 ziel = buch_text(b)
                 gefunden += 1
             elif z["kuerzel"]:
-                ziel = _("story in an anthology ({kuerzel}) - placeholder").format(kuerzel=z["kuerzel"])
+                ziel = _("story ({kuerzel}) not found in an anthology - placeholder").format(kuerzel=z["kuerzel"])
                 geschichten += 1
             else:
                 ziel = _("not found - placeholder, choose the book later")
@@ -144,15 +147,15 @@ class LeseordnungFenster(QDialog):
             it.setToolTip(2, str(b.pfad) if b is not None else ziel)
             if b is None:
                 it.setForeground(2, grau)
-        teile = [ngettext("{n} book found", "{n} books found", gefunden).format(n=gefunden)]
+        teile = [ngettext("{n} found", "{n} found", gefunden).format(n=gefunden)]
         if geschichten:
-            teile.append(ngettext("{n} story in an anthology", "{n} stories in anthologies", geschichten)
-                         .format(n=geschichten))
+            teile.append(ngettext("{n} story not found in the anthologies", "{n} stories not found in the anthologies",
+                                  geschichten).format(n=geschichten))
         if fehlt:
             teile.append(ngettext("{n} not found", "{n} not found", fehlt).format(n=fehlt))
-        self.zusammen.setText(", ".join(teile) + (". " + _("Placeholders keep their place in the order; stories in "
-                                                             "anthologies can be opened with the patch of 2.4-beta3.")
-                                                   if geschichten or fehlt else ".") if self._erg else "")
+        self.zusammen.setText(", ".join(teile) + (". " + _("Placeholders keep their place in the order; “Choose …” "
+                                                             "fills them in later.") if geschichten or fehlt else ".")
+                              if self._erg else "")
         self._knopf()
 
     def _knopf(self):
@@ -163,3 +166,119 @@ class LeseordnungFenster(QDialog):
 
     def eintraege(self):
         return [e for e, __, __ in self._erg]
+
+
+class GeschichteFenster(QDialog):
+    """Geschichte in einer Anthologie wählen (seit 2.4-beta3): links das Buch, rechts sein Inhaltsverzeichnis.
+    Ein Eintrag = die Geschichte reicht bis zum nächsten Eintrag derselben oder einer höheren Ebene; mehrere
+    zusammenhängende Einträge = von erstem bis letztem. Die Suche findet Bücher auch über Einträge ihres
+    Inhaltsverzeichnisses."""
+
+    def __init__(self, eltern, buecher, wurzel, vorschlag=""):
+        super().__init__(eltern)
+        self.wurzel = wurzel
+        self.setWindowTitle(_("Story in an anthology"))
+        self.resize(900, 600)
+        lay = QVBoxLayout(self)
+        self.such = QLineEdit(vorschlag)
+        self.such.setPlaceholderText(_("Search books and their tables of contents …"))
+        self.such.setClearButtonEnabled(True)
+        self.such.textChanged.connect(self._filtern)
+        lay.addWidget(self.such)
+        teil = QSplitter(Qt.Horizontal)
+        self.liste = QListWidget()
+        for b in listing.links_sortiert([b for b in buecher if not b.fehler and getattr(b, "zeilen", None)]):
+            it = QListWidgetItem(buch_text(b))
+            it.setData(Qt.UserRole, b)
+            it.setToolTip(str(b.pfad))
+            self.liste.addItem(it)
+        self.liste.currentItemChanged.connect(self._buch)
+        teil.addWidget(self.liste)
+        self.toc = QListWidget()
+        self.toc.setSelectionMode(QAbstractItemView.ContiguousSelection)
+        self.toc.itemSelectionChanged.connect(self._eintrag)
+        teil.addWidget(self.toc)
+        teil.setSizes([340, 540])
+        lay.addWidget(teil, 1)
+        z = QHBoxLayout()
+        z.addWidget(QLabel(_("Title:")))
+        self.titel = QLineEdit()
+        self.titel.setPlaceholderText(_("as in the table of contents"))
+        z.addWidget(self.titel, 1)
+        lay.addLayout(z)
+        lay.addWidget(_hinweis(_("The story runs to the next entry of the same or a higher level. Select several "
+                                 "entries in a row for a story with parts. KOReader shows it in the collection with "
+                                 "the patch 2-bookbench-stories.")))
+        self.knoepfe = _knoepfe(self, _("Add story"))
+        lay.addWidget(self.knoepfe)
+        self._titel_auto = ""
+        self._filtern(vorschlag)
+        if vorschlag:
+            treffer = kco.geschichte_finden(vorschlag, buecher)
+            if treffer is not None:
+                self.waehlen(treffer[0], treffer[1], treffer[2])
+        self._knopf()
+
+    def _filtern(self, text):
+        t = text.strip().casefold()
+        erster = None
+        for i in range(self.liste.count()):
+            it = self.liste.item(i)
+            b = it.data(Qt.UserRole)
+            passt = not t or listing.such_passt(b, t) or any(t in x[1].casefold() for x in kco.toc_eintraege(b))
+            it.setHidden(not passt)
+            if passt and erster is None:
+                erster = it
+        if erster is not None and (self.liste.currentItem() is None or self.liste.currentItem().isHidden()):
+            self.liste.setCurrentItem(erster)
+
+    def _buch(self, it, __=None):
+        self.toc.clear()
+        if it is None:
+            return
+        t = self.such.text().strip().casefold()
+        for i, titel, tiefe, nr in kco.toc_eintraege(it.data(Qt.UserRole)):
+            e = QListWidgetItem("    " * max(0, tiefe - 1) + (titel or "–"))
+            e.setData(Qt.UserRole, (i, titel, tiefe, nr))
+            self.toc.addItem(e)
+            if t and t in titel.casefold() and not self.toc.selectedItems():
+                e.setSelected(True)
+                self.toc.scrollToItem(e)
+        self._knopf()
+
+    def _eintrag(self):
+        gew = self.gewaehlt_toc()
+        if gew and (not self.titel.text() or self.titel.text() == self._titel_auto):
+            self._titel_auto = gew[0][1]
+            self.titel.setText(self._titel_auto)
+        self._knopf()
+
+    def _knopf(self):
+        self.knoepfe.button(QDialogButtonBox.Ok).setEnabled(bool(self.gewaehlt_toc()))
+
+    def gewaehlt_toc(self):
+        return sorted(it.data(Qt.UserRole) for it in self.toc.selectedItems())
+
+    def waehlen(self, b, toc, nr):
+        for i in range(self.liste.count()):
+            if self.liste.item(i).data(Qt.UserRole) is b:
+                self.liste.item(i).setHidden(False)
+                self.liste.setCurrentRow(i)
+                break
+        self.toc.clearSelection()
+        for i in range(self.toc.count()):
+            d = self.toc.item(i).data(Qt.UserRole)
+            if d[1] == toc and d[3] == nr:
+                self.toc.item(i).setSelected(True)
+                self.toc.scrollToItem(self.toc.item(i))
+                break
+
+    def eintrag(self):
+        it = self.liste.currentItem()
+        gew = self.gewaehlt_toc()
+        if it is None or not gew:
+            return None
+        erster, letzter = gew[0], gew[-1]
+        ende = (letzter[1], letzter[3]) if len(gew) > 1 else None
+        return kco.geschichte_eintrag(it.data(Qt.UserRole), erster[1], erster[3], self.wurzel,
+                                      self.titel.text().strip() or erster[1], ende)

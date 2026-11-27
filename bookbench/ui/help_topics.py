@@ -560,10 +560,30 @@ Every change is saved at once (no Save needed).
 **On the right** the entries of the selected collection in reading order, with series and read status. Drag entries to another place, or use **Move up** / **Move down**. **Add books …** chooses books from the library (several with Ctrl+click), **Remove** (or Del) takes entries out of the collection. **Sort by series number** sorts by series and number. A double-click opens a book. Once Bookbench has set the order, KOReader shows the collection sorted by hand, in that order.
 
 **Paste reading order …** (toolbar) creates a collection from a list, e.g. the reading order of an omnibus on heresyomnibus.com: copy the list from the page and paste it. One entry per line like "2. The Wolf of Ash and Fire (EoT) by Graham McNeill"; number, the short name of an anthology in brackets and "by …" are optional, also on lines of their own. Each line is matched to a book of the library by title (a series before a colon, upper/lower case and punctuation do not matter) and author; the window shows the result at once.
-- What is not found becomes a grey **placeholder** that keeps its place. **Choose book …** replaces it with a book.
-- Lines with the short name of an anthology are **stories in an anthology**. A KOReader collection can only hold whole files, so they stay placeholders for now; the patch of 2.4-beta3 will open such a story right inside the anthology. Placeholders are not written to the e-reader, but the numbering there leaves their place free.
+- Lines with the short name of an anthology are **stories in an anthology**: Bookbench looks for the title in the tables of contents of all books and makes it a story entry (see below).
+- What is not found becomes a grey **placeholder** that keeps its place. **Choose …** replaces it with a book, or for a story with an entry of an anthology. Placeholders are not written to the e-reader, but the numbering there leaves their place free.
+
+**Stories in anthologies** ([[sammlungen_geschichten]]): **Add story …** picks a book and an entry of its table of contents. The story then is an entry of the collection like a book.
 
 **From other areas**: right-click in the library or in Book series > **Add to collection** (an existing one or a new one); in Book series also **Collection from series**.
+""")),
+    ("sammlungen", "sammlungen_geschichten", N_("Stories in anthologies"), N_("""
+A KOReader collection can only hold whole files. With Bookbench's patch **2-bookbench-stories** on the e-reader it can also hold a story inside an anthology - without cutting the story out into a file of its own.
+
+**In Bookbench**: **Add story …** in the Collections area. On the left the books (the search also looks into their tables of contents), on the right the table of contents of the selected book. One entry = the story runs to the next entry of the same or a higher level; several entries in a row = a story with parts, from the first to the last. The title is that of the entry, it can be changed. Stories from a pasted reading order are found by title. Entries are matched in KOReader by their title (and which one it is, if the title appears more than once), so **save** changed chapter names before syncing.
+
+**On the e-reader** (patch needed - **Install patch** in the Collections area when the e-reader is opened directly, or Preview > Patches):
+- The collection shows the story at its place, with "in <anthology>" and ✓ or a percentage once it was read.
+- Tapping opens the anthology right at the start of the story, or where you stopped. The story has a **reading position of its own**: the anthology keeps its own (KOReader's progress of the anthology is put back when you leave the story).
+- At the **end of the story** (when you turn past its last page) a window offers: **Next: …** (the next entry of the collection, book or story), **Back to "collection"**, **Read on in this book** (leave the story and go on in the anthology from here) and **Back to the last page**.
+- **Long-press** a story: open it, open the book normally, mark it read or unread.
+- Arranging a collection by hand in KOReader keeps the stories at their new place until Bookbench writes the collection anew.
+
+**Reading state**: the patch notes progress and "read" per story in settings/bookbench_stories_state.lua on the e-reader. Bookbench shows it in the Collections area when the e-reader is opened directly.
+
+**Limits**: only EPUB (reflowable books). The time KOReader's statistics count goes to the anthology. Bookshelf's collection shelves show only the books, not the stories.
+
+The files on the e-reader: settings/collection.lua (the books, as KOReader knows them), settings/bookbench_stories.lua (the stories, written by Bookbench), settings/bookbench_stories_state.lua (written by the patch).
 """)),
     ("bereiche", "woerterbuch", N_("Dictionary"), N_("""
 Your own dictionaries for KOReader: read, edit, fill missing terms, build from a wiki, build the files. The dictionary is chosen at the top; Bookbench remembers all that were ever opened or created.
@@ -808,6 +828,7 @@ Below Preview, **Patches** lists the user patches of the profile (folder koreade
 **Patches from Bookbench**
 Patches Bookbench brings along, with their state (not in the profile, in the profile, another version) and **Add** or **Update**. They are also attached to every Bookbench release on GitHub, for copying into koreader/patches on the e-reader by hand.
 - **2-bookbench-subtitle**: reads the subtitle and calibre's custom columns straight from each EPUB on the e-reader. Bookshelf gets the token **%subtitle** (top panel, list lines, cover labels, [if:subtitle]); **%calibre{name}** in Bookshelf and Bookends also finds columns stored in the book, without calibre's metadata.calibre (a value in the book wins). Subtitle = the column #subtitle, otherwise the EPUB 3 subtitle. Bookbench writes these columns into the book when you edit them in Metadata. The patch hooks into Bookshelf's and Bookends' insides; if a new version changes them, the values stay empty and nothing else breaks.
+- **2-bookbench-stories**: stories inside anthologies as entries of a collection - KOReader opens the story right inside the anthology, with a reading position of its own, and offers the next entry at its end ([[sammlungen_geschichten]]).
 - **2-bookbench-screensaver**: sleep screen with a picture and a message - the picture moves into the free space next to the message instead of lying under it. Switch and options on the page Sleep screen ([[vorschau_sperrbildschirm]]). It only adjusts how KOReader puts picture and message together; if KOReader changes that, the sleep screen looks as without the patch.
 
 Switching on and off is a draft until **Save to profile**. Patches run when KOReader starts, so the workbench restarts after every change. To bring patches onto the e-reader: **To the e-reader …** ([[vorschau_rueckweg]]). Bookbench's internal patches (1-bookbench-desktop, 2-bookbench-workbench) are not listed.

@@ -12,7 +12,10 @@ mit dem Patch in 2.4-beta3).
 
 Sammlung (dict, so auch in library.json unter "sammlungen" und als Basis des Abgleichs):
     name          Name wie in KOReader ("favorites" = KOReaders Favoriten)
-    eintraege     [Eintrag] in Lesereihenfolge; Eintrag = {"rel": Pfad relativ zur Wurzel} für ein Buch oder ein
+    eintraege     [Eintrag] in Lesereihenfolge; Eintrag = {"rel": Pfad relativ zur Wurzel} für ein Buch,
+                  {"rel", "toc", "toc_nr", "titel", "buch"} für eine Geschichte in einer Anthologie (seit 2.4-beta3:
+                  Eintrag im Inhaltsverzeichnis, toc_nr = wievielter mit diesem Titel; KOReader zeigt sie nur mit dem
+                  Patch 2-bookbench-stories, sie stehen in settings/bookbench_stories.lua statt in collection.lua) oder ein
                   Platzhalter {"titel", "autor", "kuerzel"} aus einer eingefügten Leseordnung (Geschichte in einer
                   Anthologie oder nicht gefunden); dazu optional "fremd": absoluter Pfad, der nicht unter der Wurzel
                   liegt (z. B. SD-Karte) - bleibt erhalten, Bookbench zeigt ihn nur
@@ -34,6 +37,9 @@ from pathlib import Path
 
 FAVORITEN = "favorites"
 DATEI = "collection.lua"
+GESCHICHTEN = "bookbench_stories.lua"           # für den Patch 2-bookbench-stories (seit 2.4-beta3)
+GESCHICHTEN_STAND = "bookbench_stories_state.lua"
+PATCH = "2-bookbench-stories.lua"
 
 
 # ------------------------------------------------------------------------------- Ort
@@ -59,6 +65,18 @@ def ort(ordner):
 def lua_pfad(wurzel):
     from bookbench.device import device as kg
     return Path(wurzel) / kg.ko_ordner(kg.art_von(wurzel)) / "settings" / DATEI
+
+
+def geschichte(e):
+    return bool(e.get("toc")) and bool(e.get("rel"))
+
+
+def schluessel(e):
+    """Vergleichsschlüssel eines Eintrags: Datei, bei Geschichten mit dem Inhaltsverzeichnis-Eintrag."""
+    k = e.get("rel") or e.get("fremd")
+    if k and e.get("toc"):
+        k += f"#{e['toc']}#{int(e.get('toc_nr') or 1)}"
+    return k
 
 
 def laufwerk(wurzel):
@@ -88,7 +106,10 @@ def von_lua(daten, lw):
         eintraege = []
         for p in posten:
             r = _rel(p["file"], lw)
-            eintraege.append({"rel": r} if r is not None else {"fremd": str(p["file"])})
+            e = {"rel": r} if r is not None else {"fremd": str(p["file"])}
+            if isinstance(p.get("order"), (int, float)):
+                e["_o"] = p["order"]                 # nur zum Einmischen der Geschichten, fällt danach weg
+            eintraege.append(e)
         erg.append({"name": name, "eintraege": eintraege, "settings": settings})
     erg.sort(key=lambda s: (s["name"] != FAVORITEN, s["settings"].get("order", 1e9), s["name"].casefold()))
     return erg
@@ -101,6 +122,8 @@ def nach_lua(s, lw):
     manuell = not tab["settings"].get("collate")
     n = 0
     for i, e in enumerate(s.get("eintraege") or [], 1):
+        if geschichte(e):                       # Geschichten: settings/bookbench_stories.lua
+            continue
         datei = (lw.rstrip("/") + "/" + e["rel"]) if e.get("rel") else e.get("fremd")
         if not datei:
             continue
@@ -109,9 +132,88 @@ def nach_lua(s, lw):
     return tab
 
 
+def nach_geschichten(s, lw):
+    """Liste für bookbench_stories.lua (eine Sammlung) oder None ohne Geschichten."""
+    erg = []
+    for i, e in enumerate(s.get("eintraege") or [], 1):
+        if geschichte(e):
+            g = {"file": lw.rstrip("/") + "/" + e["rel"], "order": i, "title": e.get("titel") or e["toc"],
+                 "toc": e["toc"], "toc_nr": int(e.get("toc_nr") or 1)}
+            if e.get("buch"):
+                g["book"] = e["buch"]
+            if e.get("toc_ende"):
+                g["toc_end"], g["toc_end_nr"] = e["toc_ende"], int(e.get("toc_ende_nr") or 1)
+            erg.append(g)
+    return erg or None
+
+
+def _geschichten_einmischen(sammlungen, daten, lw, umgestellt=None):
+    """Geschichten aus bookbench_stories.lua an ihrem Platz (order) in die Sammlungen vom Reader einfügen;
+    umgestellt = {Schlüssel im Patch: neue Stelle} aus dessen Stand-Datei (in KOReader umsortiert)."""
+    for name, liste in (daten or {}).items():
+        if not isinstance(liste, list):
+            continue
+        s = finden(sammlungen, name)
+        if s is None:
+            continue
+        posten = [(e.get("_o", i + 1), e) for i, e in enumerate(s["eintraege"])]
+        for g in liste:
+            if not isinstance(g, dict) or not g.get("file") or not g.get("toc"):
+                continue
+            r = _rel(g["file"], lw)
+            if r is None:
+                continue
+            e = {"rel": r, "toc": g["toc"], "toc_nr": int(g.get("toc_nr") or 1), "titel": g.get("title") or g["toc"]}
+            if g.get("book"):
+                e["buch"] = g["book"]
+            if g.get("toc_end"):
+                e["toc_ende"], e["toc_ende_nr"] = g["toc_end"], int(g.get("toc_end_nr") or 1)
+            k = f"{g['file']}|{g['toc']}|{int(g.get('toc_nr') or 1)}"
+            o = (umgestellt or {}).get(k, g.get("order"))
+            posten.append((o if isinstance(o, (int, float)) else 1e9, e))
+        if s["settings"].get("collate"):
+            s["eintraege"] = [e for __, e in posten]
+        else:
+            s["eintraege"] = [e for __, e in sorted(posten, key=lambda x: (x[0], 0 if geschichte(x[1]) else 1))]
+    return sammlungen
+
+
+def geschichten_pfad(wurzel):
+    return lua_pfad(wurzel).with_name(GESCHICHTEN)
+
+
+def stand_pfad(wurzel):
+    return lua_pfad(wurzel).with_name(GESCHICHTEN_STAND)
+
+
+def geschichten_stand(wurzel):
+    """{Schlüssel: Eintrag} aus der Stand-Datei des Patches (status, percent …) und die Umstellungen."""
+    from bookbench.preview.plugins import einstellungen_lesen
+    d = einstellungen_lesen(stand_pfad(wurzel))
+    order = d.get("order") if isinstance(d.get("order"), dict) else {}
+    return d.get("stories") if isinstance(d.get("stories"), dict) else {}, order
+
+
+def stand_schluessel(wurzel, e):
+    return f"{laufwerk(wurzel).rstrip('/')}/{e['rel']}|{e['toc']}|{int(e.get('toc_nr') or 1)}"
+
+
 def lua_lesen(wurzel):
     from bookbench.preview.plugins import einstellungen_lesen
-    return von_lua(einstellungen_lesen(lua_pfad(wurzel)), laufwerk(wurzel))
+    lw = laufwerk(wurzel)
+    sammlungen = von_lua(einstellungen_lesen(lua_pfad(wurzel)), lw)
+    __, order = geschichten_stand(wurzel)
+    stamp_ok = bool(order)                       # Umstellungen gelten nur zur gleichen Fassung (Patch prüft stamp)
+    try:
+        mt = int(geschichten_pfad(wurzel).stat().st_mtime)
+        stamp_ok = stamp_ok and int(order.get("stamp") or -1) == mt
+    except OSError:
+        stamp_ok = False
+    _geschichten_einmischen(sammlungen, einstellungen_lesen(geschichten_pfad(wurzel)), lw, order if stamp_ok else None)
+    for s in sammlungen:
+        for e in s["eintraege"]:
+            e.pop("_o", None)
+    return sammlungen
 
 
 def lua_schreiben(wurzel, sammlungen, geaendert=None, geloescht=(), sicherung=None):
@@ -122,8 +224,15 @@ def lua_schreiben(wurzel, sammlungen, geaendert=None, geloescht=(), sicherung=No
     if sicherung and p.exists():
         sicherung(p)
     lw = laufwerk(wurzel)
-    setzen = {s["name"]: nach_lua(s, lw) for s in sammlungen if geaendert is None or s["name"] in geaendert}
+    neu = [s for s in sammlungen if geaendert is None or s["name"] in geaendert]
+    setzen = {s["name"]: nach_lua(s, lw) for s in neu}
     einstellungen_schreiben(p, setzen, list(geloescht))
+    g = geschichten_pfad(wurzel)
+    g_setzen = {s["name"]: nach_geschichten(s, lw) for s in neu}
+    if g.exists() or any(v for v in g_setzen.values()):
+        if sicherung and g.exists():
+            sicherung(g)
+        einstellungen_schreiben(g, g_setzen, list(geloescht))
 
 
 # ------------------------------------------------------------------------------- Laden und speichern
@@ -278,6 +387,51 @@ def _treffer(zeile, buecher):
     return (best, guete) if guete >= 0.86 else (None, guete)
 
 
+def _toc_titel(b):
+    """[(Titel wie in der Datei bzw. übernommen, Tiefe, Nummer des Vorkommens)] des Inhaltsverzeichnisses."""
+    neu = getattr(b, "neu", None) or {}
+    erg, zaehl = [], {}
+    for tiefe, titel, __, schl in getattr(b, "zeilen", None) or []:
+        t = " ".join((neu.get(schl) or titel or "").split())
+        zaehl[t] = zaehl.get(t, 0) + 1
+        erg.append((t, tiefe, zaehl[t]))
+    return erg
+
+
+def toc_eintraege(b):
+    """Einträge des Inhaltsverzeichnisses für die Auswahl einer Geschichte: [(index, titel, tiefe, nr)]."""
+    return [(i, t, tiefe, nr) for i, (t, tiefe, nr) in enumerate(_toc_titel(b))]
+
+
+def geschichte_finden(titel, buecher):
+    """(Buch, Titel, nr) des besten Treffers im Inhaltsverzeichnis aller Bücher oder None (Geschichte in einer
+    Anthologie aus einer Leseordnung)."""
+    gesucht = _norm(titel)
+    if not gesucht:
+        return None
+    best, guete = None, 0.0
+    for b in buecher:
+        if getattr(b, "fehler", None):
+            continue
+        for t, __, nr in _toc_titel(b):
+            n = _norm(t)
+            if not n:
+                continue
+            g = 1.0 if n == gesucht else difflib.SequenceMatcher(None, n, gesucht).ratio()
+            if g > guete:
+                best, guete = (b, t, nr), g
+    return best if guete >= 0.9 else None
+
+
+def geschichte_eintrag(b, toc, nr, wurzel, titel=None, ende=None):
+    """Eintrag für eine Geschichte im Buch b (Inhaltsverzeichnis-Eintrag toc, nr-tes Vorkommen)."""
+    rel = Path(b.pfad).resolve().relative_to(Path(wurzel).resolve()).as_posix()
+    e = {"rel": rel, "toc": toc, "toc_nr": int(nr or 1), "titel": titel or toc, "buch": b.titel or b.name}
+    if ende:
+        e["toc_ende"], e["toc_ende_nr"] = ende[0], int(ende[1] or 1)
+    return e
+
+
 def zuordnen(zeilen, buecher, wurzel):
     """[(Eintrag, Zeile, Buch oder None)]: gefundene Bücher als {"rel"}, sonst Platzhalter {"titel", "autor",
     "kuerzel"} (mit Kürzel: Geschichte in einer Anthologie, kommt mit dem Patch in beta3)."""
@@ -291,6 +445,15 @@ def zuordnen(zeilen, buecher, wurzel):
                 continue
             except ValueError:
                 pass
+        if z.get("kuerzel"):                     # Geschichte: im Inhaltsverzeichnis der Anthologien suchen
+            treffer = geschichte_finden(z["titel"], buecher)
+            if treffer is not None:
+                b, t, nr = treffer
+                try:
+                    erg.append((geschichte_eintrag(b, t, nr, wurzel, z["titel"]), z, b))
+                    continue
+                except ValueError:
+                    pass
         erg.append(({"titel": z["titel"], "autor": z.get("autor", ""), "kuerzel": z.get("kuerzel", "")}, z, None))
     return erg
 
@@ -308,7 +471,7 @@ def dateien(s, vorhanden=None):
     beim Lesen, sie dürfen deshalb nicht als „auf dem Reader gelöscht“ gelten."""
     if s is None:
         return None
-    return [e.get("rel") or e.get("fremd") for e in s["eintraege"] if _da(e, vorhanden)]
+    return [schluessel(e) for e in s["eintraege"] if _da(e, vorhanden)]
 
 
 def vergleichen(rechner, reader, basis, vorhanden=None):
@@ -354,13 +517,13 @@ def uebernehmen_vom_reader(alt, reader_s, vorhanden=None):
     vorher = None
     for e in alt["eintraege"]:
         if _da(e, vorhanden):
-            vorher = e.get("rel") or e.get("fremd")
+            vorher = schluessel(e)
         else:
             nach.setdefault(vorher, []).append(e)
     neu_e = list(nach.get(None, []))
     for e in reader_s["eintraege"]:
         neu_e.append(dict(e))
-        neu_e += nach.get(e.get("rel") or e.get("fremd"), [])
+        neu_e += nach.get(schluessel(e), [])
     return {"name": alt["name"], "settings": dict(reader_s.get("settings") or alt["settings"]), "eintraege": neu_e}
 
 
@@ -371,10 +534,12 @@ def unterschiede(a, b, vorhanden=None):
     erg = []
     nur_a = [p for p in x if p not in y]
     nur_b = [p for p in y if p not in x]
+    def name(k):
+        return k.split("#")[1] if "#" in k else os.path.basename(k)
     if nur_a:
-        erg.append(("rechner", [os.path.basename(p) for p in nur_a]))
+        erg.append(("rechner", [name(p) for p in nur_a]))
     if nur_b:
-        erg.append(("reader", [os.path.basename(p) for p in nur_b]))
+        erg.append(("reader", [name(p) for p in nur_b]))
     if not nur_a and not nur_b and x != y:
         erg.append(("reihenfolge", []))
     return erg

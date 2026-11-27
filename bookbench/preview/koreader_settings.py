@@ -147,6 +147,9 @@ MITGEBRACHT = {
     "2-bookbench-screensaver.lua": N_("Sleep screen with a picture and a message: the picture moves into the free "
                                       "space next to the message instead of lying under it (switch and options on "
                                       "the page Sleep screen)."),
+    "2-bookbench-stories.lua": N_("Stories inside anthologies as entries of a collection (area Collections): KOReader "
+                                  "opens the story right inside the anthology, with a reading position of its own, "
+                                  "and offers the next entry at its end."),
 }
 
 

@@ -59,6 +59,7 @@ class SammlungenBereich(Bereich):
 
     # ================================================================ Laden
     def laden(self, still=False):
+        self._stand_fuer = None
         self._fuer = self.app.ordner
         self.ort, self.wurzel = kco.ort(self.app.ordner)
         self.fehler = ""
@@ -122,10 +123,16 @@ class SammlungenBereich(Bereich):
         f.setPointSizeF(f.pointSizeF() * 1.15)
         self.kopf.setFont(f)
         rl.addWidget(self.kopf)
+        zo = QHBoxLayout()
         self.ort_text = QLabel("")
         self.ort_text.setProperty("rolle", "hinweis")
         self.ort_text.setWordWrap(True)
-        rl.addWidget(self.ort_text)
+        zo.addWidget(self.ort_text, 1)
+        self.k_patch = QPushButton(_("Install patch"))
+        self.k_patch.setToolTip(_("Copy 2-bookbench-stories.lua into koreader/patches on the e-reader"))
+        self.k_patch.clicked.connect(self.patch_installieren)
+        zo.addWidget(self.k_patch)
+        rl.addLayout(zo)
         b = self.baum = _Eintraege()
         b.setHeaderLabels([_("No."), _("Title"), _("Series"), _("Read status")])
         b.setRootIsDecorated(False)
@@ -157,16 +164,24 @@ class SammlungenBereich(Bereich):
         self.k_dazu.clicked.connect(self.buecher_dazu)
         self.k_weg = QPushButton(_("Remove"))
         self.k_weg.clicked.connect(self.entfernen)
-        self.k_zuordnen = QPushButton(_("Choose book …"))
-        self.k_zuordnen.setToolTip(_("Replace the selected placeholder with a book of the library"))
+        self.k_geschichte = QPushButton(_("Add story …"))
+        self.k_geschichte.setToolTip(_("A story inside an anthology (an entry of its table of contents)"))
+        self.k_geschichte.clicked.connect(lambda: self.geschichte_dazu())
+        self.k_zuordnen = QPushButton(_("Choose …"))
+        self.k_zuordnen.setToolTip(_("Replace the selected placeholder with a book or a story of the library"))
         self.k_zuordnen.clicked.connect(self.zuordnen)
         self.k_sortieren = QPushButton(_("Sort by series number"))
         self.k_sortieren.clicked.connect(self.nach_nummer)
-        for k in (self.k_hoch, self.k_runter, self.k_dazu, self.k_weg, self.k_zuordnen):
+        for k in (self.k_dazu, self.k_geschichte, self.k_zuordnen, self.k_weg):
             z.addWidget(k)
         z.addStretch(1)
-        z.addWidget(self.k_sortieren)
         rl.addLayout(z)
+        z2 = QHBoxLayout()
+        for k in (self.k_hoch, self.k_runter):
+            z2.addWidget(k)
+        z2.addStretch(1)
+        z2.addWidget(self.k_sortieren)
+        rl.addLayout(z2)
         teiler.addWidget(rechts)
         self.seite = teiler
         self._fuellen()
@@ -230,7 +245,15 @@ class SammlungenBereich(Bereich):
                      "KOReader reads it on its next start.")
         if self.fehler:
             text = _("The collections could not be read: {fehler}").format(fehler=self.fehler)
+        elif any(kco.geschichte(e) for s in self.sammlungen for e in s["eintraege"]):
+            if self.ort == "reader" and not self._patch_da():
+                text += " " + _("⚠ Stories need the patch 2-bookbench-stories on the e-reader (Install patch).")
+            elif self.ort == "bibliothek":
+                text += " " + _("Stories need the patch 2-bookbench-stories on the e-reader (Preview > Patches, or "
+                                "open the e-reader here and install it).")
         self.ort_text.setText(text)
+        self.k_patch.setVisible(self.ort == "reader" and not self._patch_da()
+                                and any(kco.geschichte(e) for s in self.sammlungen for e in s["eintraege"]))
         self.k_neu.setEnabled(self.ort is not None and not self.fehler)
         self._eintraege_fuellen()
 
@@ -254,7 +277,17 @@ class SammlungenBereich(Bereich):
             it.setText(0, str(i + 1))
             it.setTextAlignment(0, int(Qt.AlignRight | Qt.AlignVCenter))
             x = buecher.get(e["rel"]) if e.get("rel") else None
-            if x is not None:
+            if kco.geschichte(e):
+                it.setText(1, e.get("titel") or e["toc"])
+                buch = x.titel if x is not None else (e.get("buch") or Path(e["rel"]).stem)
+                it.setText(2, _("story in {buch}").format(buch=buch))
+                it.setToolTip(1, _("“{toc}” in the table of contents of {buch}").format(toc=e["toc"], buch=buch)
+                              + ("" if x is not None else "\n" + _("This file is not in the opened folder: {pfad}")
+                                 .format(pfad=e["rel"])))
+                it.setText(3, self._geschichte_stand(e))
+                if x is not None:
+                    it.buch_geschichte = x
+            elif x is not None:
                 it.buch = x
                 it.setText(1, x.titel or x.name)
                 it.setToolTip(1, str(x.pfad))
@@ -271,13 +304,12 @@ class SammlungenBereich(Bereich):
                                                           ).format(pfad=e["fremd"])
                 elif e.get("kuerzel"):
                     text = e.get("titel", "")
-                    tipp = _("Story in an anthology ({kuerzel}). KOReader collections can only hold whole files; "
-                             "the patch of 2.4-beta3 will open the story inside the anthology.").format(
-                        kuerzel=e["kuerzel"])
+                    tipp = _("Story in an anthology ({kuerzel}), not found in the tables of contents of the "
+                             "library. “Choose …” picks the anthology and its entry.").format(kuerzel=e["kuerzel"])
                     it.setText(2, _("in anthology {kuerzel}").format(kuerzel=e["kuerzel"]))
                 else:
                     text = e.get("titel", "")
-                    tipp = _("Not found in the library. Choose the book with “Choose book …”.")
+                    tipp = _("Not found in the library. Choose the book with “Choose …”.")
                     it.setText(2, _("not found"))
                 it.setText(1, text + (f" - {e['autor']}" if e.get("autor") else ""))
                 it.setToolTip(1, tipp)
@@ -291,6 +323,41 @@ class SammlungenBereich(Bereich):
                 it.setSelected(True)
         self._knoepfe_anpassen()
 
+    def _patch_da(self):
+        if self.ort != "reader":
+            return True
+        return (kco.lua_pfad(self.wurzel).parent.parent / "patches" / kco.PATCH).is_file()
+
+    def patch_installieren(self):
+        import shutil
+        from bookbench.preview.koreader_settings import MITGEBRACHT_ORDNER
+        ziel = kco.lua_pfad(self.wurzel).parent.parent / "patches"
+        try:
+            ziel.mkdir(parents=True, exist_ok=True)
+            shutil.copy2(MITGEBRACHT_ORDNER / kco.PATCH, ziel / kco.PATCH)
+        except OSError as ex:
+            dialogs.fehler(self.app, self.name(), _("The patch could not be copied."), str(ex))
+            return
+        self.app.status.set(_("Patch 2-bookbench-stories copied to the e-reader; restart KOReader."))
+        self._fuellen()
+
+    def _geschichte_stand(self, e):
+        """Lesestand einer Geschichte aus der Stand-Datei des Patches (nur mit dem E-Reader direkt)."""
+        if self.ort != "reader":
+            return ""
+        if not hasattr(self, "_stand") or self._stand_fuer != self._fuer:
+            try:
+                self._stand = kco.geschichten_stand(self.wurzel)[0]
+            except Exception:
+                self._stand = {}
+            self._stand_fuer = self._fuer
+        st = self._stand.get(kco.stand_schluessel(self.wurzel, e)) or {}
+        if st.get("status") == "complete":
+            return _("finished")
+        if isinstance(st.get("percent"), (int, float)):
+            return f"{round(st['percent'] * 100)} %"
+        return ""
+
     def _knoepfe_anpassen(self):
         s = self._sammlung()
         gew = self._gewaehlte_indizes()
@@ -298,6 +365,7 @@ class SammlungenBereich(Bereich):
         self.k_umbenennen.setEnabled(an and s["name"] != kco.FAVORITEN)
         self.k_loeschen.setEnabled(an and s["name"] != kco.FAVORITEN)
         self.k_dazu.setEnabled(an)
+        self.k_geschichte.setEnabled(an)
         self.k_sortieren.setEnabled(an and len(s["eintraege"]) > 1)
         for k in (self.k_hoch, self.k_runter, self.k_weg):
             k.setEnabled(an and bool(gew))
@@ -491,6 +559,9 @@ class SammlungenBereich(Bereich):
         if s is None or len(gew) != 1:
             return
         e = s["eintraege"][gew[0]]
+        if e.get("kuerzel"):                         # Geschichte in einer Anthologie
+            self.geschichte_dazu(gew[0], e.get("titel", ""))
+            return
         from bookbench.ui.collection_windows import BuchWahlFenster
         f = BuchWahlFenster(self.app, self.app.buecher, _("Book for “{titel}”").format(titel=e.get("titel", "")),
                             mehrere=False)
@@ -502,6 +573,30 @@ class SammlungenBereich(Bereich):
         if rel:
             s["eintraege"][gew[0]] = {"rel": rel[0]}
             self._geaendert([gew[0]])
+
+    def geschichte_dazu(self, ersetzen=None, vorschlag=""):
+        """Geschichte aus einer Anthologie hinten anhängen bzw. den Platzhalter ersetzen bei Index ersetzen."""
+        s = self._sammlung()
+        if s is None:
+            return
+        from bookbench.ui.collection_windows import GeschichteFenster
+        f = GeschichteFenster(self.app, self.app.buecher, self.wurzel, vorschlag)
+        self._fenster_offen = f
+        if f.exec() != QDialog.Accepted:
+            return
+        try:
+            e = f.eintrag()
+        except ValueError:                           # Buch liegt nicht unter der Wurzel
+            e = None
+        if e is None:
+            return
+        if ersetzen is not None:
+            s["eintraege"][ersetzen] = e
+            self._geaendert([ersetzen])
+        else:
+            s["eintraege"].append(e)
+            self._geaendert([len(s["eintraege"]) - 1])
+        self.app.status.set(_("Story “{titel}” added.").format(titel=e["titel"]))
 
     def nach_nummer(self):
         """Nach Reihe und Nummer sortieren (Bücher ohne Reihe und Platzhalter behalten ihre Folge am Ende)."""
@@ -523,6 +618,8 @@ class SammlungenBereich(Bereich):
     def _doppelklick(self, it, __):
         if getattr(it, "buch", None) is not None:
             self.app.buch_oeffnen(it.buch)
+        elif getattr(it, "buch_geschichte", None) is not None:
+            self.app.buch_oeffnen(it.buch_geschichte)
 
     def _menue(self, pos):
         it = self.baum.itemAt(pos)
@@ -541,7 +638,7 @@ class SammlungenBereich(Bereich):
                                                         self.app.bibliothek.auswaehlen(x)))
             m.addSeparator()
         if self.k_zuordnen.isEnabled():
-            m.addAction(_("Choose book …"), self.zuordnen)
+            m.addAction(_("Choose …"), self.zuordnen)
         m.addAction(_("Move up"), lambda: self.verschieben(-1))
         m.addAction(_("Move down"), lambda: self.verschieben(1))
         m.addAction(_("Remove"), self.entfernen)

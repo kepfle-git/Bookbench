@@ -251,6 +251,26 @@ class AbgleichTeil:
         self.app._zaehler()
         if self.ab_bib is not None:
             self.abgleich_vergleichen(melden=True)
+            self.lesestand_holen()
+
+    def lesestand_holen(self):
+        """Lesestand (KOReader-Buchdaten und Statistik, nur lesend) vom Reader in die verknüpfte Bibliothek
+        (library.json) übernehmen und die geöffnete Bibliothek auffrischen (seit 2.3-beta3)."""
+        bib, wurzel = self.ab_bib, self.wurzel
+        reader = self.info.get("modell") or self.info.get("artname") or ""
+        if bib is None or not wurzel:
+            return
+
+        def arbeit():
+            from bookbench.core import reading
+            try:
+                eintraege = reading.vom_reader(wurzel)
+                herkunft = reading.merken(bib, eintraege, reader)
+            except OSError:
+                return
+            threads.im_hauptthread(lambda: self.app.lesestand_anwenden(
+                bib, eintraege, {"stand": herkunft["stand"], "reader": reader}))
+        threads.starten(arbeit)
 
     def abgleich_verknuepfen(self):
         if not self.wurzel:
@@ -276,6 +296,7 @@ class AbgleichTeil:
         self.ab_bib = Path(ordner)
         self.ab_eintraege, self._ab_details = [], {}
         self.abgleich_vergleichen()
+        self.lesestand_holen()
         return True
 
     def abgleich_vergleichen(self, melden=False):
@@ -399,6 +420,11 @@ class AbgleichTeil:
             if reader_seite:
                 self.geschrieben = True
             if rechner_seite and offen_hier and not a.offen():
+                # erst nach dem Einlesen vergleichen: sonst entscheidet, wer zuerst fertig ist, über die Statuszeile
+                a.nach_laden = self.abgleich_vergleichen
                 a.laden(str(bib))                     # Bibliothek neu einlesen (Zwischenspeicher: nur Geändertes)
+                if a._arbeit and not a.buecher:       # Einlesen läuft
+                    return
+                a.nach_laden = None
             self.abgleich_vergleichen()
         a.hintergrund(self.name(), arbeit, nachher)

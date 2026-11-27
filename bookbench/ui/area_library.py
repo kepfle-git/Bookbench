@@ -273,8 +273,13 @@ class BibliothekBereich(Bereich):
 
     def _zaehler(self):
         n, gesamt = len(self.modell.zeilen), len(self.app.buecher)
+        her = getattr(self.app, "lesestand_herkunft", None)
+        lesestand = ("  ·  " + _("Reading state: {datum}").format(datum=her.get("stand", "?"))) if her else ""
+        self.zaehler_text.setToolTip(_("Reading state from {datum} ({reader}), read from KOReader when the e-reader was "
+                                       "last connected; refreshed on the next connect.").format(
+            datum=her.get("stand", "?"), reader=her.get("reader") or _("e-reader")) if her else "")
         self.zaehler_text.setText(ngettext("{n} of {gesamt} book", "{n} of {gesamt} books", gesamt)
-                                  .format(n=n, gesamt=gesamt) + f"  ·  {self.app.ordner}" if gesamt else "")
+                                  .format(n=n, gesamt=gesamt) + f"  ·  {self.app.ordner}" + lesestand if gesamt else "")
 
     def auswaehlen(self, b, still=False):
         z = self.modell.zeile_von(b)
@@ -297,6 +302,9 @@ class BibliothekBereich(Bereich):
             zusatz.append(_("Series from metadata.calibre, not in the EPUB - \"From Calibre\" applies it"))
         elif b.reihe_quelle:
             zusatz.append(_("Series from the {quelle} data, not in the EPUB").format(quelle=b.reihe_quelle))
+        if getattr(b, "lesen", None) is not None:
+            from bookbench.core import reading
+            zusatz.append(reading.beschreibung(b.lesen))
         self.app.status.set(" - ".join([b.pfad.name] + zusatz))
 
     def ausgewaehlt(self):

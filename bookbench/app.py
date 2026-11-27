@@ -540,12 +540,20 @@ class App(QMainWindow):
                 zs.sichern()
             wurzel, eintraege = kd.calibre_finden(ordner) if calibre else (None, [])
             kd.calibre_zuordnen(ergebnis, wurzel, eintraege)
-            threads.im_hauptthread(lambda: self._geladen((ergebnis, wurzel, eintraege)))
+            try:
+                from bookbench.core import reading
+                lesestand = reading.laden(ordner, ergebnis)
+            except Exception:                         # Lesestand ist Zugabe: nie das Einlesen scheitern lassen
+                lesestand = ({}, None)
+            threads.im_hauptthread(lambda: self._geladen((ergebnis, wurzel, eintraege), lesestand))
         threads.starten(arbeit)
 
-    def _geladen(self, daten):
+    def _geladen(self, daten, lesestand=({}, None)):
         buecher, self.calibre_wurzel, self.calibre_eintraege = daten
         self.buecher = buecher
+        eintraege, self.lesestand_herkunft = lesestand
+        for b in buecher:
+            b.lesen = eintraege.get(str(b.pfad))
         self.nach_schluessel = {b.schluessel: b for b in buecher}
         doppelt = {}
         for b in buecher:                                 # gleiche Titel in den Listen unterscheidbar machen
@@ -576,6 +584,9 @@ class App(QMainWindow):
         cal_text = " " + ngettext("Calibre data for {n} book ({ordner}).", "Calibre data for {n} books ({ordner}).", cal)\
             .format(n=cal, ordner=self.calibre_wurzel) if cal else \
             (" " + _("metadata.calibre found, but it matches no book.") if self.calibre_eintraege else "")
+        danach, self.nach_laden = getattr(self, "nach_laden", None), None
+        if danach is not None:                 # z. B. Vergleich nach dem Abgleich (ui/device_sync)
+            threads.im_hauptthread(danach)
         vorab, self.nach_vom_reader = getattr(self, "nach_vom_reader", None), None
         self.status.set((vorab + " " if vorab else "")
                         + (ngettext("{n} book added.", "{n} books added.", len(neu_hinzu)).format(n=len(neu_hinzu)) + " "
@@ -754,6 +765,24 @@ class App(QMainWindow):
         obj = self.bereich_obj(bereich) or self.kapitel     # z. B. Ziel Vorschau unter Windows
         self.bereich_zeigen(obj.kennung)
         obj.auswaehlen(b)
+
+    def lesestand_anwenden(self, bib, eintraege, herkunft):
+        """Beim Anstecken gelesener Lesestand ({rel: Eintrag}) für die geöffnete Bibliothek bib."""
+        try:
+            if not self.ordner or Path(self.ordner).resolve() != Path(bib).resolve():
+                return
+        except OSError:
+            return
+        for b in self.buecher:
+            try:
+                rel = Path(b.pfad).relative_to(self.ordner).as_posix()
+            except ValueError:
+                continue
+            b.lesen = eintraege.get(rel, {} if not b.fehler else None)
+        self.lesestand_herkunft = herkunft
+        self.bibliothek.neu_zeichnen()
+        if self.metadaten.seite is not None:
+            self.metadaten.anzeigen()
 
     def metadaten_nachschlagen(self, buecher=None):
         """Fenster „Metadaten nachschlagen“; ohne buecher die im Bereich Metadaten gewählten."""

@@ -62,12 +62,19 @@ def nachfolger(sortiert, vorher, passt):
 SPALTEN = (("titel", N_("Title"), 300), ("reihe", N_("Series"), 200), ("nummer", N_("No."), 46),
            ("autor", N_("Author"), 150), ("kapitel", N_("Chapters"), 150), ("klappentext", N_("Blurb"), 100),
            ("cover", N_("Cover"), 90), ("verlag", N_("Publisher"), 140), ("sprache", N_("Language"), 70),
-           ("isbn", "ISBN", 120), ("datum", N_("Published"), 90))
-SPALTEN_AUS = ("verlag", "sprache", "isbn", "datum")   # seit 1.3: standardmäßig ausgeblendet (datum seit 2.3-beta1)
+           ("isbn", "ISBN", 120), ("datum", N_("Published"), 90),
+           ("gelesen", N_("Read status"), 90), ("zuletzt", N_("Last read"), 90), ("lesezeit", N_("Reading time"), 90))
+# seit 1.3: standardmäßig ausgeblendet (datum seit 2.3-beta1, Lesestand seit 2.3-beta3: gelesen sichtbar)
+SPALTEN_AUS = ("verlag", "sprache", "isbn", "datum", "zuletzt", "lesezeit")
 FILTER = (("alle", N_("All books"), None),
           ("geaendert", N_("Changed"), lambda b: b.stand() is not None),
           ("unlesbar", N_("Unreadable files"), lambda b: bool(b.fehler)),
-          ("ohne_reihe", N_("No series in the EPUB"), lambda b: not b.reihe_datei[0] and b.reihe_neu is None))
+          ("ohne_reihe", N_("No series in the EPUB"), lambda b: not b.reihe_datei[0] and b.reihe_neu is None),
+          # Lesestand aus KOReader (seit 2.3-beta3); ohne bekannten Stand (lesen None) passt keiner
+          ("ungelesen", N_("Unread"), lambda b: getattr(b, "lesen", None) is not None and not b.lesen.get("status")),
+          ("lese", N_("Currently reading"), lambda b: (getattr(b, "lesen", None) or {}).get("status") == "reading"),
+          ("gelesen", N_("Finished"), lambda b: (getattr(b, "lesen", None) or {}).get("status") == "complete"),
+          ("pausiert", N_("On hold"), lambda b: (getattr(b, "lesen", None) or {}).get("status") == "abandoned"))
 
 
 def zelle(b, spalte):
@@ -85,6 +92,14 @@ def zelle(b, spalte):
         return f"{b.cover_info[0]} × {b.cover_info[1]}" if b.cover_info else "-"
     if spalte == "datum":
         return km.meta_aktuell(b).get("datum", "") if not b.fehler else ""
+    if spalte in ("gelesen", "zuletzt", "lesezeit"):
+        from bookbench.core import reading
+        e = getattr(b, "lesen", None)
+        if spalte == "gelesen":
+            return reading.status_text(e)
+        if spalte == "zuletzt":
+            return reading.datum_text((e or {}).get("zuletzt")) if (e or {}).get("status") else ""
+        return reading.zeit_text((e or {}).get("zeit"))
     return getattr(b, spalte, "") or ""
 
 
@@ -95,6 +110,14 @@ def sortiert(buecher, spalte, umgekehrt, e):
         schl = lambda b: (nr(b.nummer), b.titel.casefold())                                     # noqa: E731
     elif spalte == "cover":
         schl = lambda b: (km.cover_hoehe(b), b.titel.casefold())                               # noqa: E731
+    elif spalte in ("gelesen", "zuletzt", "lesezeit"):
+        from bookbench.core import reading
+
+        def schl(b):
+            e = getattr(b, "lesen", None) or {}
+            wert = {"gelesen": reading.sortierwert(getattr(b, "lesen", None)),
+                    "zuletzt": e.get("zuletzt", 0) if e.get("status") else 0, "lesezeit": e.get("zeit", 0)}[spalte]
+            return (wert, b.titel.casefold())
     elif spalte == "status":
         # unlesbar zuerst, dann nach Zahl der Marken, dann Ungespeichertes
         schl = lambda b: (not b.fehler, -len(km.bibliothek(b, e)), b.stand() is None, b.titel.casefold())  # noqa: E731

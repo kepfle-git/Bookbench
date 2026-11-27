@@ -140,6 +140,7 @@ class Buch:
         self.klappentext_neu = None      # übernommen, noch nicht gespeichert
         self.klappentext_entwurf = None  # im Textfeld geändert, noch nicht übernommen
         self.klappentext_quelle = ""     # Herkunft des angezeigten Texts (URL oder Name)
+        self.lesen = None                # Lesestand aus KOReader (core/reading, seit 2.3-beta3): {} ungelesen, None unbekannt
         self.klappentext_quelle_datei = ""   # Herkunft laut EPUB (von der Werkstatt eingetragen)
         self.cover_datei = ""            # Pfad des Titelbilds im ZIP ("" = keins)
         self.cover_info = None           # (Breite, Höhe, Format, Bytes) des Titelbilds in der Datei

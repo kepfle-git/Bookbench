@@ -167,9 +167,10 @@ All books of the opened folder (with all subfolders) with series, number, author
 - **Cover**: size of the title image in pixels, "changed" for a new one not yet saved.
 - **Series**: from the EPUB; if it is only in Calibre or KOReader's data, the status bar says where from ([[bibliothek_calibre]]).
 - **Publisher**, **Language**, **ISBN**, **Published**: hidden at first; show them with a right-click on a header or View > Library columns.
+- **Read status**, **Last read**, **Reading time**: what KOReader knows about your reading - unread, 53 %, finished, on hold ([[bibliothek_lesestand]]). Last read and Reading time are hidden at first.
 - **Status** (left): the coloured dot and the pictograms of each book ([[status]]).
 
-**Filters** All books, Changed (anything not yet saved, or saved since opening), Unreadable files, No series in the EPUB.
+**Filters** All books, Changed (anything not yet saved, or saved since opening), Unreadable files, No series in the EPUB; Unread, Currently reading, Finished, On hold from KOReader's reading state ([[bibliothek_lesestand]]).
 """)),
     ("bibliothek", "bibliothek_hinzufuegen", N_("Adding books"), N_("""
 File > **Add books …** (Ctrl+I) opens a window for new books. Put EPUB or KEPUB files in with **Add files …**, **Add folder …** (with all subfolders) or simply drag them onto the window or the main window.
@@ -226,6 +227,22 @@ Some books carry lines like "OceanofPDF.com" at the end of each chapter. **Edit 
 A **link** whose address matches counts too, however it is labelled: it is shown as label → address (e.g. "Download more books → https://oceanofpdf.com") and removed as a whole. Matches in other attributes (an image file name, a class) do not count.
 
 Text in the head of a file (e.g. the title of a chapter file) is not touched. KOReader may shift a bookmark or the reading position in the same chapter by a line.
+""")),
+    ("bibliothek", "bibliothek_lesestand", N_("Reading state from KOReader"), N_("""
+Bookbench shows what KOReader knows about your reading. It only **reads** it and never writes anything back - mark a book as finished in KOReader itself.
+
+**Where it comes from**
+- **Status, progress, rating, highlights** from the book's data folder next to it (Book.sdr/metadata.epub.lua): KOReader writes "reading", "finished" or "on hold" (older KOReader: "abandoned") there, and how far you are. A book without such a folder was never opened: **unread**.
+- **Reading time, pages read, last read** from KOReader's reading statistics (settings/statistics.sqlite3 in the KOReader folder of the e-reader), if the statistics plugin is on. Bookbench finds the book there by KOReader's own checksum, otherwise by title and first author.
+
+**When it is read**
+- **Folder on the e-reader** opened (or the e-reader itself): fresh on every reading-in (F5).
+- **Library on this computer** linked with the e-reader ([[kobo_abgleich]]): when the e-reader is connected, Bookbench reads the state of all books there and notes it in the library's library.json. Without the e-reader you see that note; the library header says from when (the tooltip names the e-reader). Books that were not on the e-reader count as unread.
+- Other folders: only if .sdr folders lie next to the books (a copy of the e-reader), without statistics.
+
+**Where you see it**
+- Library: columns **Read status** (unread, 53 %, finished, on hold), **Last read** and **Reading time** (the last two hidden at first: right-click on a header), sortable; filters **Unread**, **Currently reading**, **Finished**, **On hold**.
+- Status bar when a book is selected, and the line above the form in the Metadata area: finished on …, last read, reading time, pages read, rating stars, highlights.
 """)),
     ("bibliothek", "bibliothek_spalten", N_("Columns: sorting, moving, widths"), N_("""
 **Sorting**
@@ -584,6 +601,9 @@ At the top of the E-reader area: the books of the library on this computer ([[bi
 **Linking**
 - **New library from e-reader** links the new library with this e-reader at once.
 - Otherwise **Link library …** chooses the folder. The link is remembered per e-reader (serial number; Kindle/PocketBook: kind, model and drive name) and noted in the library's library.json. **Other library …** changes it.
+
+**Reading state**
+When the linked e-reader is connected, Bookbench also reads KOReader's reading state (status, progress, reading time) and notes it in the library ([[bibliothek_lesestand]]). Nothing is written to the e-reader for that.
 
 **How changes are found**
 After every sync Bookbench notes for each book its size and date on both sides and a checksum of its content (.bookbench/abgleich.json in the library folder). Next time each side is compared with that note, so it is clear on which side a book changed. A different date alone does not count: the e-reader's file system stores times in local time with a 2-second grid, after the switch to summer time all files can look an hour off. The checksum is only computed when size or date differ, so the e-reader is not read completely every time.

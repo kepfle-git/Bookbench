@@ -528,7 +528,11 @@ class MetadatenBereich(Bereich):
             self.hinweis.setText("")
             self._vergleiche({})
             return
-        self.info.setText(_("File: {name}").format(name=b.pfad.name))
+        text = _("File: {name}").format(name=b.pfad.name)
+        if getattr(b, "lesen", None) is not None:
+            from bookbench.core import reading
+            text += "  ·  " + _("KOReader: {stand}").format(stand=reading.beschreibung(b.lesen))
+        self.info.setText(text)
         self.aktualisieren()
 
     def _lesbar(self):

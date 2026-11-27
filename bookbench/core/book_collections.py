@@ -19,6 +19,10 @@ Sammlung (dict, so auch in library.json unter "sammlungen" und als Basis des Abg
                   Platzhalter {"titel", "autor", "kuerzel"} aus einer eingefügten Leseordnung (Geschichte in einer
                   Anthologie oder nicht gefunden); dazu optional "fremd": absoluter Pfad, der nicht unter der Wurzel
                   liegt (z. B. SD-Karte) - bleibt erhalten, Bookbench zeigt ihn nur
+    meta          {"reihe", "nummer", "klappentext", "cover"} (seit 2.4-beta4, alles freiwillig): Reihe der Sammlung
+                  (Omnibusse einer Reihe), Nummer darin, Klappentext, Cover = Dateiname im Cover-Ordner
+                  (Bibliothek: .bookbench/covers, E-Reader: settings/bookbench_covers); auf dem Reader in
+                  settings/bookbench_collections.lua für den Patch 2-bookbench-collections
     settings      KOReaders settings-Tabelle (bleibt erhalten; Bookbench nimmt nur collate weg, wenn es die
                   Reihenfolge setzt)
 
@@ -37,9 +41,13 @@ from pathlib import Path
 
 FAVORITEN = "favorites"
 DATEI = "collection.lua"
-GESCHICHTEN = "bookbench_stories.lua"           # für den Patch 2-bookbench-stories (seit 2.4-beta3)
+GESCHICHTEN = "bookbench_stories.lua"           # für den Patch (seit 2.4-beta3)
 GESCHICHTEN_STAND = "bookbench_stories_state.lua"
-PATCH = "2-bookbench-stories.lua"
+META = "bookbench_collections.lua"              # Reihe, Nummer, Klappentext, Cover der Sammlungen (seit 2.4-beta4)
+COVER_READER = "bookbench_covers"               # neben collection.lua
+COVER_BIB = "covers"                            # in .bookbench der Bibliothek
+PATCH = "2-bookbench-collections.lua"
+PATCH_ALT = "2-bookbench-stories.lua"           # bis 2.4-beta3
 
 
 # ------------------------------------------------------------------------------- Ort
@@ -210,9 +218,13 @@ def lua_lesen(wurzel):
     except OSError:
         stamp_ok = False
     _geschichten_einmischen(sammlungen, einstellungen_lesen(geschichten_pfad(wurzel)), lw, order if stamp_ok else None)
+    metas = einstellungen_lesen(lua_pfad(wurzel).with_name(META))
     for s in sammlungen:
         for e in s["eintraege"]:
             e.pop("_o", None)
+        m = von_meta(metas.get(s["name"]))
+        if m:
+            s["meta"] = m
     return sammlungen
 
 
@@ -227,12 +239,13 @@ def lua_schreiben(wurzel, sammlungen, geaendert=None, geloescht=(), sicherung=No
     neu = [s for s in sammlungen if geaendert is None or s["name"] in geaendert]
     setzen = {s["name"]: nach_lua(s, lw) for s in neu}
     einstellungen_schreiben(p, setzen, list(geloescht))
-    g = geschichten_pfad(wurzel)
-    g_setzen = {s["name"]: nach_geschichten(s, lw) for s in neu}
-    if g.exists() or any(v for v in g_setzen.values()):
-        if sicherung and g.exists():
-            sicherung(g)
-        einstellungen_schreiben(g, g_setzen, list(geloescht))
+    for datei, wandeln in ((geschichten_pfad(wurzel), lambda s: nach_geschichten(s, lw)),
+                           (lua_pfad(wurzel).with_name(META), nach_meta)):
+        werte = {s["name"]: wandeln(s) for s in neu}
+        if datei.exists() or any(v for v in werte.values()):
+            if sicherung and datei.exists():
+                sicherung(datei)
+            einstellungen_schreiben(datei, werte, list(geloescht))
 
 
 # ------------------------------------------------------------------------------- Laden und speichern
@@ -247,8 +260,63 @@ def laden(ordner):
 
 
 def _sauber(s):
-    return {"name": str(s.get("name") or ""), "settings": dict(s.get("settings") or {}),
-            "eintraege": [dict(e) for e in s.get("eintraege") or [] if isinstance(e, dict)]}
+    erg = {"name": str(s.get("name") or ""), "settings": dict(s.get("settings") or {}),
+           "eintraege": [dict(e) for e in s.get("eintraege") or [] if isinstance(e, dict)]}
+    meta = {k: v for k, v in (s.get("meta") or {}).items() if v not in (None, "")}
+    if meta:
+        erg["meta"] = meta
+    return erg
+
+
+def cover_ordner(art, wurzel):
+    """Ordner der Sammlungs-Cover: Bibliothek .bookbench/covers, E-Reader settings/bookbench_covers."""
+    from bookbench.core import book_import as bi
+    if art == "bibliothek":
+        return Path(wurzel) / bi.ORDNER / COVER_BIB
+    return lua_pfad(wurzel).parent / COVER_READER
+
+
+def cover_name(name, daten):
+    """Dateiname für das Cover einer Sammlung (aus dem Namen, Endung nach dem Bildformat)."""
+    import hashlib
+    endung = "png" if daten[:8] == b"\x89PNG\r\n\x1a\n" else "jpg"
+    stamm = re.sub(r"[^a-z0-9]+", "-", unicodedata.normalize("NFKD", name).encode("ascii", "ignore").decode().lower())
+    stamm = stamm.strip("-")[:40] or "collection"
+    return f"{stamm}-{hashlib.sha1(daten).hexdigest()[:8]}.{endung}"
+
+
+def nach_meta(s):
+    """Tabelle für bookbench_collections.lua (eine Sammlung) oder None ohne Metadaten."""
+    m = s.get("meta") or {}
+    erg = {}
+    if m.get("reihe"):
+        erg["series"] = m["reihe"]
+        try:
+            n = float(str(m.get("nummer") or "").replace(",", "."))
+            erg["series_index"] = int(n) if n == int(n) else n
+        except ValueError:
+            pass
+    if m.get("klappentext"):
+        erg["description"] = m["klappentext"]
+    if m.get("cover"):
+        erg["cover"] = f"{COVER_READER}/{m['cover']}"
+    return erg or None
+
+
+def von_meta(t):
+    m = {}
+    if not isinstance(t, dict):
+        return m
+    if t.get("series"):
+        m["reihe"] = str(t["series"])
+        if isinstance(t.get("series_index"), (int, float)):
+            n = t["series_index"]
+            m["nummer"] = str(int(n)) if float(n) == int(n) else str(n)
+    if t.get("description"):
+        m["klappentext"] = str(t["description"])
+    if t.get("cover"):
+        m["cover"] = str(t["cover"]).rsplit("/", 1)[-1]
+    return m
 
 
 def speichern(ordner, sammlungen, geaendert=None, geloescht=(), sicherung=None):
@@ -465,13 +533,22 @@ def _da(e, vorhanden):
     return bool(e.get("rel")) and (vorhanden is None or e["rel"] in vorhanden)
 
 
+def _meta_schluessel(s, cover_dir=None):
+    """Metadaten als Vergleichsschlüssel (Cover über Dateinamen: der Name enthält eine Prüfsumme)."""
+    import json
+    m = s.get("meta") or {}
+    return "meta:" + json.dumps({k: m[k] for k in sorted(m) if m[k]}, ensure_ascii=False, sort_keys=True) if m else None
+
+
 def dateien(s, vorhanden=None):
     """Was KOReader von einer Sammlung sieht (zum Vergleichen): Dateien in Reihenfolge; Platzhalter und Bücher, die
     nicht auf dem Reader liegen (vorhanden = Menge der rel dort), fallen weg - KOReader verwirft solche Einträge
     beim Lesen, sie dürfen deshalb nicht als „auf dem Reader gelöscht“ gelten."""
     if s is None:
         return None
-    return [schluessel(e) for e in s["eintraege"] if _da(e, vorhanden)]
+    erg = [schluessel(e) for e in s["eintraege"] if _da(e, vorhanden)]
+    m = _meta_schluessel(s)
+    return erg + [m] if m else erg
 
 
 def vergleichen(rechner, reader, basis, vorhanden=None):
@@ -524,7 +601,10 @@ def uebernehmen_vom_reader(alt, reader_s, vorhanden=None):
     for e in reader_s["eintraege"]:
         neu_e.append(dict(e))
         neu_e += nach.get(schluessel(e), [])
-    return {"name": alt["name"], "settings": dict(reader_s.get("settings") or alt["settings"]), "eintraege": neu_e}
+    erg = {"name": alt["name"], "settings": dict(reader_s.get("settings") or alt["settings"]), "eintraege": neu_e}
+    if reader_s.get("meta"):
+        erg["meta"] = dict(reader_s["meta"])
+    return erg
 
 
 def unterschiede(a, b, vorhanden=None):
@@ -535,6 +615,8 @@ def unterschiede(a, b, vorhanden=None):
     nur_a = [p for p in x if p not in y]
     nur_b = [p for p in y if p not in x]
     def name(k):
+        if k.startswith("meta:"):
+            return "(" + "metadata" + ")"
         return k.split("#")[1] if "#" in k else os.path.basename(k)
     if nur_a:
         erg.append(("rechner", [name(p) for p in nur_a]))
@@ -554,14 +636,24 @@ def abgleich_vergleichen(bib, reader, basis, vorhanden):
         return [], None
 
 
+def _cover_kopieren(s, von, nach):
+    import shutil
+    c = (s.get("meta") or {}).get("cover")
+    if c and (Path(von) / c).is_file() and not (Path(nach) / c).is_file():
+        Path(nach).mkdir(parents=True, exist_ok=True)
+        shutil.copy2(Path(von) / c, Path(nach) / c)
+
+
 def abgleich_ausfuehren(bib, reader, name, aktion, vorhanden, sicherung=None):
     """Eine Sammlung abgleichen; Rückgabe der neue Basis-Eintrag (Dateiliste) oder None (weg)."""
     rechner, geraet = laden(bib), lua_lesen(reader)
     a, b = finden(rechner, name), finden(geraet, name)
     if aktion == "zum_reader" and a is not None:
+        _cover_kopieren(a, cover_ordner("bibliothek", bib), cover_ordner("reader", reader))
         lua_schreiben(reader, [a], [name], (), sicherung)
         return dateien(a, vorhanden)
     if aktion == "zum_rechner" and b is not None:
+        _cover_kopieren(b, cover_ordner("reader", reader), cover_ordner("bibliothek", bib))
         neu_s = uebernehmen_vom_reader(a, b, vorhanden)
         rechner = [neu_s if s is a else s for s in rechner] if a is not None else rechner + [neu_s]
         speichern(bib, rechner)

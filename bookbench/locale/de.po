@@ -47,7 +47,7 @@ msgstr "Bibliothek schließen"
 msgid "Save"
 msgstr "Speichern"
 
-#: app.py:240 area_collections.py:163
+#: app.py:240 area_collections.py:166
 msgid "Add books …"
 msgstr "Bücher hinzufügen …"
 
@@ -71,7 +71,7 @@ msgstr "Beenden"
 msgid "Edit"
 msgstr "Bearbeiten"
 
-#: app.py:256 area_chapters.py:151 area_dictionary.py:462 area_dictionary.py:491 area_dictionary.py:914 area_metadata.py:415
+#: app.py:256 area_chapters.py:151 area_collections.py:234 area_dictionary.py:462 area_dictionary.py:491 area_dictionary.py:914
 msgid "Apply"
 msgstr "Übernehmen"
 
@@ -230,7 +230,7 @@ msgstr "Inhaltsverzeichnis"
 msgid "Metadata"
 msgstr "Metadaten"
 
-#: app.py:502 area_preview.py:161 area_preview.py:477 help_topics.py:745 help_topics.py:1159 settings.py:63
+#: app.py:502 area_preview.py:161 area_preview.py:477 help_topics.py:763 help_topics.py:1177 settings.py:63
 msgid "Preview"
 msgstr "Vorschau"
 
@@ -441,7 +441,7 @@ msgstr ""
 msgid "Folder for the new library (empty, or a library from before)"
 msgstr "Ordner für die neue Bibliothek (leer oder eine frühere Bibliothek)"
 
-#: app.py:1005 device_sync.py:312
+#: app.py:1005 device_sync.py:313
 msgid "Choose a folder on this computer, not on the e-reader."
 msgstr "Bitte einen Ordner auf diesem Rechner wählen, nicht auf dem E-Reader."
 
@@ -681,115 +681,194 @@ msgstr "auf die Vorschläge zurückgesetzt."
 msgid "original restored, not yet applied."
 msgstr "Original hergestellt, noch nicht übernommen."
 
-#: area_collections.py:34 plugins.py:724 plugins.py:801
+#: area_collections.py:35 plugins.py:724 plugins.py:801
 msgid "Favorites"
 msgstr "Favoriten"
 
-#: area_collections.py:49 help_topics.py:549 plugins.py:625
+#: area_collections.py:50 help_topics.py:549 plugins.py:625
 msgid "Collections"
 msgstr "Sammlungen"
 
-#: area_collections.py:84
+#: area_collections.py:85
 msgid "The collections could not be saved."
 msgstr "Die Sammlungen ließen sich nicht speichern."
 
-#: area_collections.py:99
+#: area_collections.py:100
 msgid "Collections:"
 msgstr "Sammlungen:"
 
-#: area_collections.py:106 area_dictionary.py:216 settings.py:515 workbench_plugins.py:243
+#: area_collections.py:107 area_dictionary.py:216 settings.py:515 workbench_plugins.py:243
 msgid "New …"
 msgstr "Neu …"
 
-#: area_collections.py:108 area_collections.py:462 workbench_plugins.py:1919 workbench_plugins.py:2052
+#: area_collections.py:109 area_collections.py:617 workbench_plugins.py:1919 workbench_plugins.py:2052
 msgid "Rename …"
 msgstr "Umbenennen …"
 
-#: area_collections.py:110 area_collections.py:463 settings.py:516 settings.py:695 workbench_plugins.py:350 workbench_reader.py:323
+#: area_collections.py:111 area_collections.py:618 settings.py:516 settings.py:695 workbench_plugins.py:350 workbench_reader.py:323
 msgid "Delete"
 msgstr "Löschen"
 
-#: area_collections.py:131
+#: area_collections.py:132
 msgid "Install patch"
 msgstr "Patch installieren"
 
-#: area_collections.py:132
-msgid "Copy 2-bookbench-stories.lua into koreader/patches on the e-reader"
+#: area_collections.py:133
+msgid ""
+"Copy 2-bookbench-collections.lua into koreader/patches on the e-reader "
+"(replaces 2-bookbench-stories.lua)"
 msgstr ""
-"2-bookbench-stories.lua nach koreader/patches auf dem E-Reader kopieren"
+"2-bookbench-collections.lua nach koreader/patches auf dem E-Reader kopieren "
+"(ersetzt 2-bookbench-stories.lua)"
 
-#: area_collections.py:137 device_sync.py:35 import_window.py:32 listing.py:62 metadata.py:44 plugins.py:620
+#: area_collections.py:140 device_sync.py:35 import_window.py:32 listing.py:62 metadata.py:44 plugins.py:620
 msgid "Title"
 msgstr "Titel"
 
-#: area_collections.py:137 device_sync.py:35 import_window.py:32 listing.py:62 metadata.py:45 plugins.py:625
+#: area_collections.py:140 device_sync.py:35 import_window.py:32 listing.py:62 metadata.py:45 plugins.py:625
 msgid "Series"
 msgstr "Reihe"
 
-#: area_collections.py:137 area_series.py:26 collection_windows.py:106 import_window.py:32 listing.py:62
+#: area_collections.py:140 area_series.py:26 collection_windows.py:106 import_window.py:32 listing.py:62
 msgid "No."
 msgstr "Nr."
 
-#: area_collections.py:137 area_series.py:27 listing.py:66
+#: area_collections.py:140 area_series.py:27 listing.py:66
 msgid "Read status"
 msgstr "Gelesen"
 
-#: area_collections.py:159 area_collections.py:642
+#: area_collections.py:162 area_collections.py:803
 msgid "Move up"
 msgstr "Nach oben"
 
-#: area_collections.py:161 area_collections.py:643
+#: area_collections.py:164 area_collections.py:804
 msgid "Move down"
 msgstr "Nach unten"
 
-#: area_collections.py:165 area_collections.py:644 area_dictionary.py:471 area_metadata.py:51 workbench_plugins.py:1728 workbench_plugins.py:1919
+#: area_collections.py:168 area_collections.py:805 area_dictionary.py:471 area_metadata.py:51 workbench_plugins.py:1728 workbench_plugins.py:1919
 msgid "Remove"
 msgstr "Entfernen"
 
-#: area_collections.py:167
+#: area_collections.py:170
 msgid "Add story …"
 msgstr "Geschichte hinzufügen …"
 
-#: area_collections.py:168
+#: area_collections.py:171
 msgid "A story inside an anthology (an entry of its table of contents)"
 msgstr ""
 "Eine Geschichte in einer Anthologie (ein Eintrag ihres "
 "Inhaltsverzeichnisses)"
 
-#: area_collections.py:170 area_collections.py:641 area_dictionary.py:432 area_dictionary.py:1369 settings.py:350 settings.py:798
+#: area_collections.py:173 area_collections.py:802 area_dictionary.py:432 area_dictionary.py:1369 settings.py:350 settings.py:798
 msgid "Choose …"
 msgstr "Wählen …"
 
-#: area_collections.py:171
+#: area_collections.py:174
 msgid "Replace the selected placeholder with a book or a story of the library"
 msgstr ""
 "Den gewählten Platzhalter durch ein Buch oder eine Geschichte der "
 "Bibliothek ersetzen"
 
-#: area_collections.py:173
+#: area_collections.py:176
 msgid "Sort by series number"
 msgstr "Nach Reihennummer sortieren"
 
-#: area_collections.py:191 area_collections.py:456 area_collections.py:662
+#: area_collections.py:208 bulk_edit.py:79 bulk_edit.py:123 import_window.py:31 settings.py:1034
+msgid "Series:"
+msgstr "Reihe:"
+
+#: area_collections.py:211
+msgid "(none) - e.g. Horus Heresy Omnibus"
+msgstr "(keine) - z. B. Horus Heresy Omnibus"
+
+#: area_collections.py:214 import_window.py:31
+msgid "Number:"
+msgstr "Nummer:"
+
+#: area_collections.py:219
+msgid "Blurb:"
+msgstr "Klappentext:"
+
+#: area_collections.py:222
+msgid "Shown in KOReader under “About this collection” (patch needed)"
+msgstr "Steht in KOReader unter „Über diese Sammlung“ (Patch nötig)"
+
+#: area_collections.py:227
+msgid "Cover …"
+msgstr "Cover …"
+
+#: area_collections.py:229
+msgid "From a file …"
+msgstr "Aus Datei …"
+
+#: area_collections.py:230
+msgid "From a book of the collection …"
+msgstr "Von einem Buch der Sammlung …"
+
+#: area_collections.py:231
+msgid "Remove cover"
+msgstr "Cover entfernen"
+
+#: area_collections.py:235
+msgid "Save series, number and blurb of this collection"
+msgstr "Reihe, Nummer und Klappentext dieser Sammlung speichern"
+
+#: area_collections.py:262 cover_panel.py:40 markers.py:146
+msgid "no cover"
+msgstr "kein Cover"
+
+#: area_collections.py:285
+msgid "Collection “{name}” saved."
+msgstr "Sammlung „{name}“ gespeichert."
+
+#: area_collections.py:299
+msgid "The cover could not be saved."
+msgstr "Das Cover ließ sich nicht speichern."
+
+#: area_collections.py:311
+msgid "Cover of the collection"
+msgstr "Cover der Sammlung"
+
+#: area_collections.py:312 cover_panel.py:239 workbench_sleep.py:358
+msgid "Images"
+msgstr "Bilder"
+
+#: area_collections.py:317
+msgid "The file could not be read."
+msgstr "Die Datei ließ sich nicht lesen."
+
+#: area_collections.py:326
+msgid "No book of this collection is in the opened folder."
+msgstr "Kein Buch dieser Sammlung liegt im geöffneten Ordner."
+
+#: area_collections.py:329
+msgid "Cover from which book?"
+msgstr "Cover von welchem Buch?"
+
+#: area_collections.py:335
+msgid "This book has no cover."
+msgstr "Dieses Buch hat kein Cover."
+
+#: area_collections.py:340 area_collections.py:611 area_collections.py:823
 msgid "New collection …"
 msgstr "Neue Sammlung …"
 
-#: area_collections.py:192
+#: area_collections.py:341
 msgid "A new, empty collection"
 msgstr "Eine neue, leere Sammlung"
 
-#: area_collections.py:193 area_collections.py:457
+#: area_collections.py:342 area_collections.py:612
 msgid "Paste reading order …"
 msgstr "Leseordnung einfügen …"
 
-#: area_collections.py:194
+#: area_collections.py:343
 msgid ""
 "Create a collection from a pasted list, e.g. an omnibus of heresyomnibus.com"
 msgstr ""
 "Eine Sammlung aus einer eingefügten Liste anlegen, z. B. einem Omnibus von "
 "heresyomnibus.com"
 
-#: area_collections.py:238
+#: area_collections.py:387
 msgid ""
 "Collections live in a library on this computer (File > New library from "
 "e-reader, or Add books) or directly on the e-reader. Open one of them."
@@ -798,11 +877,11 @@ msgstr ""
 "Bibliothek vom E-Reader oder Bücher hinzufügen) oder direkt auf dem "
 "E-Reader. Eins davon öffnen."
 
-#: area_collections.py:240
+#: area_collections.py:389
 msgid "Open a library or the e-reader."
 msgstr "Eine Bibliothek oder den E-Reader öffnen."
 
-#: area_collections.py:242
+#: area_collections.py:391
 msgid ""
 "Saved in the library on this computer; the sync in the E-reader area takes "
 "them to the e-reader."
@@ -810,7 +889,7 @@ msgstr ""
 "Gespeichert in der Bibliothek auf diesem Rechner; der Abgleich im Bereich "
 "E-Reader bringt sie auf den E-Reader."
 
-#: area_collections.py:244
+#: area_collections.py:393
 msgid ""
 "Saved directly on the e-reader (KOReader's collection.lua, backed up before "
 "each change). KOReader reads it on its next start."
@@ -818,43 +897,45 @@ msgstr ""
 "Direkt auf dem E-Reader gespeichert (KOReaders collection.lua, vor jeder "
 "Änderung gesichert). KOReader liest sie beim nächsten Start."
 
-#: area_collections.py:247
+#: area_collections.py:396
 msgid "The collections could not be read: {fehler}"
 msgstr "Die Sammlungen ließen sich nicht lesen: {fehler}"
 
-#: area_collections.py:250
+#: area_collections.py:399
 msgid ""
-"⚠ Stories need the patch 2-bookbench-stories on the e-reader (Install "
-"patch)."
+"⚠ Stories, series and covers of collections need the patch "
+"2-bookbench-collections on the e-reader (Install patch)."
 msgstr ""
-"⚠ Geschichten brauchen den Patch 2-bookbench-stories auf dem E-Reader "
-"(Patch installieren)."
+"⚠ Geschichten, Reihen und Cover von Sammlungen brauchen den Patch "
+"2-bookbench-collections auf dem E-Reader (Patch installieren)."
 
-#: area_collections.py:252
+#: area_collections.py:402
 msgid ""
-"Stories need the patch 2-bookbench-stories on the e-reader (Preview > "
-"Patches, or open the e-reader here and install it)."
+"Stories, series and covers of collections need the patch "
+"2-bookbench-collections on the e-reader (Preview > Patches, or open the "
+"e-reader here and install it)."
 msgstr ""
-"Geschichten brauchen den Patch 2-bookbench-stories auf dem E-Reader "
-"(Vorschau > Patches, oder hier den E-Reader öffnen und ihn installieren)."
+"Geschichten, Reihen und Cover von Sammlungen brauchen den Patch "
+"2-bookbench-collections auf dem E-Reader (Vorschau > Patches, oder hier den "
+"E-Reader öffnen und ihn installieren)."
 
-#: area_collections.py:283
+#: area_collections.py:433
 msgid "story in {buch}"
 msgstr "Geschichte in {buch}"
 
-#: area_collections.py:284
+#: area_collections.py:434
 msgid "“{toc}” in the table of contents of {buch}"
 msgstr "„{toc}“ im Inhaltsverzeichnis von {buch}"
 
-#: area_collections.py:285 area_collections.py:300
+#: area_collections.py:435 area_collections.py:450
 msgid "This file is not in the opened folder: {pfad}"
 msgstr "Diese Datei liegt nicht im geöffneten Ordner: {pfad}"
 
-#: area_collections.py:303
+#: area_collections.py:453
 msgid "Outside the e-reader's main storage (e.g. SD card): {pfad}"
 msgstr "Außerhalb des Hauptspeichers des E-Readers (z. B. SD-Karte): {pfad}"
 
-#: area_collections.py:307
+#: area_collections.py:457
 msgid ""
 "Story in an anthology ({kuerzel}), not found in the tables of contents of "
 "the library. “Choose …” picks the anthology and its entry."
@@ -862,32 +943,34 @@ msgstr ""
 "Geschichte in einer Anthologie ({kuerzel}), in den Inhaltsverzeichnissen "
 "der Bibliothek nicht gefunden. „Wählen …“ sucht Anthologie und Eintrag aus."
 
-#: area_collections.py:309
+#: area_collections.py:459
 msgid "in anthology {kuerzel}"
 msgstr "in Anthologie {kuerzel}"
 
-#: area_collections.py:312
+#: area_collections.py:462
 msgid "Not found in the library. Choose the book with “Choose …”."
 msgstr "In der Bibliothek nicht gefunden. Mit „Wählen …“ das Buch auswählen."
 
-#: area_collections.py:313 emulator.py:205
+#: area_collections.py:463 emulator.py:205
 msgid "not found"
 msgstr "nicht gefunden"
 
-#: area_collections.py:339
+#: area_collections.py:494
 msgid "The patch could not be copied."
 msgstr "Der Patch ließ sich nicht kopieren."
 
-#: area_collections.py:341
-msgid "Patch 2-bookbench-stories copied to the e-reader; restart KOReader."
+#: area_collections.py:496
+msgid ""
+"Patch 2-bookbench-collections copied to the e-reader; restart KOReader."
 msgstr ""
-"Patch 2-bookbench-stories auf den E-Reader kopiert; KOReader neu starten."
+"Patch 2-bookbench-collections auf den E-Reader kopiert; KOReader neu "
+"starten."
 
-#: area_collections.py:356 reading.py:273
+#: area_collections.py:511 reading.py:273
 msgid "finished"
 msgstr "gelesen"
 
-#: area_collections.py:394
+#: area_collections.py:549
 msgid ""
 "Collections need a library on this computer or the e-reader (open one "
 "first)."
@@ -895,78 +978,78 @@ msgstr ""
 "Sammlungen brauchen eine Bibliothek auf diesem Rechner oder den E-Reader "
 "(erst eins davon öffnen)."
 
-#: area_collections.py:403 area_collections.py:421 area_dictionary.py:306 settings.py:1021
+#: area_collections.py:558 area_collections.py:576 area_dictionary.py:306 settings.py:1021
 msgid "Name:"
 msgstr "Name:"
 
-#: area_collections.py:403
+#: area_collections.py:558
 msgid "New collection"
 msgstr "Neue Sammlung"
 
-#: area_collections.py:414
+#: area_collections.py:569
 msgid "Collection “{name}” created."
 msgstr "Sammlung „{name}“ angelegt."
 
-#: area_collections.py:421
+#: area_collections.py:576
 msgid "Rename collection"
 msgstr "Sammlung umbenennen"
 
-#: area_collections.py:434
+#: area_collections.py:589
 msgid "Delete the collection “{name}”? The books stay where they are."
 msgstr "Die Sammlung „{name}“ löschen? Die Bücher bleiben, wo sie sind."
 
-#: area_collections.py:512
+#: area_collections.py:673
 msgid "{n} entry removed from the collection (the book stays)."
 msgid_plural "{n} entries removed from the collection (the books stay)."
 msgstr[0] "{n} Eintrag aus der Sammlung entfernt (das Buch bleibt)."
 msgstr[1] "{n} Einträge aus der Sammlung entfernt (die Bücher bleiben)."
 
-#: area_collections.py:531
+#: area_collections.py:692
 msgid "Add books to “{name}”"
 msgstr "Bücher zu „{name}“ hinzufügen"
 
-#: area_collections.py:551
+#: area_collections.py:712
 msgid "{n} book added to “{name}”."
 msgid_plural "{n} books added to “{name}”."
 msgstr[0] "{n} Buch zu „{name}“ hinzugefügt."
 msgstr[1] "{n} Bücher zu „{name}“ hinzugefügt."
 
-#: area_collections.py:553
+#: area_collections.py:714
 msgid "Already in “{name}”."
 msgstr "Schon in „{name}“."
 
-#: area_collections.py:566
+#: area_collections.py:727
 msgid "Book for “{titel}”"
 msgstr "Buch für „{titel}“"
 
-#: area_collections.py:599
+#: area_collections.py:760
 msgid "Story “{titel}” added."
 msgstr "Geschichte „{titel}“ hinzugefügt."
 
-#: area_collections.py:635 area_library.py:329 area_series.py:410
+#: area_collections.py:796 area_library.py:329 area_series.py:410
 msgid "Start in KOReader"
 msgstr "In KOReader starten"
 
-#: area_collections.py:635 area_library.py:329 area_series.py:410
+#: area_collections.py:796 area_library.py:329 area_series.py:410
 msgid "Open in {ziel}"
 msgstr "Öffnen in {ziel}"
 
-#: area_collections.py:637 area_series.py:416
+#: area_collections.py:798 area_series.py:416
 msgid "Show in Library"
 msgstr "In der Bibliothek zeigen"
 
-#: area_collections.py:652
+#: area_collections.py:813
 msgid "Add to collection"
 msgid_plural "Add {n} books to collection"
 msgstr[0] "Zu Sammlung hinzufügen"
 msgstr[1] "{n} Bücher zu Sammlung hinzufügen"
 
-#: area_collections.py:656
+#: area_collections.py:817
 msgid "Collections need a library on this computer or the e-reader."
 msgstr ""
 "Sammlungen brauchen eine Bibliothek auf diesem Rechner oder den E-Reader."
 
-#: area_device.py:36 device.py:87 help_topics.py:991 settings.py:83 settings.py:779 settings.py:863
+#: area_device.py:36 device.py:87 help_topics.py:1009 settings.py:83 settings.py:779 settings.py:863
 msgid "Settings"
 msgstr "Einstellungen"
 
@@ -1010,11 +1093,11 @@ msgstr "vor dem Zurückspielen"
 msgid "before writing from the preview"
 msgstr "vor dem Schreiben aus der Vorschau"
 
-#: area_device.py:59 area_device.py:215 device_sync.py:88 help_topics.py:644 help_topics.py:1146 settings.py:62
+#: area_device.py:59 area_device.py:215 device_sync.py:88 help_topics.py:662 help_topics.py:1164 settings.py:62
 msgid "E-reader"
 msgstr "E-Reader"
 
-#: area_device.py:110 help_topics.py:705
+#: area_device.py:110 help_topics.py:723
 msgid "Backups of the KOReader settings"
 msgstr "Sicherungen der KOReader-Einstellungen"
 
@@ -1050,7 +1133,7 @@ msgstr "Wörterbücher: Rechner → E-Reader"
 msgid "Choose source …"
 msgstr "Quelle wählen …"
 
-#: area_device.py:180 area_device.py:208 area_dictionary.py:171 area_dictionary.py:478 area_dictionary.py:596 help_topics.py:588
+#: area_device.py:180 area_device.py:208 area_dictionary.py:171 area_dictionary.py:478 area_dictionary.py:596 help_topics.py:606
 msgid "Dictionary"
 msgstr "Wörterbuch"
 
@@ -3359,10 +3442,6 @@ msgid_plural "Numbers {n} books in the order of the list."
 msgstr[0] "Nummeriert {n} Buch in der Reihenfolge der Liste."
 msgstr[1] "Nummeriert {n} Bücher in der Reihenfolge der Liste."
 
-#: bulk_edit.py:79 bulk_edit.py:123 import_window.py:31 settings.py:1034
-msgid "Series:"
-msgstr "Reihe:"
-
 #: bulk_edit.py:81
 msgid "(keep each book's series)"
 msgstr "(Reihe jedes Buchs behalten)"
@@ -3829,19 +3908,15 @@ msgstr "wie im Inhaltsverzeichnis"
 msgid ""
 "The story runs to the next entry of the same or a higher level. Select "
 "several entries in a row for a story with parts. KOReader shows it in the "
-"collection with the patch 2-bookbench-stories."
+"collection with the patch 2-bookbench-collections."
 msgstr ""
 "Die Geschichte reicht bis zum nächsten Eintrag derselben oder einer höheren "
 "Ebene. Für eine Geschichte mit Teilen mehrere Einträge am Stück wählen. "
-"KOReader zeigt sie mit dem Patch 2-bookbench-stories in der Sammlung."
+"KOReader zeigt sie mit dem Patch 2-bookbench-collections in der Sammlung."
 
 #: collection_windows.py:212
 msgid "Add story"
 msgstr "Geschichte hinzufügen"
-
-#: cover_panel.py:40 markers.py:146
-msgid "no cover"
-msgstr "kein Cover"
 
 #: cover_panel.py:81
 msgid "No cover. \"From file\" or \"Look up\" adds one."
@@ -3904,10 +3979,6 @@ msgstr "Bild nicht lesbar ({fehler})."
 msgid "Choose the new cover"
 msgstr "Neues Cover wählen"
 
-#: cover_panel.py:239 workbench_sleep.py:358
-msgid "Images"
-msgstr "Bilder"
-
 #: cover_panel.py:248
 msgid "new cover applied, not yet saved (Ctrl+S)."
 msgstr "neues Cover übernommen, noch nicht gespeichert (Strg+S)."
@@ -3934,7 +4005,7 @@ msgstr "Cover von {quelle} übernommen, noch nicht gespeichert (Strg+S)."
 msgid "looking for covers …"
 msgstr "suche Cover …"
 
-#: cover_panel.py:283 cover_panel.py:323 help_topics.py:1122 settings.py:59 settings.py:663
+#: cover_panel.py:283 cover_panel.py:323 help_topics.py:1140 settings.py:59 settings.py:663
 msgid "Looking up covers"
 msgstr "Cover nachschlagen"
 
@@ -4350,44 +4421,48 @@ msgid "Same books, different order."
 msgstr "Gleiche Bücher, andere Reihenfolge."
 
 #: device_sync.py:240
+msgid "series, blurb or cover"
+msgstr "Reihe, Klappentext oder Cover"
+
+#: device_sync.py:241
 msgid "Only on the computer: {namen}"
 msgstr "Nur auf dem Rechner: {namen}"
 
-#: device_sync.py:241
+#: device_sync.py:242
 msgid "Only on the e-reader: {namen}"
 msgstr "Nur auf dem E-Reader: {namen}"
 
-#: device_sync.py:246
+#: device_sync.py:247
 msgid "{feld}: computer “{a}” · e-reader “{b}”"
 msgstr "{feld}: Rechner „{a}“ · E-Reader „{b}“"
 
-#: device_sync.py:251
+#: device_sync.py:252
 msgid "Chapters: {a} on the computer, {b} on the e-reader"
 msgstr "Kapitel: {a} auf dem Rechner, {b} auf dem E-Reader"
 
-#: device_sync.py:253
+#: device_sync.py:254
 msgid "Chapter {nr}: computer “{a}” · e-reader “{b}”"
 msgstr "Kapitel {nr}: Rechner „{a}“ · E-Reader „{b}“"
 
-#: device_sync.py:259
+#: device_sync.py:260
 msgid "{n} file in the EPUB differs: {namen}"
 msgid_plural "{n} files in the EPUB differ: {namen}"
 msgstr[0] "{n} Datei im EPUB unterscheidet sich: {namen}"
 msgstr[1] "{n} Dateien im EPUB unterscheiden sich: {namen}"
 
-#: device_sync.py:262
+#: device_sync.py:263
 msgid "Differences:"
 msgstr "Unterschiede:"
 
-#: device_sync.py:262
+#: device_sync.py:263
 msgid "Changed on both sides. Differences:"
 msgstr "Auf beiden Seiten geändert. Unterschiede:"
 
-#: device_sync.py:304
+#: device_sync.py:305
 msgid "Library on this computer for this e-reader"
 msgstr "Bibliothek auf diesem Rechner für diesen E-Reader"
 
-#: device_sync.py:316
+#: device_sync.py:317
 msgid ""
 "{ordner} is not a Bookbench library yet. Use it as the library for this "
 "e-reader?"
@@ -4395,51 +4470,51 @@ msgstr ""
 "{ordner} ist noch keine Bookbench-Bibliothek. Als Bibliothek für diesen "
 "E-Reader nehmen?"
 
-#: device_sync.py:337
+#: device_sync.py:338
 msgid "Comparing books with the e-reader … {i}/{n}"
 msgstr "Vergleiche Bücher mit dem E-Reader … {i}/{n}"
 
-#: device_sync.py:356
+#: device_sync.py:357
 msgid "Comparing failed: {fehler}"
 msgstr "Vergleichen ging nicht: {fehler}"
 
-#: device_sync.py:362
+#: device_sync.py:363
 msgid "Library and e-reader are in sync."
 msgstr "Bibliothek und E-Reader sind auf dem gleichen Stand."
 
-#: device_sync.py:371
+#: device_sync.py:372
 msgid "{n} to the e-reader"
 msgid_plural "{n} to the e-reader"
 msgstr[0] "{n} auf den E-Reader"
 msgstr[1] "{n} auf den E-Reader"
 
-#: device_sync.py:373
+#: device_sync.py:374
 msgid "{n} to the computer"
 msgid_plural "{n} to the computer"
 msgstr[0] "{n} auf den Rechner"
 msgstr[1] "{n} auf den Rechner"
 
-#: device_sync.py:375
+#: device_sync.py:376
 msgid "{n} changed on both sides"
 msgid_plural "{n} changed on both sides"
 msgstr[0] "{n} auf beiden Seiten geändert"
 msgstr[1] "{n} auf beiden Seiten geändert"
 
-#: device_sync.py:378
+#: device_sync.py:379
 msgid "{n} deleted on one side"
 msgid_plural "{n} deleted on one side"
 msgstr[0] "{n} auf einer Seite gelöscht"
 msgstr[1] "{n} auf einer Seite gelöscht"
 
-#: device_sync.py:379
+#: device_sync.py:380
 msgid "Sync with the e-reader: {teile} (E-reader area)."
 msgstr "Abgleich mit dem E-Reader: {teile} (Bereich E-Reader)."
 
-#: device_sync.py:403
+#: device_sync.py:404
 msgid "Nothing checked to sync."
 msgstr "Nichts zum Abgleichen angehakt."
 
-#: device_sync.py:413
+#: device_sync.py:414
 msgid ""
 "{n} book has unsaved changes in the library and would be overwritten or "
 "deleted. Save or discard first:"
@@ -4453,7 +4528,7 @@ msgstr[1] ""
 "{n} Bücher haben ungespeicherte Änderungen in der Bibliothek und würden "
 "überschrieben oder gelöscht. Erst speichern oder verwerfen:"
 
-#: device_sync.py:420
+#: device_sync.py:421
 msgid ""
 "Sync {n} book? Files that are overwritten or deleted are backed up first."
 msgid_plural ""
@@ -4465,27 +4540,27 @@ msgstr[1] ""
 "{n} Bücher abgleichen? Dateien, die überschrieben oder gelöscht werden, "
 "werden vorher gesichert."
 
-#: device_sync.py:424
+#: device_sync.py:425
 msgid "{n} of them is deleted:"
 msgid_plural "{n} of them are deleted:"
 msgstr[0] "{n} davon wird gelöscht:"
 msgstr[1] "{n} davon werden gelöscht:"
 
-#: device_sync.py:435
+#: device_sync.py:436
 msgid "Syncing … {i}/{n}: {buch}"
 msgstr "Gleiche ab … {i}/{n}: {buch}"
 
-#: device_sync.py:441
+#: device_sync.py:442
 msgid "Not synced:"
 msgstr "Nicht abgeglichen:"
 
-#: device_sync.py:442
+#: device_sync.py:443
 msgid "{n} book synced."
 msgid_plural "{n} books synced."
 msgstr[0] "{n} Buch abgeglichen."
 msgstr[1] "{n} Bücher abgeglichen."
 
-#: device_sync.py:443
+#: device_sync.py:444
 msgid "Backups in {ordner}."
 msgstr "Sicherungen in {ordner}."
 
@@ -6544,7 +6619,7 @@ msgstr ""
 "Claude braucht einen API-Schlüssel und das Paket **anthropic** (pip install "
 "anthropic): [[einst_online]].\n"
 
-#: help_topics.py:471 help_topics.py:1091 settings.py:56 settings.py:508
+#: help_topics.py:471 help_topics.py:1109 settings.py:56 settings.py:508
 msgid "Source profiles"
 msgstr "Quellprofile"
 
@@ -6947,6 +7022,9 @@ msgid ""
 "anthology. Placeholders are not written to the e-reader, but the numbering "
 "there leaves their place free.\n"
 "\n"
+"**Series, blurb and cover** of a collection ([[sammlungen_metadaten]]): the "
+"fields above the entries.\n"
+"\n"
 "**Stories in anthologies** ([[sammlungen_geschichten]]): **Add story …** "
 "picks a book and an entry of its table of contents. The story then is an "
 "entry of the collection like a book.\n"
@@ -7002,6 +7080,9 @@ msgstr ""
 "durch einen Eintrag einer Anthologie. Platzhalter kommen nicht auf den "
 "E-Reader, die Nummerierung dort lässt ihren Platz aber frei.\n"
 "\n"
+"**Reihe, Klappentext und Cover** einer Sammlung ([[sammlungen_metadaten]]): "
+"die Felder über den Einträgen.\n"
+"\n"
 "**Geschichten in Anthologien** ([[sammlungen_geschichten]]): **Geschichte "
 "hinzufügen …** wählt ein Buch und einen Eintrag seines "
 "Inhaltsverzeichnisses. Die Geschichte ist dann ein Eintrag der Sammlung wie "
@@ -7011,16 +7092,89 @@ msgstr ""
 "**Zu Sammlung hinzufügen** (eine vorhandene oder eine neue); in Reihen auch "
 "**Sammlung aus Reihe**.\n"
 
-#: help_topics.py:570
+#: help_topics.py:572
+msgid "Series, blurb and cover of a collection"
+msgstr "Reihe, Klappentext und Cover einer Sammlung"
+
+#: help_topics.py:572
+msgid ""
+"\n"
+"KOReader itself only knows the name of a collection. Bookbench adds a "
+"**series** with a **number**, a **blurb** and a **cover** - e.g. 21 "
+"omnibuses as the series \"Horus Heresy Omnibus\", #1 to #21. KOReader shows "
+"them with Bookbench's patch **2-bookbench-collections** on the e-reader.\n"
+"\n"
+"**In Bookbench** (Collections area, above the entries of the selected "
+"collection):\n"
+"- **Series** (pick one of the series of your other collections or type a "
+"new one) and **Number** (decimals allowed). **Blurb**: any text. **Apply** "
+"saves the three.\n"
+"- **Cover …**: **From a file …** (JPG or PNG), **From a book of the "
+"collection …** (its cover image), **Remove cover**. Saved at once. The "
+"picture is stored in the library (.bookbench/covers) or on the e-reader "
+"(settings/bookbench_covers); the sync copies it along.\n"
+"- The list of collections shows the series and number after the name.\n"
+"\n"
+"**In KOReader** (with the patch):\n"
+"- In the list of collections a **series is one entry**, with a folder "
+"symbol and the number of its collections. Tapping it shows its collections, "
+"sorted by number (shown on the right). The return arrow at the bottom goes "
+"back to all collections; coming back from a collection of a series lands in "
+"its series again.\n"
+"- A collection of a series shows \"Series · #3\" under its title.\n"
+"- **About this collection**: long-press a collection in the list, or the "
+"menu button (top left) inside the collection. Shows the cover, the name, "
+"series and number and the blurb; a tap closes it. **Collection options …** "
+"leads to KOReader's own menu.\n"
+"- Collections without series, blurb or cover look as usual.\n"
+"\n"
+"On the e-reader: settings/bookbench_collections.lua (written by Bookbench) "
+"and the pictures in settings/bookbench_covers.\n"
+msgstr ""
+"\n"
+"KOReader selbst kennt von einer Sammlung nur den Namen. Bookbench ergänzt "
+"eine **Reihe** mit **Nummer**, einen **Klappentext** und ein **Cover** - z. "
+"B. 21 Omnibusse als Reihe „Horus Heresy Omnibus“, #1 bis #21. KOReader "
+"zeigt sie mit Bookbenchs Patch **2-bookbench-collections** auf dem "
+"E-Reader.\n"
+"\n"
+"**In Bookbench** (Bereich Sammlungen, über den Einträgen der gewählten "
+"Sammlung):\n"
+"- **Reihe** (eine der Reihen deiner anderen Sammlungen wählen oder eine "
+"neue eintippen) und **Nummer** (Nachkommastellen erlaubt). **Klappentext**: "
+"beliebiger Text. **Übernehmen** speichert die drei.\n"
+"- **Cover …**: **Aus Datei …** (JPG oder PNG), **Von einem Buch der "
+"Sammlung …** (dessen Titelbild), **Cover entfernen**. Wird sofort "
+"gespeichert. Das Bild liegt in der Bibliothek (.bookbench/covers) bzw. auf "
+"dem E-Reader (settings/bookbench_covers); der Abgleich kopiert es mit.\n"
+"- Die Liste der Sammlungen zeigt Reihe und Nummer hinter dem Namen.\n"
+"\n"
+"**In KOReader** (mit dem Patch):\n"
+"- In der Liste der Sammlungen ist eine **Reihe ein Eintrag**, mit "
+"Ordner-Symbol und der Zahl ihrer Sammlungen. Antippen zeigt ihre Sammlungen "
+"nach Nummer sortiert (rechts angezeigt). Der Zurück-Pfeil unten führt "
+"wieder zu allen Sammlungen; wer aus einer Sammlung einer Reihe zurückgeht, "
+"landet wieder in ihrer Reihe.\n"
+"- Eine Sammlung einer Reihe zeigt unter ihrem Titel „Reihe · #3“.\n"
+"- **Über diese Sammlung**: lange auf eine Sammlung in der Liste drücken "
+"oder in der Sammlung den Menüknopf (oben links). Zeigt Cover, Name, Reihe "
+"und Nummer und den Klappentext; ein Tippen schließt es. **Sammlung "
+"bearbeiten …** führt zu KOReaders eigenem Menü.\n"
+"- Sammlungen ohne Reihe, Klappentext und Cover sehen aus wie immer.\n"
+"\n"
+"Auf dem E-Reader: settings/bookbench_collections.lua (schreibt Bookbench) "
+"und die Bilder in settings/bookbench_covers.\n"
+
+#: help_topics.py:588
 msgid "Stories in anthologies"
 msgstr "Geschichten in Anthologien"
 
-#: help_topics.py:570
+#: help_topics.py:588
 msgid ""
 "\n"
 "A KOReader collection can only hold whole files. With Bookbench's patch "
-"**2-bookbench-stories** on the e-reader it can also hold a story inside an "
-"anthology - without cutting the story out into a file of its own.\n"
+"**2-bookbench-collections** on the e-reader it can also hold a story inside "
+"an anthology - without cutting the story out into a file of its own.\n"
 "\n"
 "**In Bookbench**: **Add story …** in the Collections area. On the left the "
 "books (the search also looks into their tables of contents), on the right "
@@ -7033,7 +7187,8 @@ msgid ""
 "before syncing.\n"
 "\n"
 "**On the e-reader** (patch needed - **Install patch** in the Collections "
-"area when the e-reader is opened directly, or Preview > Patches):\n"
+"area when the e-reader is opened directly, or Preview > Patches; it also "
+"removes the older 2-bookbench-stories):\n"
 "- The collection shows the story at its place, with \"in <anthology>\" and "
 "✓ or a percentage once it was read.\n"
 "- Tapping opens the anthology right at the start of the story, or where you "
@@ -7063,7 +7218,7 @@ msgid ""
 msgstr ""
 "\n"
 "Eine KOReader-Sammlung kann nur ganze Dateien enthalten. Mit Bookbenchs "
-"Patch **2-bookbench-stories** auf dem E-Reader kann sie auch eine "
+"Patch **2-bookbench-collections** auf dem E-Reader kann sie auch eine "
 "Geschichte in einer Anthologie enthalten - ohne die Geschichte in eine "
 "eigene Datei herauszulösen.\n"
 "\n"
@@ -7078,8 +7233,8 @@ msgstr ""
 "vorkommt) - geänderte Kapitelnamen deshalb vor dem Abgleich **speichern**.\n"
 "\n"
 "**Auf dem E-Reader** (Patch nötig - **Patch installieren** im Bereich "
-"Sammlungen, wenn der E-Reader direkt geöffnet ist, oder Vorschau > "
-"Patches):\n"
+"Sammlungen, wenn der E-Reader direkt geöffnet ist, oder Vorschau > Patches; "
+"er entfernt auch den älteren 2-bookbench-stories):\n"
 "- Die Sammlung zeigt die Geschichte an ihrem Platz, mit „in <Anthologie>“ "
 "und ✓ oder einer Prozentzahl, sobald sie gelesen wurde.\n"
 "- Antippen öffnet die Anthologie direkt am Anfang der Geschichte oder dort, "
@@ -7109,7 +7264,7 @@ msgstr ""
 "schreibt Bookbench), settings/bookbench_stories_state.lua (schreibt der "
 "Patch).\n"
 
-#: help_topics.py:588
+#: help_topics.py:606
 msgid ""
 "\n"
 "Your own dictionaries for KOReader: read, edit, fill missing terms, build "
@@ -7176,11 +7331,11 @@ msgstr ""
 "- [[woerterbuch_aufbau]]\n"
 "- [[woerterbuch_unterwegs]]\n"
 
-#: help_topics.py:604
+#: help_topics.py:622
 msgid "Views and missing terms"
 msgstr "Ansichten und fehlende Begriffe"
 
-#: help_topics.py:604
+#: help_topics.py:622
 msgid ""
 "\n"
 "- **Entries**: everything in the dictionary. The search also finds other "
@@ -7215,11 +7370,11 @@ msgstr ""
 "sie zurück.\n"
 "- **Aufbau** (nur mit Datenbank): [[woerterbuch_aufbau]].\n"
 
-#: help_topics.py:611
+#: help_topics.py:629
 msgid "Editing entries and Claude"
 msgstr "Einträge bearbeiten und Claude"
 
-#: help_topics.py:611
+#: help_topics.py:629
 msgid ""
 "\n"
 "**Editing**\n"
@@ -7273,11 +7428,11 @@ msgstr ""
 "\n"
 "Kosten und was gesendet wird: [[kosten]].\n"
 
-#: help_topics.py:625
+#: help_topics.py:643
 msgid "Steps and building"
 msgstr "Aufbau und Erzeugen"
 
-#: help_topics.py:625
+#: help_topics.py:643
 msgid ""
 "\n"
 "**Steps** (the steps of wikidict.py, with status, options and output; "
@@ -7334,11 +7489,11 @@ msgstr ""
 "wikidict.py auf der Kommandozeile nimmt die eigenen Einträge beim Erzeugen "
 "ebenfalls mit.\n"
 
-#: help_topics.py:639
+#: help_topics.py:657
 msgid "On the go without a database"
 msgstr "Unterwegs ohne Datenbank"
 
-#: help_topics.py:639
+#: help_topics.py:657
 msgid ""
 "\n"
 "Open the StarDict folder (e.g. the copy on the e-reader or on a stick) and "
@@ -7356,7 +7511,7 @@ msgstr ""
 "Zuhause in der Datenbank: Eigenschaften > **Änderungen aus einem "
 "StarDict-Ordner übernehmen**, sonst überschreibt das nächste Erzeugen sie.\n"
 
-#: help_topics.py:644
+#: help_topics.py:662
 msgid ""
 "\n"
 "Shows the connected e-reader with KOReader - Kobo, Kindle or PocketBook: "
@@ -7425,11 +7580,11 @@ msgstr ""
 "- [[kobo_woerterbuecher]]\n"
 "- [[kobo_auswerfen]]\n"
 
-#: help_topics.py:665
+#: help_topics.py:683
 msgid "Syncing books"
 msgstr "Bücher abgleichen"
 
-#: help_topics.py:665
+#: help_topics.py:683
 msgid ""
 "\n"
 "At the top of the E-reader area: the books of the library on this computer "
@@ -7563,11 +7718,11 @@ msgstr ""
 "**Pfeile gegeneinander** (auf beiden Seiten geändert).\n"
 "- Nach dem Speichern in der Bibliothek und mit **Vergleichen**.\n"
 
-#: help_topics.py:692
+#: help_topics.py:710
 msgid "Kobo, Kindle, PocketBook"
 msgstr "Kobo, Kindle, PocketBook"
 
-#: help_topics.py:692
+#: help_topics.py:710
 msgid ""
 "\n"
 "KOReader keeps its settings in its own installation folder. Where that is "
@@ -7623,7 +7778,7 @@ msgstr ""
 "Echt geprüft ist bisher nur der Kobo; Kindle und PocketBook folgen dem "
 "KOReader-Quelltext.\n"
 
-#: help_topics.py:705
+#: help_topics.py:723
 msgid ""
 "\n"
 "- **Back up** packs the parts ticked on the right into a ZIP file in the "
@@ -7694,11 +7849,11 @@ msgstr ""
 "Die Vorschau kann ihr Profil auch aus einer Sicherung nehmen "
 "([[vorschau_profil]]).\n"
 
-#: help_topics.py:723 settings.py:794
+#: help_topics.py:741 settings.py:794
 msgid "Copying dictionaries"
 msgstr "Wörterbücher kopieren"
 
-#: help_topics.py:723
+#: help_topics.py:741
 msgid ""
 "\n"
 "- **Choose source**: a folder on the computer somewhere inside which the "
@@ -7742,11 +7897,11 @@ msgstr ""
 "Rückfrage dort geöffnet; Änderungen werden dann auf dem E-Reader "
 "gespeichert.\n"
 
-#: help_topics.py:729 settings.py:799
+#: help_topics.py:747 settings.py:799
 msgid "Ejecting"
 msgstr "Auswerfen"
 
-#: help_topics.py:729
+#: help_topics.py:747
 msgid ""
 "\n"
 "**Eject** unmounts the e-reader (Linux: udisksctl, Windows: like \"Eject\" "
@@ -7818,7 +7973,7 @@ msgstr ""
 "- Dass KDE beim Anstecken den Dateimanager öffnet, lässt sich in den "
 "KDE-Systemeinstellungen abstellen (Wechselmedien bzw. Geräteaktionen).\n"
 
-#: help_topics.py:745
+#: help_topics.py:763
 msgid ""
 "\n"
 "The **KOReader workbench**: the desktop KOReader runs invisibly in the "
@@ -7876,11 +8031,11 @@ msgstr ""
 "- [[vorschau_starten]]\n"
 "- [[vorschau_bildschirm]]\n"
 
-#: help_topics.py:765
+#: help_topics.py:783
 msgid "Workbench"
 msgstr "Werkbank"
 
-#: help_topics.py:765
+#: help_topics.py:783
 msgid ""
 "\n"
 "**View**\n"
@@ -8004,11 +8159,11 @@ msgstr ""
 "**In KOReader öffnen** (Werkzeugleiste) startet wie bisher den vollen "
 "KOReader im Fenster, zum Ausprobieren der Menüs: [[vorschau_starten]].\n"
 
-#: help_topics.py:789 workbench_reader.py:60
+#: help_topics.py:807 workbench_reader.py:60
 msgid "Font and margins"
 msgstr "Schrift und Ränder"
 
-#: help_topics.py:789
+#: help_topics.py:807
 msgid ""
 "\n"
 "Below Preview, **Font and margins** holds KOReader's own general reading "
@@ -8073,11 +8228,11 @@ msgstr ""
 "sehen. Die Buchdaten des Buchs selbst bleiben unberührt. Der Blindtext hat "
 "nie Buchdaten.\n"
 
-#: help_topics.py:801 workbench_sleep.py:32
+#: help_topics.py:819 workbench_sleep.py:32
 msgid "Sleep screen"
 msgstr "Sperrbildschirm"
 
-#: help_topics.py:801
+#: help_topics.py:819
 msgid ""
 "\n"
 "Below Preview, **Sleep screen** holds KOReader's sleep screen options "
@@ -8195,11 +8350,11 @@ msgstr ""
 "dem Buchcover als Hintergrund. Änderungen sind ein Entwurf bis **Ins "
 "Profil**.\n"
 
-#: help_topics.py:819 transfer.py:42 workbench_reader.py:292 workbench_reader.py:308
+#: help_topics.py:837 transfer.py:42 workbench_reader.py:292 workbench_reader.py:308
 msgid "Patches"
 msgstr "Patches"
 
-#: help_topics.py:819
+#: help_topics.py:837
 msgid ""
 "\n"
 "Below Preview, **Patches** lists the user patches of the profile (folder "
@@ -8238,10 +8393,12 @@ msgid ""
 "writes these columns into the book when you edit them in Metadata. The "
 "patch hooks into Bookshelf's and Bookends' insides; if a new version "
 "changes them, the values stay empty and nothing else breaks.\n"
-"- **2-bookbench-stories**: stories inside anthologies as entries of a "
-"collection - KOReader opens the story right inside the anthology, with a "
-"reading position of its own, and offers the next entry at its end "
-"([[sammlungen_geschichten]]).\n"
+"- **2-bookbench-collections** (until 2.4-beta3 called 2-bookbench-stories, "
+"which it replaces): collections with series, number, blurb and cover - a "
+"series is one entry in KOReader's list of collections, like a folder "
+"([[sammlungen_metadaten]]) - and stories inside anthologies as entries of a "
+"collection, opened right inside the anthology with a reading position of "
+"their own ([[sammlungen_geschichten]]).\n"
 "- **2-bookbench-screensaver**: sleep screen with a picture and a message - "
 "the picture moves into the free space next to the message instead of lying "
 "under it. Switch and options on the page Sleep screen "
@@ -8294,9 +8451,11 @@ msgstr ""
 "bearbeitest. Der Patch hängt sich in Innereien von Bookshelf und Bookends "
 "ein; ändert eine neue Version sie, bleiben die Werte leer, sonst geht "
 "nichts kaputt.\n"
-"- **2-bookbench-stories**: Geschichten in Anthologien als Einträge einer "
-"Sammlung - KOReader öffnet die Geschichte direkt in der Anthologie, mit "
-"eigener Leseposition, und bietet am Ende den nächsten Eintrag an "
+"- **2-bookbench-collections** (bis 2.4-beta3 hieß er 2-bookbench-stories "
+"und ersetzt diesen): Sammlungen mit Reihe, Nummer, Klappentext und Cover - "
+"eine Reihe ist ein Eintrag in KOReaders Sammlungsliste, wie ein Ordner "
+"([[sammlungen_metadaten]]) - und Geschichten in Anthologien als Einträge "
+"einer Sammlung, direkt in der Anthologie geöffnet mit eigener Leseposition "
 "([[sammlungen_geschichten]]).\n"
 "- **2-bookbench-screensaver**: Sperrbildschirm mit Bild und Meldung - das "
 "Bild rückt in den freien Platz neben der Meldung, statt unter ihr zu "
@@ -8311,11 +8470,11 @@ msgstr ""
 "Bookbenchs interne Patches (1-bookbench-desktop, 2-bookbench-workbench) "
 "stehen nicht in der Liste.\n"
 
-#: help_topics.py:836
+#: help_topics.py:854
 msgid "Bookends settings"
 msgstr "Bookends-Einstellungen"
 
-#: help_topics.py:836
+#: help_topics.py:854
 msgid ""
 "\n"
 "If the profile contains the plugin **Bookends**, the sidebar shows "
@@ -8591,11 +8750,11 @@ msgstr ""
 "seine Dateien. Neuere Bookends-Versionen können das Format ändern; "
 "Unbekanntes bleibt, wie es ist.\n"
 
-#: help_topics.py:878
+#: help_topics.py:896
 msgid "Bookshelf settings"
 msgstr "Bookshelf-Einstellungen"
 
-#: help_topics.py:878
+#: help_topics.py:896
 msgid ""
 "\n"
 "If the profile contains the plugin **Bookshelf**, the sidebar shows "
@@ -8856,11 +9015,11 @@ msgstr ""
 "(github.com/AndyHazz/bookshelf.koplugin); Bookbench liest und schreibt nur "
 "seine Einstellungsdatei.\n"
 
-#: help_topics.py:929 settings.py:512 settings.py:1082 transfer_window.py:41
+#: help_topics.py:947 settings.py:512 settings.py:1082 transfer_window.py:41
 msgid "Profile"
 msgstr "Profil"
 
-#: help_topics.py:929
+#: help_topics.py:947
 msgid ""
 "\n"
 "The preview runs in its own profile in the settings folder (subfolder "
@@ -8901,11 +9060,11 @@ msgstr ""
 "Plugin-Pfade und die letzten Dateien/Ordner auf dem E-Reader. Buchdaten "
 "liegen im Profil immer neben dem Buch.\n"
 
-#: help_topics.py:936 transfer_window.py:33 transfer_window.py:202 transfer_window.py:211 transfer_window.py:229
+#: help_topics.py:954 transfer_window.py:33 transfer_window.py:202 transfer_window.py:211 transfer_window.py:229
 msgid "To the e-reader"
 msgstr "Auf den E-Reader"
 
-#: help_topics.py:936
+#: help_topics.py:954
 msgid ""
 "\n"
 "**To the e-reader …** (toolbar) writes what you changed in the preview "
@@ -8985,11 +9144,11 @@ msgstr ""
 "nächsten Start. Läuft KOReader auf dem E-Reader, während du überträgst "
 "(über USB selten), kann er settings.reader.lua beim Beenden überschreiben.\n"
 
-#: help_topics.py:952
+#: help_topics.py:970
 msgid "Starting and output"
 msgstr "Starten und Ausgabe"
 
-#: help_topics.py:952
+#: help_topics.py:970
 msgid ""
 "\n"
 "**Open in KOReader** (toolbar, always the first button)\n"
@@ -9067,11 +9226,11 @@ msgstr ""
 "Statuszeile die Anzahl der Warnungen und Fehler, etwa ein Patch, der auf "
 "dem Rechner nicht läuft, weil er etwas E-Reader-Eigenes braucht.\n"
 
-#: help_topics.py:965
+#: help_topics.py:983
 msgid "Screen and device"
 msgstr "Bildschirm und Gerät"
 
-#: help_topics.py:965
+#: help_topics.py:983
 msgid ""
 "\n"
 "The workbench and the window copy the screen of a device: size in pixels, "
@@ -9125,11 +9284,11 @@ msgstr ""
 "Ein Bildschirmfoto aus KOReader (Menü oder Geste) hat immer die volle "
 "Auflösung des Fensters.\n"
 
-#: help_topics.py:977 help_topics.py:1053 settings.py:50 settings.py:344
+#: help_topics.py:995 help_topics.py:1071 settings.py:50 settings.py:344
 msgid "Saving and backups"
 msgstr "Speichern und Sicherungen"
 
-#: help_topics.py:977
+#: help_topics.py:995
 msgid ""
 "\n"
 "**Save** (Ctrl+S) writes all applied changes (yellow) of all books: chapter "
@@ -9181,7 +9340,7 @@ msgstr ""
 "Nach dem Speichern zeigt KOReader neue Metadaten erst nach dem Neueinlesen "
 "der Buchinfos (Cover-Browser > Extract and cache book information).\n"
 
-#: help_topics.py:991
+#: help_topics.py:1009
 msgid ""
 "\n"
 "File > **Settings …** opens the settings. The tree on the left has groups "
@@ -9236,11 +9395,11 @@ msgstr ""
 "B. die Tooltip-Verzögerung, das Claude-Modell), erscheinen erst, wenn diese "
 "an ist.\n"
 
-#: help_topics.py:1008 settings.py:45 settings.py:204
+#: help_topics.py:1026 settings.py:45 settings.py:204
 msgid "Language and theme"
 msgstr "Sprache und Farben"
 
-#: help_topics.py:1008
+#: help_topics.py:1026
 msgid ""
 "\n"
 "**Language** (default: automatic)\n"
@@ -9274,11 +9433,11 @@ msgstr ""
 "anderen KDE-Programmen; mit PySide6 aus pip Fusion mit den Farben des "
 "Systems.\n"
 
-#: help_topics.py:1017 settings.py:46 settings.py:223
+#: help_topics.py:1035 settings.py:46 settings.py:223
 msgid "Interface"
 msgstr "Oberfläche"
 
-#: help_topics.py:1017
+#: help_topics.py:1035
 msgid ""
 "\n"
 "- **Status strip next to the lists** (default: on): coloured dots and "
@@ -9316,11 +9475,11 @@ msgstr ""
 "\n"
 "Welche Piktogramme wo erscheinen: [[einst_marken]].\n"
 
-#: help_topics.py:1026 settings.py:47 settings.py:249
+#: help_topics.py:1044 settings.py:47 settings.py:249
 msgid "Status symbols"
 msgstr "Status-Piktogramme"
 
-#: help_topics.py:1026
+#: help_topics.py:1044
 msgid ""
 "\n"
 "One row per pictogram ([[status]]), one column per place:\n"
@@ -9354,11 +9513,11 @@ msgstr ""
 "Wörterbuch, E-Reader und \"angeschlossen\" gibt es nur in der Seitenleiste, "
 "Lücken in einer Reihe nur in der Seitenleiste und in Reihen.\n"
 
-#: help_topics.py:1036 settings.py:48 settings.py:290
+#: help_topics.py:1054 settings.py:48 settings.py:290
 msgid "Startup"
 msgstr "Start"
 
-#: help_topics.py:1036
+#: help_topics.py:1054
 msgid ""
 "\n"
 "- **Open the last folder** (default: on): the books folder that was open "
@@ -9380,11 +9539,11 @@ msgstr ""
 "\n"
 "Ein Ordner auf der Kommandozeile (start.py <Ordner>) wird immer geöffnet.\n"
 
-#: help_topics.py:1042 settings.py:49 settings.py:300 updates.py:82 updates.py:90 updates.py:270
+#: help_topics.py:1060 settings.py:49 settings.py:300 updates.py:82 updates.py:90 updates.py:270
 msgid "Updates"
 msgstr "Updates"
 
-#: help_topics.py:1042
+#: help_topics.py:1060
 msgid ""
 "\n"
 "**This copy** says how Bookbench was installed: with the Windows setup, "
@@ -9432,7 +9591,7 @@ msgstr ""
 "steht fest im Programm. Ohne Anmeldung erlaubt GitHub 60 Anfragen pro "
 "Stunde, weit mehr, als die Suche braucht.\n"
 
-#: help_topics.py:1053
+#: help_topics.py:1071
 msgid ""
 "\n"
 "- **Backup folder** (default: Bookbench Backups in the user folder): books "
@@ -9457,11 +9616,11 @@ msgstr ""
 "einschließlich der Sicherung vor jedem Zurückspielen "
 "([[kobo_sicherungen]]).\n"
 
-#: help_topics.py:1058 settings.py:52 settings.py:368
+#: help_topics.py:1076 settings.py:52 settings.py:368
 msgid "Library and import"
 msgstr "Bibliothek und Import"
 
-#: help_topics.py:1058
+#: help_topics.py:1076
 msgid ""
 "\n"
 "**Folder scheme**\n"
@@ -9505,11 +9664,11 @@ msgstr ""
 "- **Einlese-Zwischenspeicher leeren**: beim nächsten Öffnen werden alle "
 "Bücher neu gelesen.\n"
 
-#: help_topics.py:1067 settings.py:53 settings.py:439 settings.py:987
+#: help_topics.py:1085 settings.py:53 settings.py:439 settings.py:987
 msgid "Advert text"
 msgstr "Werbezeilen"
 
-#: help_topics.py:1067
+#: help_topics.py:1085
 msgid ""
 "\n"
 "Patterns for Remove advert text ([[bibliothek_cleaner]]).\n"
@@ -9534,11 +9693,11 @@ msgstr ""
 "gespeichert.\n"
 "- **Zurück auf die Vorgabe** stellt OceanofPDF.com wieder her.\n"
 
-#: help_topics.py:1075 listing.py:63 settings.py:54 settings.py:467
+#: help_topics.py:1093 listing.py:63 settings.py:54 settings.py:467
 msgid "Chapters"
 msgstr "Kapitel"
 
-#: help_topics.py:1075
+#: help_topics.py:1093
 msgid ""
 "\n"
 "- **Subtitle lines per chapter** (default: 1): how many lines below a "
@@ -9562,11 +9721,11 @@ msgstr ""
 "Beides gilt nach dem Neu-Einlesen (F5), weil die Vorschläge beim Einlesen "
 "entstehen. Siehe auch [[kapitel]].\n"
 
-#: help_topics.py:1081 settings.py:55 settings.py:476
+#: help_topics.py:1099 settings.py:55 settings.py:476
 msgid "Blurbs"
 msgstr "Klappentexte"
 
-#: help_topics.py:1081
+#: help_topics.py:1099
 msgid ""
 "\n"
 "The page shows the order of the sources ([[klappentexte_nachschlagen]]).\n"
@@ -9607,7 +9766,7 @@ msgstr ""
 "Die Grenzen gelten für alle Quellen (kostenlose und Claude), nicht für "
 "selbst eingetragenen Text.\n"
 
-#: help_topics.py:1091
+#: help_topics.py:1109
 msgid ""
 "\n"
 "The list of profiles in the order in which they are checked. The first "
@@ -9641,11 +9800,11 @@ msgstr ""
 "Änderungen gelten nach OK. Ändert sich ein Profil, schlägt Claude für "
 "dessen Bücher neu nach; schon gefundene bleiben, wie sie sind.\n"
 
-#: help_topics.py:1101 settings.py:64 settings.py:524
+#: help_topics.py:1119 settings.py:64 settings.py:524
 msgid "Online services"
 msgstr "Online-Dienste"
 
-#: help_topics.py:1101
+#: help_topics.py:1119
 msgid ""
 "\n"
 "Keys for the services Bookbench asks on the internet; both are stored in "
@@ -9704,11 +9863,11 @@ msgstr ""
 "Außerdem nötig: das Paket **anthropic** (pip install anthropic). Was "
 "gesendet wird: [[kosten]].\n"
 
-#: help_topics.py:1114 plugins.py:702 settings.py:58 settings.py:649
+#: help_topics.py:1132 plugins.py:702 settings.py:58 settings.py:649
 msgid "Covers"
 msgstr "Cover"
 
-#: help_topics.py:1114
+#: help_topics.py:1132
 msgid ""
 "\n"
 "**Inserting a new cover** ([[cover_bild]])\n"
@@ -9737,7 +9896,7 @@ msgstr ""
 "- **Cover unter dieser Höhe markieren** (Standard: 800 px, 0 = nie): ⚠ im "
 "Bereich Metadaten und dessen Filter \"Kleines Cover\".\n"
 
-#: help_topics.py:1122
+#: help_topics.py:1140
 msgid ""
 "\n"
 "**Sources** (both free, no key needed; Google Books uses your own key if "
@@ -9767,11 +9926,11 @@ msgstr ""
 "heruntergeladen, mehr dauert also länger. Das Nachschlagen aller fehlenden "
 "Cover nimmt höchstens 3 je Buch und davon das größte.\n"
 
-#: help_topics.py:1131 settings.py:60 settings.py:677
+#: help_topics.py:1149 settings.py:60 settings.py:677
 msgid "Metadata and Calibre"
 msgstr "Metadaten und Calibre"
 
-#: help_topics.py:1131
+#: help_topics.py:1149
 msgid ""
 "\n"
 "**Calibre**\n"
@@ -9832,7 +9991,7 @@ msgstr ""
 "geöffneten Ordners dazu, mit den Bezeichnungen aus Calibre. Die "
 "unerwünschten danach löschen.\n"
 
-#: help_topics.py:1146
+#: help_topics.py:1164
 msgid ""
 "\n"
 "**Detection**\n"
@@ -9876,7 +10035,7 @@ msgstr ""
 "- **Beim Beenden ans Auswerfen erinnern** (Standard: an): nur, wenn in der "
 "Sitzung etwas auf den E-Reader geschrieben wurde ([[kobo_auswerfen]]).\n"
 
-#: help_topics.py:1159
+#: help_topics.py:1177
 msgid ""
 "\n"
 "Only on Linux and macOS.\n"
@@ -9902,11 +10061,11 @@ msgstr ""
 "mit Breite, Höhe (Pixel im Hochformat), ppi und Farbbildschirm für andere "
 "E-Reader mit KOReader. Siehe [[vorschau_bildschirm]].\n"
 
-#: help_topics.py:1165 settings.py:65 settings.py:859
+#: help_topics.py:1183 settings.py:65 settings.py:859
 msgid "Advanced"
 msgstr "Erweitert"
 
-#: help_topics.py:1165
+#: help_topics.py:1183
 msgid ""
 "\n"
 "**Files of the program**\n"
@@ -9951,11 +10110,11 @@ msgstr ""
 "Bleiben: geöffnete Ordner, die Liste der Wörterbücher, Fenstergröße, "
 "Sprache und der API-Schlüssel.\n"
 
-#: help_topics.py:1179
+#: help_topics.py:1197
 msgid "Installing and updating"
 msgstr "Installieren und aktualisieren"
 
-#: help_topics.py:1179
+#: help_topics.py:1197
 msgid ""
 "\n"
 "**Installing**\n"
@@ -10053,11 +10212,11 @@ msgstr ""
 "Der **Desktop-KOReader** für die Vorschau (nur Linux) gehört nicht zur "
 "Installation ([[vorschau]]).\n"
 
-#: help_topics.py:1198
+#: help_topics.py:1216
 msgid "Troubleshooting"
 msgstr "Fehlerbehebung"
 
-#: help_topics.py:1198
+#: help_topics.py:1216
 msgid ""
 "\n"
 "**KOReader still shows the old chapter names, blurb or cover**\n"
@@ -10249,10 +10408,6 @@ msgstr "Autoren:"
 #: import_window.py:30
 msgid "Author sort:"
 msgstr "Sortiername:"
-
-#: import_window.py:31
-msgid "Number:"
-msgstr "Nummer:"
 
 #: import_window.py:31
 msgid "ISBN:"
@@ -10544,19 +10699,22 @@ msgstr ""
 
 #: koreader_settings.py:150
 msgid ""
-"Stories inside anthologies as entries of a collection (area Collections): "
-"KOReader opens the story right inside the anthology, with a reading "
-"position of its own, and offers the next entry at its end."
+"Collections with series, number, blurb and cover (a series is one entry "
+"like a folder, “About this collection”), and stories inside anthologies as "
+"entries of a collection, opened right inside the anthology with a reading "
+"position of their own (area Collections). Replaces 2-bookbench-stories.lua."
 msgstr ""
-"Geschichten in Anthologien als Einträge einer Sammlung (Bereich "
-"Sammlungen): KOReader öffnet die Geschichte direkt in der Anthologie, mit "
-"eigener Leseposition, und bietet am Ende den nächsten Eintrag an."
+"Sammlungen mit Reihe, Nummer, Klappentext und Cover (eine Reihe ist ein "
+"Eintrag wie ein Ordner, „Über diese Sammlung“) und Geschichten in "
+"Anthologien als Einträge einer Sammlung, direkt in der Anthologie geöffnet "
+"mit eigener Leseposition (Bereich Sammlungen). Ersetzt "
+"2-bookbench-stories.lua."
 
-#: koreader_settings.py:268
+#: koreader_settings.py:276
 msgid "The file is not a text file."
 msgstr "Die Datei ist keine Textdatei."
 
-#: koreader_settings.py:271
+#: koreader_settings.py:279
 msgid "The file only contains data, no patch code."
 msgstr "Die Datei enthält nur Daten, keinen Patch-Code."
 

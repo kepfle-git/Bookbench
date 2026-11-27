@@ -208,7 +208,7 @@ class GeschichteFenster(QDialog):
         lay.addLayout(z)
         lay.addWidget(_hinweis(_("The story runs to the next entry of the same or a higher level. Select several "
                                  "entries in a row for a story with parts. KOReader shows it in the collection with "
-                                 "the patch 2-bookbench-stories.")))
+                                 "the patch 2-bookbench-collections.")))
         self.knoepfe = _knoepfe(self, _("Add story"))
         lay.addWidget(self.knoepfe)
         self._titel_auto = ""

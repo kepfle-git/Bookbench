@@ -1,8 +1,14 @@
 --[[
-2-bookbench-stories.lua - KOReader user patch from Bookbench
+2-bookbench-collections.lua - KOReader user patch from Bookbench (until 2.4-beta3: 2-bookbench-stories.lua)
 https://github.com/kepfle-git/Bookbench
 
-Stories inside anthologies as entries of a collection. A collection in KOReader can only
+1. Collections with metadata and in series (settings/bookbench_collections.lua, written by Bookbench):
+   series, number, description, cover. In the list of collections a series is one entry, like a
+   folder: tapping it shows its collections by number, the return arrow goes back. A collection of a
+   series shows "Series · #3" under its title; "About this collection" (long-press in the list, or the
+   menu button of the collection) shows cover and description.
+
+2. Stories inside anthologies as entries of a collection. A collection in KOReader can only
 hold whole files; with this patch it can also hold "the story X in the anthology Y":
 
 - The collection list shows the story at its place (manual sort order), next to the books.
@@ -48,6 +54,9 @@ local DE = {
     ["Story: %1"] = "Geschichte: %1",
     ["in %1"] = "in %1",
     ["story"] = "Geschichte",
+    ["About this collection"] = "Über diese Sammlung",
+    ["Collection options …"] = "Sammlung bearbeiten …",
+    ["%1 · #%2"] = "%1 · #%2",
     ["“%1” was not found in the table of contents of this book."] =
         "„%1“ steht nicht im Inhaltsverzeichnis dieses Buchs.",
 }
@@ -57,9 +66,10 @@ local function _(text)
     return gettext(text)
 end
 
-local Stories = { version = 1 }
+local Stories = { version = 2 }
 Stories.DEF = DataStorage:getSettingsDir() .. "/bookbench_stories.lua"
 Stories.STATE = DataStorage:getSettingsDir() .. "/bookbench_stories_state.lua"
+Stories.META = DataStorage:getSettingsDir() .. "/bookbench_collections.lua"
 
 local function realpath(p)
     return p and (ffiUtil.realpath(p) or p)
@@ -103,6 +113,105 @@ function Stories.order(s)
         return o[Stories.key(s)]
     end
     return s.order or math.huge
+end
+
+--- {collection name: {series, series_index, description, cover}}; cover relative to the settings folder
+function Stories.meta()
+    local mt = lfs.attributes(Stories.META, "modification")
+    if mt ~= Stories._meta_mt then
+        Stories._meta_mt = mt
+        Stories._meta = {}
+        if mt then
+            local ok, data = pcall(function() return LuaSettings:open(Stories.META).data end)
+            if ok and type(data) == "table" then
+                for name, m in pairs(data) do
+                    if type(m) == "table" then Stories._meta[name] = m end
+                end
+            end
+        end
+    end
+    return Stories._meta
+end
+
+function Stories.series(name)
+    local m = Stories.meta()[name]
+    return m and type(m.series) == "string" and m.series ~= "" and m.series or nil
+end
+
+local function number(n)
+    n = tonumber(n)
+    if not n then return nil end
+    return (n == math.floor(n)) and string.format("%d", n) or tostring(n)
+end
+
+function Stories.coverPath(m)
+    if not m or type(m.cover) ~= "string" or m.cover == "" then return nil end
+    local p = m.cover:sub(1, 1) == "/" and m.cover or (DataStorage:getSettingsDir() .. "/" .. m.cover)
+    return lfs.attributes(p, "mode") == "file" and p or nil
+end
+
+--- "About this collection": cover, title, series and description; a tap closes it
+function Stories.showAbout(name)
+    local m = Stories.meta()[name] or {}
+    local Device = require("device")
+    local Screen = Device.screen
+    local Font = require("ui/font")
+    local Geom = require("ui/geometry")
+    local GestureRange = require("ui/gesturerange")
+    local Size = require("ui/size")
+    local Blitbuffer = require("ffi/blitbuffer")
+    local CenterContainer = require("ui/widget/container/centercontainer")
+    local FrameContainer = require("ui/widget/container/framecontainer")
+    local InputContainer = require("ui/widget/container/inputcontainer")
+    local VerticalGroup = require("ui/widget/verticalgroup")
+    local VerticalSpan = require("ui/widget/verticalspan")
+    local TextBoxWidget = require("ui/widget/textboxwidget")
+    local ScrollTextWidget = require("ui/widget/scrolltextwidget")
+    local w = math.floor(Screen:getWidth() * 0.86)
+    local h = math.floor(Screen:getHeight() * 0.86)
+    local group = VerticalGroup:new{ align = "center" }
+    local used = 0
+    local cover = Stories.coverPath(m)
+    if cover then
+        local ImageWidget = require("ui/widget/imagewidget")
+        local img = ImageWidget:new{ file = cover, width = w, height = math.floor(h * 0.45), scale_factor = 0 }
+        table.insert(group, img)
+        table.insert(group, VerticalSpan:new{ width = Size.span.vertical_large })
+        used = used + math.floor(h * 0.45) + Size.span.vertical_large
+    end
+    local title = TextBoxWidget:new{ text = m.title or name, face = Font:getFace("tfont", 22), width = w,
+                                     alignment = "center", bold = true }
+    table.insert(group, title)
+    used = used + title:getSize().h
+    local s = Stories.series(name)
+    if s then
+        local line = TextBoxWidget:new{ text = m.series_index and T(_("%1 · #%2"), s, number(m.series_index)) or s,
+                                        face = Font:getFace("cfont", 18), width = w, alignment = "center" }
+        table.insert(group, line)
+        used = used + line:getSize().h
+    end
+    if type(m.description) == "string" and m.description ~= "" then
+        table.insert(group, VerticalSpan:new{ width = Size.span.vertical_large })
+        local rest = math.max(Screen:scaleBySize(80), h - used - Size.span.vertical_large)
+        table.insert(group, ScrollTextWidget:new{ text = m.description, face = Font:getFace("cfont", 18),
+                                                  width = w, height = rest })
+    end
+    local About = InputContainer:extend{}
+    local widget = About:new{}
+    widget.dimen = Geom:new{ x = 0, y = 0, w = Screen:getWidth(), h = Screen:getHeight() }
+    widget.ges_events = { TapClose = { GestureRange:new{ ges = "tap", range = widget.dimen } } }
+    if Device:hasKeys() then
+        widget.key_events = { Close = { { Device.input.group.Back } } }
+    end
+    function widget:onTapClose() UIManager:close(self, "ui") return true end
+    widget.onClose = widget.onTapClose
+    widget[1] = CenterContainer:new{
+        dimen = widget.dimen,
+        FrameContainer:new{ background = Blitbuffer.COLOR_WHITE, bordersize = Size.border.window,
+                            radius = Size.radius.window, padding = Size.padding.large, group },
+    }
+    Stories.about = widget
+    UIManager:show(widget, "ui")
 end
 
 function Stories.key(s)
@@ -440,6 +549,7 @@ local function install()
     end
 
     local FMC = require("apps/filemanager/filemanagercollection")
+    local ReadCollection = require("readcollection")
     local util = require("util")
     local orig_update = FMC.updateItemTable
     FMC.updateItemTable = function(self, item_table, focused_file)
@@ -526,9 +636,173 @@ local function install()
         return orig_hold(self, item)
     end
 
+    -- ---------------------------------------------------------- collections in series, metadata
+    local orig_colllist = FMC.updateCollListItemTable
+    FMC.updateCollListItemTable = function(self, do_init, item_number)
+        if do_init and not self.selected_collections and self.coll_list then
+            local ok, handled = pcall(function()
+                local meta = Stories.meta()
+                if next(meta) == nil and not self.bookbench_series then return false end
+                if self.bookbench_return_series then         -- back from a collection of a series
+                    self.bookbench_series, self.bookbench_return_series = self.bookbench_return_series, nil
+                end
+                local ReadCollection = require("readcollection")
+                local items, groups = {}, {}
+                for coll_name in pairs(ReadCollection.coll) do
+                    local series = Stories.series(coll_name)
+                    local item = { text = self:getCollectionTitle(coll_name), name = coll_name,
+                                   mandatory = FMC.getCollListItemMandatory(coll_name),
+                                   order = ReadCollection.coll_settings[coll_name].order or math.huge }
+                    if self.bookbench_series then
+                        if series == self.bookbench_series then
+                            local idx = meta[coll_name].series_index
+                            item.series_index = tonumber(idx) or math.huge
+                            if idx then item.mandatory = "#" .. number(idx) end
+                            table.insert(items, item)
+                        end
+                    elseif series then
+                        local g = groups[series]
+                        if not g then
+                            g = { text = series, bookbench_series = series, order = item.order, count = 0 }
+                            groups[series] = g
+                            table.insert(items, g)
+                        end
+                        g.count = g.count + 1
+                        if item.order < g.order then g.order = item.order end
+                    else
+                        table.insert(items, item)
+                    end
+                end
+                for _s, g in pairs(groups) do g.mandatory = "\u{F114} " .. g.count end
+                if self.bookbench_series then
+                    table.sort(items, function(a, b)
+                        if a.series_index ~= b.series_index then return a.series_index < b.series_index end
+                        return a.order < b.order
+                    end)
+                else
+                    table.sort(items, function(a, b) return a.order < b.order end)
+                end
+                local title
+                if self.bookbench_series then
+                    title = T("%1 (%2)", self.bookbench_series, #items)
+                    local manager = self
+                    self.coll_list.onReturn = function()
+                        manager.from_collection_name = manager.bookbench_series
+                        manager.bookbench_series = nil
+                        manager.coll_list.paths = {}
+                        manager.coll_list.onReturn = nil
+                        manager:updateCollListItemTable(true)
+                    end
+                    self.coll_list.paths = { true }
+                else
+                    title = T(gettext("Collections (%1)"), #items)
+                    self.coll_list.onReturn = nil
+                    self.coll_list.paths = {}
+                end
+                local itemmatch
+                if self.from_collection_name ~= nil then
+                    itemmatch = { text = self.from_collection_name }
+                    self.from_collection_name = nil
+                end
+                self.coll_list:switchItemTable(title, items, item_number or -1, itemmatch, "")
+                return true
+            end)
+            if ok and handled then return end
+            if not ok then logger.warn("bookbench collections:", handled) end
+        end
+        return orig_colllist(self, do_init, item_number)
+    end
+
+    local orig_choice = FMC.onCollListChoice
+    FMC.onCollListChoice = function(self, item)
+        if item and item.bookbench_series and not self._manager.selected_collections then
+            self._manager.bookbench_series = item.bookbench_series
+            self._manager:updateCollListItemTable(true)
+            return true
+        end
+        return orig_choice(self, item)
+    end
+
+    local orig_collhold = FMC.onCollListHold
+    FMC.onCollListHold = function(self, item)
+        if item and item.bookbench_series then return true end
+        local m = item and item.name and Stories.meta()[item.name]
+        if m and not self._manager.selected_collections then
+            local ButtonDialog = require("ui/widget/buttondialog")
+            local menu, dialog = self, nil
+            dialog = ButtonDialog:new{ title = item.text, buttons = {
+                {{ text = _("About this collection"), callback = function()
+                    UIManager:close(dialog)
+                    Stories.showAbout(item.name)
+                end }},
+                {{ text = _("Collection options …"), callback = function()
+                    UIManager:close(dialog)
+                    orig_collhold(menu, item)
+                end }},
+            }}
+            UIManager:show(dialog)
+            return true
+        end
+        return orig_collhold(self, item)
+    end
+
+    local orig_showcoll = FMC.onShowColl
+    FMC.onShowColl = function(self, collection_name)
+        local r = orig_showcoll(self, collection_name)
+        pcall(function()
+            local series = Stories.series(collection_name or ReadCollection.default_collection_name)
+            local menu = self.booklist_menu
+            if series and menu and menu.onReturn then
+                local orig_return = menu.onReturn
+                local manager = self
+                menu.onReturn = function(...)
+                    manager.bookbench_return_series = series
+                    return orig_return(...)
+                end
+            end
+        end)
+        return r
+    end
+
+    local orig_title = FMC.getBookListTitle
+    FMC.getBookListTitle = function(self, item_table)
+        local title, subtitle = orig_title(self, item_table)
+        pcall(function()
+            local name = self.booklist_menu.path
+            local m = Stories.meta()[name]
+            local series = Stories.series(name)
+            if series and (subtitle == nil or subtitle == "") then
+                subtitle = m.series_index and T(_("%1 · #%2"), series, number(m.series_index)) or series
+            end
+        end)
+        return title, subtitle
+    end
+
+    local orig_colldialog = FMC.showCollDialog
+    FMC.showCollDialog = function(self)
+        local name = self.booklist_menu and self.booklist_menu.path
+        local m = name and Stories.meta()[name]
+        if m and ((m.description or "") ~= "" or Stories.coverPath(m)) then
+            local ButtonDialog = require("ui/widget/buttondialog")
+            local manager, dialog = self, nil
+            dialog = ButtonDialog:new{ buttons = {
+                {{ text = _("About this collection"), callback = function()
+                    UIManager:close(dialog)
+                    Stories.showAbout(name)
+                end }},
+                {{ text = _("Collection options …"), callback = function()
+                    UIManager:close(dialog)
+                    orig_colldialog(manager)
+                end }},
+            }}
+            UIManager:show(dialog)
+            return
+        end
+        return orig_colldialog(self)
+    end
+
     -- Arranging in KOReader: everything gets its position in the full list; for stories it is kept in the
     -- state file (Bookbench reads it back), until Bookbench writes the stories anew.
-    local ReadCollection = require("readcollection")
     ReadCollection.updateCollectionOrder = function(self, name, ordered)
         local coll = self.coll[name]
         local st = Stories.state()
@@ -556,4 +830,5 @@ if not ok then
 end
 
 package.loaded["bookbench_stories"] = Stories
+package.loaded["bookbench_collections"] = Stories
 return Stories

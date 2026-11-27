@@ -147,10 +147,15 @@ MITGEBRACHT = {
     "2-bookbench-screensaver.lua": N_("Sleep screen with a picture and a message: the picture moves into the free "
                                       "space next to the message instead of lying under it (switch and options on "
                                       "the page Sleep screen)."),
-    "2-bookbench-stories.lua": N_("Stories inside anthologies as entries of a collection (area Collections): KOReader "
-                                  "opens the story right inside the anthology, with a reading position of its own, "
-                                  "and offers the next entry at its end."),
+    "2-bookbench-collections.lua": N_("Collections with series, number, blurb and cover (a series is one entry like a "
+                                      "folder, “About this collection”), and stories inside anthologies as entries of "
+                                      "a collection, opened right inside the anthology with a reading position of "
+                                      "their own (area Collections). Replaces 2-bookbench-stories.lua.")
 }
+
+
+# mitgebrachte Patches, die einen älteren unter anderem Namen ersetzen
+ERSETZT = {"2-bookbench-collections.lua": ("2-bookbench-stories.lua",)}
 
 
 def mitgebracht(ko):
@@ -179,6 +184,9 @@ def mitgebracht_einspielen(ko, name):
     ziel.mkdir(parents=True, exist_ok=True)
     aus = ziel / (name + ".disabled")
     shutil.copy2(quelle, aus if aus.is_file() else ziel / name)
+    for alt in ERSETZT.get(name, ()):                       # Vorgänger unter anderem Namen weg
+        for p in (ziel / alt, ziel / (alt + ".disabled")):
+            p.unlink(missing_ok=True)
 
 
 def mitgebracht_stand(ko, name):

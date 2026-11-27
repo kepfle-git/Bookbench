@@ -237,6 +237,7 @@ class AbgleichTeil:
                 if was == "reihenfolge":
                     zeilen.append(_("Same books, different order."))
                 else:
+                    namen = [_("series, blurb or cover") if x == "(metadata)" else x for x in namen]
                     zeilen.append((_("Only on the computer: {namen}") if was == "rechner" else
                                    _("Only on the e-reader: {namen}")).format(namen=", ".join(namen[:8])
                                                                               + (" …" if len(namen) > 8 else "")))

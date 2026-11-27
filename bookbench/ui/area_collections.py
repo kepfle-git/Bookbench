@@ -13,9 +13,10 @@ bzw. des E-Readers bearbeiten. Logik: core/book_collections.py.
 from pathlib import Path
 
 from PySide6.QtCore import Qt
-from PySide6.QtGui import QAction, QBrush, QColor, QKeySequence
-from PySide6.QtWidgets import (QAbstractItemView, QDialog, QHBoxLayout, QLabel, QListWidget, QListWidgetItem, QMenu,
-                               QPushButton, QTreeWidget, QTreeWidgetItem, QVBoxLayout, QWidget)
+from PySide6.QtGui import QAction, QBrush, QColor, QKeySequence, QPixmap
+from PySide6.QtWidgets import (QAbstractItemView, QComboBox, QDialog, QGridLayout, QHBoxLayout, QLabel,
+                               QListWidget, QListWidgetItem, QMenu, QPlainTextEdit, QPushButton, QTreeWidget,
+                               QTreeWidgetItem, QVBoxLayout, QWidget)
 
 from bookbench.core import book_collections as kco
 from bookbench.core import library as kd
@@ -129,10 +130,12 @@ class SammlungenBereich(Bereich):
         self.ort_text.setWordWrap(True)
         zo.addWidget(self.ort_text, 1)
         self.k_patch = QPushButton(_("Install patch"))
-        self.k_patch.setToolTip(_("Copy 2-bookbench-stories.lua into koreader/patches on the e-reader"))
+        self.k_patch.setToolTip(_("Copy 2-bookbench-collections.lua into koreader/patches on the e-reader (replaces "
+                                  "2-bookbench-stories.lua)"))
         self.k_patch.clicked.connect(self.patch_installieren)
         zo.addWidget(self.k_patch)
         rl.addLayout(zo)
+        rl.addWidget(self._meta_bauen())
         b = self.baum = _Eintraege()
         b.setHeaderLabels([_("No."), _("Title"), _("Series"), _("Read status")])
         b.setRootIsDecorated(False)
@@ -187,6 +190,152 @@ class SammlungenBereich(Bereich):
         self._fuellen()
         return teiler
 
+    # ================================================================ Metadaten der Sammlung (seit 2.4-beta4)
+    def _meta_bauen(self):
+        """Reihe, Nummer, Klappentext und Cover der gewählten Sammlung; „Übernehmen“ speichert sofort."""
+        kasten = QWidget()
+        lay = QHBoxLayout(kasten)
+        lay.setContentsMargins(0, 4, 0, 4)
+        self.m_cover = QLabel()
+        self.m_cover.setFixedSize(64, 96)
+        self.m_cover.setAlignment(Qt.AlignCenter)
+        self.m_cover.setProperty("rolle", "hinweis")
+        self.m_cover.setStyleSheet("border: 1px solid palette(mid);")
+        lay.addWidget(self.m_cover, 0, Qt.AlignTop)
+        g = QGridLayout()
+        g.setHorizontalSpacing(6)
+        g.setVerticalSpacing(4)
+        g.addWidget(QLabel(_("Series:")), 0, 0)
+        self.m_reihe = QComboBox()
+        self.m_reihe.setEditable(True)
+        self.m_reihe.lineEdit().setPlaceholderText(_("(none) - e.g. Horus Heresy Omnibus"))
+        self.m_reihe.setMinimumWidth(240)
+        g.addWidget(self.m_reihe, 0, 1)
+        g.addWidget(QLabel(_("Number:")), 0, 2)
+        from bookbench.ui.area_metadata import _Nummer       # wie die Reihennummer im Bereich Metadaten
+        self.m_nummer = _Nummer()
+        self.m_nummer.setFixedWidth(80)
+        g.addWidget(self.m_nummer, 0, 3)
+        g.addWidget(QLabel(_("Blurb:")), 1, 0, Qt.AlignTop)
+        self.m_text = QPlainTextEdit()
+        self.m_text.setFixedHeight(64)
+        self.m_text.setPlaceholderText(_("Shown in KOReader under “About this collection” (patch needed)"))
+        g.addWidget(self.m_text, 1, 1, 1, 3)
+        g.setColumnStretch(1, 1)
+        lay.addLayout(g, 1)
+        k = QVBoxLayout()
+        self.k_cover = QPushButton(_("Cover …"))
+        menue = QMenu(self.k_cover)
+        menue.addAction(_("From a file …"), self.cover_aus_datei)
+        menue.addAction(_("From a book of the collection …"), self.cover_vom_buch)
+        menue.addAction(_("Remove cover"), lambda: self._cover_setzen(None))
+        self.k_cover.setMenu(menue)
+        k.addWidget(self.k_cover)
+        self.k_meta = QPushButton(_("Apply"))
+        self.k_meta.setToolTip(_("Save series, number and blurb of this collection"))
+        self.k_meta.clicked.connect(self.meta_uebernehmen)
+        k.addWidget(self.k_meta)
+        k.addStretch(1)
+        lay.addLayout(k)
+        self.meta_kasten = kasten
+        return kasten
+
+    def _meta_zeigen(self):
+        s = self._sammlung()
+        self.meta_kasten.setEnabled(s is not None and self.ort is not None)
+        m = (s or {}).get("meta") or {}
+        reihen = sorted({(x.get("meta") or {}).get("reihe", "") for x in self.sammlungen} - {""}, key=str.casefold)
+        self.m_reihe.blockSignals(True)
+        self.m_reihe.clear()
+        self.m_reihe.addItems(reihen)
+        self.m_reihe.setCurrentText(m.get("reihe", ""))
+        self.m_reihe.blockSignals(False)
+        self.m_nummer.setText(m.get("nummer", ""))
+        self.m_text.setPlainText(m.get("klappentext", ""))
+        pfad = self._cover_pfad(m)
+        pm = QPixmap(str(pfad)) if pfad else QPixmap()
+        if not pm.isNull():
+            self.m_cover.setPixmap(pm.scaled(64, 96, Qt.KeepAspectRatio, Qt.SmoothTransformation))
+            self.m_cover.setToolTip(str(pfad))
+        else:
+            self.m_cover.setPixmap(QPixmap())
+            self.m_cover.setText(_("no cover"))
+            self.m_cover.setToolTip("")
+
+    def _cover_pfad(self, m):
+        if not m.get("cover") or self.ort is None:
+            return None
+        p = kco.cover_ordner(self.ort, self.wurzel) / m["cover"]
+        return p if p.is_file() else None
+
+    def meta_uebernehmen(self):
+        s = self._sammlung()
+        if s is None:
+            return
+        m = dict(s.get("meta") or {})
+        m["reihe"] = self.m_reihe.currentText().strip()
+        m["nummer"] = self.m_nummer.text().strip().replace(",", ".") if m["reihe"] else ""
+        m["klappentext"] = self.m_text.toPlainText().strip()
+        s["meta"] = {k: v for k, v in m.items() if v}
+        if not s["meta"]:
+            s.pop("meta")
+        self._speichern([s["name"]])
+        self._listentext()
+        self._meta_zeigen()
+        self.app.status.set(_("Collection “{name}” saved.").format(name=anzeigename(s["name"])))
+
+    def _cover_setzen(self, daten):
+        s = self._sammlung()
+        if s is None:
+            return
+        m = dict(s.get("meta") or {})
+        if daten:
+            name = kco.cover_name(s["name"], daten)
+            ordner = kco.cover_ordner(self.ort, self.wurzel)
+            try:
+                ordner.mkdir(parents=True, exist_ok=True)
+                (ordner / name).write_bytes(daten)
+            except OSError as ex:
+                dialogs.fehler(self.app, self.name(), _("The cover could not be saved."), str(ex))
+                return
+            m["cover"] = name
+        else:
+            m.pop("cover", None)
+        s["meta"] = m
+        if not m:
+            s.pop("meta")
+        self._speichern([s["name"]])
+        self._meta_zeigen()
+
+    def cover_aus_datei(self):
+        p = dialogs.datei_oeffnen(self.app, _("Cover of the collection"), "",
+                                  [(_("Images"), "*.jpg *.jpeg *.png")])
+        if p:
+            try:
+                self._cover_setzen(Path(p).read_bytes())
+            except OSError as ex:
+                dialogs.fehler(self.app, self.name(), _("The file could not be read."), str(ex))
+
+    def cover_vom_buch(self):
+        s = self._sammlung()
+        if s is None:
+            return
+        buecher = self._buch_von()
+        drin = [buecher[e["rel"]] for e in s["eintraege"] if e.get("rel") in buecher]
+        if not drin:
+            self.app.status.set(_("No book of this collection is in the opened folder."))
+            return
+        from bookbench.ui.collection_windows import BuchWahlFenster
+        f = BuchWahlFenster(self.app, list(dict.fromkeys(drin)), _("Cover from which book?"), mehrere=False)
+        self._fenster_offen = f
+        if f.exec() != QDialog.Accepted or not f.gewaehlt():
+            return
+        daten = kd.cover_lesen(f.gewaehlt()[0].pfad)
+        if not daten:
+            self.app.status.set(_("This book has no cover."))
+            return
+        self._cover_setzen(daten)
+
     def werkzeug(self):
         return [("neu", _("New collection …"), lambda: self.neue_sammlung(),
                  _("A new, empty collection")),
@@ -228,7 +377,7 @@ class SammlungenBereich(Bereich):
         self.liste.blockSignals(True)
         self.liste.clear()
         for s in self.sammlungen:
-            it = QListWidgetItem(f"{anzeigename(s['name'])}  ({len(s['eintraege'])})")
+            it = QListWidgetItem(self._listenname(s))
             it.setData(ROLLE, s["name"])
             self.liste.addItem(it)
             if s["name"] == self.gewaehlt:
@@ -245,15 +394,15 @@ class SammlungenBereich(Bereich):
                      "KOReader reads it on its next start.")
         if self.fehler:
             text = _("The collections could not be read: {fehler}").format(fehler=self.fehler)
-        elif any(kco.geschichte(e) for s in self.sammlungen for e in s["eintraege"]):
+        elif self._braucht_patch():
             if self.ort == "reader" and not self._patch_da():
-                text += " " + _("⚠ Stories need the patch 2-bookbench-stories on the e-reader (Install patch).")
+                text += " " + _("⚠ Stories, series and covers of collections need the patch 2-bookbench-collections "
+                                "on the e-reader (Install patch).")
             elif self.ort == "bibliothek":
-                text += " " + _("Stories need the patch 2-bookbench-stories on the e-reader (Preview > Patches, or "
-                                "open the e-reader here and install it).")
+                text += " " + _("Stories, series and covers of collections need the patch 2-bookbench-collections on "
+                                "the e-reader (Preview > Patches, or open the e-reader here and install it).")
         self.ort_text.setText(text)
-        self.k_patch.setVisible(self.ort == "reader" and not self._patch_da()
-                                and any(kco.geschichte(e) for s in self.sammlungen for e in s["eintraege"]))
+        self.k_patch.setVisible(self.ort == "reader" and not self._patch_da() and self._braucht_patch())
         self.k_neu.setEnabled(self.ort is not None and not self.fehler)
         self._eintraege_fuellen()
 
@@ -265,6 +414,7 @@ class SammlungenBereich(Bereich):
         b = self.baum
         b.clear()
         self.kopf.setText(anzeigename(s["name"]) if s else "")
+        self._meta_zeigen()
         if s is None:
             self._knoepfe_anpassen()
             return
@@ -323,10 +473,14 @@ class SammlungenBereich(Bereich):
                 it.setSelected(True)
         self._knoepfe_anpassen()
 
+    def _braucht_patch(self):
+        return any(s.get("meta") or any(kco.geschichte(e) for e in s["eintraege"]) for s in self.sammlungen)
+
     def _patch_da(self):
         if self.ort != "reader":
             return True
-        return (kco.lua_pfad(self.wurzel).parent.parent / "patches" / kco.PATCH).is_file()
+        ordner = kco.lua_pfad(self.wurzel).parent.parent / "patches"
+        return (ordner / kco.PATCH).is_file() and not (ordner / kco.PATCH_ALT).is_file()
 
     def patch_installieren(self):
         import shutil
@@ -335,10 +489,11 @@ class SammlungenBereich(Bereich):
         try:
             ziel.mkdir(parents=True, exist_ok=True)
             shutil.copy2(MITGEBRACHT_ORDNER / kco.PATCH, ziel / kco.PATCH)
+            (ziel / kco.PATCH_ALT).unlink(missing_ok=True)        # Vorgänger bis 2.4-beta3
         except OSError as ex:
             dialogs.fehler(self.app, self.name(), _("The patch could not be copied."), str(ex))
             return
-        self.app.status.set(_("Patch 2-bookbench-stories copied to the e-reader; restart KOReader."))
+        self.app.status.set(_("Patch 2-bookbench-collections copied to the e-reader; restart KOReader."))
         self._fuellen()
 
     def _geschichte_stand(self, e):
@@ -472,12 +627,18 @@ class SammlungenBereich(Bereich):
         self._listentext()
         self._eintraege_fuellen(waehlen)
 
+    @staticmethod
+    def _listenname(s):
+        m = s.get("meta") or {}
+        reihe = f"  ·  {m['reihe']}" + (f" #{m['nummer']}" if m.get("nummer") else "") if m.get("reihe") else ""
+        return f"{anzeigename(s['name'])}  ({len(s['eintraege'])}){reihe}"
+
     def _listentext(self):
         for i in range(self.liste.count()):
             it = self.liste.item(i)
             s = kco.finden(self.sammlungen, it.data(ROLLE))
             if s is not None:
-                it.setText(f"{anzeigename(s['name'])}  ({len(s['eintraege'])})")
+                it.setText(self._listenname(s))
 
     def _nach_ziehen(self):
         s = self._sammlung()

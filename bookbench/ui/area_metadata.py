@@ -20,6 +20,7 @@ gemeinsamen Werte, wo sie sich unterscheiden steht „(verschieden)“ grau im F
 wurde, gelten (Bezeichnung rot); Mehrfachfelder (Autoren, Schlagwörter, eigene Listen) haben dahinter
 Ersetzen/Hinzufügen/Entfernen. Übernehmen zeigt erst eine Vorschau (ui/bulk_edit.VorschauFenster), dann
 gehen die Werte je Buch wie ein Formular nach meta_neu. Klappentext und Cover nur für ein Buch.
+Nachschlagen … (seit 2.3-beta2): Fenster ui/lookup_window.NachschlagFenster für das Buch bzw. die gewählten.
 Werkzeugleiste „Mehrere Bücher ▾“: Reihe durchnummerieren, Suchen und Ersetzen, Autor-Sortierung neu,
 alle in der Liste wählen (Logik core/bulk_edit.py).
 
@@ -405,6 +406,9 @@ class MetadatenBereich(Bereich):
                      ("rueckgaengig", _("Discard"), self.verwerfen,
                       _("Restore metadata, blurb and cover from the file (also drops a series taken from Calibre)")),
                      None]
+        eintraege.append(("suchen", _("Look up …"), self.nachschlagen,
+                          _("Look up title, authors, publisher, date, blurb, cover … on Google Books and Open Library "
+                            "and pick what to take (several selected books one after another)")))
         if km_calibre_an(self.app):
             eintraege.append(("oeffnen", _("From Calibre"), self.alle_von_calibre,
                               _("Put every value from metadata.calibre that differs into the form (this book)")))
@@ -818,6 +822,19 @@ class MetadatenBereich(Bereich):
         if self.seite is None or self.app._bereich() != "metadaten":
             self.app.bereich_zeigen("metadaten")
         self.liste.liste.selectAll()
+
+    def nachschlagen(self, buecher=None):
+        """Fenster „Metadaten nachschlagen“ (ui/lookup_window) für buecher, sonst die gewählten."""
+        if buecher is None:
+            buecher = self._bereit()
+        buecher = [b for b in buecher or [] if not b.fehler]
+        if not buecher:
+            return None
+        from bookbench.ui.lookup_window import NachschlagFenster
+        f = NachschlagFenster(self.app, self, buecher)
+        self._fenster_offen = f
+        f.open()
+        return f
 
     def mehrere_waehlen(self, buecher):
         """Von der Bibliothek aus: diese Bücher zur Massenbearbeitung wählen."""

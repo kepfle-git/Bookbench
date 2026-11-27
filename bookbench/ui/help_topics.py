@@ -157,7 +157,7 @@ All books of the opened folder (with all subfolders) with series, number, author
 - **Search** filters by title, series and author; the **filter** shows only changed books, unreadable files or books whose series is not in the EPUB. Filters by chapters, blurbs and covers are above the lists of those areas ([[suche_filter]]).
 - **Double-click** opens the book in the Chapters area; under Settings > General > Interface it can be Metadata, the Preview or KOReader instead ([[einst_oberflaeche]]).
 - **Right-click** on a book: open it in Chapters, Metadata, the Preview or start it in KOReader (Preview and KOReader not on Windows). The entry marked "Double-click" is the one the double-click uses.
-- **Several books**: Ctrl+click and Shift+click select more than one; right-click > **Edit metadata of n books** takes them to the Metadata area for editing together ([[metadaten_mehrere]]), **Remove advert text from n books** works on just those.
+- **Several books**: Ctrl+click and Shift+click select more than one; right-click > **Edit metadata of n books** takes them to the Metadata area for editing together ([[metadaten_mehrere]]), **Remove advert text from n books** works on just those; **Look up metadata …** opens the look-up window for the selected books ([[metadaten_nachschlagen]]).
 - **New books**: File > Add books (Ctrl+I) or drag them onto the window ([[bibliothek_hinzufuegen]]); a library on this computer instead of the e-reader: [[bibliothek_rechner]].
 - **Advert lines** like OceanofPDF.com: Edit > Remove advert text … ([[bibliothek_cleaner]]).
 
@@ -324,11 +324,12 @@ The file name is never changed: KOReader keeps reading positions and highlights 
 
 After saving, KOReader only shows the new values after re-reading the book information (Cover browser > Extract and cache book information).
 
-**Toolbar**: Apply, Discard, From Calibre (only with the Calibre comparison on), **Complete ▾** for all books: look up all missing blurbs, look up all missing covers, import from a Calibre library ([[calibre_import]]), fill metadata gaps from Calibre; **Several books ▾** for the selected books ([[metadaten_mehrere]]).
+**Toolbar**: Apply, Discard, **Look up …** ([[metadaten_nachschlagen]]), From Calibre (only with the Calibre comparison on), **Complete ▾** for all books: look up all missing blurbs, look up all missing covers, import from a Calibre library ([[calibre_import]]), fill metadata gaps from Calibre; **Several books ▾** for the selected books ([[metadaten_mehrere]]).
 
 **Markers** in the list show what a book lacks: speech bubble (blurb), picture (cover), not-equal sign (Calibre), label (language/ISBN) - see [[status]].
 
 **More**
+- [[metadaten_nachschlagen]] - looking up metadata, blurb and cover
 - [[metadaten_mehrere]] - editing several books at once
 - [[metadaten_calibre]] - comparing with Calibre and KOReader
 - [[calibre_import]] - taking Calibre's data over once
@@ -336,6 +337,24 @@ After saving, KOReader only shows the new values after re-reading the book infor
 - [[klappentexte]]
 - [[cover]]
 - [[suche_filter]]
+""")),
+    ("metadaten", "metadaten_nachschlagen", N_("Looking up metadata"), N_("""
+**Look up …** in the toolbar of the Metadata area (also Edit > Look up metadata … and right-click in the library) asks Google Books and Open Library for the selected book and shows what they know, like Calibre's "Download metadata". Free; an own Google Books key avoids the shared quota ([[einst_online]]).
+
+**Search**
+- Title, author and ISBN come from the book and can be changed; Enter or **Search** searches again.
+- **Language**: "Same as the book" (or the preferred language from [[einst_klappentexte]]). Another language searches without the ISBN - an ISBN belongs to exactly one edition, the one of your book - and only finds editions in that language. Their title may be a translation: type it into the title field if nothing turns up.
+
+**Hits** (left) with a small cover, title, author, publisher, date, language and source. Open Library often has several editions under one work; its hits come without ISBN for that reason.
+
+**Comparison** (right): one row per field - Now (the book) and Hit - plus subtitle (if you have an own field like #subtitle, [[metadaten_felder]]), blurb (whole text as tooltip) and cover (both images).
+- Ticked at first are only fields the book does not have. Values the book already has are only replaced if you tick them; equal values show (=) and cannot be ticked.
+- A click on a row ticks or unticks it. **Open the hit's page** shows the source in the browser.
+- Tags from Google Books are its categories ("Fiction / Science Fiction" becomes Fiction, Science Fiction).
+
+**Apply** puts the ticked values into the book like the form does (yellow), the blurb as applied and the cover through the cover panel (format and size as set in [[einst_cover]]). **Save** (Ctrl+S) writes them with backup.
+
+**Several books** selected ([[metadaten_mehrere]]): the window goes through them one after another - **Apply and next** (Ctrl+Enter) or **Skip**. After the last book it closes; the status bar says how many were changed.
 """)),
     ("metadaten", "metadaten_mehrere", N_("Several books at once"), N_("""
 Select several books in the list on the left: **Ctrl+click** adds or removes a book, **Shift+click** selects a range, **Ctrl+A** (or Several books ▾ > Select all books in the list) selects everything the search and filter show. In the library, select books the same way and right-click > **Edit metadata of n books**.
@@ -393,7 +412,7 @@ The blurb is below the form in the Metadata area. The text can be edited directl
 
 - Books without a blurb have a **speech bubble** in the list. If Calibre has a description for the book, the status bar says so when the mouse is over it; the filter **Blurb only in Calibre** lists these books.
 - **Apply** (Ctrl+Enter) applies the text together with the form, **Discard** restores both from the file. An empty field applied = remove the blurb.
-- **Look up** and **From Calibre** are small buttons above the text; **Complete ▾** in the toolbar looks up all missing blurbs.
+- **Look up** and **From Calibre** are small buttons above the text; **Complete ▾** in the toolbar looks up all missing blurbs. The window **Look up …** (toolbar) shows the blurbs of several editions to choose from, also in another language ([[metadaten_nachschlagen]]).
 - Below the text: where it comes from. This is also saved in the EPUB (meta bookbench:blurb-source) and shown in the Blurb column of the library.
 
 After saving, re-read the book information in KOReader (Cover browser > Extract and cache book information), otherwise Bookshelf still shows the old state.
@@ -406,6 +425,7 @@ After saving, re-read the book information in KOReader (Cover browser > Extract 
     ("klappentexte", "klappentexte_nachschlagen", N_("Looking up blurbs"), N_("""
 **Look up** (one book, above the blurb) and **Complete ▾ > Look up all missing blurbs** (all without a blurb, in the background) go through these steps until one has a text:
 - **Google Books**, then **Open Library**: by ISBN, otherwise by title and author; the edition in the book's language is preferred. Free; for Google Books an own key is optional ([[kosten]]).
+- **Language**: normally the book's own (dc:language). With another **preferred language** ([[einst_klappentexte]]), e.g. German for your English books, the search goes without the ISBN (it belongs to the English edition) and only finds editions in that language; Claude is told to take the blurb of that edition. Works best where the title is the same in both languages (Eisenhorn); for a translated title use the window Look up … and type the title there ([[metadaten_nachschlagen]]).
 - **Claude** with the first source profile that fits the book ([[klappentexte_profile]]): fetches the pages of the profile and copies the publisher blurb word for word. About 1 to 2 cents.
 
 A text that is too short or too long is not taken (limits: [[einst_klappentexte]]). What was found is not applied at once: it is in the text field (red) until you apply it.
@@ -423,7 +443,7 @@ The message at the end says per source why, and below the blurb the result of th
 A quota or network error is not remembered as tried; the next look-up asks that source again.
 
 **Cache**
-What was found and what was already tried is in **blurbs_cache.json** ([[dateien]]). Looking up again costs nothing. If a profile is changed, Claude tries again for the books it covers; the free sources are asked again only after a network error. The cache can be emptied: [[einst_erweitert]].
+What was found and what was already tried is in **blurbs_cache.json** ([[dateien]]). Looking up again costs nothing. Another preferred language has entries of its own, so an English hit does not stop the German look-up. If a profile is changed, Claude tries again for the books it covers; the free sources are asked again only after a network error. The cache can be emptied: [[einst_erweitert]].
 
 Claude needs an API key and the package **anthropic** (pip install anthropic): [[einst_online]].
 """)),
@@ -974,6 +994,7 @@ The page shows the order of the sources ([[klappentexte_nachschlagen]]).
 
 - **Ask Google Books and Open Library first** (default: on): free, no key. Off: every look-up goes to Claude straight away.
 - The own Google Books key is under [[einst_online]].
+- **Preferred language when looking up** (default: same as the book): another language looks for the blurb of an edition in that language, without the ISBN, for the free sources and for Claude's source profiles ([[klappentexte_nachschlagen]]). It is also the default language in the window Look up metadata ([[metadaten_nachschlagen]]). Blurbs already found or applied stay as they are.
 - **Shortest blurb** (default: 80 characters): shorter texts from a source are not taken - often only a teaser line or "A novel".
 - **Longest blurb** (default: 4000 characters): longer texts are not taken - usually a plot summary or a whole article.
 The limits apply to all sources (free ones and Claude), not to text you enter yourself.

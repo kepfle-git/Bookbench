@@ -42,7 +42,7 @@ STANDARD = {
     "tooltip_verzoegerung": 600, "cover_kopf_hoehe": 96, "kt_min": 80, "kt_max": 4000, "kt_kosten": 0.015,
     "cover_min_hoehe": 300, "cover_anzahl": 8, "kobo_suche_sekunden": 3,
     # Bereich Metadaten (seit 1.3): eigene Felder [[Suchname in Calibre, Bezeichnung]], Calibre-Abgleich
-    "meta_spalten": [], "meta_datum": True, "calibre_an": True, "calibre_bibliothek": "",
+    "meta_spalten": [], "meta_datum": True, "nachschlag_sprache": "buch", "calibre_an": True, "calibre_bibliothek": "",
     # seit 1.3-beta5: abgeschaltete Status-Piktogramme je Ort (ui/markers.ORTE), Ziel des Doppelklicks
     "marken_aus": {}, "buch_oeffnen": "kapitel",
     # Updates (ui/updates.py): pruefen aus/start/taeglich/woechentlich, zuletzt/ausgelassen ohne Seite

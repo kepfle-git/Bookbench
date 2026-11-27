@@ -6,7 +6,8 @@ Reihenfolge beim Nachschlagen (die Oberfläche ruft die Schritte einzeln auf):
   free_look_up(titel, autor, isbn, sprache)      Google Books, dann Open Library - kostenlos; für Google Books
                                                  geht ein eigener Schlüssel (GOOGLE_KEY, seit 1.3-beta5)
   profile_for(profile, verlag, reihe, autor)     passendes Quellprofil (erstes aktives, dessen Filter passt)
-  look_up(client, args, titel, autor, reihe, profil, sprache)
+  look_up(client, args, titel, autor, reihe, profil, sprache, fest)
+                                                 (fest: gewählte Nachschlage-Sprache statt der des Buchs)
                                                  Claude ruft die Seiten des Profils ab (Web-Fetch) bzw.
                                                  sucht, und kopiert den Klappentext wörtlich heraus
 
@@ -223,8 +224,9 @@ def fehler_text(e):
     return str(e)
 
 
-def google_books(titel, autor, isbn="", sprache="", basis=None, bericht=None):
-    """bericht (dict, optional): "gefunden" = True, wenn das Buch da ist, aber ohne brauchbaren Text."""
+def google_books(titel, autor, isbn="", sprache="", basis=None, bericht=None, streng=False):
+    """bericht (dict, optional): "gefunden" = True, wenn das Buch da ist, aber ohne brauchbaren Text.
+    streng (seit 2.3-beta2): nur Ausgaben in dieser Sprache (langRestrict) - andere Sprache als die des Buchs."""
     basis = basis or GOOGLE
     anfragen = []
     if isbn:
@@ -232,8 +234,10 @@ def google_books(titel, autor, isbn="", sprache="", basis=None, bericht=None):
     q = f'intitle:"{titel}"' + (f' inauthor:"{autor.split(",")[0]}"' if autor else "")
     anfragen.append(q)
     for a in anfragen:
-        daten = _json(f"{basis}?" + urllib.parse.urlencode(google_parameter(
-            {"q": a, "maxResults": 10, "printType": "books"})))
+        p = {"q": a, "maxResults": 10, "printType": "books"}
+        if streng and sprache:
+            p["langRestrict"] = sprache
+        daten = _json(f"{basis}?" + urllib.parse.urlencode(google_parameter(p)))
         treffer = []
         for nr, item in enumerate(daten.get("items") or []):
             v = item.get("volumeInfo") or {}
@@ -252,7 +256,7 @@ def google_books(titel, autor, isbn="", sprache="", basis=None, bericht=None):
     return None
 
 
-def open_library(titel, autor, isbn="", sprache="", basis=None, bericht=None):
+def open_library(titel, autor, isbn="", sprache="", basis=None, bericht=None, streng=False):
     basis = basis or OPENLIBRARY
     werke = []
     if isbn:
@@ -272,6 +276,10 @@ def open_library(titel, autor, isbn="", sprache="", basis=None, bericht=None):
         p = {"title": titel, "fields": "key,title,author_name,language", "limit": 5}
         if autor:
             p["author"] = autor.split(",")[0]
+        marc = {"en": "eng", "de": "ger", "fr": "fre", "es": "spa", "it": "ita", "nl": "dut", "pl": "pol",
+                "pt": "por", "ru": "rus", "ja": "jpn"}
+        if streng and sprache in marc:
+            p["language"] = marc[sprache]
         daten = _json(f"{basis}/search.json?" + urllib.parse.urlencode(p))
         for d in daten.get("docs") or []:
             if _titel_passt(titel, d.get("title", "")) and _autor_passt(autor, d.get("author_name") or []):
@@ -291,16 +299,19 @@ def open_library(titel, autor, isbn="", sprache="", basis=None, bericht=None):
 TREFFER, KEIN_TEXT, NICHT_GEFUNDEN, FEHLER = "treffer", "kein_text", "nicht_gefunden", "fehler"
 
 
-def free_look_up(titel, autor, isbn="", sprache="", quellen=None, bericht=None):
-    """Erst Google Books, dann Open Library. Netzfehler einer Quelle -> nächste Quelle.
+def free_look_up(titel, autor, isbn="", sprache="", quellen=None, bericht=None, streng=False):
+    """Erst Google Books, dann Open Library. Netzfehler einer Quelle -> nächste Quelle. streng: nur in der
+    Sprache sprache und ohne ISBN (gewählte Nachschlage-Sprache ist nicht die des Buchs, seit 2.3-beta2).
     Gibt (Treffer oder None, [Fehlertexte]) zurück. bericht (Liste, optional) bekommt je gefragter Quelle
     (Name, Kennung, Fehlertext): TREFFER, KEIN_TEXT (Buch da, aber ohne Klappentext), NICHT_GEFUNDEN, FEHLER."""
     fehler = []
     for name, f in quellen or (("Google Books", google_books), ("Open Library", open_library)):
         info = {}
         try:
-            if "bericht" in inspect.signature(f).parameters:
-                r = f(titel, autor, isbn, sprache, bericht=info)
+            param = inspect.signature(f).parameters
+            if "bericht" in param:
+                extra = {"streng": True} if streng and "streng" in param else {}
+                r = f(titel, autor, "" if streng else isbn, sprache, bericht=info, **extra)
             else:                                       # Quelle ohne bericht-Parameter (Tests, eigene)
                 r = f(titel, autor, isbn, sprache)
         except Exception as e:
@@ -374,7 +385,8 @@ def domains(profil):
     return list(dict.fromkeys(h.lower() for h in hosts if h))
 
 
-def system_prompt(profil, sprache, kandidaten):
+def system_prompt(profil, sprache, kandidaten, fest=False):
+    """fest (seit 2.3-beta2): sprache ist die gewählte Nachschlage-Sprache, nicht die des Buchs."""
     hosts = domains(profil)
     schritte = []
     if kandidaten:
@@ -393,7 +405,9 @@ def system_prompt(profil, sprache, kandidaten):
         thema=f" ({profil['thema']})" if profil.get("thema") else "",
         kandidaten_kurz=", plus candidate URLs" if kandidaten else "",
         schritte="\n".join(schritte),
-        sprache=(f"The book is in the language with code '{sprache}'. Take the blurb of the edition in that "
+        sprache=(f"Take the blurb of the edition in the language with code '{sprache}' (the title of that "
+                 "edition may be a translation of the one given); if there is none, give none.") if fest and sprache else
+                (f"The book is in the language with code '{sprache}'. Take the blurb of the edition in that "
                  "language if there is one; otherwise none.") if sprache and sprache != "en" else
                 "Take the blurb of the English edition.")
 
@@ -411,7 +425,7 @@ def parse(message):
     return None
 
 
-def look_up(client, args, title, author, series, profil=None, sprache=""):
+def look_up(client, args, title, author, series, profil=None, sprache="", fest=False):
     profil = {**LEERES_PROFIL, **(profil or STANDARD_PROFILE[0])}
     kandidaten = candidates(profil, title, author, series)
     hosts = domains(profil)
@@ -430,7 +444,7 @@ def look_up(client, args, title, author, series, profil=None, sprache=""):
             f"Language: {sprache or 'unknown'}\n")
     if kandidaten:
         user += "\nCandidate URLs:\n" + "\n".join(kandidaten)
-    p = {"model": args.model, "max_tokens": 8000, "system": system_prompt(profil, sprache, kandidaten),
+    p = {"model": args.model, "max_tokens": 8000, "system": system_prompt(profil, sprache, kandidaten, fest),
          "tools": tools, "messages": [{"role": "user", "content": user}]}
     msg = client.messages.create(**p)
     for __ in range(2):                                 # pause_turn: Claude will weitermachen

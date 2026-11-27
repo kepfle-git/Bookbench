@@ -326,6 +326,8 @@ class BibliothekBereich(Bereich):
                 f.setBold(True)
                 a.setFont(f)
         m.addSeparator()
+        m.addAction(ngettext("Look up metadata …", "Look up metadata of {n} books …", len(auswahl))
+                    .format(n=len(auswahl)), lambda: self.app.metadaten_nachschlagen(auswahl))
         if len(auswahl) > 1:
             m.addAction(ngettext("Edit metadata of {n} book", "Edit metadata of {n} books", len(auswahl))
                         .format(n=len(auswahl)), lambda: self.app.metadaten_mehrere(auswahl))

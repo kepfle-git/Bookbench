@@ -9,7 +9,8 @@ Claude mit dem passenden Quellprofil (core/blurbs). Was schon versucht wurde, st
     {"none": true, "versucht": [...]}      nichts gefunden; "frei" bzw. "claude:<Profilkennung>"
     null                                   bis 0.20: im Lexicanum nichts gefunden
 
-  schluessel(b)               "Titel|Autor"
+  schluessel(b, e)            "Titel|Autor", mit gewählter Nachschlage-Sprache "Titel|Autor|de" (seit 2.3-beta2)
+  sprache(b, e)               (Sprache, abweichend) nach Einstellung nachschlag_sprache (core/meta_lookup)
   api_client(e)               (client, fehlertext) - anthropic mit dem Schlüssel aus den Einstellungen
   plan(buecher, cache, e)     [(Buch, Schritte, schon versucht)] ohne bereits Versuchtes
   ohne_claude(plan)           derselbe Plan nur mit den kostenlosen Schritten
@@ -28,8 +29,16 @@ from bookbench.core import settings as kei
 from bookbench.i18n import _, ngettext
 
 
-def schluessel(b):
-    return f"{b.titel}|{b.autor}"
+def sprache(b, e=None):
+    from bookbench.core import meta_lookup
+    return meta_lookup.sprache_fuer(getattr(b, "sprache", ""), (e or {}).get("nachschlag_sprache", "buch"))
+
+
+def schluessel(b, e=None):
+    """Schlüssel im Zwischenspeicher. Mit einer anderen Sprache als der des Buchs ein eigener Eintrag, sonst
+    hielte ein englischer Treffer (oder „nichts gefunden“) das deutsche Nachschlagen auf."""
+    sp, abweichend = sprache(b, e)
+    return f"{b.titel}|{b.autor}" + (f"|{sp}" if abweichend else "")
 
 
 def api_client(e):
@@ -62,7 +71,7 @@ def plan(buecher, cache, e):
     profile = kei.klappentext_profile(e)
     erg = []
     for b in buecher:
-        schl = schluessel(b)
+        schl = schluessel(b, e)
         if (cache.get(schl) or {}).get("blurb"):
             erg.append((b, [], set()))
             continue
@@ -119,11 +128,13 @@ def ausfuehren(pl, client, e, melden, ergebnis, ohne_schluessel=False):
     gefunden = 0
     for i, (b, schritte, v) in enumerate(pl, 1):
         treffer = None
+        sp, abweichend = sprache(b, e)
         for schritt in schritte:
             melden(_("Looking up ({i}/{n}): {name} …").format(i=i, n=len(pl), name=b.name))
             if schritt == "frei":
                 bericht = []
-                treffer, fehler = blurbs.free_look_up(b.titel, b.autor, b.isbn, b.sprache, bericht=bericht)
+                treffer, fehler = blurbs.free_look_up(b.titel, b.autor, b.isbn, sp, bericht=bericht,
+                                                     **({"streng": True} if abweichend else {}))
                 for eintrag in bericht:
                     if eintrag[1] != blurbs.TREFFER:
                         zaehler[eintrag] = zaehler.get(eintrag, 0) + 1
@@ -133,7 +144,8 @@ def ausfuehren(pl, client, e, melden, ergebnis, ohne_schluessel=False):
                     v.add("frei")
             else:
                 try:
-                    treffer = blurbs.look_up(client, args, b.titel, b.autor, b.reihe, schritt[1], b.sprache)
+                    treffer = blurbs.look_up(client, args, b.titel, b.autor, b.reihe, schritt[1], sp,
+                                             **({"fest": True} if abweichend else {}))
                 except Exception as fehler:
                     melden(f"{b.name}: " + _("API error ({fehler})").format(fehler=fehler))
                     continue
@@ -143,11 +155,11 @@ def ausfuehren(pl, client, e, melden, ergebnis, ohne_schluessel=False):
                 break
         if treffer:
             gefunden += 1
-            ergebnis(b, schluessel(b), treffer)
+            ergebnis(b, schluessel(b, e), treffer)
         elif schritte:
-            ergebnis(b, schluessel(b), {"none": True, "versucht": sorted(v)})
+            ergebnis(b, schluessel(b, e), {"none": True, "versucht": sorted(v)})
         else:
-            ergebnis(b, schluessel(b), None)
+            ergebnis(b, schluessel(b, e), None)
     text = ngettext("Look-up finished ({n} book).", "Look-up finished ({n} books).", len(pl)).format(n=len(pl))
     if len(pl) > 1:
         text += " " + ngettext("{n} blurb found.", "{n} blurbs found.", gefunden).format(n=gefunden)

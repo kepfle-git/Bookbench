@@ -259,6 +259,7 @@ class App(QMainWindow):
         eintrag(_("Chapters: level up") + "\t" + _("Shift+Tab"), lambda: self._kapitel_aktion("ebene", -1), (K,))
         eintrag(_("Chapters: level down") + "\tTab", lambda: self._kapitel_aktion("ebene", 1), (K,))
         b.addSeparator()
+        eintrag(_("Look up metadata …"), lambda: self.metadaten_nachschlagen(), (M,))
         eintrag(_("Look up blurb"), self.klappentext_nachschlagen, (M,))
         eintrag(_("Look up all missing blurbs"), self.klappentexte_alle, (M, B))
         b.addSeparator()
@@ -754,6 +755,16 @@ class App(QMainWindow):
         self.bereich_zeigen(obj.kennung)
         obj.auswaehlen(b)
 
+    def metadaten_nachschlagen(self, buecher=None):
+        """Fenster „Metadaten nachschlagen“; ohne buecher die im Bereich Metadaten gewählten."""
+        if buecher:
+            self.bereich_zeigen("metadaten")
+            if len(buecher) > 1:
+                self.metadaten.mehrere_waehlen(buecher)
+            else:
+                self.metadaten.auswaehlen(buecher[0])
+        return self.metadaten.nachschlagen(buecher)
+
     def metadaten_mehrere(self, buecher):
         """Bibliothek, Rechtsklick: mehrere Bücher im Bereich Metadaten zur Massenbearbeitung wählen."""
         self.bereich_zeigen("metadaten")
@@ -843,7 +854,7 @@ class App(QMainWindow):
         b = self.nach_schluessel.get(schluessel)
         if not b:
             return
-        treffer = self.cache.get(kbl.schluessel(b)) or {}
+        treffer = self.cache.get(kbl.schluessel(b, self.e)) or {}
         if treffer.get("blurb"):
             b.klappentext_entwurf = treffer["blurb"]
             b.klappentext_quelle = treffer.get("source", "")

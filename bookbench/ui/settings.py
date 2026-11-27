@@ -72,7 +72,8 @@ class EinstellungsDialog(QDialog):
                "cover_max_hoehe", "cover_qualitaet", "cover_klein", "cover_openlibrary", "cover_google",
                "cover_min_hoehe", "cover_anzahl", "kobo_sicherungen_anzahl", "woerterbuch_quelle",
                "auswerfen_erinnern", "kobo_suche_sekunden", "kobo_oeffnen", "koreader_pfad", "update_pruefen",
-               "update_vorab", "calibre_an", "buch_oeffnen", "ordnerschema", "einlese_cache")
+               "update_vorab", "calibre_an", "buch_oeffnen", "ordnerschema", "einlese_cache", "meta_datum",
+               "nachschlag_sprache")
     BEHALTEN = ("ordner", "letzte_ordner", "woerterbuecher", "woerterbuch_aktiv", "fenster", "api_key", "google_key",
                 "sprache")
 
@@ -480,6 +481,22 @@ class EinstellungsDialog(QDialog):
                    _("No cost. Claude is only asked if they have nothing. Switched off, every look-up "
                      "goes to Claude."), self._w("kostenlos"))
         f.hinweis(_("An own Google Books key (Online services) avoids the shared daily quota."))
+        f.abschnitt(_("Language"))
+        f.text(_("Preferred language when looking up"))
+        z = f.zeile()
+        from bookbench.core import meta_lookup
+        self.nachschlag_wahl = QComboBox()
+        for k, text in meta_lookup.SPRACHEN:
+            self.nachschlag_wahl.addItem(_(text), k)
+        z.addWidget(self.nachschlag_wahl)
+        z.addStretch(1)
+        self.werte.eintragen("nachschlag_sprache", lambda: self.nachschlag_wahl.currentData() or "buch",
+                             lambda w: self.nachschlag_wahl.setCurrentIndex(max(0, self.nachschlag_wahl.findData(w))))
+        self.werte.setzen("nachschlag_sprache", self._w("nachschlag_sprache"))
+        f.hinweis(_("Same as the book: the language in the EPUB (dc:language). Another language looks for the "
+                    "blurb of an edition in that language, without the ISBN (it belongs to the book's own edition), "
+                    "also for Claude's source profiles. Also the default in the Look up metadata window. Blurbs "
+                    "already found are kept; a book that had no luck in its own language is looked up again."))
         f.abschnitt(_("Checks"))
         f.zahl("kt_min", _("Shortest blurb (characters):"),
                _("Shorter texts from a source are not taken (often only a teaser line)."), self._w("kt_min"), 0, 2000, 10)

@@ -125,7 +125,7 @@ def lesen(db):
         spalten = _spalten(con)
         werte_spalten = {k: _spaltenwerte(con, z) for k, (z, __) in spalten.items()}
         eintraege = []
-        for b in con.execute("SELECT id, title, author_sort, series_index, uuid FROM books ORDER BY id"):
+        for b in con.execute("SELECT * FROM books ORDER BY id"):
             i = b["id"]
             titel = b["title"] or ""
             namen = [a for a in autoren.get(i, []) if a not in UNBEKANNT]
@@ -133,7 +133,9 @@ def lesen(db):
             w = {"titel": "" if titel in UNBEKANNT else titel, "autoren": " & ".join(namen),
                  "autor_sort": (b["author_sort"] or "") if namen else "",
                  "reihe": reihen.get(i, ""), "nummer": nummer_text(b["series_index"]) if reihen.get(i) else "",
-                 "verlag": verlage.get(i, ""), "sprache": km.sprache_kurz((sprachen.get(i) or [""])[0]),
+                 "verlag": verlage.get(i, ""),
+                 "datum": km.datum_norm((b["pubdate"] if "pubdate" in b.keys() else "") or ""),
+                 "sprache": km.sprache_kurz((sprachen.get(i) or [""])[0]),
                  "isbn": isbn, "schlagwoerter": ", ".join(tags.get(i, []))}
             for k, (__, fm) in spalten.items():
                 if i in werte_spalten[k]:

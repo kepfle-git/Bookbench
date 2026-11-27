@@ -11,7 +11,8 @@ Werte aus Calibre (metadata.calibre) und KOReader (custom_metadata.lua) zum Verg
   schreiben(opf, alt, neu, definitionen)   OPF mit den geänderten Feldern (None bei ungewöhnlichem Aufbau)
   calibre_werte(eintrag), koreader_werte(pfad)   {feld: text}, nur Felder, die dort vorkommen
   unterschiede(werte, andere)   Felder, in denen andere einen Wert hat, der abweicht
-  pruefen(werte)    Warnungen (ISBN-Prüfziffer, fehlende Sprache)
+  pruefen(werte)    Warnungen (ISBN-Prüfziffer, fehlende Sprache, Datum)
+  datum_norm(text)  Erscheinungsdatum als JJJJ, JJJJ-MM oder JJJJ-MM-TT (seit 2.3-beta1, Feld "datum" = dc:date)
 
 Bearbeitet wird textuell wie im Rest von Bookbench (kein XML-Neuschreiben): Was Bookbench nicht
 kennt, bleibt Zeichen für Zeichen stehen. Reihe/Nummer schreibt library.opf_mit_reihe.
@@ -19,6 +20,9 @@ kennt, bleibt Zeichen für Zeichen stehen. Reihe/Nummer schreibt library.opf_mit
 Formate (nachgesehen im Calibre-Quelltext, ebooks/metadata/opf2.py und opf3.py):
 - EPUB2: <dc:creator opf:role="aut" opf:file-as="Abnett, Dan">, ISBN als <dc:identifier opf:scheme="ISBN">,
   eigene Calibre-Spalten je als <meta name="calibre:user_metadata:#spalte" content="{JSON}"/>.
+- Erscheinungsdatum: <dc:date> (EPUB2: das ohne opf:event bzw. mit opf:event="publication"; Einträge
+  "creation"/"modification" sind nicht das Erscheinungsdatum). Calibre schreibt Datum mit Uhrzeit in UTC
+  (2015-02-28T23:00:00+00:00 = 1. März in Berlin) und 0101-01-01 für „unbekannt“.
 - EPUB3: Rolle und Sortiername über <meta refines="#id" property="role|file-as">, ISBN als urn:isbn:,
   alle eigenen Spalten zusammen als JSON in <meta property="calibre:user_metadata">.
   Das JSON je Spalte ist Calibres Felddefinition mit "#value#"; Mehrfachwerte (z. B. Typ
@@ -32,10 +36,12 @@ from bookbench.core import blurbs
 from bookbench.core import toc_report as tocreport
 from bookbench.i18n import N_, _
 
-FELDER = ("titel", "autoren", "autor_sort", "reihe", "nummer", "verlag", "sprache", "isbn", "schlagwoerter")
+FELDER = ("titel", "autoren", "autor_sort", "reihe", "nummer", "verlag", "datum", "sprache", "isbn", "schlagwoerter")
 NAMEN = {"titel": N_("Title"), "autoren": N_("Authors"),
          "autor_sort": N_("Author sort"), "reihe": N_("Series"), "nummer": N_("Number"),
-         "verlag": N_("Publisher"), "sprache": N_("Language"), "isbn": N_("ISBN"), "schlagwoerter": N_("Tags")}
+         "verlag": N_("Publisher"), "datum": N_("Published"), "sprache": N_("Language"), "isbn": N_("ISBN"),
+         "schlagwoerter": N_("Tags")}
+MEHRFACH = {"autoren": "&", "schlagwoerter": ","}      # Felder mit mehreren Werten (Trenner)
 WICHTIG = ("titel", "autoren", "reihe", "nummer")       # Abweichung hier = ⚠ in der Liste
 CALIBRE_PREFIX = "calibre: https://calibre-ebook.com"
 UNBEKANNT = {"Unknown", "Unbekannt"}     # schreibt Calibre (in seiner Oberflächensprache) bei fehlendem Titel/Autor
@@ -166,6 +172,77 @@ def _haupttitel(opf):
         elif haupt is None:
             haupt = el
     return haupt, unter
+
+
+# ---------------------------------------------------------------- Erscheinungsdatum
+def _datum_el(opf):
+    """dc:date mit dem Erscheinungsdatum (ohne opf:event oder event publication), sonst None."""
+    for el in _elemente(opf, "date"):
+        ereignis = (el[2].get("opf:event") or el[2].get("event") or "").strip().lower()
+        if ereignis in ("", "publication", "original-publication"):
+            return el
+    return None
+
+
+def datum_norm(text):
+    """Datum als JJJJ, JJJJ-MM oder JJJJ-MM-TT; Uhrzeit mit Zeitzone wird auf den Tag in Ortszeit
+    umgerechnet (wie Calibre es anzeigt), 1.3.2015 und 3.2015 werden umgestellt, Calibres
+    „unbekannt“ (Jahr 0101) wird leer. Was kein Datum ist, bleibt unverändert (pruefen warnt)."""
+    t = _norm(text)
+    if not t:
+        return ""
+    m = re.fullmatch(r"(\d{1,2})\.\s*(\d{1,2})\.\s*(\d{4})", t)
+    if m:
+        t = f"{m.group(3)}-{int(m.group(2)):02d}-{int(m.group(1)):02d}"
+    m = re.fullmatch(r"(\d{1,2})[./](\d{4})", t)
+    if m:
+        t = f"{m.group(2)}-{int(m.group(1)):02d}"
+    m = re.fullmatch(r"(\d{4})(?:-(\d{1,2})(?:-(\d{1,2}))?)?([T ].*)?", t)
+    if not m:
+        return t
+    if m.group(1) == "0101":
+        return ""
+    if m.group(3) and m.group(4):
+        import datetime
+        try:
+            d = datetime.datetime.fromisoformat(t.replace("Z", "+00:00").replace(" ", "T", 1))
+            if d.tzinfo is not None:
+                d = d.astimezone()
+            return d.date().isoformat()
+        except ValueError:
+            pass
+    teile = [m.group(1)] + [f"{int(x):02d}" for x in (m.group(2), m.group(3)) if x]
+    return "-".join(teile)
+
+
+def datum_ok(text):
+    t = datum_norm(text)
+    if not t:
+        return True
+    m = re.fullmatch(r"(\d{4})(?:-(\d{2})(?:-(\d{2}))?)?", t)
+    if not m:
+        return False
+    if m.group(2) and not 1 <= int(m.group(2)) <= 12:
+        return False
+    if m.group(3):
+        import datetime
+        try:
+            datetime.date(int(m.group(1)), int(m.group(2)), int(m.group(3)))
+        except ValueError:
+            return False
+    return True
+
+
+def _mit_datum(opf, wert):
+    """Erscheinungsdatum ersetzen, anlegen oder (leer) entfernen; Attribute des Elements bleiben."""
+    el = _datum_el(opf)
+    if not wert:
+        return _ausschneiden(opf, [el[:2]])[0] if el else opf
+    if el:
+        s, e = el[:2]
+        kopf = re.match(r"<dc:date\b[^>]*?(?=/?>)", opf[s:e]).group(0)
+        return opf[:s] + f"{kopf}>{_text(wert)}</dc:date>" + opf[e:]
+    return _einfuegen(opf, f"<dc:date>{_text(wert)}</dc:date>")
 
 
 # ---------------------------------------------------------------- eigene Calibre-Spalten
@@ -363,6 +440,7 @@ def lesen(opf):
         "autor_sort": autor_sort,
         "reihe": reihe, "nummer": nummer,
         "verlag": (_elemente(opf, "publisher") or [(0, 0, {}, "")])[0][3],
+        "datum": datum_norm((_datum_el(opf) or (0, 0, {}, ""))[3]),
         "sprache": sprache[0][3] if sprache else "",
         "isbn": blurbs.isbn_aus(opf),
         "schlagwoerter": ", ".join(el[3] for el in _elemente(opf, "subject") if el[3]),
@@ -506,6 +584,8 @@ def schreiben(opf, alt, neu, definitionen=None):
     for f, tag in (("verlag", "publisher"), ("sprache", "language")):
         if opf is not None and anders(f):
             opf = _mit_einfach(opf, tag, _norm(neu[f]))
+    if opf is not None and anders("datum") and datum_norm(neu["datum"]) != datum_norm(alt.get("datum", "")):
+        opf = _mit_datum(opf, datum_norm(neu["datum"]))
     if opf is not None and anders("isbn"):
         opf = _mit_isbn(opf, neu["isbn"])
     if opf is not None and anders("schlagwoerter"):
@@ -539,6 +619,7 @@ def calibre_werte(eintrag):
          "autor_sort": e.get("author_sort") or "", "reihe": e.get("series") or "",
          "nummer": nummer_text(e.get("series_index")) if e.get("series") else "",
          "verlag": e.get("publisher") or "",
+         "datum": datum_norm(e.get("pubdate") or ""),
          "sprache": sprache_kurz((e.get("languages") or [""])[0]),
          "isbn": re.sub(r"[^\dXx]", "", ((e.get("identifiers") or {}).get("isbn") or "")).upper(),
          "schlagwoerter": ", ".join(e.get("tags") or [])}
@@ -599,6 +680,9 @@ def gleich(feld, a, b):
             return a == b
     if feld == "autoren":
         return liste(a) == liste(b)
+    if feld == "datum":                          # 2015 und 2015-03-01 widersprechen sich nicht
+        a, b = datum_norm(a), datum_norm(b)
+        return a == b or bool(a and b and (a.startswith(b) or b.startswith(a)))
     return a == b
 
 
@@ -630,6 +714,8 @@ def pruefen(werte, definitionen=None):
         erg.append(("sprache", _("No language (KOReader needs it for hyphenation).")))
     if not _norm(werte.get("titel")):
         erg.append(("titel", _("No title.")))
+    if not datum_ok(werte.get("datum", "")):
+        erg.append(("datum", _("The publication date must look like 2015, 2015-03 or 2015-03-01.")))
     if _norm(werte.get("nummer")) and not _norm(werte.get("reihe")):
         erg.append(("nummer", _("Number without series.")))
     elif _norm(werte.get("nummer")):

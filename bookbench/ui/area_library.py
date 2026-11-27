@@ -158,7 +158,7 @@ class BibliothekBereich(Bereich):
         t = self.tabelle = _Tabelle()
         t.setModel(self.modell)
         t.setSelectionBehavior(QAbstractItemView.SelectRows)
-        t.setSelectionMode(QAbstractItemView.SingleSelection)
+        t.setSelectionMode(QAbstractItemView.ExtendedSelection)      # seit 2.3-beta1: mehrere für die Metadaten
         t.setEditTriggers(QAbstractItemView.NoEditTriggers)
         t.setAlternatingRowColors(False)
         t.setShowGrid(False)
@@ -299,12 +299,22 @@ class BibliothekBereich(Bereich):
             zusatz.append(_("Series from the {quelle} data, not in the EPUB").format(quelle=b.reihe_quelle))
         self.app.status.set(" - ".join([b.pfad.name] + zusatz))
 
+    def ausgewaehlt(self):
+        """Gewählte Bücher in der Reihenfolge der Tabelle."""
+        if self.seite is None:
+            return []
+        zeilen = sorted({i.row() for i in self.tabelle.selectionModel().selectedRows()})
+        return [self.modell.zeilen[z] for z in zeilen if 0 <= z < len(self.modell.zeilen)]
+
     def _zeilenmenue(self, pos):
         index = self.tabelle.indexAt(pos)
         if not index.isValid():
             return
         b = self.modell.zeilen[index.row()]
-        self.tabelle.selectRow(index.row())
+        auswahl = self.ausgewaehlt()
+        if b not in auswahl:                      # Rechtsklick neben die Auswahl: nur dieses Buch
+            self.tabelle.selectRow(index.row())
+            auswahl = [b]
         standard = self.app.e.get("buch_oeffnen") or "kapitel"
         m = QMenu(self.tabelle)
         for k, text in self.app.oeffnen_ziele():
@@ -316,7 +326,13 @@ class BibliothekBereich(Bereich):
                 f.setBold(True)
                 a.setFont(f)
         m.addSeparator()
-        m.addAction(_("Remove advert text …"), lambda: self.app.cleaner([b]))
+        if len(auswahl) > 1:
+            m.addAction(ngettext("Edit metadata of {n} book", "Edit metadata of {n} books", len(auswahl))
+                        .format(n=len(auswahl)), lambda: self.app.metadaten_mehrere(auswahl))
+            m.addAction(ngettext("Remove advert text from {n} book …", "Remove advert text from {n} books …",
+                                 len(auswahl)).format(n=len(auswahl)), lambda: self.app.cleaner(auswahl))
+        else:
+            m.addAction(_("Remove advert text …"), lambda: self.app.cleaner([b]))
         self._menue_offen = m                                     # für Tests
         m.popup(self.tabelle.viewport().mapToGlobal(pos))
 

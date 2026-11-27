@@ -62,8 +62,8 @@ def nachfolger(sortiert, vorher, passt):
 SPALTEN = (("titel", N_("Title"), 300), ("reihe", N_("Series"), 200), ("nummer", N_("No."), 46),
            ("autor", N_("Author"), 150), ("kapitel", N_("Chapters"), 150), ("klappentext", N_("Blurb"), 100),
            ("cover", N_("Cover"), 90), ("verlag", N_("Publisher"), 140), ("sprache", N_("Language"), 70),
-           ("isbn", "ISBN", 120))
-SPALTEN_AUS = ("verlag", "sprache", "isbn")        # seit 1.3: standardmäßig ausgeblendet
+           ("isbn", "ISBN", 120), ("datum", N_("Published"), 90))
+SPALTEN_AUS = ("verlag", "sprache", "isbn", "datum")   # seit 1.3: standardmäßig ausgeblendet (datum seit 2.3-beta1)
 FILTER = (("alle", N_("All books"), None),
           ("geaendert", N_("Changed"), lambda b: b.stand() is not None),
           ("unlesbar", N_("Unreadable files"), lambda b: bool(b.fehler)),
@@ -83,6 +83,8 @@ def zelle(b, spalte):
         if b.cover_neu is not None:
             return _("changed")
         return f"{b.cover_info[0]} × {b.cover_info[1]}" if b.cover_info else "-"
+    if spalte == "datum":
+        return km.meta_aktuell(b).get("datum", "") if not b.fehler else ""
     return getattr(b, spalte, "") or ""
 
 

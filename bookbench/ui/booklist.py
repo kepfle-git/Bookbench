@@ -3,12 +3,15 @@
 booklist.py - schmale Bücherliste links in Kapitel und Metadaten (Qt-Gegenstück zu tk/list_filter.py,
 den Listen in tk/app.py und dem Statusstreifen tk/markers.MarkenStreifen).
 
-  BuchListe(app, filter, marken_fn)
+  BuchListe(app, filter, marken_fn, mehrfach=False)
       Kopf "Bücher:" (bei aktivem Filter "Bücher: 3 von 12"), Suchfeld mit ×, Filterauswahl, Liste.
       Rechts in jeder Zeile der Statusstreifen: Punkt für den Stand (geändert/übernommen/gespeichert)
       und die Piktogramme aus marken_fn(b) (Einstellung status_liste, je Ort abschaltbar: "listen").
       filter = [(kennung, N_("Text"), prüfung)], der erste ist "alle".
     gewaehlt            Signal(buch oder None) - auch, wenn das Programm wählt
+    mehrere             Signal([buch]) - Auswahl mit Strg/Umschalt geändert (nur mit mehrfach=True, seit 2.3-beta1)
+    ausgewaehlt()       gewählte Bücher in der Reihenfolge der Liste (ohne mehrfach: [aktuell()] bzw. [])
+    mehrere_waehlen(bb) diese Bücher wählen (die sichtbaren); bleibt über fuellen() erhalten
     fuellen(buecher)    neu füllen (Reihenfolge wie übergeben), bisheriges Buch bleibt gewählt bzw. das
                         nächste passende (listing.nachfolger)
     waehlen(b)          Buch wählen; ist es weggefiltert, werden Suche und Filter zurückgesetzt
@@ -91,10 +94,12 @@ class _Liste(QListWidget):
 
 class BuchListe(QWidget):
     gewaehlt = Signal(object)
+    mehrere = Signal(list)
 
-    def __init__(self, app, filter, marken_fn=None, ort="listen"):
+    def __init__(self, app, filter, marken_fn=None, ort="listen", mehrfach=False):
         super().__init__()
         self.app, self.filter, self.marken_fn, self.ort = app, list(filter), marken_fn, ort
+        self.mehrfach = mehrfach
         self.alle = []                          # Reihenfolge wie zuletzt übergeben
         self._buch = None
         self._still = False
@@ -124,12 +129,15 @@ class BuchListe(QWidget):
             self.wahl.currentIndexChanged.connect(self._geaendert)
             lay.addWidget(self.wahl)
         self.liste = _Liste(self)
-        self.liste.setSelectionMode(QAbstractItemView.SingleSelection)
+        self.liste.setSelectionMode(QAbstractItemView.ExtendedSelection if mehrfach
+                                    else QAbstractItemView.SingleSelection)
         self.liste.setUniformItemSizes(True)
         self.liste.setTextElideMode(Qt.ElideRight)
         self.liste.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         self.liste.setItemDelegate(_Streifen(self))
         self.liste.currentItemChanged.connect(self._auswahl)
+        if mehrfach:
+            self.liste.itemSelectionChanged.connect(self._auswahl_mehr)
         lay.addWidget(self.liste, 1)
 
     # -- Einstellungen ----------------------------------------------------------------------
@@ -175,6 +183,7 @@ class BuchListe(QWidget):
 
     # -- Liste ------------------------------------------------------------------------------
     def fuellen(self, buecher, vorher=None):
+        mehr = [b.schluessel for b in self.ausgewaehlt()] if self.mehrfach else []
         self.alle = list(buecher)
         vorher = vorher if vorher is not None else self._buch
         if vorher is not None and vorher not in self.alle:    # nach Neu einlesen/Speichern: gleiches Buch neu
@@ -193,11 +202,52 @@ class BuchListe(QWidget):
         if ziel is None and vorher is not None and sichtbar:
             ziel = sichtbar[0]
         self._setzen_auf(ziel)
+        if len(mehr) > 1:
+            self._markieren(set(mehr), "schluessel")
+
+    def _markieren(self, kennungen, attr=None):
+        """Einträge mit diesen Büchern (bzw. Schlüsseln) zusätzlich wählen, ohne das aktuelle zu ändern."""
+        self.liste.blockSignals(True)
+        for i in range(self.liste.count()):
+            it = self.liste.item(i)
+            b = it.data(Qt.UserRole)
+            if (getattr(b, attr) if attr else id(b)) in kennungen:
+                it.setSelected(True)
+        self.liste.blockSignals(False)
+        self.mehrere.emit(self.ausgewaehlt())
+
+    def ausgewaehlt(self):
+        if not self.mehrfach:
+            return [self._buch] if self._buch is not None else []
+        return [self.liste.item(i).data(Qt.UserRole) for i in range(self.liste.count())
+                if self.liste.item(i).isSelected()]
+
+    def mehrere_waehlen(self, buecher):
+        buecher = [b for b in buecher if b in self.alle]
+        if not buecher:
+            return
+        if any(self._eintrag(b) is None for b in buecher) and self.aktiv():
+            self._still = True
+            self.such.clear()
+            if self.wahl is not None:
+                self.wahl.setCurrentIndex(0)
+            self._still = False
+            self.fuellen(self.alle, buecher[0])
+        self._setzen_auf(buecher[0])
+        if self.mehrfach and len(buecher) > 1:
+            self._markieren({id(b) for b in buecher})
+
+    def _auswahl_mehr(self):
+        self.mehrere.emit(self.ausgewaehlt())
 
     def _setzen_auf(self, b):
         it = self._eintrag(b)
         self.liste.blockSignals(True)
+        if self.mehrfach:                       # sonst bleibt eine Mehrfachauswahl stehen, wenn it schon aktuell ist
+            self.liste.clearSelection()
         self.liste.setCurrentItem(it)
+        if it is not None and self.mehrfach:
+            it.setSelected(True)
         if it is not None:
             self.liste.scrollToItem(it)
         self.liste.blockSignals(False)

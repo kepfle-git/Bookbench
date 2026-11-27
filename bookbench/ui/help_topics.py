@@ -157,6 +157,7 @@ All books of the opened folder (with all subfolders) with series, number, author
 - **Search** filters by title, series and author; the **filter** shows only changed books, unreadable files or books whose series is not in the EPUB. Filters by chapters, blurbs and covers are above the lists of those areas ([[suche_filter]]).
 - **Double-click** opens the book in the Chapters area; under Settings > General > Interface it can be Metadata, the Preview or KOReader instead ([[einst_oberflaeche]]).
 - **Right-click** on a book: open it in Chapters, Metadata, the Preview or start it in KOReader (Preview and KOReader not on Windows). The entry marked "Double-click" is the one the double-click uses.
+- **Several books**: Ctrl+click and Shift+click select more than one; right-click > **Edit metadata of n books** takes them to the Metadata area for editing together ([[metadaten_mehrere]]), **Remove advert text from n books** works on just those.
 - **New books**: File > Add books (Ctrl+I) or drag them onto the window ([[bibliothek_hinzufuegen]]); a library on this computer instead of the e-reader: [[bibliothek_rechner]].
 - **Advert lines** like OceanofPDF.com: Edit > Remove advert text … ([[bibliothek_cleaner]]).
 
@@ -165,7 +166,7 @@ All books of the opened folder (with all subfolders) with series, number, author
 - **Blurb**: where it comes from (Google Books, Calibre, a website), "yes" if unknown, "in Calibre" if only Calibre has one, "changed".
 - **Cover**: size of the title image in pixels, "changed" for a new one not yet saved.
 - **Series**: from the EPUB; if it is only in Calibre or KOReader's data, the status bar says where from ([[bibliothek_calibre]]).
-- **Publisher**, **Language**, **ISBN**: hidden at first; show them with a right-click on a header or View > Library columns.
+- **Publisher**, **Language**, **ISBN**, **Published**: hidden at first; show them with a right-click on a header or View > Library columns.
 - **Status** (left): the coloured dot and the pictograms of each book ([[status]]).
 
 **Filters** All books, Changed (anything not yet saved, or saved since opening), Unreadable files, No series in the EPUB.
@@ -302,7 +303,9 @@ A click on the row shows the reason in the status bar. Apply the name, change it
 Applied names are remembered in **tocfix_entscheidungen.json** in the settings folder ([[dateien]]). If the same book turns up again (another copy, after a new transfer from Calibre), these names are suggested at once.
 """)),
     ("bereiche", "metadaten", N_("Metadata"), N_("""
-The books on the left, in the middle a form with the metadata stored in the book: **title**, **authors**, **author sort**, **series** and **number**, **publisher**, **language**, **ISBN** and **tags**, followed by your **own fields** from Calibre columns ([[metadaten_felder]]). Below the form the **blurb** ([[klappentexte]]), on the right the **cover** ([[cover]]).
+The books on the left, in the middle a form with the metadata stored in the book: **title**, **authors**, **author sort**, **series** and **number**, **publisher**, **published**, **language**, **ISBN** and **tags**, followed by your **own fields** from Calibre columns ([[metadaten_felder]]). Below the form the **blurb** ([[klappentexte]]), on the right the **cover** ([[cover]]).
+
+Several books at once: select them with Ctrl+click or Shift+click in the list ([[metadaten_mehrere]]).
 
 - Type in the fields; the book turns red (changed, not applied). **Apply** (Ctrl+Enter or Enter in a field) applies form and blurb and makes the book yellow, **Save** (Ctrl+S) writes it into the file, with backup.
 - **Discard** restores values, blurb and cover from the file. This also drops a series taken over with **Series and blurbs from Calibre** in the library.
@@ -311,7 +314,8 @@ The books on the left, in the middle a form with the metadata stored in the book
 - **Tags** are separated with commas.
 - **Suggestions:** authors, series, publisher, language, tags and own text fields suggest values from the other books while you type; **arrow down** in an empty field shows all. With several authors or tags the suggestion is for the part after the last & or comma.
 - **Language** as a code, e.g. en, de or en-GB. KOReader uses it for hyphenation.
-- Below the form Bookbench warns about an invalid ISBN, a missing language or title, a number without series and values that do not fit an own field (e.g. letters in a number column).
+- **Published** is the publication date (dc:date in the book, where Calibre and KOReader read it): 2015, 2015-03 or 2015-03-01; 1.3.2015 or 3.2015 are turned into that form when applying. A year and a full date of the same year count as equal when comparing with Calibre. Can be switched off in [[einst_metadaten]].
+- Below the form Bookbench warns about an invalid ISBN, an impossible date, a missing language or title, a number without series and values that do not fit an own field (e.g. letters in a number column).
 - If Calibre or KOReader have a different value, it is shown behind the field (below it when there is not enough room): **← Calibre: …**. A click on ← puts it into the field ([[metadaten_calibre]]). This needs Calibre's metadata.calibre next to the books; without it there is nothing to compare, and the one-time import ([[calibre_import]]) is the way to take Calibre's values.
 
 The cover panel on the right can be made wider or narrower with the divider between form and cover; the width is remembered, a double-click on the divider restores the default.
@@ -320,17 +324,35 @@ The file name is never changed: KOReader keeps reading positions and highlights 
 
 After saving, KOReader only shows the new values after re-reading the book information (Cover browser > Extract and cache book information).
 
-**Toolbar**: Apply, Discard, From Calibre (only with the Calibre comparison on) and **Complete ▾** for all books: look up all missing blurbs, look up all missing covers, import from a Calibre library ([[calibre_import]]), fill metadata gaps from Calibre.
+**Toolbar**: Apply, Discard, From Calibre (only with the Calibre comparison on), **Complete ▾** for all books: look up all missing blurbs, look up all missing covers, import from a Calibre library ([[calibre_import]]), fill metadata gaps from Calibre; **Several books ▾** for the selected books ([[metadaten_mehrere]]).
 
 **Markers** in the list show what a book lacks: speech bubble (blurb), picture (cover), not-equal sign (Calibre), label (language/ISBN) - see [[status]].
 
 **More**
+- [[metadaten_mehrere]] - editing several books at once
 - [[metadaten_calibre]] - comparing with Calibre and KOReader
 - [[calibre_import]] - taking Calibre's data over once
 - [[metadaten_felder]]
 - [[klappentexte]]
 - [[cover]]
 - [[suche_filter]]
+""")),
+    ("metadaten", "metadaten_mehrere", N_("Several books at once"), N_("""
+Select several books in the list on the left: **Ctrl+click** adds or removes a book, **Shift+click** selects a range, **Ctrl+A** (or Several books ▾ > Select all books in the list) selects everything the search and filter show. In the library, select books the same way and right-click > **Edit metadata of n books**.
+
+**The form with several books**
+- A field shows the value all selected books share. Where they differ it stays empty with **(various)** in grey.
+- Only fields you **type into** count; their label turns red. A field you empty is cleared in all books. Fields you do not touch keep each book's own value - so you can set the publisher of 20 books without touching their titles.
+- **Authors**, **tags** and own list fields have a choice behind them: **Replace** (the field gets exactly what you typed), **Add** (your values are added, nothing twice) or **Remove** (your values are taken out, upper/lower case does not matter). Separate several values with & (authors) or a comma (tags).
+- **Apply** (Ctrl+Enter) first shows a **preview**: every book with the fields that change, before and after, and warnings (e.g. an impossible date). Apply there puts the values into the books like the form (yellow); **Save** (Ctrl+S) writes them, with a backup of each file.
+- **Discard** asks, then restores metadata, blurb and cover of all selected books that have changes.
+- Blurb and cover stay empty while several books are selected; they are edited one book at a time.
+
+**Several books ▾** (toolbar)
+- **Number series …**: numbers the selected books in the order of the list, from a start value with a step (0.5 gives 1, 1.5, 2 …). Optionally gives them all the same series; empty keeps each book's series. Sort or filter the list first if the order is not right.
+- **Search and replace …**: in one field of the selected books (with one book selected: only that one). Without **regular expression** the text is taken literally; with it, \\1 in the replacement inserts the first group. **Match case** is off by default. The window counts the books with a match.
+- **Author sort from authors**: sets the author sort the way Calibre does by default ("Dan Abnett & Nick Kyme" → "Abnett, Dan & Kyme, Nick").
+- All three show the preview first, like Apply.
 """)),
     ("metadaten", "metadaten_calibre", N_("Calibre and KOReader"), N_("""
 **Calibre**
@@ -1002,6 +1024,9 @@ Also needed: the package **anthropic** (pip install anthropic). What is sent: [[
 - Off: metadata.calibre is ignored and the Calibre buttons and menu entries disappear. Useful once Bookbench has replaced Calibre for you.
 - Switching off applies at once, switching on after reloading (F5).
 - The one-time import from a Calibre library (metadata.db) works independently of this setting: [[calibre_import]].
+
+**Fields**
+- **Publication date** (default: on): shows the field Published in the form (dc:date in the book) and lets the library show the column Published (hidden at first, View > Library columns).
 
 **Own fields** ([[metadaten_felder]])
 - The list holds one Calibre column per row: **lookup name** (as in Calibre, with #, e.g. #subtitle) and the **label** Bookbench shows. Default: none.

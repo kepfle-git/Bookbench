@@ -754,6 +754,11 @@ class App(QMainWindow):
         self.bereich_zeigen(obj.kennung)
         obj.auswaehlen(b)
 
+    def metadaten_mehrere(self, buecher):
+        """Bibliothek, Rechtsklick: mehrere Bücher im Bereich Metadaten zur Massenbearbeitung wählen."""
+        self.bereich_zeigen("metadaten")
+        self.metadaten.mehrere_waehlen(buecher)
+
     def _bereich_mit_buch(self, kennung):
         """In einen Bereich wechseln und dort das gerade gewählte Buch zeigen (Befehle aus dem Menü)."""
         if self._aktuell != kennung:

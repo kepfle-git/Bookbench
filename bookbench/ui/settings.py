@@ -664,6 +664,10 @@ class EinstellungsDialog(QDialog):
                      "values: in the Metadata area for comparing, in Blurbs and the Library for taking over "
                      "series and blurbs. Switch it off if you do not use Calibre (any more); the Calibre buttons "
                      "then disappear. Switching on applies after reloading (F5)."), self._w("calibre_an"))
+        f.abschnitt(_("Fields"))
+        f.schalter("meta_datum", _("Publication date"),
+                   _("Shows the field Published (the book's dc:date, where Calibre and KOReader look for it). "
+                     "Accepts 2015, 2015-03 or 2015-03-01; 1.3.2015 is turned into 2015-03-01."), self._w("meta_datum"))
         f.abschnitt(_("Own fields"))
         f.hinweis(_("Extra fields in the Metadata area, one per Calibre column (Calibre: Preferences > Add your "
                     "own columns). Bookbench reads and writes them the way Calibre stores them in the book."))

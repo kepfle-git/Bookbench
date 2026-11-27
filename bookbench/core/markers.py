@@ -158,7 +158,8 @@ def meta_eigene(e):
 
 def meta_felder(e):
     from bookbench.core import metadata as kme
-    return list(kme.FELDER) + [s for s, __ in meta_eigene(e)]
+    feste = [f for f in kme.FELDER if f != "datum" or e.get("meta_datum", True)]
+    return feste + [s for s, __ in meta_eigene(e)]
 
 
 def meta_name(feld, e):

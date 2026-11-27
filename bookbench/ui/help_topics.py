@@ -24,7 +24,7 @@ Bookbench edits EPUB and KEPUB files for KOReader: **chapter names** and levels 
 
 **Workflow**
 - Open a folder (Ctrl+O): the books folder on the e-reader, a copy on the computer or the Calibre library.
-- In **Chapters** check the suggestions, change them if needed, apply them.
+- In **Table of contents** check the suggestions, change them if needed, apply them.
 - In **Metadata** (with blurb and cover) fill in what is missing, apply it.
 - **Save** (Ctrl+S) writes all applied changes to the files. A backup of every file is made first.
 
@@ -74,9 +74,9 @@ The strip can be switched off: Settings > General > Interface ([[einst_oberflaec
 - **Ctrl+I** add books ([[bibliothek_hinzufuegen]])
 - **Ctrl+S** save
 - **Ctrl+Enter** apply (current book, or the dictionary form)
-- **Ctrl+F** search field of the current area (Chapters, Metadata, Book series, Dictionary), otherwise of the library; **Esc** in a search field empties it
+- **Ctrl+F** search field of the current area (Table of contents, Metadata, Book series, Dictionary), otherwise of the library; **Esc** in a search field empties it
 - **Ctrl+B** collapse and expand the sidebar
-- **Ctrl+1 … 7** choose an area in the order of the sidebar (7: Preview, Linux/macOS only)
+- **Ctrl+1 … 8** choose an area in the order of the sidebar (8: Preview, Linux/macOS only)
 - **F1** help for the current area; in the settings: help for the page shown
 
 **Chapter table**
@@ -123,21 +123,22 @@ Until version 0.23 the two JSON files were next to the program; until 0.24 the f
 - Look up all only asks Claude for books the free sources do not know, and asks before it starts.
 """)),
     ("", "bereiche", N_("Areas"), N_("""
-The sidebar on the left switches between the areas (Ctrl+1 … 7):
+The sidebar on the left switches between the areas (Ctrl+1 … 8):
 - [[bibliothek]] - all books in a table
-- [[kapitel]] - chapter names and levels
+- [[kapitel]] - table of contents: chapter names and levels
 - [[metadaten]] - title, authors, series, publisher, language, ISBN, tags, own fields, blurb and cover
 - [[reihen]] - all series with their books, missing numbers and reading state
+- [[sammlungen]] - KOReader's collections: own lists of books in your own order
 - [[woerterbuch]] - your own dictionaries
 - [[kobo]] - the connected e-reader: backups, dictionaries, ejecting
 - [[vorschau]] - a book in the desktop KOReader (Linux/macOS)
 
-The toolbar has the buttons of the current area on the left; on the right, separated, Open, Reload and Save (only in Library, Chapters, Metadata and Book series - the areas with the books of the folder) and Help. [[speichern]] applies to all book areas together. The **Edit** menu only holds the commands of the area shown; Dictionary, E-reader and Preview have menus of their own.
+The toolbar has the buttons of the current area on the left; on the right, separated, Open, Reload and Save (only in Library, Table of contents, Metadata and Book series - the areas with the books of the folder) and Help. [[speichern]] applies to all book areas together. The **Edit** menu only holds the commands of the area shown; Dictionary, E-reader and Preview have menus of their own.
 
-The **book lists** on the left of Chapters and Metadata (and the list of the dictionary; in the Preview the left column) can be made wider or narrower by dragging the divider to their right; the width is remembered, a double-click on the divider restores the default. A name that does not fit is shown completely in a tooltip when the mouse is over it, together with what its pictograms mean.
+The **book lists** on the left of Table of contents and Metadata (and the list of the dictionary; in the Preview the left column) can be made wider or narrower by dragging the divider to their right; the width is remembered, a double-click on the divider restores the default. A name that does not fit is shown completely in a tooltip when the mouse is over it, together with what its pictograms mean.
 """)),
     ("bereiche", "suche_filter", N_("Search and filters in the lists"), N_("""
-Above the book lists of **Chapters** and **Metadata** there is a search field and a filter (the Preview has a book selection instead of a list since 1.4). Each list has its own; they do not affect each other or the library.
+Above the book lists of **Table of contents** and **Metadata** there is a search field and a filter (the Preview has a book selection instead of a list since 1.4). Each list has its own; they do not affect each other or the library.
 
 - **Search** finds parts of the title, series or author, case does not matter. **×** in the field empties the search, **Esc** search and filter.
 - When a filter is active, the line above says how many books are shown: "Books: 3 of 12".
@@ -147,7 +148,7 @@ Above the book lists of **Chapters** and **Metadata** there is a search field an
 - Ctrl+F jumps to the search field of the current area.
 
 **Filters**
-- **Chapters**: With suggestions, Questionable names (⚠, not yet decided), Some without names (single entries only with a number), Changed chapters (applied or edited, not yet saved).
+- **Table of contents**: With suggestions, Questionable names (⚠, not yet decided), Some without names (single entries only with a number), Changed chapters (applied or edited, not yet saved).
 - **Metadata**: Changed, No blurb, Blurb only in Calibre, Differs from Calibre, No author sort, No language, No ISBN, Edited in KOReader, No cover, Small cover (below the limit in [[einst_cover]]).
 
 Search and filters are not remembered; after a restart all books are shown again.
@@ -157,8 +158,8 @@ All books of the opened folder (with all subfolders) with series, number, author
 
 - A click on a column header sorts (▲ ascending, ▼ descending), a second click reverses. Moving, hiding and widths of the columns: [[bibliothek_spalten]].
 - **Search** filters by title, series and author; the **filter** shows only changed books, unreadable files or books whose series is not in the EPUB. Filters by chapters, blurbs and covers are above the lists of those areas ([[suche_filter]]).
-- **Double-click** opens the book in the Chapters area; under Settings > General > Interface it can be Metadata, the Preview or KOReader instead ([[einst_oberflaeche]]).
-- **Right-click** on a book: open it in Chapters, Metadata, the Preview or start it in KOReader (Preview and KOReader not on Windows). The entry marked "Double-click" is the one the double-click uses. **Show series** jumps to the book in [[reihen]].
+- **Double-click** opens the book in the Table of contents area; under Settings > General > Interface it can be Metadata, the Preview or KOReader instead ([[einst_oberflaeche]]).
+- **Right-click** on a book: open it in Table of contents, Metadata, the Preview or start it in KOReader (Preview and KOReader not on Windows). The entry marked "Double-click" is the one the double-click uses. **Show series** jumps to the book in [[reihen]]; **Move to series …** and **Add to collection** work on all selected books ([[reihen]], [[sammlungen]]).
 - **Several books**: Ctrl+click and Shift+click select more than one; right-click > **Edit metadata of n books** takes them to the Metadata area for editing together ([[metadaten_mehrere]]), **Remove advert text from n books** works on just those; **Look up metadata …** opens the look-up window for the selected books ([[metadaten_nachschlagen]]).
 - **New books**: File > Add books (Ctrl+I) or drag them onto the window ([[bibliothek_hinzufuegen]]); a library on this computer instead of the e-reader: [[bibliothek_rechner]].
 - **Advert lines** like OceanofPDF.com: Edit > Remove advert text … ([[bibliothek_cleaner]]).
@@ -282,7 +283,7 @@ Calibre writes metadata.calibre into the root folder of the e-reader when transf
 
 In the Metadata area, **From Calibre** next to the blurb puts Calibre's description of a single book into the text field.
 """)),
-    ("bereiche", "kapitel", N_("Chapters"), N_("""
+    ("bereiche", "kapitel", N_("Table of contents"), N_("""
 The books on the left, the table of contents on the right: **Entry** (as in the book), **New** (suggestion or own name), **Note**. Below are the first lines of book text at the selected entry.
 
 The table of contents is a tree: sub-entries are indented below their parent, the small arrow in front folds them in and out.
@@ -489,7 +490,7 @@ Both can be changed, switched off or deleted; **Defaults** brings them back.
 - Put specific profiles above general ones; the web search profile belongs at the bottom.
 """)),
     ("metadaten", "cover", N_("Cover"), N_("""
-The cover is shown right of the form, as large as there is room. **Click on the cover** (also the small one in Chapters) shows it as large as the screen allows; a second click on the cover, a click into the window or Esc closes it. Choosing another book closes it too. A right-click opens a menu with all cover actions.
+The cover is shown right of the form, as large as there is room. **Click on the cover** (also the small one in Table of contents) shows it as large as the screen allows; a second click on the cover, a click into the window or Esc closes it. Choosing another book closes it too. A right-click opens a menu with all cover actions.
 
 - Below the cover: size in pixels, format, file size and where it is in the EPUB.
 - **From file …**, **Look up**, **Export …** (saves the cover shown as an image file) and **Discard new** are below the cover; **Complete ▾ > Look up all missing covers** is in the toolbar.
@@ -537,12 +538,32 @@ All series of the opened folder in one list, each with its books below it (click
 
 **Commands**
 - **Number series …** (toolbar, or right-click on a series): selects the books of the series in the [[metadaten]] area in the order of their numbers and opens Number series there ([[metadaten_mehrere]]). After the preview the new numbers are applied (yellow) and shown here right away; **Save** (Ctrl+S) writes them.
-- Right-click on a series: **Edit metadata of n books** (all books of the series in the Metadata area) and **Show series in Library** (library search set to the series name).
+- Right-click on a series: **Edit metadata of n books** (all books of the series in the Metadata area), **Show series in Library** (library search set to the series name), **Move whole series …** (rename it, or merge it into another), **Collection from series** (a collection with its books in number order, [[sammlungen]]) and **Add to collection**.
+- **Move to series …** (right-click on books, several with Ctrl+click or Shift+click; also in the library): choose a series from the list or type a new one, and what happens to the numbers - keep them, add the books at the end of the series (after its highest number) or number them from a start value. A collection (omnibus 1–3) keeps its range. An empty series removes series and number. The preview shows every change first; Save (Ctrl+S) writes it.
 - Double-click (or Enter) on a book opens it like in the library ([[einst_oberflaeche]]); right-click offers the other places and **Show in Library**. In the library, right-click > **Show series** jumps here.
 
 **Collections (omnibus)**: a book with a range in Metadata (number 1, to 3) covers 1, 2 and 3. It shows "1–3", and below it the books it contains, named after the top entries of its table of contents when there are enough of them (otherwise "in this collection"). Having book 2 on its own as well does not count as a duplicate.
 
 Series and numbers that are applied but not yet saved already count here.
+""")),
+    ("bereiche", "sammlungen", N_("Collections"), N_("""
+KOReader's **collections** are your own lists of books: Favorites, "To read", a custom omnibus. KOReader shows them in the file manager (Collections) and Bookshelf can show them as shelves. A book can be in several collections; it stays where it is, a collection only points to it.
+
+**Where they are saved**
+- In a **library on this computer** ([[bibliothek_rechner]]) in its .bookbench/library.json. The sync in the E-reader area takes them to the e-reader and brings changes made there back ([[kobo_abgleich]]).
+- With the **e-reader** opened directly: in KOReader's settings/collection.lua on the e-reader, backed up before every change. KOReader reads it when it starts next.
+- In any other folder there are no collections.
+Every change is saved at once (no Save needed).
+
+**On the left** the collections, Favorites first. **New …**, **Rename …**, **Delete** (the books stay; Favorites cannot be renamed or deleted).
+
+**On the right** the entries of the selected collection in reading order, with series and read status. Drag entries to another place, or use **Move up** / **Move down**. **Add books …** chooses books from the library (several with Ctrl+click), **Remove** (or Del) takes entries out of the collection. **Sort by series number** sorts by series and number. A double-click opens a book. Once Bookbench has set the order, KOReader shows the collection sorted by hand, in that order.
+
+**Paste reading order …** (toolbar) creates a collection from a list, e.g. the reading order of an omnibus on heresyomnibus.com: copy the list from the page and paste it. One entry per line like "2. The Wolf of Ash and Fire (EoT) by Graham McNeill"; number, the short name of an anthology in brackets and "by …" are optional, also on lines of their own. Each line is matched to a book of the library by title (a series before a colon, upper/lower case and punctuation do not matter) and author; the window shows the result at once.
+- What is not found becomes a grey **placeholder** that keeps its place. **Choose book …** replaces it with a book.
+- Lines with the short name of an anthology are **stories in an anthology**. A KOReader collection can only hold whole files, so they stay placeholders for now; the patch of 2.4-beta3 will open such a story right inside the anthology. Placeholders are not written to the e-reader, but the numbering there leaves their place free.
+
+**From other areas**: right-click in the library or in Book series > **Add to collection** (an existing one or a new one); in Book series also **Collection from series**.
 """)),
     ("bereiche", "woerterbuch", N_("Dictionary"), N_("""
 Your own dictionaries for KOReader: read, edit, fill missing terms, build from a wiki, build the files. The dictionary is chosen at the top; Bookbench remembers all that were ever opened or created.
@@ -610,7 +631,7 @@ Shows the connected e-reader with KOReader - Kobo, Kindle or PocketBook: model, 
 
 **Books: computer ↔ e-reader** (top): compares the library on this computer with the e-reader and copies changes in both directions ([[kobo_abgleich]]).
 
-**Books** opens the whole e-reader in Library, Chapters and Metadata. Then metadata.calibre is found automatically too.
+**Books** opens the whole e-reader in Library, Table of contents and Metadata. Then metadata.calibre is found automatically too.
 
 **When connecting** Bookbench opens the books on the e-reader by itself if no other folder is open; otherwise it asks. If the e-reader is linked with a library on this computer, that library is opened instead and compared. Can be changed: [[einst_kobo]].
 
@@ -640,6 +661,7 @@ After every sync Bookbench notes for each book its size and date on both sides a
 - **changed on both sides**: *Leave as it is* by default; choose which side wins. Below the list the differences: title, authors, series and other metadata, chapter names and number, which files in the EPUB differ.
 - **deleted on the e-reader** / **deleted on the computer**: deleting it on the other side is offered, but not checked. Or copy it back.
 - Selecting a row shows what differs or what the state means.
+- **Collections** ([[sammlungen]]) are in the same list, after the books, as "Collection: name", with the same states: new, changed on one side, changed on both sides, deleted. For a collection only the books that are on the e-reader count; a book of the collection that is not synced yet is not a difference (KOReader drops entries whose file it cannot find). Placeholders stay on the computer. Before collection.lua on the e-reader is changed, it is backed up.
 
 **Sync n books** (also in the toolbar) asks first, then copies. Always to the same path, so KOReader's .sdr folders (reading position, highlights) fit; they are never touched, not even when deleting. A file that is overwritten or deleted goes to the backup folder first ([[einst_speichern]]). Books with unsaved changes in the open library are not overwritten. Afterwards the library is read again and compared once more.
 
@@ -974,8 +996,8 @@ Options that only matter with another setting (e.g. the tooltip delay, the Claud
     ("einstellungen", "einst_oberflaeche", N_("Interface"), N_("""
 - **Status strip next to the lists** (default: on): coloured dots and pictograms ([[status]]). Also under View.
 - **Show tooltips** (default: on) and **Delay** (default: 600 ms): explanations when the mouse stays over a button.
-- **Show cover in Chapters** (default: on) and **Height** (default: 96 px): the small cover next to the book title; a click shows it large. Also under View > Cover.
-- **Double-click on a book opens it in** (default: Chapters): Chapters, Metadata, the Preview (the book is selected there) or KOReader (selects it in the Preview and starts the desktop KOReader). Preview and KOReader only where the Preview exists (not on Windows). A right-click on a book in the library offers all of them.
+- **Show cover in Table of contents** (default: on) and **Height** (default: 96 px): the small cover next to the book title; a click shows it large. Also under View > Cover.
+- **Double-click on a book opens it in** (default: Table of contents): Table of contents, Metadata, the Preview (the book is selected there) or KOReader (selects it in the Preview and starts the desktop KOReader). Preview and KOReader only where the Preview exists (not on Windows). A right-click on a book in the library offers all of them.
 - **Sidebar expanded** (default: on): with names and counters, or only symbols. Ctrl+B switches at any time; the last state is remembered.
 
 Which pictograms are shown where: [[einst_marken]].
@@ -983,7 +1005,7 @@ Which pictograms are shown where: [[einst_marken]].
     ("einst_oberflaeche", "einst_marken", N_("Status symbols"), N_("""
 One row per pictogram ([[status]]), one column per place:
 - **Sidebar**: the pictograms with numbers next to the areas.
-- **Book lists**: the narrow lists in Chapters and Metadata, and the list of Book series.
+- **Book lists**: the narrow lists in Table of contents and Metadata, and the list of Book series.
 - **Library**: the column Status in the library.
 
 Default: everything on. A switched-off pictogram is only hidden; the filters (e.g. No cover) and sorting by status still count it. The coloured dot for changed, applied and saved is not affected; the whole strip next to the lists can be switched off under [[einst_oberflaeche]]. **All on** and **All off** set every box.

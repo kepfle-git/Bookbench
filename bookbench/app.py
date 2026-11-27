@@ -28,7 +28,7 @@ from bookbench import i18n
 
 from PySide6.QtCore import QEvent, QLibraryInfo, QLocale, QObject, QSize, Qt, QTimer, QTranslator
 from PySide6.QtGui import QAction, QActionGroup, QIcon, QKeySequence, QShortcut
-from PySide6.QtWidgets import (QApplication, QFrame, QHBoxLayout, QLabel, QMainWindow, QMenu, QMessageBox, QPushButton,
+from PySide6.QtWidgets import (QApplication, QDialog, QFrame, QHBoxLayout, QLabel, QMainWindow, QMenu, QMessageBox, QPushButton,
                                QSizePolicy, QStackedWidget, QToolBar, QToolButton, QVBoxLayout, QWidget)
 
 from bookbench.core import blurbs
@@ -43,6 +43,7 @@ from bookbench.ui import area_device as kdev
 from bookbench.ui import area_preview as kpv
 from bookbench.ui import area_dictionary as kwo
 from bookbench.ui import area_metadata as kme
+from bookbench.ui import area_collections as kco
 from bookbench.ui import area_series as kse
 from bookbench.ui import dialogs
 from bookbench.ui import help_topics
@@ -124,12 +125,13 @@ class App(QMainWindow):
 
         # Bereiche: leben so lange wie das Fenster (die Vorschau nur, wo es den Desktop-KOReader gibt)
         arten = (kbi.BibliothekBereich, kch.KapitelBereich, kme.MetadatenBereich, kse.ReihenBereich,
-                 kwo.WoerterbuchBereich, kdev.EReaderBereich) + ((kpv.VorschauBereich,) if kv.verfuegbar() else ())
+                 kco.SammlungenBereich, kwo.WoerterbuchBereich, kdev.EReaderBereich) + ((kpv.VorschauBereich,) if kv.verfuegbar() else ())
         self.bereiche = [art(self) for art in arten]
         self.bibliothek = self.bereich_obj("bibliothek")
         self.kapitel = self.bereich_obj("kapitel")
         self.metadaten = self.bereich_obj("metadaten")
         self.reihen = self.bereich_obj("reihen")
+        self.sammlungen = self.bereich_obj("sammlungen")
         self.woerterbuch = self.bereich_obj("woerterbuch")
         self.kobo = self.bereich_obj("kobo")
         self.vorschau = self.bereich_obj("vorschau")     # None, wo es keine Vorschau gibt (Windows)
@@ -497,7 +499,7 @@ class App(QMainWindow):
     def oeffnen_ziele(self):
         """[(Kennung, Text)] der Ziele für den Doppelklick in der Bibliothek; Vorschau und KOReader nur,
         wo es die Vorschau gibt."""
-        ziele = (("kapitel", N_("Chapters")), ("metadaten", N_("Metadata")), ("vorschau", N_("Preview")),
+        ziele = (("kapitel", N_("Table of contents")), ("metadaten", N_("Metadata")), ("vorschau", N_("Preview")),
                  ("koreader", N_("KOReader (start the preview)")))
         return [(k, t) for k, t in ziele if k in ("kapitel", "metadaten") or kv.verfuegbar()]
 
@@ -728,7 +730,7 @@ class App(QMainWindow):
         if hasattr(b, "uebernehmen"):
             b.uebernehmen()
         else:
-            self.status.set(_("Apply: choose a book in the Chapters or Blurbs area."))
+            self.status.set(_("Apply: choose a book in the Table of contents or Metadata area."))
 
     def suche_fokus(self):
         """Strg+F: Suchfeld des aktuellen Bereichs, sonst das der Bibliothek."""
@@ -800,6 +802,28 @@ class App(QMainWindow):
         """Bibliothek, Rechtsklick: mehrere Bücher im Bereich Metadaten zur Massenbearbeitung wählen."""
         self.bereich_zeigen("metadaten")
         self.metadaten.mehrere_waehlen(buecher)
+
+    def in_reihe_verschieben(self, buecher):
+        """Rechtsklick in Bibliothek und Reihen (seit 2.4-beta2): Bücher in eine (andere oder neue) Reihe, mit
+        Vorschau wie die Massenbearbeitung; übernommen (gelb), gespeichert wird mit Strg+S."""
+        from bookbench.core import bulk_edit as kbe
+        from bookbench.core import listing
+        from bookbench.core import series as kse
+        from bookbench.ui.bulk_edit import ReiheFenster
+        buecher = [b for b in listing.links_sortiert(buecher) if not b.fehler]
+        if not buecher:
+            return
+        andere = [b for b in self.buecher if b not in buecher]
+        reihen = {r.name: r.hoechste for r in kse.reihen(andere)}
+        eigene = {kse.reihe_nummer(b)[0] for b in buecher}
+        f = ReiheFenster(self, len(buecher), reihen, eigene.pop() if len(eigene) == 1 else "")
+        self._fenster_offen = f                                       # für Tests
+        if f.exec() != QDialog.Accepted:
+            return
+        reihe, modus, start = f.werte()
+        werte = [km.meta_aktuell(b) for b in buecher]
+        plan = list(zip(buecher, werte, kbe.in_reihe(werte, reihe, modus, start)))
+        self.metadaten._mit_vorschau(plan, ["reihe", "nummer", "nummer_bis"])
 
     def _bereich_mit_buch(self, kennung):
         """In einen Bereich wechseln und dort das gerade gewählte Buch zeigen (Befehle aus dem Menü)."""

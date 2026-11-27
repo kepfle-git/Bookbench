@@ -196,7 +196,7 @@ class EReaderBereich(AbgleichTeil, Bereich):
     # ================================================================ Werkzeugleiste, Menü, Seitenleiste
     def werkzeug(self):
         return [("oeffnen", _("Books"), self.buecher_oeffnen,
-                 _("Open the books on the e-reader in Library, Chapters and Metadata")),
+                 _("Open the books on the e-reader in Library, Table of contents and Metadata")),
                 ("abgleichen", _("Sync"), self.abgleichen,
                  _("Copy the checked books between the library on this computer and the e-reader")),
                 None,

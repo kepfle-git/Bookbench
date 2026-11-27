@@ -131,8 +131,8 @@ class AbgleichTeil:
         for i, e in enumerate(self.ab_eintraege):
             it = QTreeWidgetItem(self.ab_baum)
             it.setData(0, Qt.UserRole, i)
-            it.setText(0, e.rel)
-            it.setToolTip(0, e.rel)
+            it.setText(0, self._ab_name(e))
+            it.setToolTip(0, self._ab_name(e))
             it.setText(1, _(ZUSTAND_TEXT[e.zustand]))
             it.setText(3, _stand(e.rechner))
             it.setText(4, _stand(e.reader))
@@ -149,6 +149,14 @@ class AbgleichTeil:
         self._ab_still = False
         self._ab_zaehlen()
         self._ab_details_zeigen()
+
+    @staticmethod
+    def _ab_name(e):
+        """Buch: relativer Pfad; Sammlung (seit 2.4-beta2): „Sammlung: Name“."""
+        if e.sammlung is None:
+            return e.rel
+        from bookbench.ui.area_collections import anzeigename
+        return _("Collection: {name}").format(name=anzeigename(e.sammlung))
 
     def _ab_aktion(self, e, aktion, it):
         e.aktion = aktion
@@ -195,7 +203,15 @@ class AbgleichTeil:
 
         def arbeit():
             try:
-                u = sync.unterschiede(bib / e.rel, reader / e.rel)
+                if e.sammlung is not None:
+                    from bookbench.core import book_collections as kbc
+                    from bookbench.core import book_import as bi
+                    vorhanden = set(bi.reader_buecher(reader))
+                    u = [("sammlung", x) for x in kbc.unterschiede(kbc.finden(kbc.laden(bib), e.sammlung),
+                                                                   kbc.finden(kbc.lua_lesen(reader), e.sammlung),
+                                                                   vorhanden)]
+                else:
+                    u = sync.unterschiede(bib / e.rel, reader / e.rel)
             except Exception as ex:
                 u = [("info", str(ex))]
             self._ab_details[e.rel] = u
@@ -216,6 +232,15 @@ class AbgleichTeil:
             return _("Same metadata and chapters; only the file differs (e.g. text cleaned or packed differently).")
         zeilen, dateien = [], []
         for art, x in u:
+            if art == "sammlung":
+                was, namen = x
+                if was == "reihenfolge":
+                    zeilen.append(_("Same books, different order."))
+                else:
+                    zeilen.append((_("Only on the computer: {namen}") if was == "rechner" else
+                                   _("Only on the e-reader: {namen}")).format(namen=", ".join(namen[:8])
+                                                                              + (" …" if len(namen) > 8 else "")))
+                continue
             if art == "meta":
                 feld, a, b = x
                 zeilen.append(_("{feld}: computer “{a}” · e-reader “{b}”").format(
@@ -381,7 +406,7 @@ class AbgleichTeil:
         offen_hier = a.ordner and Path(a.ordner).resolve() == self.ab_bib.resolve()
         if offen_hier:                                   # Bücher mit ungespeicherten Änderungen nicht überschreiben
             nach_pfad = {str(Path(b.pfad).resolve()): b for b in a.buecher}
-            gesperrt = [e for e in zu_tun if e.aktion in ("zum_rechner", "loeschen_rechner")
+            gesperrt = [e for e in zu_tun if e.aktion in ("zum_rechner", "loeschen_rechner") and e.sammlung is None
                         and (b := nach_pfad.get(str((self.ab_bib / e.rel).resolve()))) is not None
                         and b.stand() in ("rot", "gelb")]
             if gesperrt:
@@ -397,7 +422,7 @@ class AbgleichTeil:
                         len(zu_tun)).format(n=len(zu_tun))
         if loeschen:
             text += "\n\n" + ngettext("{n} of them is deleted:", "{n} of them are deleted:", len(loeschen)).format(
-                n=len(loeschen)) + "\n" + "\n".join(e.rel for e in loeschen[:10]) + ("\n…" if len(loeschen) > 10 else "")
+                n=len(loeschen)) + "\n" + "\n".join(self._ab_name(e) for e in loeschen[:10]) + ("\n…" if len(loeschen) > 10 else "")
         if not dialogs.frage(a, self.name(), text, standard=not loeschen):
             return
         bib, reader = self.ab_bib, self.wurzel
@@ -407,7 +432,8 @@ class AbgleichTeil:
 
         def arbeit():
             def schritt(i, n, e):
-                text = _("Syncing … {i}/{n}: {buch}").format(i=i, n=n, buch=Path(e.rel).name)
+                text = _("Syncing … {i}/{n}: {buch}").format(i=i, n=n, buch=Path(e.rel).name if e.sammlung is None
+                                                                   else self._ab_name(e))
                 threads.im_hauptthread(lambda: a.status.set(text))
             erledigt, fehler = sync.ausfuehren(bib, reader, zu_tun, ordner, anzahl, schritt)
             if fehler:

@@ -81,7 +81,7 @@ class ReihenBereich(Bereich):
         b = self.baum = QTreeWidget()
         b.setColumnCount(len(SPALTEN))
         b.setHeaderLabels([_(t) for __, t, __ in SPALTEN])
-        b.setSelectionMode(QAbstractItemView.SingleSelection)
+        b.setSelectionMode(QAbstractItemView.ExtendedSelection)     # seit 2.4-beta2: mehrere verschieben
         b.setUniformRowHeights(True)
         b.setAlternatingRowColors(False)
         b.setExpandsOnDoubleClick(True)
@@ -376,12 +376,33 @@ class ReihenBereich(Bereich):
         else:
             it.setExpanded(not it.isExpanded())
 
+    def ausgewaehlte_buecher(self):
+        """Gewählte Bücher; eine gewählte Reihe zählt mit allen ihren Büchern (ohne Doppelte, in Listenfolge)."""
+        erg = []
+        for it in self.baum.selectedItems():
+            for x in ([it.buch] if getattr(it, "buch", None) is not None else
+                      list(it.reihe.buecher) if hasattr(it, "reihe") else []):
+                if x not in erg:
+                    erg.append(x)
+        return erg
+
     def _menue(self, pos):
         it = self.baum.itemAt(pos)
         if it is None or it.data(0, ROLLE)[0] in ("luecke", "band"):
             return
-        self.baum.setCurrentItem(it)
+        if not it.isSelected():                   # Rechtsklick neben die Auswahl: nur diese Zeile
+            self.baum.setCurrentItem(it)
         m = QMenu(self.baum)
+        auswahl = self.ausgewaehlte_buecher()
+        if len(self.baum.selectedItems()) > 1 and len(auswahl) > 1:     # mehrere Zeilen: Befehle für alle
+            m.addAction(ngettext("Move {n} book to series …", "Move {n} books to series …", len(auswahl))
+                        .format(n=len(auswahl)), lambda: self.app.in_reihe_verschieben(auswahl))
+            m.addAction(ngettext("Edit metadata of {n} book", "Edit metadata of {n} books", len(auswahl))
+                        .format(n=len(auswahl)), lambda: self.app.metadaten_mehrere(auswahl))
+            self.app.sammlungen.menue_hinzufuegen(m, auswahl)
+            self._menue_offen = m
+            m.popup(self.baum.viewport().mapToGlobal(pos))
+            return
         x = getattr(it, "buch", None)
         if x is not None:
             standard = self.app.e.get("buch_oeffnen") or "kapitel"
@@ -393,6 +414,8 @@ class ReihenBereich(Bereich):
                     f.setBold(True)
                     a.setFont(f)
             m.addAction(_("Show in Library"), lambda: self.in_bibliothek(buch=x))
+            m.addAction(_("Move to series …"), lambda: self.app.in_reihe_verschieben([x]))
+            self.app.sammlungen.menue_hinzufuegen(m, [x])
             m.addSeparator()
         r = self.reihe_von(it)
         if r is not None:
@@ -400,6 +423,10 @@ class ReihenBereich(Bereich):
             m.addAction(ngettext("Edit metadata of {n} book", "Edit metadata of {n} books", len(r.buecher))
                         .format(n=len(r.buecher)), lambda: self.app.metadaten_mehrere(r.buecher))
             m.addAction(_("Show series in Library"), lambda: self.in_bibliothek(reihe=r))
+            if x is None:
+                m.addAction(_("Move whole series …"), lambda: self.app.in_reihe_verschieben(r.buecher))
+                m.addAction(_("Collection from series"), lambda: self.app.sammlungen.aus_reihe(r))
+                self.app.sammlungen.menue_hinzufuegen(m, r.buecher)
         self._menue_offen = m                     # für Tests
         m.popup(self.baum.viewport().mapToGlobal(pos))
 

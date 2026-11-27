@@ -37,6 +37,7 @@ from bookbench.core import book_import as bi
 from bookbench.core import library as kd
 
 DATEI = "abgleich.json"
+SAMMLUNG = "collection:"            # rel-Präfix der Sammlungs-Einträge (seit 2.4-beta2; kein gültiger Buchpfad)
 TOLERANZ = 2.0                      # Sekunden (FAT)
 
 # Zustände und vorgeschlagene Aktion (angehakt?)
@@ -61,12 +62,13 @@ AKTIONEN = {
 
 
 class Eintrag:
-    def __init__(self, rel, zustand, rechner=None, reader=None):
+    def __init__(self, rel, zustand, rechner=None, reader=None, sammlung=None):
         self.rel = rel
         self.zustand = zustand
         self.aktion, self.an = ZUSTAENDE[zustand]
         self.rechner = rechner          # (Größe, Zeit) oder None
         self.reader = reader
+        self.sammlung = sammlung        # Name einer KOReader-Sammlung statt eines Buchs (seit 2.4-beta2)
 
 
 def _stat(p):
@@ -165,6 +167,14 @@ def vergleichen(bib, reader, fortschritt=None):
             erg.append(Eintrag(rel, "reader_geloescht" if b is not None else "neu_rechner", p, None))
         else:
             erg.append(Eintrag(rel, "rechner_geloescht" if b is not None else "neu_reader", None, r))
+    # Sammlungen (seit 2.4-beta2): eigene Einträge hinter den Büchern, Basis unter "sammlungen"
+    from bookbench.core import book_collections as kbc
+    s_erg, s_basis = kbc.abgleich_vergleichen(bib, reader, d.get("sammlungen"), geraet)
+    for name, zustand in s_erg:
+        erg.append(Eintrag(SAMMLUNG + name, zustand, sammlung=name))
+    if s_basis is not None:
+        d["sammlungen"] = s_basis
+        geaendert = True
     if geaendert:
         try:
             basis_schreiben(bib, d)
@@ -191,8 +201,25 @@ def ausfuehren(bib, reader, eintraege, sicherungsordner, anzahl=5, fortschritt=N
     d = basis_lesen(bib)
     basis = d.setdefault("dateien", {})
     zu_tun = [e for e in eintraege if e.an and e.aktion != "nichts"]
+    zu_tun.sort(key=lambda e: e.sammlung is not None)          # erst die Bücher, dann die Sammlungen
     erledigt, fehler = [], []
     for i, e in enumerate(zu_tun, 1):
+        if e.sammlung is not None:
+            if fortschritt:
+                fortschritt(i, len(zu_tun), e)
+            try:
+                from bookbench.core import book_collections as kbc
+                neu_b = kbc.abgleich_ausfuehren(bib, reader, e.sammlung, e.aktion, set(bi.reader_buecher(reader)),
+                                                lambda p: _sichern_und(p, sicherungsordner, anzahl))
+                sb = d.setdefault("sammlungen", {})
+                if neu_b is None:
+                    sb.pop(e.sammlung, None)
+                else:
+                    sb[e.sammlung] = neu_b
+                erledigt.append(e.rel)
+            except Exception as ex:
+                fehler.append((e.rel, str(ex) or ex.__class__.__name__))
+            continue
         if fortschritt:
             fortschritt(i, len(zu_tun), e)
         p, r = bib / e.rel, reader / e.rel

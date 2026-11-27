@@ -1,0 +1,575 @@
+# -*- coding: utf-8 -*-
+"""
+area_collections.py - Bereich Sammlungen (seit 2.4-beta2): KOReaders Sammlungen der geöffneten Bibliothek
+bzw. des E-Readers bearbeiten. Logik: core/book_collections.py.
+
+  links       die Sammlungen (Favoriten zuerst), Neu, Umbenennen, Löschen
+  rechts      die Einträge der gewählten Sammlung in Lesereihenfolge: Bücher, dazu grau Platzhalter aus einer
+              eingefügten Leseordnung (Geschichte in einer Anthologie, nicht gefunden); Ziehen, Hoch/Runter,
+              Bücher hinzufügen, Entfernen, nach Reihennummer sortieren, Platzhalter einem Buch zuordnen
+  Speichern   sofort (wie Wörterbuch und E-Reader): Bibliothek auf dem Rechner → .bookbench/library.json, später
+              mit dem Abgleich auf den Reader; E-Reader direkt → settings/collection.lua (vorher Sicherung)
+"""
+from pathlib import Path
+
+from PySide6.QtCore import Qt
+from PySide6.QtGui import QAction, QBrush, QColor, QKeySequence
+from PySide6.QtWidgets import (QAbstractItemView, QDialog, QHBoxLayout, QLabel, QListWidget, QListWidgetItem, QMenu,
+                               QPushButton, QTreeWidget, QTreeWidgetItem, QVBoxLayout, QWidget)
+
+from bookbench.core import book_collections as kco
+from bookbench.core import library as kd
+from bookbench.core import listing
+from bookbench.core import reading
+from bookbench.core import series as kse
+from bookbench.i18n import N_, _, ngettext
+from bookbench.ui import dialogs, theme
+from bookbench.ui.area import Bereich
+from bookbench.ui.panes import Teiler
+
+ROLLE = Qt.UserRole
+
+
+def anzeigename(name):
+    return _("Favorites") if name == kco.FAVORITEN else name
+
+
+class _Eintraege(QTreeWidget):
+    """Liste der Einträge; Ziehen verschiebt (nur oberste Ebene), danach meldet sie die neue Reihenfolge."""
+    verschoben = None
+
+    def dropEvent(self, ev):
+        super().dropEvent(ev)
+        if self.verschoben:
+            self.verschoben()
+
+
+class SammlungenBereich(Bereich):
+    kennung = "sammlungen"
+    titel = N_("Collections")
+    symbol = "sammlungen"
+
+    def __init__(self, app):
+        super().__init__(app)
+        self.sammlungen = []
+        self.gewaehlt = None                # Name der gezeigten Sammlung
+        self.ort, self.wurzel = None, None
+        self._fuer = None                   # Ordner, für den self.sammlungen geladen ist
+        self.fehler = ""
+
+    # ================================================================ Laden
+    def laden(self, still=False):
+        self._fuer = self.app.ordner
+        self.ort, self.wurzel = kco.ort(self.app.ordner)
+        self.fehler = ""
+        try:
+            self.sammlungen = kco.laden(self.app.ordner)
+        except Exception as ex:                       # kaputte collection.lua: nichts anfassen
+            self.sammlungen, self.fehler = [], str(ex)
+        if self.gewaehlt not in [s["name"] for s in self.sammlungen]:
+            self.gewaehlt = self.sammlungen[0]["name"] if self.sammlungen else None
+
+    def _aktuell(self):
+        if self._fuer != self.app.ordner:
+            self.laden()
+
+    def _speichern(self, geaendert=None, geloescht=()):
+        """Sofort schreiben; collection.lua auf dem Reader vorher sichern."""
+        def sichern(p):
+            kd.sicherung_anlegen(p, self.app.e["sicherungsordner"], int(self.app.e["sicherungen_anzahl"]))
+        try:
+            kco.speichern(self.app.ordner, self.sammlungen, geaendert, geloescht, sichern)
+        except Exception as ex:
+            dialogs.fehler(self.app, self.name(), _("The collections could not be saved."), str(ex))
+            return False
+        kobo = self.app.bereich_obj("kobo")
+        if self.ort == "bibliothek" and kobo is not None and hasattr(kobo, "abgleich_nach_speichern"):
+            kobo.abgleich_nach_speichern(self.app.ordner)
+        self.app._zaehler()
+        return True
+
+    # ================================================================ Aufbau
+    def bauen(self):
+        self._aktuell()
+        teiler = Teiler(self.app, "sammlungen", 240)
+        links = QWidget()
+        ll = QVBoxLayout(links)
+        ll.setContentsMargins(2, 4, 0, 4)
+        ll.addWidget(QLabel(_("Collections:")))
+        self.liste = QListWidget()
+        self.liste.currentItemChanged.connect(self._gewaehlt)
+        self.liste.setContextMenuPolicy(Qt.CustomContextMenu)
+        self.liste.customContextMenuRequested.connect(self._listenmenue)
+        ll.addWidget(self.liste, 1)
+        z = QHBoxLayout()
+        self.k_neu = QPushButton(_("New …"))
+        self.k_neu.clicked.connect(lambda: self.neue_sammlung())
+        self.k_umbenennen = QPushButton(_("Rename …"))
+        self.k_umbenennen.clicked.connect(self.umbenennen)
+        self.k_loeschen = QPushButton(_("Delete"))
+        self.k_loeschen.clicked.connect(self.loeschen)
+        for k in (self.k_neu, self.k_umbenennen, self.k_loeschen):
+            z.addWidget(k)
+        ll.addLayout(z)
+        teiler.addWidget(links)
+
+        rechts = QWidget()
+        rl = QVBoxLayout(rechts)
+        rl.setContentsMargins(6, 4, 0, 4)
+        self.kopf = QLabel("")
+        f = self.kopf.font()
+        f.setBold(True)
+        f.setPointSizeF(f.pointSizeF() * 1.15)
+        self.kopf.setFont(f)
+        rl.addWidget(self.kopf)
+        self.ort_text = QLabel("")
+        self.ort_text.setProperty("rolle", "hinweis")
+        self.ort_text.setWordWrap(True)
+        rl.addWidget(self.ort_text)
+        b = self.baum = _Eintraege()
+        b.setHeaderLabels([_("No."), _("Title"), _("Series"), _("Read status")])
+        b.setRootIsDecorated(False)
+        b.setUniformRowHeights(True)
+        b.setSelectionMode(QAbstractItemView.ExtendedSelection)
+        b.setDragDropMode(QAbstractItemView.InternalMove)
+        b.setDefaultDropAction(Qt.MoveAction)
+        b.verschoben = self._nach_ziehen
+        breiten = self.app.e.get("sammlung_spalten") or {}
+        for i, (k, std) in enumerate((("nr", 50), ("titel", 340), ("reihe", 220))):
+            b.setColumnWidth(i, int(breiten.get(k, std)))
+        b.header().sectionResized.connect(self._breite)
+        b.itemDoubleClicked.connect(self._doppelklick)
+        b.itemSelectionChanged.connect(self._knoepfe_anpassen)
+        b.setContextMenuPolicy(Qt.CustomContextMenu)
+        b.customContextMenuRequested.connect(self._menue)
+        weg = QAction(b)
+        weg.setShortcut(QKeySequence(Qt.Key_Delete))
+        weg.setShortcutContext(Qt.WidgetShortcut)
+        weg.triggered.connect(self.entfernen)
+        b.addAction(weg)
+        rl.addWidget(b, 1)
+        z = QHBoxLayout()
+        self.k_hoch = QPushButton(_("Move up"))
+        self.k_hoch.clicked.connect(lambda: self.verschieben(-1))
+        self.k_runter = QPushButton(_("Move down"))
+        self.k_runter.clicked.connect(lambda: self.verschieben(1))
+        self.k_dazu = QPushButton(_("Add books …"))
+        self.k_dazu.clicked.connect(self.buecher_dazu)
+        self.k_weg = QPushButton(_("Remove"))
+        self.k_weg.clicked.connect(self.entfernen)
+        self.k_zuordnen = QPushButton(_("Choose book …"))
+        self.k_zuordnen.setToolTip(_("Replace the selected placeholder with a book of the library"))
+        self.k_zuordnen.clicked.connect(self.zuordnen)
+        self.k_sortieren = QPushButton(_("Sort by series number"))
+        self.k_sortieren.clicked.connect(self.nach_nummer)
+        for k in (self.k_hoch, self.k_runter, self.k_dazu, self.k_weg, self.k_zuordnen):
+            z.addWidget(k)
+        z.addStretch(1)
+        z.addWidget(self.k_sortieren)
+        rl.addLayout(z)
+        teiler.addWidget(rechts)
+        self.seite = teiler
+        self._fuellen()
+        return teiler
+
+    def werkzeug(self):
+        return [("neu", _("New collection …"), lambda: self.neue_sammlung(),
+                 _("A new, empty collection")),
+                ("einfuegen", _("Paste reading order …"), self.leseordnung,
+                 _("Create a collection from a pasted list, e.g. an omnibus of heresyomnibus.com"))]
+
+    def zaehler(self):
+        self._aktuell()
+        n = len(self.sammlungen)
+        return str(n) if n else ""
+
+    def beim_zeigen(self):
+        self.neu_zeichnen()
+
+    def neu_zeichnen(self):
+        """Nach dem Einlesen und nach einem Abgleich: frisch von der Platte (die Dateien sind klein)."""
+        self.laden()
+        if self.seite is not None:
+            self._fuellen()
+
+    def buch_geaendert(self, b):
+        pass
+
+    # ================================================================ Anzeige
+    def _buch_von(self):
+        """{rel: Buch} der geladenen Bücher, relativ zur Wurzel der Sammlungen."""
+        erg = {}
+        if self.wurzel is None:
+            return erg
+        w = Path(self.wurzel).resolve()
+        for b in self.app.buecher:
+            try:
+                erg[Path(b.pfad).resolve().relative_to(w).as_posix()] = b
+            except (ValueError, OSError):
+                pass
+        return erg
+
+    def _fuellen(self):
+        self.liste.blockSignals(True)
+        self.liste.clear()
+        for s in self.sammlungen:
+            it = QListWidgetItem(f"{anzeigename(s['name'])}  ({len(s['eintraege'])})")
+            it.setData(ROLLE, s["name"])
+            self.liste.addItem(it)
+            if s["name"] == self.gewaehlt:
+                self.liste.setCurrentItem(it)
+        self.liste.blockSignals(False)
+        if self.ort is None:
+            text = _("Collections live in a library on this computer (File > New library from e-reader, or Add "
+                     "books) or directly on the e-reader. Open one of them.") if self.app.ordner else \
+                _("Open a library or the e-reader.")
+        elif self.ort == "bibliothek":
+            text = _("Saved in the library on this computer; the sync in the E-reader area takes them to the e-reader.")
+        else:
+            text = _("Saved directly on the e-reader (KOReader's collection.lua, backed up before each change). "
+                     "KOReader reads it on its next start.")
+        if self.fehler:
+            text = _("The collections could not be read: {fehler}").format(fehler=self.fehler)
+        self.ort_text.setText(text)
+        self.k_neu.setEnabled(self.ort is not None and not self.fehler)
+        self._eintraege_fuellen()
+
+    def _sammlung(self):
+        return kco.finden(self.sammlungen, self.gewaehlt) if self.gewaehlt else None
+
+    def _eintraege_fuellen(self, waehlen=()):
+        s = self._sammlung()
+        b = self.baum
+        b.clear()
+        self.kopf.setText(anzeigename(s["name"]) if s else "")
+        if s is None:
+            self._knoepfe_anpassen()
+            return
+        buecher = self._buch_von()
+        grau = QBrush(QColor(theme.farben()["hinweis"]))
+        for i, e in enumerate(s["eintraege"]):
+            it = QTreeWidgetItem()
+            it.setData(0, ROLLE, i)
+            it.setFlags(Qt.ItemIsEnabled | Qt.ItemIsSelectable | Qt.ItemIsDragEnabled)
+            it.setText(0, str(i + 1))
+            it.setTextAlignment(0, int(Qt.AlignRight | Qt.AlignVCenter))
+            x = buecher.get(e["rel"]) if e.get("rel") else None
+            if x is not None:
+                it.buch = x
+                it.setText(1, x.titel or x.name)
+                it.setToolTip(1, str(x.pfad))
+                r, n = kse.reihe_nummer(x)
+                ende = kse.bis(x)
+                it.setText(2, f"{r} {n}{'–' + ende if ende else ''}".strip() if r else "")
+                it.setText(3, reading.status_text(getattr(x, "lesen", None)))
+            else:
+                if e.get("rel"):
+                    text, tipp = Path(e["rel"]).stem, _("This file is not in the opened folder: {pfad}").format(
+                        pfad=e["rel"])
+                elif e.get("fremd"):
+                    text, tipp = Path(e["fremd"]).stem, _("Outside the e-reader's main storage (e.g. SD card): {pfad}"
+                                                          ).format(pfad=e["fremd"])
+                elif e.get("kuerzel"):
+                    text = e.get("titel", "")
+                    tipp = _("Story in an anthology ({kuerzel}). KOReader collections can only hold whole files; "
+                             "the patch of 2.4-beta3 will open the story inside the anthology.").format(
+                        kuerzel=e["kuerzel"])
+                    it.setText(2, _("in anthology {kuerzel}").format(kuerzel=e["kuerzel"]))
+                else:
+                    text = e.get("titel", "")
+                    tipp = _("Not found in the library. Choose the book with “Choose book …”.")
+                    it.setText(2, _("not found"))
+                it.setText(1, text + (f" - {e['autor']}" if e.get("autor") else ""))
+                it.setToolTip(1, tipp)
+                for sp in range(4):
+                    it.setForeground(sp, grau)
+                    f = it.font(sp)
+                    f.setItalic(True)
+                    it.setFont(sp, f)
+            b.addTopLevelItem(it)
+            if i in waehlen:
+                it.setSelected(True)
+        self._knoepfe_anpassen()
+
+    def _knoepfe_anpassen(self):
+        s = self._sammlung()
+        gew = self._gewaehlte_indizes()
+        an = s is not None
+        self.k_umbenennen.setEnabled(an and s["name"] != kco.FAVORITEN)
+        self.k_loeschen.setEnabled(an and s["name"] != kco.FAVORITEN)
+        self.k_dazu.setEnabled(an)
+        self.k_sortieren.setEnabled(an and len(s["eintraege"]) > 1)
+        for k in (self.k_hoch, self.k_runter, self.k_weg):
+            k.setEnabled(an and bool(gew))
+        platz = len(gew) == 1 and an and not s["eintraege"][gew[0]].get("rel") and not s["eintraege"][gew[0]].get("fremd")
+        self.k_zuordnen.setEnabled(platz)
+
+    def _gewaehlte_indizes(self):
+        if self.seite is None:
+            return []
+        return sorted(it.data(0, ROLLE) for it in self.baum.selectedItems())
+
+    def _gewaehlt(self, it, __):
+        if it is not None:
+            self.gewaehlt = it.data(ROLLE)
+            self._eintraege_fuellen()
+
+    def _breite(self, i, __, neu):
+        keys = ("nr", "titel", "reihe")
+        if i < len(keys):
+            self.app.e.setdefault("sammlung_spalten", {})[keys[i]] = neu
+
+    # ================================================================ Sammlungen
+    def _bereit(self):
+        self._aktuell()
+        if self.ort is None or self.fehler:
+            self.app.status.set(_("Collections need a library on this computer or the e-reader (open one first)."))
+            return False
+        return True
+
+    def neue_sammlung(self, eintraege=(), name=None):
+        """Neue Sammlung (Name fragen, falls keiner); Rückgabe der Name oder None."""
+        if not self._bereit():
+            return None
+        if name is None:
+            name = dialogs.eingabe(self.app, _("New collection"), _("Name:"))
+            if not name or not name.strip():
+                return None
+        name = kco.name_frei(self.sammlungen, name.strip())
+        kco.neu(self.sammlungen, name, eintraege)
+        if not self._speichern([name]):
+            self.sammlungen = [s for s in self.sammlungen if s["name"] != name]
+            return None
+        self.gewaehlt = name
+        if self.seite is not None:
+            self._fuellen()
+        self.app.status.set(_("Collection “{name}” created.").format(name=name))
+        return name
+
+    def umbenennen(self):
+        s = self._sammlung()
+        if s is None or s["name"] == kco.FAVORITEN:
+            return
+        neu = dialogs.eingabe(self.app, _("Rename collection"), _("Name:"), s["name"])
+        if not neu or not neu.strip() or neu.strip() == s["name"]:
+            return
+        alt = s["name"]
+        s["name"] = kco.name_frei([x for x in self.sammlungen if x is not s], neu.strip())
+        self.gewaehlt = s["name"]
+        self._speichern([s["name"]], [alt])
+        self._fuellen()
+
+    def loeschen(self):
+        s = self._sammlung()
+        if s is None or s["name"] == kco.FAVORITEN:
+            return
+        if not dialogs.frage(self.app, self.name(), _("Delete the collection “{name}”? The books stay where they are."
+                                                      ).format(name=s["name"]), standard=False):
+            return
+        self.sammlungen.remove(s)
+        self.gewaehlt = self.sammlungen[0]["name"] if self.sammlungen else None
+        self._speichern([], [s["name"]])
+        self._fuellen()
+
+    def leseordnung(self):
+        if not self._bereit():
+            return
+        from bookbench.ui.collection_windows import LeseordnungFenster
+        f = LeseordnungFenster(self.app, self.app, self.wurzel)
+        self._fenster_offen = f                        # für Tests
+        if f.exec() != QDialog.Accepted:
+            return
+        name = self.neue_sammlung(f.eintraege(), f.name())
+        if name:
+            self.app.bereich_zeigen(self.kennung)
+
+    def _listenmenue(self, pos):
+        m = QMenu(self.liste)
+        m.addAction(_("New collection …"), lambda: self.neue_sammlung())
+        m.addAction(_("Paste reading order …"), self.leseordnung)
+        it = self.liste.itemAt(pos)
+        if it is not None and it.data(ROLLE) != kco.FAVORITEN:
+            self.liste.setCurrentItem(it)
+            m.addSeparator()
+            m.addAction(_("Rename …"), self.umbenennen)
+            m.addAction(_("Delete"), self.loeschen)
+        self._menue_offen = m
+        m.popup(self.liste.viewport().mapToGlobal(pos))
+
+    # ================================================================ Einträge
+    def _geaendert(self, waehlen=()):
+        s = self._sammlung()
+        kco.manuell(s)
+        self._speichern([s["name"]])
+        self._listentext()
+        self._eintraege_fuellen(waehlen)
+
+    def _listentext(self):
+        for i in range(self.liste.count()):
+            it = self.liste.item(i)
+            s = kco.finden(self.sammlungen, it.data(ROLLE))
+            if s is not None:
+                it.setText(f"{anzeigename(s['name'])}  ({len(s['eintraege'])})")
+
+    def _nach_ziehen(self):
+        s = self._sammlung()
+        if s is None:
+            return
+        reihenfolge = [self.baum.topLevelItem(i).data(0, ROLLE) for i in range(self.baum.topLevelItemCount())]
+        if reihenfolge == list(range(len(s["eintraege"]))):
+            return
+        gew = {it.data(0, ROLLE) for it in self.baum.selectedItems()}
+        s["eintraege"] = [s["eintraege"][i] for i in reihenfolge]
+        self._geaendert([n for n, i in enumerate(reihenfolge) if i in gew])
+
+    def verschieben(self, richtung):
+        s = self._sammlung()
+        gew = self._gewaehlte_indizes()
+        if s is None or not gew:
+            return
+        e = s["eintraege"]
+        if (richtung < 0 and gew[0] == 0) or (richtung > 0 and gew[-1] == len(e) - 1):
+            return
+        for i in (gew if richtung < 0 else reversed(gew)):
+            e[i + richtung], e[i] = e[i], e[i + richtung]
+        self._geaendert([i + richtung for i in gew])
+
+    def entfernen(self):
+        s = self._sammlung()
+        gew = self._gewaehlte_indizes()
+        if s is None or not gew:
+            return
+        s["eintraege"] = [e for i, e in enumerate(s["eintraege"]) if i not in gew]
+        self._geaendert()
+        self.app.status.set(ngettext("{n} entry removed from the collection (the book stays).",
+                                     "{n} entries removed from the collection (the books stay).", len(gew))
+                            .format(n=len(gew)))
+
+    def _rels(self, buecher):
+        w = Path(self.wurzel).resolve()
+        erg = []
+        for b in buecher:
+            try:
+                erg.append(Path(b.pfad).resolve().relative_to(w).as_posix())
+            except (ValueError, OSError):
+                pass
+        return erg
+
+    def buecher_dazu(self):
+        s = self._sammlung()
+        if s is None:
+            return
+        from bookbench.ui.collection_windows import BuchWahlFenster
+        f = BuchWahlFenster(self.app, self.app.buecher, _("Add books to “{name}”").format(name=anzeigename(s["name"])))
+        self._fenster_offen = f
+        if f.exec() != QDialog.Accepted:
+            return
+        self.hinzufuegen(s["name"], f.gewaehlt())
+
+    def hinzufuegen(self, name, buecher):
+        """Bücher hinten an die Sammlung name (von Bibliothek, Reihen und hier)."""
+        if not self._bereit():
+            return 0
+        s = kco.finden(self.sammlungen, name)
+        if s is None:
+            return 0
+        n = kco.hinzufuegen(s, self._rels(buecher))
+        if n:
+            self.gewaehlt = name
+            kco.manuell(s)
+            self._speichern([name])
+            if self.seite is not None:
+                self._fuellen()
+        self.app.status.set(ngettext("{n} book added to “{name}”.", "{n} books added to “{name}”.", n)
+                            .format(n=n, name=anzeigename(name)) if n else
+                            _("Already in “{name}”.").format(name=anzeigename(name)))
+        return n
+
+    def zuordnen(self):
+        s = self._sammlung()
+        gew = self._gewaehlte_indizes()
+        if s is None or len(gew) != 1:
+            return
+        e = s["eintraege"][gew[0]]
+        from bookbench.ui.collection_windows import BuchWahlFenster
+        f = BuchWahlFenster(self.app, self.app.buecher, _("Book for “{titel}”").format(titel=e.get("titel", "")),
+                            mehrere=False)
+        f.such.setText(e.get("titel", ""))
+        self._fenster_offen = f
+        if f.exec() != QDialog.Accepted or not f.gewaehlt():
+            return
+        rel = self._rels(f.gewaehlt()[:1])
+        if rel:
+            s["eintraege"][gew[0]] = {"rel": rel[0]}
+            self._geaendert([gew[0]])
+
+    def nach_nummer(self):
+        """Nach Reihe und Nummer sortieren (Bücher ohne Reihe und Platzhalter behalten ihre Folge am Ende)."""
+        s = self._sammlung()
+        if s is None:
+            return
+        buecher = self._buch_von()
+
+        def schl(paar):
+            i, e = paar
+            x = buecher.get(e.get("rel") or "")
+            if x is None:
+                return (1, "", 0, i)
+            r, n = kse.reihe_nummer(x)
+            return (0 if r else 1, r.casefold(), listing.nr(n), i)
+        s["eintraege"] = [e for __, e in sorted(enumerate(s["eintraege"]), key=schl)]
+        self._geaendert()
+
+    def _doppelklick(self, it, __):
+        if getattr(it, "buch", None) is not None:
+            self.app.buch_oeffnen(it.buch)
+
+    def _menue(self, pos):
+        it = self.baum.itemAt(pos)
+        if it is None:
+            return
+        if not it.isSelected():
+            self.baum.clearSelection()
+            it.setSelected(True)
+        m = QMenu(self.baum)
+        x = getattr(it, "buch", None)
+        if x is not None and len(self._gewaehlte_indizes()) == 1:
+            for k, text in self.app.oeffnen_ziele():
+                m.addAction(_("Open in {ziel}").format(ziel=_(text)) if k != "koreader" else _("Start in KOReader"),
+                            lambda k=k: self.app.buch_oeffnen(x, k))
+            m.addAction(_("Show in Library"), lambda: (self.app.bereich_zeigen("bibliothek"),
+                                                        self.app.bibliothek.auswaehlen(x)))
+            m.addSeparator()
+        if self.k_zuordnen.isEnabled():
+            m.addAction(_("Choose book …"), self.zuordnen)
+        m.addAction(_("Move up"), lambda: self.verschieben(-1))
+        m.addAction(_("Move down"), lambda: self.verschieben(1))
+        m.addAction(_("Remove"), self.entfernen)
+        self._menue_offen = m
+        m.popup(self.baum.viewport().mapToGlobal(pos))
+
+    # ================================================================ von anderen Bereichen
+    def menue_hinzufuegen(self, menue, buecher):
+        """Untermenü „Zu Sammlung hinzufügen“ für Bibliothek und Reihen."""
+        self._aktuell()
+        unter = menue.addMenu(ngettext("Add to collection", "Add {n} books to collection", len(buecher))
+                              .format(n=len(buecher)))
+        if self.ort is None or self.fehler:
+            unter.setEnabled(False)
+            unter.setToolTip(_("Collections need a library on this computer or the e-reader."))
+            return unter
+        for s in self.sammlungen:
+            unter.addAction(anzeigename(s["name"]), lambda n=s["name"]: self.hinzufuegen(n, buecher))
+        if self.sammlungen:
+            unter.addSeparator()
+        unter.addAction(_("New collection …"), lambda: self.neue_sammlung([{"rel": r} for r in self._rels(buecher)]))
+        return unter
+
+    def aus_reihe(self, r):
+        """Sammlung mit den Büchern einer Reihe in Nummernfolge (Name = Reihe)."""
+        if not self._bereit():
+            return None
+        name = self.neue_sammlung([{"rel": x} for x in self._rels(r.buecher)], r.name)
+        if name:
+            self.app.bereich_zeigen(self.kennung)
+        return name

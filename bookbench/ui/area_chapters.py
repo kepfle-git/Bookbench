@@ -77,7 +77,7 @@ class _Baum(QTreeWidget):
 
 class KapitelBereich(Bereich):
     kennung = "kapitel"
-    titel = N_("Chapters")
+    titel = N_("Table of contents")          # seit 2.4-beta2, vorher „Chapters“ (Kennung bleibt kapitel)
     symbol = "kapitel"
 
     def __init__(self, app):
@@ -362,7 +362,7 @@ class KapitelBereich(Bereich):
         self._bearbeitung_beenden()
         b = self.buch
         if not b:
-            self.app.status.set(_("Apply: choose a book in the Chapters or Blurbs area."))
+            self.app.status.set(_("Apply: choose a book in the Table of contents or Metadata area."))
             return
         self._kapitel_uebernehmen(b)
         kd.json_speichern(kd.ENTSCHEIDUNGEN, self.app.entscheidungen)

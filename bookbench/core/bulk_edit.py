@@ -8,6 +8,9 @@ Die Oberfläche (ui/area_metadata.py, ui/bulk_edit.py) baut damit je Buch alte u
   anwenden(alt, text, modus, trenner)       neuer Wert: modus "ersetzen", "dazu" oder "weg" (nur Mehrfachfelder)
   nummern(anzahl, start, schritt)           ["1", "2", …] (Kommazahlen ohne ".0")
   nummern_spannen(spannen, start, schritt)  [(nummer, bis)] mit Sammelbänden (Omnibus 1–3, dann 4)
+  in_reihe(werte_liste, reihe, modus, start)   neue Werte fürs Verschieben in eine Reihe (seit 2.4-beta2):
+                                            modus "behalten", "ab" (ab start durchnummerieren) oder "anhaengen"
+                                            (start = höchste Nummer der Zielreihe + 1); leere Reihe = aus der Reihe
   ersetzen(text, suche, ersatz, regex, gross)   (neu, Zahl der Treffer); re.error bei falschem Muster
   muster_fehler(suche, regex)               Fehlertext eines regulären Ausdrucks oder ""
   aenderungen(plan, felder)                 [(buch, [(feld, alt, neu)])] nur, wo sich etwas ändert
@@ -72,6 +75,32 @@ def nummern_spannen(spannen, start=1.0, schritt=1.0):
     for sp in spannen:
         erg.append((nummer_text(x), nummer_text(x + sp) if sp > 0 else ""))
         x += sp + schritt
+    return erg
+
+
+def spanne(werte):
+    """Länge eines Sammelbands (Omnibus 1–3: 2), sonst 0."""
+    try:
+        return max(0.0, float(werte.get("nummer_bis") or "x") - float(werte.get("nummer") or "x"))
+    except ValueError:
+        return 0.0
+
+
+def in_reihe(werte_liste, reihe, modus="behalten", start=1.0):
+    """[neue Werte] je Buch: Reihe gesetzt, Nummern je nach modus; Sammelbände behalten ihre Spanne."""
+    reihe = kme._norm(reihe)
+    erg = []
+    if not reihe:
+        for w in werte_liste:
+            erg.append(dict(w, reihe="", nummer="", nummer_bis=""))
+        return erg
+    if modus == "behalten":
+        return [dict(w, reihe=reihe) for w in werte_liste]
+    for w, (nr, ende) in zip(werte_liste, nummern_spannen([spanne(w) for w in werte_liste], start)):
+        neu = dict(w, reihe=reihe, nummer=nr)
+        if w.get("nummer_bis") or ende:
+            neu["nummer_bis"] = ende
+        erg.append(neu)
     return erg
 
 

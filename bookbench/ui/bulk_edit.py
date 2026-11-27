@@ -6,15 +6,17 @@ Bereich Metadaten (Werkzeugleiste „Mehrere Bücher ▾“ und Übernehmen mit 
   VorschauFenster(eltern, aenderungen, namen, warnungen)   exec() == Accepted → übernehmen
       aenderungen = [(buch, [(feld, alt, neu)])] aus core/bulk_edit.aenderungen, namen = {feld: Bezeichnung}
   NummerierenFenster(eltern, reihe, anzahl)                 .werte() -> (reihe, start, schritt)
+  ReiheFenster(eltern, anzahl, reihen, vorschlag)           .werte() -> (reihe, modus, start); seit 2.4-beta2
   ErsetzenFenster(eltern, felder, werte_liste)              .werte() -> (feld, suche, ersatz, regex, gross)
       felder = [(feld, Bezeichnung)], werte_liste = [{feld: text}] der Bücher (für die Trefferzahl)
 """
 from PySide6.QtCore import Qt
-from PySide6.QtWidgets import (QCheckBox, QComboBox, QDialog, QDialogButtonBox, QDoubleSpinBox, QGridLayout, QLabel,
-                               QLineEdit, QTreeWidget, QTreeWidgetItem, QVBoxLayout)
+from PySide6.QtWidgets import (QButtonGroup, QCheckBox, QComboBox, QCompleter, QDialog, QDialogButtonBox,
+                               QDoubleSpinBox, QGridLayout, QHBoxLayout, QLabel, QLineEdit, QRadioButton, QTreeWidget,
+                               QTreeWidgetItem, QVBoxLayout)
 
 from bookbench.core import bulk_edit as kbe
-from bookbench.i18n import _, ngettext
+from bookbench.i18n import N_, _, ngettext
 
 
 def _knoepfe(fenster, ok_text):
@@ -102,6 +104,89 @@ class NummerierenFenster(QDialog):
 
     def werte(self):
         return self.reihe.text().strip(), self.start.value(), self.schritt.value()
+
+
+class ReiheFenster(QDialog):
+    """In eine Reihe verschieben: Zielreihe (vorhandene zur Auswahl, neue eintippen, leer = aus der Reihe nehmen)
+    und was mit den Nummern geschieht. reihen = {Name: höchste Nummer} der vorhandenen Reihen."""
+    MODI = (("behalten", N_("Keep their numbers")), ("anhaengen", N_("Add at the end of the series")),
+            ("ab", N_("Number them from")))
+
+    def __init__(self, eltern, anzahl, reihen, vorschlag=""):
+        super().__init__(eltern)
+        self.reihen = reihen
+        self.setWindowTitle(_("Move to series"))
+        lay = QVBoxLayout(self)
+        lay.addWidget(QLabel(ngettext("Moves {n} book to a series.", "Moves {n} books to a series, in the order of "
+                                      "their current numbers.", anzahl).format(n=anzahl)))
+        r = QGridLayout()
+        r.addWidget(QLabel(_("Series:")), 0, 0)
+        self.reihe = QComboBox()
+        self.reihe.setEditable(True)
+        self.reihe.addItems(sorted(reihen, key=str.casefold))
+        self.reihe.setCurrentText(vorschlag)
+        self.reihe.lineEdit().setPlaceholderText(_("(empty: remove from the series)"))
+        self.reihe.completer().setCompletionMode(QCompleter.PopupCompletion)
+        self.reihe.completer().setCaseSensitivity(Qt.CaseInsensitive)
+        self.reihe.setMinimumWidth(300)
+        self.reihe.currentTextChanged.connect(self._anpassen)
+        r.addWidget(self.reihe, 0, 1)
+        lay.addLayout(r)
+        self.gruppe = QButtonGroup(self)
+        self.knoepfe = {}
+        for i, (k, text) in enumerate(self.MODI):
+            rb = QRadioButton(_(text))
+            self.gruppe.addButton(rb, i)
+            self.knoepfe[k] = rb
+            if k == "ab":
+                zeile = QHBoxLayout()
+                zeile.addWidget(rb)
+                self.start = QDoubleSpinBox()
+                self.start.setRange(0, 99999)
+                self.start.setDecimals(2)
+                self.start.setValue(1)
+                self.start.setFixedWidth(100)
+                zeile.addWidget(self.start)
+                zeile.addStretch(1)
+                lay.addLayout(zeile)
+            else:
+                lay.addWidget(rb)
+        self.knoepfe["anhaengen"].setChecked(True)
+        self.gruppe.buttonToggled.connect(lambda *a: self._anpassen())
+        self.info = _hinweis("")
+        lay.addWidget(self.info)
+        lay.addWidget(_hinweis(_("A collection (omnibus 1–3) keeps its range. Nothing is written before the preview; "
+                                 "Ctrl+S saves.")))
+        lay.addWidget(_knoepfe(self, _("Preview …")))
+        self._anpassen()
+
+    def _ziel_max(self):
+        name = self.reihe.currentText().strip().casefold()
+        return next((m for k, m in self.reihen.items() if k.casefold() == name), None)
+
+    def _anpassen(self, *a):
+        leer = not self.reihe.currentText().strip()
+        for k, rb in self.knoepfe.items():
+            rb.setEnabled(not leer)
+        self.start.setVisible(self.knoepfe["ab"].isChecked())
+        if leer:
+            self.info.setText(_("The books lose series and number."))
+            return
+        m = self._ziel_max()
+        if self.knoepfe["anhaengen"].isChecked():
+            self.info.setText(_("New series: numbering starts at 1.") if m is None else
+                              _("The series ends at {n} so far; the books get the numbers after it.").format(
+                                  n=kbe.nummer_text(m)))
+        else:
+            self.info.setText("" if m is None else _("The series ends at {n} so far.").format(n=kbe.nummer_text(m)))
+
+    def werte(self):
+        reihe = self.reihe.currentText().strip()
+        modus = next(k for k, rb in self.knoepfe.items() if rb.isChecked())
+        if modus == "anhaengen":
+            m = self._ziel_max()
+            return reihe, "ab", (int(m) + 1 if m is not None else 1.0)
+        return reihe, modus, self.start.value()
 
 
 class ErsetzenFenster(QDialog):

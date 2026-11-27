@@ -123,8 +123,9 @@ class Reihe:
         self.doppelt = [nummer_text(z) for z in sorted(zaehl) if zaehl[z] > 1]
         self.ohne_nummer = [b for b, z in zip(self.buecher, zahlen) if z is None]
         nummeriert = [z for z in zahlen if z is not None]
+        self.hoechste = max(nummeriert + [e for e in enden if e is not None]) if nummeriert else None
         if nummeriert:
-            a, z = nummer_text(min(nummeriert)), nummer_text(max(nummeriert + [e for e in enden if e is not None]))
+            a, z = nummer_text(min(nummeriert)), nummer_text(self.hoechste)
             self.spanne = a if a == z else f"{a}–{z}"
         else:
             self.spanne = ""

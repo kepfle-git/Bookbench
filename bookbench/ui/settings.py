@@ -232,7 +232,7 @@ class EinstellungsDialog(QDialog):
                _("How long the mouse has to stay still before the explanation appears."),
                self._w("tooltip_verzoegerung"), 0, 3000, 100)
         f.abschnitt(_("Covers in the headers"))
-        an = f.schalter("cover", _("Show cover in Chapters"),
+        an = f.schalter("cover", _("Show cover in Table of contents"),
                         _("Small cover next to the book title; a click shows it large."), self._w("cover"))
         f.unter(an).zahl("cover_kopf_hoehe", _("Height (px):"), _("Default 96."), self._w("cover_kopf_hoehe"), 40, 300, 8)
         f.abschnitt(_("Library"))
@@ -278,7 +278,7 @@ class EinstellungsDialog(QDialog):
         f.knopf(_("All on"), lambda: self._marken_alle(True), z)
         f.knopf(_("All off"), lambda: self._marken_alle(False), z)
         z.addStretch(1)
-        f.hinweis(_("Book lists: the narrow lists in Chapters and Metadata. Library: the Status column of the "
+        f.hinweis(_("Book lists: the narrow lists in Table of contents and Metadata. Library: the Status column of the "
                     "library. The coloured dot for changed, applied and saved stays; the whole strip can be "
                     "switched off under Interface."))
 

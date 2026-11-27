@@ -163,6 +163,7 @@ All books of the opened folder (with all subfolders) with series, number, author
 - **Several books**: Ctrl+click and Shift+click select more than one; right-click > **Edit metadata of n books** takes them to the Metadata area for editing together ([[metadaten_mehrere]]), **Remove advert text from n books** works on just those; **Look up metadata …** opens the look-up window for the selected books ([[metadaten_nachschlagen]]).
 - **New books**: File > Add books (Ctrl+I) or drag them onto the window ([[bibliothek_hinzufuegen]]); a library on this computer instead of the e-reader: [[bibliothek_rechner]].
 - **Advert lines** like OceanofPDF.com: Edit > Remove advert text … ([[bibliothek_cleaner]]).
+- **Duplicates**: Edit > Find duplicates … ([[bibliothek_duplikate]]).
 
 **Columns**
 - **Chapters**: **suggestions** (the book text has chapter names the table of contents lacks), **without names** (only numbers, nothing in the text either), **no names found** (only a few matches - probably coincidence, so nothing is suggested), **ok**, **ok (2 without names)** (almost all have names, single ones only a number, e.g. a prologue).
@@ -230,6 +231,15 @@ Some books carry lines like "OceanofPDF.com" at the end of each chapter. **Edit 
 A **link** whose address matches counts too, however it is labelled: it is shown as label → address (e.g. "Download more books → https://oceanofpdf.com") and removed as a whole. Matches in other attributes (an image file name, a class) do not count.
 
 Text in the head of a file (e.g. the title of a chapter file) is not touched. KOReader may shift a bookmark or the reading position in the same chapter by a line.
+""")),
+    ("bibliothek", "bibliothek_duplikate", N_("Finding duplicates"), N_("""
+**Edit > Find duplicates …** (in the library) looks for the same book more than once in the opened folder. Two books count as the same if they have the same **Calibre ID**, the same **ISBN**, the same **title and first author** (articles, punctuation and upper/lower case do not matter) or the same **file content** (a copy under another name). Books linked that way form one group - an EPUB and a KEPUB of the same book, and a copy of one of them, end up together.
+
+**Also compare file contents** reads every file that has exactly the size of another one; on the e-reader over USB that takes a moment. Without it, copies are only found by ID, ISBN or title.
+
+Each group shows its copies with folder, format, size, date, read status, state of the chapters and cover, so you can choose which to keep. **Nothing is checked.** Check the copies to delete, then **Delete n copies …**: it asks first (and warns if all copies of a book are checked), backs up each file ([[speichern]]), and reads the library again. A book with unsaved changes cannot be checked. A double-click (or Show in Library) selects the copy in the library.
+
+**Collections** ([[sammlungen]]) that contain a deleted copy get a kept copy of the same group instead (if any is left). KOReader's data next to a book (.sdr folder: reading position, highlights) is not deleted; in a library on the computer the next sync offers to delete the book on the e-reader too, not checked ([[kobo_abgleich]]).
 """)),
     ("bibliothek", "bibliothek_lesestand", N_("Reading state from KOReader"), N_("""
 Bookbench shows what KOReader knows about your reading. It only **reads** it and never writes anything back - mark a book as finished in KOReader itself.

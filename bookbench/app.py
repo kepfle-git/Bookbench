@@ -273,6 +273,7 @@ class App(QMainWindow):
         eintrag(_("Show cover large"), lambda: self.cover_aktion("gross"), (M,))
         b.addSeparator()
         eintrag(_("Remove advert text …"), lambda: self.cleaner(), (B,))
+        eintrag(_("Find duplicates …"), lambda: self.duplikate(), (B,))
         b.addSeparator()
         eintrag(_("Series and blurbs from Calibre"), self.calibre_uebernehmen, (B,), calibre=True)
         eintrag(_("Metadata from Calibre (this book)"), lambda: self.metadaten_aktion("alle_von_calibre"), (M,),
@@ -934,6 +935,18 @@ class App(QMainWindow):
         f.setAttribute(Qt.WA_DeleteOnClose)
         f.show()
         self._cleaner_fenster = f                       # für Tests
+        return f
+
+    def duplikate(self):
+        """Fenster „Duplikate suchen“ (seit 2.4-beta5, ui/duplicates_window)."""
+        if not self.buecher:
+            self.status.set(_("Open a library first."))
+            return None
+        from bookbench.ui import duplicates_window as kdw
+        f = kdw.DuplikateFenster(self)
+        f.setAttribute(Qt.WA_DeleteOnClose)
+        f.show()
+        self._duplikate_fenster = f                     # für Tests
         return f
 
     def buch_nachladen(self, b):

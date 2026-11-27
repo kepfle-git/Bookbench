@@ -665,3 +665,36 @@ def abgleich_ausfuehren(bib, reader, name, aktion, vorhanden, sicherung=None):
         speichern(bib, [s for s in rechner if s["name"] != name])
         return None
     return dateien(a, vorhanden) if a is not None else dateien(b, vorhanden)
+
+
+# ------------------------------------------------------------------------------- Bücher ersetzen (Duplikate)
+def umhaengen(ordner, ersatz, sicherung=None):
+    """Einträge der Sammlungen von gelöschten Büchern auf die behaltene Fassung umstellen: ersatz {alt_rel: neu_rel}
+    (neu_rel None = Eintrag entfernen). Ein Buch, das danach doppelt in einer Sammlung stünde, bleibt einmal.
+    Rückgabe: Zahl der geänderten Einträge."""
+    if not ersatz or ort(ordner)[0] is None:
+        return 0
+    sammlungen = laden(ordner)
+    n, geaendert = 0, []
+    for s in sammlungen:
+        neu_e, gesehen, anders = [], set(), False
+        for e in s["eintraege"]:
+            if e.get("rel") in ersatz:
+                anders = True
+                n += 1
+                if ersatz[e["rel"]] is None:
+                    continue
+                e = dict(e, rel=ersatz[e["rel"]])
+            k = schluessel(e)
+            if k and k in gesehen:
+                anders = True
+                continue
+            if k:
+                gesehen.add(k)
+            neu_e.append(e)
+        if anders:
+            s["eintraege"] = neu_e
+            geaendert.append(s["name"])
+    if geaendert:
+        speichern(ordner, sammlungen, geaendert, (), sicherung)
+    return n

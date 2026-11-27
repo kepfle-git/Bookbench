@@ -13,6 +13,10 @@ Werte aus Calibre (metadata.calibre) und KOReader (custom_metadata.lua) zum Verg
   unterschiede(werte, andere)   Felder, in denen andere einen Wert hat, der abweicht
   pruefen(werte)    Warnungen (ISBN-Prüfziffer, fehlende Sprache, Datum)
   datum_norm(text)  Erscheinungsdatum als JJJJ, JJJJ-MM oder JJJJ-MM-TT (seit 2.3-beta1, Feld "datum" = dc:date)
+  nummer_bis        letzte Nummer eines Sammelbands (seit 2.4-beta1): Omnibus mit 1–3 hat nummer 1, nummer_bis 3.
+                    Calibre und KOReader kennen nur eine Zahl (series_index); KOReader sortiert damit richtig,
+                    der Bereich Reihen zählt 2 und 3 als vorhanden. Gespeichert als
+                    <meta name="bookbench:series_end" content="3"/> (andere Programme lassen es stehen).
 
 Bearbeitet wird textuell wie im Rest von Bookbench (kein XML-Neuschreiben): Was Bookbench nicht
 kennt, bleibt Zeichen für Zeichen stehen. Reihe/Nummer schreibt library.opf_mit_reihe.
@@ -36,9 +40,10 @@ from bookbench.core import blurbs
 from bookbench.core import toc_report as tocreport
 from bookbench.i18n import N_, _
 
-FELDER = ("titel", "autoren", "autor_sort", "reihe", "nummer", "verlag", "datum", "sprache", "isbn", "schlagwoerter")
+FELDER = ("titel", "autoren", "autor_sort", "reihe", "nummer", "nummer_bis", "verlag", "datum", "sprache", "isbn", "schlagwoerter")
 NAMEN = {"titel": N_("Title"), "autoren": N_("Authors"),
          "autor_sort": N_("Author sort"), "reihe": N_("Series"), "nummer": N_("Number"),
+         "nummer_bis": N_("Number to"),
          "verlag": N_("Publisher"), "datum": N_("Published"), "sprache": N_("Language"), "isbn": N_("ISBN"),
          "schlagwoerter": N_("Tags")}
 MEHRFACH = {"autoren": "&", "schlagwoerter": ","}      # Felder mit mehreren Werten (Trenner)
@@ -438,7 +443,7 @@ def lesen(opf):
         "titel": haupt[3] if haupt else "",
         "autoren": " & ".join(el[3] for el in autoren if el[3]),
         "autor_sort": autor_sort,
-        "reihe": reihe, "nummer": nummer,
+        "reihe": reihe, "nummer": nummer, "nummer_bis": nummer_bis(opf),
         "verlag": (_elemente(opf, "publisher") or [(0, 0, {}, "")])[0][3],
         "datum": datum_norm((_datum_el(opf) or (0, 0, {}, ""))[3]),
         "sprache": sprache[0][3] if sprache else "",
@@ -449,6 +454,24 @@ def lesen(opf):
         if k.startswith("#"):
             w[k] = spalten_text(fm)
     return w
+
+
+SERIE_ENDE = re.compile(r"""\s*<meta\b[^>]*name=["']bookbench:series_end["'][^>]*/?>""")
+
+
+def nummer_bis(opf):
+    m = SERIE_ENDE.search(opf)
+    if not m:
+        return ""
+    t = nummer_norm(_attribute(m.group(0)).get("content", ""))
+    return t[:-2] if t.endswith(".0") else t
+
+
+def _mit_nummer_bis(opf, wert):
+    opf = SERIE_ENDE.sub("", opf)
+    if not wert:
+        return opf
+    return _einfuegen(opf, f'<meta name="bookbench:series_end" content="{html.escape(wert)}"/>')
 
 
 def epub3_untertitel(opf):
@@ -588,6 +611,8 @@ def schreiben(opf, alt, neu, definitionen=None):
         opf = _mit_datum(opf, datum_norm(neu["datum"]))
     if opf is not None and anders("isbn"):
         opf = _mit_isbn(opf, neu["isbn"])
+    if opf is not None and "nummer_bis" in neu and not gleich("nummer", neu["nummer_bis"], alt.get("nummer_bis", "")):
+        opf = _mit_nummer_bis(opf, nummer_norm(neu["nummer_bis"]))
     if opf is not None and anders("schlagwoerter"):
         opf = _mit_schlagwoertern(opf, neu["schlagwoerter"])
     for k in sorted(f for f in neu if f.startswith("#")):
@@ -673,7 +698,9 @@ def gleich(feld, a, b):
         return sprache_kurz(a).lower().split("-")[0] == sprache_kurz(b).lower().split("-")[0]
     if feld == "isbn":
         return re.sub(r"[^\dXx]", "", a).upper() == re.sub(r"[^\dXx]", "", b).upper()
-    if feld == "nummer":
+    if feld in ("nummer", "nummer_bis"):
+        if feld == "nummer_bis" and (not a or not b):
+            return a == b
         try:
             return float((a or "0").replace(",", ".")) == float((b or "0").replace(",", "."))
         except ValueError:
@@ -723,6 +750,14 @@ def pruefen(werte, definitionen=None):
             float(nummer_norm(werte["nummer"]))
         except ValueError:
             erg.append(("nummer", _("The number must be a number (e.g. 3, 1.5 or 0.9).")))
+    bis = _norm(werte.get("nummer_bis"))
+    if bis:
+        try:
+            ok = float(nummer_norm(bis)) > float(nummer_norm(werte.get("nummer") or "x"))
+        except ValueError:
+            ok = False
+        if not ok:
+            erg.append(("nummer_bis", _("The last number of a collection must be higher than its first number.")))
     for k, fm in (definitionen or {}).items():
         art = spalten_fehler(fm, _norm(werte.get(k, ""))) if k in werte else None
         if art:

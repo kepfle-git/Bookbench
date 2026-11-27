@@ -330,6 +330,7 @@ Several books at once: select them with Ctrl+click or Shift+click in the list ([
 - **Discard** restores values, blurb and cover from the file. This also drops a series taken over with **Series and blurbs from Calibre** in the library.
 - Several authors are separated with **&**, as in Calibre: "Dan Abnett & Graham McNeill". The **author sort** works the same way ("Abnett, Dan & McNeill, Graham"); with as many names as authors each author gets his own, otherwise the first one gets the whole text.
 - **Number** sits behind the series and only takes numbers; the arrows (or arrow up/down, mouse wheel) count up and down. It may have decimals, e.g. 1.5 or 0.9 for a story between two books; a comma is turned into a point, as in Calibre.
+- **to** behind the number is only for a **collection** (omnibus): an omnibus of books 1 to 3 gets number 1 and to 3; leave it empty for a single book. Calibre and KOReader only know one number, so they see 1 and sort the omnibus where book 1 would be. Bookbench keeps the last number in the book itself (an extra entry Calibre and KOReader leave alone), shows "1–3" in the library and counts 2 and 3 as present in [[reihen]]. **Number series** keeps the range: after an omnibus 1–3 the next book gets 4.
 - **Tags** are separated with commas.
 - **Suggestions:** authors, series, publisher, language, tags and own text fields suggest values from the other books while you type; **arrow down** in an empty field shows all. With several authors or tags the suggestion is for the part after the last & or comma.
 - **Language** as a code, e.g. en, de or en-GB. KOReader uses it for hyphenation.
@@ -538,6 +539,8 @@ All series of the opened folder in one list, each with its books below it (click
 - **Number series …** (toolbar, or right-click on a series): selects the books of the series in the [[metadaten]] area in the order of their numbers and opens Number series there ([[metadaten_mehrere]]). After the preview the new numbers are applied (yellow) and shown here right away; **Save** (Ctrl+S) writes them.
 - Right-click on a series: **Edit metadata of n books** (all books of the series in the Metadata area) and **Show series in Library** (library search set to the series name).
 - Double-click (or Enter) on a book opens it like in the library ([[einst_oberflaeche]]); right-click offers the other places and **Show in Library**. In the library, right-click > **Show series** jumps here.
+
+**Collections (omnibus)**: a book with a range in Metadata (number 1, to 3) covers 1, 2 and 3. It shows "1–3", and below it the books it contains, named after the top entries of its table of contents when there are enough of them (otherwise "in this collection"). Having book 2 on its own as well does not count as a duplicate.
 
 Series and numbers that are applied but not yet saved already count here.
 """)),

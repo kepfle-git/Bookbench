@@ -90,6 +90,10 @@ def zelle(b, spalte):
         if b.cover_neu is not None:
             return _("changed")
         return f"{b.cover_info[0]} × {b.cover_info[1]}" if b.cover_info else "-"
+    if spalte == "nummer":                       # Sammelband (seit 2.4-beta1): 1–3
+        from bookbench.core import series
+        ende = series.bis(b)
+        return f"{b.nummer}–{ende}" if ende and b.nummer else (b.nummer or "")
     if spalte == "datum":
         return km.meta_aktuell(b).get("datum", "") if not b.fehler else ""
     if spalte in ("gelesen", "zuletzt", "lesezeit"):

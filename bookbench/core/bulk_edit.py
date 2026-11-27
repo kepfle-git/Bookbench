@@ -7,6 +7,7 @@ Die Oberfläche (ui/area_metadata.py, ui/bulk_edit.py) baut damit je Buch alte u
   gemeinsam(werte_liste, feld)              gemeinsamer Wert aller Bücher oder None (verschieden)
   anwenden(alt, text, modus, trenner)       neuer Wert: modus "ersetzen", "dazu" oder "weg" (nur Mehrfachfelder)
   nummern(anzahl, start, schritt)           ["1", "2", …] (Kommazahlen ohne ".0")
+  nummern_spannen(spannen, start, schritt)  [(nummer, bis)] mit Sammelbänden (Omnibus 1–3, dann 4)
   ersetzen(text, suche, ersatz, regex, gross)   (neu, Zahl der Treffer); re.error bei falschem Muster
   muster_fehler(suche, regex)               Fehlertext eines regulären Ausdrucks oder ""
   aenderungen(plan, felder)                 [(buch, [(feld, alt, neu)])] nur, wo sich etwas ändert
@@ -62,6 +63,16 @@ def nummer_text(x):
 
 def nummern(anzahl, start=1.0, schritt=1.0):
     return [nummer_text(start + i * schritt) for i in range(anzahl)]
+
+
+def nummern_spannen(spannen, start=1.0, schritt=1.0):
+    """[(nummer, bis)] für Bücher mit spannen (0 = einzelnes Buch, 2 = Sammelband über drei Nummern):
+    ein Omnibus 1–3 schiebt das nächste Buch auf 4 (seit 2.4-beta1); bis ist "" für einzelne Bücher."""
+    erg, x = [], start
+    for sp in spannen:
+        erg.append((nummer_text(x), nummer_text(x + sp) if sp > 0 else ""))
+        x += sp + schritt
+    return erg
 
 
 def muster_fehler(suche, regex):

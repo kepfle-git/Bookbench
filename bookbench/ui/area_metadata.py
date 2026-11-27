@@ -320,7 +320,7 @@ class MetadatenBereich(Bereich):
         zeile = None
         for feld in km.meta_felder(self.app.e):
             lab = QLabel(km.meta_name(feld, self.app.e) + ":")
-            ein = _Nummer() if feld == "nummer" else QLineEdit()
+            ein = _Nummer() if feld in ("nummer", "nummer_bis") else QLineEdit()
             ein.textEdited.connect(lambda *a, f=feld: self._getippt(f))
             ein.returnPressed.connect(self.uebernehmen)
             if feld == "nummer" and zeile is not None and "reihe" in self.felder_w:
@@ -328,6 +328,16 @@ class MetadatenBereich(Bereich):
                 zeile.feld_lay.addWidget(lab)
                 zeile.feld_lay.addWidget(ein)
                 vorne = _("{source}, number").format
+            elif feld == "nummer_bis" and zeile is not None and "nummer" in self.felder_w:
+                # Sammelband (seit 2.4-beta1): „Nummer [1] bis [3]“ in derselben Zeile, leer = einzelnes Buch
+                lab.setText(_("to"))
+                lab.setToolTip(_("Last number of a collection (omnibus), e.g. 3 for an omnibus of books 1 to 3. "
+                                 "Leave empty for a single book."))
+                ein.setToolTip(lab.toolTip())
+                ein.setFixedWidth(80)
+                zeile.feld_lay.addWidget(lab)
+                zeile.feld_lay.addWidget(ein)
+                vorne = _("{source}, number to").format
             else:
                 lab.setFixedHeight(hoehe)
                 self.raster.addWidget(lab, zeile_nr, 0, Qt.AlignTop)
@@ -789,9 +799,19 @@ class MetadatenBereich(Bereich):
             return
         reihe, start, schritt = f.werte()
         plan = []
-        for b, alt, nr in zip(ziel, werte, kbe.nummern(len(ziel), start, schritt)):
-            plan.append((b, alt, dict(alt, reihe=reihe or alt.get("reihe", ""), nummer=nr)))
-        if self._mit_vorschau(plan, ["reihe", "nummer"]):
+        # Sammelbände behalten ihre Spanne (Omnibus 1–3 bleibt drei Nummern lang, das nächste Buch kommt danach)
+        spannen = []
+        for alt in werte:
+            try:
+                spannen.append(max(0.0, float(alt.get("nummer_bis") or "x") - float(alt.get("nummer") or "x")))
+            except ValueError:
+                spannen.append(0.0)
+        for b, alt, (nr, ende) in zip(ziel, werte, kbe.nummern_spannen(spannen, start, schritt)):
+            neu = dict(alt, reihe=reihe or alt.get("reihe", ""), nummer=nr)
+            if alt.get("nummer_bis") or ende:
+                neu["nummer_bis"] = ende
+            plan.append((b, alt, neu))
+        if self._mit_vorschau(plan, ["reihe", "nummer", "nummer_bis"]):
             self.anzeigen()
 
     def suchen_ersetzen(self):

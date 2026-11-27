@@ -174,6 +174,8 @@ class ReihenBereich(Bereich):
                 it.setExpanded(schl in self.offen or bool(such and len(self.liste) <= 3))
                 for j in range(it.childCount()):
                     kind = it.child(j)
+                    if kind.childCount():          # Sammelband: enthaltene Bände gleich zeigen
+                        kind.setExpanded(True)
                     if self.gewaehlt and kind.data(0, ROLLE) == self.gewaehlt:
                         aktuell = kind
             if self.gewaehlt and (art, schl) == self.gewaehlt:
@@ -231,7 +233,8 @@ class ReihenBereich(Bereich):
         it.setText(0, x.titel or x.name)
         it.setToolTip(0, str(x.pfad))
         nummer = kse.reihe_nummer(x)[1]
-        it.setText(1, nummer or ("–" if r is not None else ""))
+        ende = kse.bis(x)
+        it.setText(1, f"{nummer}–{ende}" if ende else (nummer or ("–" if r is not None else "")))
         it.setTextAlignment(1, int(Qt.AlignRight | Qt.AlignVCenter))
         it.setText(2, x.autor or "")
         e = getattr(x, "lesen", None)
@@ -253,6 +256,24 @@ class ReihenBereich(Bereich):
                     it.setFont(s, f)
         if x.stand():
             it.setIcon(0, mk.status_bild(x.stand(), []))
+        if ende and r is not None:                 # Sammelband: enthaltene Bände darunter
+            nummern = kse.enthalten(x)
+            namen = kse.baende(x, len(nummern))
+            for i, n in enumerate(nummern):
+                it.addChild(self._band_zeile(n, namen[i] if namen else ""))
+        return it
+
+    def _band_zeile(self, nummer, name):
+        it = QTreeWidgetItem()
+        it.setData(0, ROLLE, ("band", str(nummer)))
+        it.setFlags(Qt.ItemIsEnabled)
+        it.setText(0, name or _("in this collection"))
+        it.setToolTip(0, _("Contained in the collection above. Names are guessed from its table of contents."))
+        it.setText(1, str(nummer))
+        it.setTextAlignment(1, int(Qt.AlignRight | Qt.AlignVCenter))
+        grau = QBrush(QColor(theme.farben()["hinweis"]))
+        for s in range(2):
+            it.setForeground(s, grau)
         return it
 
     def _luecke_zeile(self, von, bis):
@@ -357,7 +378,7 @@ class ReihenBereich(Bereich):
 
     def _menue(self, pos):
         it = self.baum.itemAt(pos)
-        if it is None or it.data(0, ROLLE)[0] == "luecke":
+        if it is None or it.data(0, ROLLE)[0] in ("luecke", "band"):
             return
         self.baum.setCurrentItem(it)
         m = QMenu(self.baum)
